@@ -9,12 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SaleRouteImport } from './routes/sale'
+import { Route as ResidenceRouteImport } from './routes/residence'
+import { Route as ManagerRouteImport } from './routes/manager'
+import { Route as ContractRouteImport } from './routes/contract'
 import { Route as ApprovalRouteImport } from './routes/approval'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccountantRouteImport } from './routes/accountant'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SaleRoute = SaleRouteImport.update({
+  id: '/sale',
+  path: '/sale',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResidenceRoute = ResidenceRouteImport.update({
+  id: '/residence',
+  path: '/residence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManagerRoute = ManagerRouteImport.update({
+  id: '/manager',
+  path: '/manager',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContractRoute = ContractRouteImport.update({
+  id: '/contract',
+  path: '/contract',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApprovalRoute = ApprovalRouteImport.update({
   id: '/approval',
   path: '/approval',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountantRoute = AccountantRouteImport.update({
+  id: '/accountant',
+  path: '/accountant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,37 +61,128 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accountant': typeof AccountantRoute
+  '/admin': typeof AdminRoute
   '/approval': typeof ApprovalRoute
+  '/contract': typeof ContractRoute
+  '/manager': typeof ManagerRoute
+  '/residence': typeof ResidenceRoute
+  '/sale': typeof SaleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accountant': typeof AccountantRoute
+  '/admin': typeof AdminRoute
   '/approval': typeof ApprovalRoute
+  '/contract': typeof ContractRoute
+  '/manager': typeof ManagerRoute
+  '/residence': typeof ResidenceRoute
+  '/sale': typeof SaleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accountant': typeof AccountantRoute
+  '/admin': typeof AdminRoute
   '/approval': typeof ApprovalRoute
+  '/contract': typeof ContractRoute
+  '/manager': typeof ManagerRoute
+  '/residence': typeof ResidenceRoute
+  '/sale': typeof SaleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/approval'
+  fullPaths:
+    | '/'
+    | '/accountant'
+    | '/admin'
+    | '/approval'
+    | '/contract'
+    | '/manager'
+    | '/residence'
+    | '/sale'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/approval'
-  id: '__root__' | '/' | '/approval'
+  to:
+    | '/'
+    | '/accountant'
+    | '/admin'
+    | '/approval'
+    | '/contract'
+    | '/manager'
+    | '/residence'
+    | '/sale'
+  id:
+    | '__root__'
+    | '/'
+    | '/accountant'
+    | '/admin'
+    | '/approval'
+    | '/contract'
+    | '/manager'
+    | '/residence'
+    | '/sale'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountantRoute: typeof AccountantRoute
+  AdminRoute: typeof AdminRoute
   ApprovalRoute: typeof ApprovalRoute
+  ContractRoute: typeof ContractRoute
+  ManagerRoute: typeof ManagerRoute
+  ResidenceRoute: typeof ResidenceRoute
+  SaleRoute: typeof SaleRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sale': {
+      id: '/sale'
+      path: '/sale'
+      fullPath: '/sale'
+      preLoaderRoute: typeof SaleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/residence': {
+      id: '/residence'
+      path: '/residence'
+      fullPath: '/residence'
+      preLoaderRoute: typeof ResidenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manager': {
+      id: '/manager'
+      path: '/manager'
+      fullPath: '/manager'
+      preLoaderRoute: typeof ManagerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contract': {
+      id: '/contract'
+      path: '/contract'
+      fullPath: '/contract'
+      preLoaderRoute: typeof ContractRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/approval': {
       id: '/approval'
       path: '/approval'
       fullPath: '/approval'
       preLoaderRoute: typeof ApprovalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accountant': {
+      id: '/accountant'
+      path: '/accountant'
+      fullPath: '/accountant'
+      preLoaderRoute: typeof AccountantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,7 +197,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountantRoute: AccountantRoute,
+  AdminRoute: AdminRoute,
   ApprovalRoute: ApprovalRoute,
+  ContractRoute: ContractRoute,
+  ManagerRoute: ManagerRoute,
+  ResidenceRoute: ResidenceRoute,
+  SaleRoute: SaleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

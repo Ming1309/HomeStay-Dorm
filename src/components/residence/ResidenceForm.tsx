@@ -36,6 +36,11 @@ export function ResidenceForm({ deposit }: Props) {
   const [nationality, setNationality] = useState("Việt Nam");
   const [docType, setDocType] = useState("cccd");
   const [docId, setDocId] = useState("");
+  // Address sub-fields — concatenated on save
+  const [addrStreet, setAddrStreet] = useState("");
+  const [addrTinh, setAddrTinh] = useState("");
+  const [addrQuan, setAddrQuan] = useState("");
+  const [addrPhuong, setAddrPhuong] = useState("");
   const dobRef = useRef<HTMLInputElement>(null);
 
   // Reset form when deposit changes
@@ -45,6 +50,10 @@ export function ResidenceForm({ deposit }: Props) {
     setNationality("Việt Nam");
     setDocType("cccd");
     setDocId("");
+    setAddrStreet("");
+    setAddrTinh("");
+    setAddrQuan("");
+    setAddrPhuong("");
     setTimeout(() => dobRef.current?.focus(), 80);
   }, [deposit?.id]);
 
@@ -224,6 +233,88 @@ export function ResidenceForm({ deposit }: Props) {
                   className={cn(inputCls, "font-mono")}
                 />
               </FormField>
+
+              {/* Full-width structured address block */}
+              <div className="col-span-2 space-y-2">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xs font-medium text-gray-600">
+                    Địa chỉ thường trú
+                  </span>
+                  <span className="text-red-500 text-xs">*</span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                  {/* Row 1: Street + Province */}
+                  <FormField label="Số nhà, Tên đường" required>
+                    <Input
+                      value={addrStreet}
+                      onChange={(e) => setAddrStreet(e.target.value)}
+                      placeholder="VD: 123 Nguyễn Huệ"
+                      className={inputCls}
+                    />
+                  </FormField>
+
+                  <FormField label="Tỉnh / TP" required>
+                    <Select value={addrTinh} onValueChange={setAddrTinh}>
+                      <SelectTrigger className={inputCls}>
+                        <SelectValue placeholder="Chọn Tỉnh/TP" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</SelectItem>
+                        <SelectItem value="Hà Nội">Hà Nội</SelectItem>
+                        <SelectItem value="Đà Nẵng">Đà Nẵng</SelectItem>
+                        <SelectItem value="Cần Thơ">Cần Thơ</SelectItem>
+                        <SelectItem value="Hải Phòng">Hải Phòng</SelectItem>
+                        <SelectItem value="Bình Dương">Bình Dương</SelectItem>
+                        <SelectItem value="Đồng Nai">Đồng Nai</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+
+                  {/* Row 2: District + Ward */}
+                  <FormField label="Quận / Huyện" required>
+                    <Select value={addrQuan} onValueChange={setAddrQuan}>
+                      <SelectTrigger className={inputCls}>
+                        <SelectValue placeholder="Chọn Quận/Huyện" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Quận 1">Quận 1</SelectItem>
+                        <SelectItem value="Quận 3">Quận 3</SelectItem>
+                        <SelectItem value="Quận 5">Quận 5</SelectItem>
+                        <SelectItem value="Quận 7">Quận 7</SelectItem>
+                        <SelectItem value="Quận 10">Quận 10</SelectItem>
+                        <SelectItem value="Quận Bình Thạnh">Quận Bình Thạnh</SelectItem>
+                        <SelectItem value="Quận Tân Bình">Quận Tân Bình</SelectItem>
+                        <SelectItem value="Quận Gò Vấp">Quận Gò Vấp</SelectItem>
+                        <SelectItem value="Quận Phú Nhuận">Quận Phú Nhuận</SelectItem>
+                        <SelectItem value="Huyện Hóc Môn">Huyện Hóc Môn</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+
+                  <FormField label="Phường / Xã" required>
+                    <Select value={addrPhuong} onValueChange={setAddrPhuong}>
+                      <SelectTrigger className={inputCls}>
+                        <SelectValue placeholder="Chọn Phường/Xã" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Phường Bến Nghé">Phường Bến Nghé</SelectItem>
+                        <SelectItem value="Phường Cô Giang">Phường Cô Giang</SelectItem>
+                        <SelectItem value="Phường Đa Kao">Phường Đa Kao</SelectItem>
+                        <SelectItem value="Phường 1">Phường 1</SelectItem>
+                        <SelectItem value="Phường 2">Phường 2</SelectItem>
+                        <SelectItem value="Phường 3">Phường 3</SelectItem>
+                        <SelectItem value="Phường 4">Phường 4</SelectItem>
+                        <SelectItem value="Phường 6">Phường 6</SelectItem>
+                        <SelectItem value="Phường 7">Phường 7</SelectItem>
+                        <SelectItem value="Phường 12">Phường 12</SelectItem>
+                        <SelectItem value="Phường 14">Phường 14</SelectItem>
+                        <SelectItem value="Phường 15">Phường 15</SelectItem>
+                        <SelectItem value="Xã Tân Xuân">Xã Tân Xuân</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                </div>
+              </div>
             </div>
           </FormCard>
 
@@ -259,38 +350,12 @@ export function ResidenceForm({ deposit }: Props) {
                 </div>
               )}
 
-              {/* Empty state — ghost add button */}
-              {members.length === 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setMembers([newMember()])}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-blue-300 bg-blue-50/50 py-5 text-sm font-medium text-blue-600 transition-colors hover:border-blue-400 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                >
-                  <Plus className="size-4" />
-                  Thêm người ở cùng
-                </button>
-              ) : (
-                /* Table + inline add button */
-                <div className="space-y-2">
-                  <MembersTable members={members} onChange={setMembers} />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setMembers([...members, newMember()])}
-                    disabled={!canAddMember}
-                    className="h-8 gap-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:text-gray-400"
-                    title={
-                      canAddMember
-                        ? "Thêm thành viên"
-                        : `Đã đạt số người tối đa (${deposit.bedsRented} giường)`
-                    }
-                  >
-                    <Plus className="size-3.5" />
-                    Thêm thành viên
-                  </Button>
-                </div>
-              )}
+              <MembersTable
+                members={members}
+                onChange={setMembers}
+                canAddMember={canAddMember}
+                maxMembers={deposit.bedsRented - 1}
+              />
             </FormCard>
           )}
         </div>

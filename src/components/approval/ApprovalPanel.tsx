@@ -11,6 +11,8 @@ import {
   Trash2,
   Users,
   XCircle,
+  Eye,
+  Undo2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,8 +39,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import type { ApprovalProfile } from "@/lib/residence/mock-approvals";
+import type { ApprovalProfile, ApprovalMember } from "@/lib/residence/mock-approvals";
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
 type RejectedSet = Set<string>; // member IDs that have been rejected
@@ -98,6 +106,9 @@ export function ApprovalPanel({ profile, onApprove, onRejectAll }: Props) {
   // Reject-all dialog open state (controlled separately for keyboard shortcut)
   const [rejectAllOpen, setRejectAllOpen] = useState(false);
 
+  // View Details Modal state
+  const [viewMemberDetails, setViewMemberDetails] = useState<ApprovalMember | null>(null);
+
   // Reset per-profile state whenever the selected profile changes
   const profileId = profile?.id;
   const [lastProfileId, setLastProfileId] = useState<string | undefined>(
@@ -108,11 +119,8 @@ export function ApprovalPanel({ profile, onApprove, onRejectAll }: Props) {
     setRejectedIds(new Set());
     setPendingRejectMemberId(null);
     setRejectAllOpen(false);
+    setViewMemberDetails(null);
   }
-
-  /* ── Keyboard shortcuts ────────────────────────────────────────────── */
-  // We use onKeyDown at document level; attach in a useEffect-free inline handler
-  // to keep component simple — just hint shown in footer.
 
   /* ── Empty state ─────────────────────────────────────────────────────── */
   if (!profile) {
@@ -265,6 +273,11 @@ export function ApprovalPanel({ profile, onApprove, onRejectAll }: Props) {
                 value={rep.docId}
                 mono
               />
+              <ReadonlyField
+                label="Địa chỉ thường trú"
+                value={rep.diaChiThuongTru}
+                wide
+              />
             </div>
           </FormCard>
 
@@ -339,31 +352,32 @@ export function ApprovalPanel({ profile, onApprove, onRejectAll }: Props) {
                         STT
                       </TableHead>
                       <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5">
-                        Họ và tên
-                      </TableHead>
-                      <TableHead className="w-[90px] text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5">
-                        Giới tính
+                        HỌ VÀ TÊN
                       </TableHead>
                       <TableHead className="w-[120px] text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5">
-                        Ngày sinh
+                        ĐẶC ĐIỂM
                       </TableHead>
-                      <TableHead className="w-[90px] text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5">
-                        Loại GT
+                      <TableHead className="w-[130px] text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5">
+                        QUỐC TỊCH
                       </TableHead>
-                      <TableHead className="w-[155px] text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5">
-                        Số giấy tờ
+                      <TableHead className="w-[170px] text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5">
+                        GIẤY TỜ
                       </TableHead>
-                      <TableHead className="w-[120px] text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5">
+                      <TableHead className="w-[130px] text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5">
                         SĐT
                       </TableHead>
                       <TableHead className="w-[110px] text-xs font-semibold text-gray-500 uppercase tracking-wide py-2.5 text-right pr-4">
-                        Hành động
+                        HÀNH ĐỘNG
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {members.map((m, i) => {
                       const isRejected = rejectedIds.has(m.id);
+                      const genderStr = m.gender === "male" ? "Nam" : m.gender === "female" ? "Nữ" : "—";
+                      const year = m.dob ? m.dob.split("/").pop() : "—";
+                      const docTypeStr = m.docType === "cccd" ? "CCCD" : m.docType === "passport" ? "Hộ chiếu" : "—";
+
                       return (
                         <TableRow
                           key={m.id}
@@ -380,8 +394,8 @@ export function ApprovalPanel({ profile, onApprove, onRejectAll }: Props) {
                           <TableCell className="py-3">
                             <span
                               className={cn(
-                                "text-sm font-medium text-gray-800",
-                                isRejected && "line-through text-gray-400",
+                                "text-sm font-semibold",
+                                isRejected ? "line-through text-gray-400" : "text-gray-800",
                               )}
                             >
                               {m.fullName}
@@ -395,87 +409,91 @@ export function ApprovalPanel({ profile, onApprove, onRejectAll }: Props) {
                           <TableCell
                             className={cn(
                               "py-3 text-sm",
-                              isRejected
-                                ? "text-gray-400"
-                                : "text-gray-700",
+                              isRejected ? "text-gray-400" : "text-gray-600",
                             )}
                           >
-                            {m.gender === "male" ? "Nam" : "Nữ"}
-                          </TableCell>
-                          <TableCell
-                            className={cn(
-                              "py-3 text-sm tabular-nums",
-                              isRejected
-                                ? "text-gray-400"
-                                : "text-gray-700",
-                            )}
-                          >
-                            {m.dob}
+                            {genderStr} &bull; {year}
                           </TableCell>
                           <TableCell
                             className={cn(
                               "py-3 text-sm",
-                              isRejected
-                                ? "text-gray-400"
-                                : "text-gray-700",
+                              isRejected ? "text-gray-400" : "text-gray-600",
                             )}
                           >
-                            {m.docType === "cccd" ? "CCCD" : "HC"}
+                            {m.nationality === "Việt Nam" || !m.nationality ? (
+                              "Việt Nam"
+                            ) : (
+                              <span className={cn(
+                                "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset",
+                                isRejected ? "bg-gray-50 text-gray-500 ring-gray-500/20" : "bg-yellow-50 text-yellow-800 ring-yellow-600/20"
+                              )}>
+                                {m.nationality}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              "py-3 text-sm",
+                              isRejected ? "text-gray-400" : "text-gray-600",
+                            )}
+                          >
+                            {docTypeStr}: <span className="font-mono">{m.docId || "—"}</span>
                           </TableCell>
                           <TableCell
                             className={cn(
                               "py-3 font-mono text-sm",
-                              isRejected
-                                ? "text-gray-400"
-                                : "text-gray-700",
+                              isRejected ? "text-gray-400" : "text-gray-600",
                             )}
                           >
-                            {m.docId}
-                          </TableCell>
-                          <TableCell
-                            className={cn(
-                              "py-3 font-mono text-sm",
-                              isRejected
-                                ? "text-gray-400"
-                                : "text-gray-700",
-                            )}
-                          >
-                            {m.phone ?? "—"}
+                            {m.phone || "—"}
                           </TableCell>
                           <TableCell className="py-3 text-right pr-3">
-                            {isRejected ? (
+                            <div className="flex items-center justify-end gap-1">
                               <Button
                                 type="button"
                                 variant="ghost"
-                                size="sm"
-                                className="h-7 gap-1 px-2 text-xs text-gray-400 hover:text-gray-600"
-                                onClick={() => {
-                                  setRejectedIds((prev) => {
-                                    const next = new Set(prev);
-                                    next.delete(m.id);
-                                    return next;
-                                  });
-                                  toast.info(
-                                    `Đã khôi phục thành viên "${m.fullName}"`,
-                                  );
-                                }}
+                                size="icon"
+                                className="size-7 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                                onClick={() => setViewMemberDetails(m)}
+                                title="Xem chi tiết"
                               >
-                                Khôi phục
+                                <Eye className="size-3.5" />
                               </Button>
-                            ) : (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-7 gap-1 border-red-200 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
-                                onClick={() =>
-                                  setPendingRejectMemberId(m.id)
-                                }
-                              >
-                                <Trash2 className="size-3" />
-                                Từ chối
-                              </Button>
-                            )}
+                              {isRejected ? (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 gap-1 px-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+                                  onClick={() => {
+                                    setRejectedIds((prev) => {
+                                      const next = new Set(prev);
+                                      next.delete(m.id);
+                                      return next;
+                                    });
+                                    toast.info(
+                                      `Đã hoàn tác thành viên "${m.fullName}"`,
+                                    );
+                                  }}
+                                >
+                                  <Undo2 className="size-3.5" />
+                                  Hoàn tác
+                                </Button>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 gap-1 border-red-200 px-2 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+                                  onClick={() =>
+                                    setPendingRejectMemberId(m.id)
+                                  }
+                                >
+                                  <Trash2 className="size-3.5" />
+                                  Từ chối
+                                </Button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -495,6 +513,50 @@ export function ApprovalPanel({ profile, onApprove, onRejectAll }: Props) {
           )}
         </div>
       </div>
+
+      {/* ── VIEW MEMBER DETAILS MODAL ────────────────────────────────────────── */}
+      <Dialog open={!!viewMemberDetails} onOpenChange={(open) => !open && setViewMemberDetails(null)}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-gray-200">
+          <DialogHeader className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <DialogTitle className="text-base font-bold text-gray-800">
+              Chi tiết thành viên
+            </DialogTitle>
+          </DialogHeader>
+          {viewMemberDetails && (
+            <div className="px-6 py-5">
+              <div className="grid grid-cols-2 gap-x-5 gap-y-4">
+                <ReadonlyField label="Họ và tên" value={viewMemberDetails.fullName} />
+                <ReadonlyField
+                  label="Số điện thoại"
+                  value={viewMemberDetails.phone || "—"}
+                  mono
+                />
+                <ReadonlyField
+                  label="Giới tính"
+                  value={viewMemberDetails.gender === "male" ? "Nam" : "Nữ"}
+                />
+                <ReadonlyField label="Ngày sinh" value={viewMemberDetails.dob} />
+                <ReadonlyField label="Quốc tịch" value={viewMemberDetails.nationality || "Việt Nam"} />
+                <ReadonlyField
+                  label="Loại giấy tờ"
+                  value={viewMemberDetails.docType === "cccd" ? "CCCD" : "Hộ chiếu"}
+                />
+                <ReadonlyField
+                  label="Số giấy tờ"
+                  value={viewMemberDetails.docId}
+                  mono
+                  wide
+                />
+                <ReadonlyField
+                  label="Địa chỉ thường trú"
+                  value={viewMemberDetails.diaChiThuongTru || "—"}
+                  wide
+                />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ── STICKY FOOTER ──────────────────────────────────────────────── */}
       <footer className="absolute bottom-0 left-0 right-0 z-20 border-t border-gray-200 bg-white px-6 py-3 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">

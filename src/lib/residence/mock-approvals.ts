@@ -8,6 +8,8 @@ export type ApprovalMember = {
   docType: "cccd" | "passport";
   docId: string;
   phone?: string;
+  diaChiThuongTru: string;
+  nationality?: string;
 };
 
 export type ApprovalProfile = {
@@ -22,6 +24,7 @@ export type ApprovalProfile = {
     docType: "cccd" | "passport";
     docId: string;
     email: string;
+    diaChiThuongTru: string;
   };
   room: string;
   rentalType: "whole" | "shared";
@@ -49,6 +52,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
       nationality: "Việt Nam",
       docType: "cccd",
       docId: "036098012345",
+      diaChiThuongTru: "45 Đường Lý Thường Kiệt, P.7, Q.10, TP.HCM",
     },
     members: [
       {
@@ -59,6 +63,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
         docType: "cccd",
         docId: "038200456789",
         phone: "0901112233",
+        diaChiThuongTru: "12 Nguyễn Trãi, P.2, Q.5, TP.HCM",
       },
       {
         id: "m2",
@@ -68,6 +73,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
         docType: "cccd",
         docId: "079099234567",
         phone: "0933445566",
+        diaChiThuongTru: "88 Võ Văn Tần, P.6, Q.3, TP.HCM",
       },
       {
         id: "m3",
@@ -77,6 +83,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
         docType: "passport",
         docId: "B2345678",
         phone: "0977889900",
+        diaChiThuongTru: "23 Trần Hưng Đạo, P.1, Q.1, TP.HCM",
       },
     ],
   },
@@ -97,6 +104,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
       nationality: "Việt Nam",
       docType: "cccd",
       docId: "040095876543",
+      diaChiThuongTru: "156 Phan Đăng Lưu, P.3, Q. Bình Thạnh, TP.HCM",
     },
     members: [
       {
@@ -107,6 +115,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
         docType: "cccd",
         docId: "001097345678",
         phone: "0908765432",
+        diaChiThuongTru: "9 Đinh Tiên Hoàng, P.1, Q. Bình Thạnh, TP.HCM",
       },
       {
         id: "m5",
@@ -116,6 +125,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
         docType: "passport",
         docId: "C1234567",
         phone: "0966554433",
+        diaChiThuongTru: "71 Ngô Thị Thu Minh, P.2, Q. Tân Bình, TP.HCM",
       },
     ],
   },
@@ -136,6 +146,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
       nationality: "Việt Nam",
       docType: "cccd",
       docId: "052000987654",
+      diaChiThuongTru: "34 Cộng Hòa, P.12, Q. Tân Bình, TP.HCM",
     },
     members: [
       {
@@ -146,6 +157,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
         docType: "cccd",
         docId: "070099765432",
         phone: "0911223344",
+        diaChiThuongTru: "101 Hoàng Hoa Thám, P.6, Q. Bình Thạnh, TP.HCM",
       },
     ],
   },
@@ -166,6 +178,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
       nationality: "Việt Nam",
       docType: "cccd",
       docId: "033096111222",
+      diaChiThuongTru: "28 Nguyễn Đình Chiểu, P.6, Q.3, TP.HCM",
     },
     members: [
       {
@@ -176,6 +189,7 @@ export const mockApprovalProfiles: ApprovalProfile[] = [
         docType: "cccd",
         docId: "056002654321",
         phone: "0922334455",
+        diaChiThuongTru: "5 Bùi Thị Xuân, P.1, Q.1, TP.HCM",
       },
     ],
   },
