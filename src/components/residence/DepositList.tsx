@@ -60,9 +60,7 @@ export function DepositList({ selectedId, onSelect }: Props) {
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-semibold text-primary">
-                      #{d.code}
-                    </span>
+                    <span className="font-mono text-xs font-semibold text-primary">#{d.code}</span>
                     <Badge className="h-5 border-transparent bg-success px-1.5 text-[10px] font-medium text-success-foreground hover:bg-success">
                       <Lock className="mr-0.5 size-2.5" />
                       Đã thanh toán

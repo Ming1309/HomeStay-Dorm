@@ -61,6 +61,8 @@ type Props = {
 const inputCls =
   "h-9 border-gray-200 text-sm shadow-none focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500";
 
+const isVietnameseNationality = (value: string) => value.trim().toLowerCase() === "việt nam";
+
 function FormField({
   label,
   required,
@@ -93,7 +95,7 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
   const [addrTinh, setAddrTinh] = useState("");
   const [addrQuan, setAddrQuan] = useState("");
   const [addrPhuong, setAddrPhuong] = useState("");
-  
+
   // Address field (Overseas)
   const [addrOverseas, setAddrOverseas] = useState("");
 
@@ -112,8 +114,7 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
 
   const openEdit = (m: Member) => {
     setFormData({ ...m });
-    if (m.nationality === "Việt Nam" || !m.nationality) {
-      // Attempt to split address for the UI
+    if (isVietnameseNationality(m.nationality) || !m.nationality) {
       const parts = m.diaChiThuongTru.split(", ");
       setAddrStreet(parts[0] || "");
       setAddrPhuong(parts[1] || "");
@@ -133,14 +134,12 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
 
   const handleSave = () => {
     let fullAddress = "";
-    if (formData.nationality === "Việt Nam" || !formData.nationality) {
-      fullAddress = [addrStreet, addrPhuong, addrQuan, addrTinh]
-        .filter(Boolean)
-        .join(", ");
+    if (isVietnameseNationality(formData.nationality) || !formData.nationality) {
+      fullAddress = [addrStreet, addrPhuong, addrQuan, addrTinh].filter(Boolean).join(", ");
     } else {
       fullAddress = addrOverseas;
     }
-    
+
     const finalMember = { ...formData, diaChiThuongTru: fullAddress };
 
     if (editingId) {
@@ -149,6 +148,19 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
       onChange([...members, finalMember]);
     }
     setIsOpen(false);
+  };
+
+  const handleNationalityChange = (value: string) => {
+    const vietnamese = isVietnameseNationality(value);
+    setFormData({ ...formData, nationality: value, docType: vietnamese ? "cccd" : "passport" });
+    if (vietnamese) {
+      setAddrOverseas("");
+    } else {
+      setAddrStreet("");
+      setAddrTinh("");
+      setAddrQuan("");
+      setAddrPhuong("");
+    }
   };
 
   return (
@@ -193,9 +205,11 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
               </TableHeader>
               <TableBody>
                 {members.map((m, i) => {
-                  const genderStr = m.gender === "male" ? "Nam" : m.gender === "female" ? "Nữ" : "—";
+                  const genderStr =
+                    m.gender === "male" ? "Nam" : m.gender === "female" ? "Nữ" : "—";
                   const year = m.dob ? m.dob.split("/").pop() : "—";
-                  const docTypeStr = m.docType === "cccd" ? "CCCD" : m.docType === "passport" ? "Hộ chiếu" : "—";
+                  const docTypeStr =
+                    m.docType === "cccd" ? "CCCD" : m.docType === "passport" ? "Hộ chiếu" : "—";
 
                   return (
                     <TableRow
@@ -211,14 +225,8 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
                       <TableCell className="py-2.5 text-sm text-gray-600">
                         {genderStr} &bull; {year}
                       </TableCell>
-                      <TableCell className="py-2.5 text-sm text-gray-600">
-                        {m.nationality === "Việt Nam" || !m.nationality ? (
-                          "Việt Nam"
-                        ) : (
-                          <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
-                            {m.nationality}
-                          </span>
-                        )}
+                      <TableCell className="py-2.5 text-sm text-slate-600">
+                        {m.nationality || "Việt Nam"}
                       </TableCell>
                       <TableCell className="py-2.5 text-sm text-gray-600">
                         {docTypeStr}: <span className="font-mono">{m.docId || "—"}</span>
@@ -256,7 +264,7 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
               </TableBody>
             </Table>
           </div>
-          
+
           <Button
             type="button"
             variant="ghost"
@@ -265,9 +273,7 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
             disabled={!canAddMember}
             className="h-8 gap-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:text-gray-400"
             title={
-              canAddMember
-                ? "Thêm thành viên"
-                : `Đã đạt số người tối đa (${maxMembers + 1} giường)`
+              canAddMember ? "Thêm thành viên" : `Đã đạt số người tối đa (${maxMembers + 1} giường)`
             }
           >
             <Plus className="size-3.5" />
@@ -284,7 +290,7 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
               Khai báo thông tin người ở cùng
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
               <FormField label="Họ và tên" required>
@@ -332,21 +338,20 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
               <FormField label="Quốc tịch" required>
                 <Input
                   value={formData.nationality}
-                  onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                  onChange={(e) => handleNationalityChange(e.target.value)}
                   placeholder="Việt Nam"
                   className={inputCls}
                 />
               </FormField>
-
-              <div className="hidden sm:block" /> {/* Spacer to force Loại giấy tờ to the next row if needed, but the grid is 2 cols, so it's naturally 5th element which puts it on 3rd row left. If we want it next to Nationality, maybe we don't need a spacer. The prompt: "A good placement is on the same row as Loại giấy tờ." */}
-              {/* Wait, if Nationality is 5th and Loại giấy tờ is 6th, they will be on the same row! So I'll remove the spacer. */}
             </div>
 
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
               <FormField label="Loại giấy tờ" required>
                 <Select
                   value={formData.docType}
-                  onValueChange={(v) => setFormData({ ...formData, docType: v as Member["docType"] })}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, docType: v as Member["docType"] })
+                  }
                 >
                   <SelectTrigger className={inputCls}>
                     <SelectValue />
@@ -372,14 +377,14 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
             <div className="space-y-2">
               <div className="flex items-baseline gap-1">
                 <span className="text-xs font-medium text-gray-600">
-                  {formData.nationality === "Việt Nam" || !formData.nationality
+                  {isVietnameseNationality(formData.nationality) || !formData.nationality
                     ? "Địa chỉ thường trú"
-                    : "Địa chỉ thường trú tại nước ngoài"}
+                    : "Địa chỉ tại nước ngoài"}
                 </span>
                 <span className="text-red-500 text-xs">*</span>
               </div>
-              
-              {formData.nationality === "Việt Nam" || !formData.nationality ? (
+
+              {isVietnameseNationality(formData.nationality) || !formData.nationality ? (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                   <FormField label="Số nhà, Tên đường" required>
                     <Input

@@ -1,10 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AccountantPaymentsScreen } from "@/routes/accountant.payments";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/accountant")({
   component: AccountantRouteIndex,
 });
 
 function AccountantRouteIndex() {
-  return <AccountantPaymentsScreen currentPath="/accountant" />;
+  return <Outlet />;
 }

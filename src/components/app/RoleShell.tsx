@@ -2,15 +2,14 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import type { ComponentType, ReactNode } from "react";
 import {
-  BarChart3,
   Bell,
   Building2,
   ClipboardCheck,
   CreditCard,
   DoorOpen,
   FileText,
-  LayoutDashboard,
   LogOut,
+  Search,
   UserCircle2,
 } from "lucide-react";
 
@@ -28,32 +27,38 @@ const roleLinks: Record<"accountant" | "manager", RoleLink[]> = {
   accountant: [
     { to: "/accountant", label: "Thu tiền hợp đồng", icon: CreditCard },
     { to: "/accountant/transactions", label: "Lịch sử giao dịch", icon: FileText },
+    { to: "/accountant/tra-cuu-hop-dong", label: "Tra cứu hợp đồng", icon: Search },
   ],
   manager: [
-    { to: "/manager", label: "Dashboard", icon: LayoutDashboard },
     { to: "/manager/approval", label: "Xét duyệt hồ sơ", icon: ClipboardCheck },
     { to: "/manager/handover", label: "Bàn giao phòng", icon: DoorOpen },
-    { to: "/manager/reports", label: "Báo cáo", icon: BarChart3 },
+    { to: "/manager/contracts", label: "Tra cứu hợp đồng", icon: Search },
   ],
 };
 
+function homeForRole(role: UserRole) {
+  if (role === "accountant") return "/accountant";
+  if (role === "manager") return "/manager";
+  if (role === "sale") return "/sale/dashboard";
+  return "/admin";
+}
+
 export function useRoleGuard(expectedRole: UserRole) {
   const navigate = useNavigate();
-  const { role } = useWorkflowStore();
+  const { role, isHydrated } = useWorkflowStore();
 
   useEffect(() => {
+    if (!isHydrated) return;
     if (!role) {
       navigate({ to: "/" });
       return;
     }
     if (role !== expectedRole) {
-      navigate({
-        to: role === "accountant" ? "/accountant" : role === "manager" ? "/manager" : "/",
-      });
+      navigate({ to: homeForRole(role) });
     }
-  }, [role, expectedRole, navigate]);
+  }, [role, expectedRole, navigate, isHydrated]);
 
-  return role === expectedRole;
+  return isHydrated && role === expectedRole;
 }
 
 export function RoleShell({
@@ -67,11 +72,17 @@ export function RoleShell({
 }) {
   const navigate = useNavigate();
   const { setRole } = useWorkflowStore();
+  const hideManagerTopNav =
+    role === "manager" && (currentPath === "/manager" || currentPath === "/manager/dashboard");
 
   return (
     <div className="h-screen w-full overflow-hidden bg-gray-50">
       <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-6">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => navigate({ to: role === "manager" ? "/manager" : "/accountant" })}
+          className="flex items-center gap-3"
+        >
           <div className="flex size-8 items-center justify-center rounded-md bg-blue-50">
             <Building2 className="size-4 text-blue-600" />
           </div>
@@ -81,27 +92,31 @@ export function RoleShell({
               Phân hệ: {role === "accountant" ? "Kế toán" : "Quản lý"}
             </span>
           </div>
-        </div>
+        </button>
 
-        <nav className="flex h-full items-end gap-1">
-          {roleLinks[role].map((item) => {
-            const Icon = item.icon;
-            const active = currentPath === item.to;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "inline-flex h-12 items-center gap-2 border-b-2 border-transparent px-3 text-sm font-medium text-gray-600 transition-colors hover:text-blue-700",
-                  active && "border-blue-600 text-blue-700",
-                )}
-              >
-                <Icon className="size-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        {hideManagerTopNav ? (
+          <div className="h-full" />
+        ) : (
+          <nav className="flex h-full items-end gap-1">
+            {roleLinks[role].map((item) => {
+              const Icon = item.icon;
+              const active = currentPath === item.to;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={cn(
+                    "inline-flex h-12 items-center gap-2 border-b-2 border-transparent px-3 text-sm font-medium text-gray-600 transition-colors hover:text-blue-700",
+                    active && "border-blue-600 text-blue-700",
+                  )}
+                >
+                  <Icon className="size-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        )}
 
         <div className="flex items-center gap-3">
           <button type="button" className="rounded p-1 text-gray-500 hover:bg-gray-100">

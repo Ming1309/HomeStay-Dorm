@@ -22,7 +22,7 @@ export type ContractMember = {
     ward: string;
     district: string;
     province: string;
-  };
+  } | null;
   status: MemberStatus;
 };
 
@@ -57,6 +57,7 @@ export type PaymentLog = {
 
 type WorkflowStore = {
   role: UserRole | null;
+  isHydrated: boolean;
   contracts: ContractItem[];
   paymentLogs: PaymentLog[];
   setRole: (role: UserRole | null) => void;
@@ -167,12 +168,7 @@ const initialContracts: ContractItem[] = [
         docType: "Hộ chiếu",
         docNumber: "E12345678",
         phone: "0909001122",
-        address: {
-          street: "102 Hai Bà Trưng",
-          ward: "Phường Đa Kao",
-          district: "Quận 1",
-          province: "TP. Hồ Chí Minh",
-        },
+        address: null,
         status: "pending",
       },
     ],
@@ -240,6 +236,7 @@ const WorkflowContext = createContext<WorkflowStore | null>(null);
 
 export function WorkflowProvider({ children }: { children: ReactNode }) {
   const [role, setRoleState] = useState<UserRole | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [contracts, setContracts] = useState<ContractItem[]>(initialContracts);
   const [paymentLogs, setPaymentLogs] = useState<PaymentLog[]>([]);
 
@@ -258,6 +255,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
       setContracts(hasPendingHandover ? parsedContracts : initialContracts);
       setPaymentLogs(parsed.paymentLogs ?? []);
     }
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -274,12 +272,14 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
     const now = new Date().toISOString();
     let scenario: "partial" | "full" = "partial";
     let nextContract: ContractItem | null = null;
+    let paidThisTimeForLog = 0;
 
     setContracts((current) =>
       current.map((item) => {
         if (item.id !== contractId) return item;
         const remaining = Math.max(item.invoiceTotal - item.paidAmount, 0);
         const paidThisTime = Math.min(Math.max(amount, 0), remaining);
+        paidThisTimeForLog = paidThisTime;
         const paidAmount = item.paidAmount + paidThisTime;
         const left = Math.max(item.invoiceTotal - paidAmount, 0);
         const status: ContractStatus = left === 0 ? "pending_handover" : "partial_payment";
@@ -296,7 +296,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
           contractId: nextContract.id,
           customerName: nextContract.customerName,
           room: nextContract.room,
-          amount,
+          amount: paidThisTimeForLog,
           method,
           time: now,
         },
@@ -368,6 +368,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
     <WorkflowContext.Provider
       value={{
         role,
+        isHydrated,
         contracts,
         paymentLogs,
         setRole,

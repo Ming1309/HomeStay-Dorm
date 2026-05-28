@@ -18,14 +18,19 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountantRouteImport } from './routes/accountant'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
+import { Route as AccountantIndexRouteImport } from './routes/accountant.index'
+import { Route as SaleTraCuuHopDongRouteImport } from './routes/sale.tra-cuu-hop-dong'
 import { Route as SaleLapHopDongRouteImport } from './routes/sale.lap-hop-dong'
 import { Route as SaleHoSoLuuTruRouteImport } from './routes/sale.ho-so-luu-tru'
 import { Route as SaleDashboardRouteImport } from './routes/sale.dashboard'
+import { Route as ManagerTraCuuHopDongRouteImport } from './routes/manager.tra-cuu-hop-dong'
 import { Route as ManagerReportsRouteImport } from './routes/manager.reports'
 import { Route as ManagerHandoverRouteImport } from './routes/manager.handover'
 import { Route as ManagerDashboardRouteImport } from './routes/manager.dashboard'
+import { Route as ManagerContractsRouteImport } from './routes/manager.contracts'
 import { Route as ManagerApprovalRouteImport } from './routes/manager.approval'
 import { Route as AccountantTransactionsRouteImport } from './routes/accountant.transactions'
+import { Route as AccountantTraCuuHopDongRouteImport } from './routes/accountant.tra-cuu-hop-dong'
 import { Route as AccountantPaymentsRouteImport } from './routes/accountant.payments'
 
 const SaleRoute = SaleRouteImport.update({
@@ -73,6 +78,16 @@ const ManagerIndexRoute = ManagerIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ManagerRoute,
 } as any)
+const AccountantIndexRoute = AccountantIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountantRoute,
+} as any)
+const SaleTraCuuHopDongRoute = SaleTraCuuHopDongRouteImport.update({
+  id: '/tra-cuu-hop-dong',
+  path: '/tra-cuu-hop-dong',
+  getParentRoute: () => SaleRoute,
+} as any)
 const SaleLapHopDongRoute = SaleLapHopDongRouteImport.update({
   id: '/lap-hop-dong',
   path: '/lap-hop-dong',
@@ -87,6 +102,11 @@ const SaleDashboardRoute = SaleDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => SaleRoute,
+} as any)
+const ManagerTraCuuHopDongRoute = ManagerTraCuuHopDongRouteImport.update({
+  id: '/tra-cuu-hop-dong',
+  path: '/tra-cuu-hop-dong',
+  getParentRoute: () => ManagerRoute,
 } as any)
 const ManagerReportsRoute = ManagerReportsRouteImport.update({
   id: '/reports',
@@ -103,6 +123,11 @@ const ManagerDashboardRoute = ManagerDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerContractsRoute = ManagerContractsRouteImport.update({
+  id: '/contracts',
+  path: '/contracts',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerApprovalRoute = ManagerApprovalRouteImport.update({
   id: '/approval',
   path: '/approval',
@@ -111,6 +136,11 @@ const ManagerApprovalRoute = ManagerApprovalRouteImport.update({
 const AccountantTransactionsRoute = AccountantTransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
+  getParentRoute: () => AccountantRoute,
+} as any)
+const AccountantTraCuuHopDongRoute = AccountantTraCuuHopDongRouteImport.update({
+  id: '/tra-cuu-hop-dong',
+  path: '/tra-cuu-hop-dong',
   getParentRoute: () => AccountantRoute,
 } as any)
 const AccountantPaymentsRoute = AccountantPaymentsRouteImport.update({
@@ -129,33 +159,42 @@ export interface FileRoutesByFullPath {
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
   '/accountant/payments': typeof AccountantPaymentsRoute
+  '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
   '/manager/approval': typeof ManagerApprovalRoute
+  '/manager/contracts': typeof ManagerContractsRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
+  '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
+  '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
+  '/accountant/': typeof AccountantIndexRoute
   '/manager/': typeof ManagerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/accountant': typeof AccountantRouteWithChildren
   '/admin': typeof AdminRoute
   '/approval': typeof ApprovalRoute
   '/contract': typeof ContractRoute
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
   '/accountant/payments': typeof AccountantPaymentsRoute
+  '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
   '/manager/approval': typeof ManagerApprovalRoute
+  '/manager/contracts': typeof ManagerContractsRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
+  '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
+  '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
+  '/accountant': typeof AccountantIndexRoute
   '/manager': typeof ManagerIndexRoute
 }
 export interface FileRoutesById {
@@ -169,14 +208,19 @@ export interface FileRoutesById {
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
   '/accountant/payments': typeof AccountantPaymentsRoute
+  '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
   '/manager/approval': typeof ManagerApprovalRoute
+  '/manager/contracts': typeof ManagerContractsRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
+  '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
+  '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
+  '/accountant/': typeof AccountantIndexRoute
   '/manager/': typeof ManagerIndexRoute
 }
 export interface FileRouteTypes {
@@ -191,33 +235,42 @@ export interface FileRouteTypes {
     | '/residence'
     | '/sale'
     | '/accountant/payments'
+    | '/accountant/tra-cuu-hop-dong'
     | '/accountant/transactions'
     | '/manager/approval'
+    | '/manager/contracts'
     | '/manager/dashboard'
     | '/manager/handover'
     | '/manager/reports'
+    | '/manager/tra-cuu-hop-dong'
     | '/sale/dashboard'
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
+    | '/sale/tra-cuu-hop-dong'
+    | '/accountant/'
     | '/manager/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/accountant'
     | '/admin'
     | '/approval'
     | '/contract'
     | '/residence'
     | '/sale'
     | '/accountant/payments'
+    | '/accountant/tra-cuu-hop-dong'
     | '/accountant/transactions'
     | '/manager/approval'
+    | '/manager/contracts'
     | '/manager/dashboard'
     | '/manager/handover'
     | '/manager/reports'
+    | '/manager/tra-cuu-hop-dong'
     | '/sale/dashboard'
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
+    | '/sale/tra-cuu-hop-dong'
+    | '/accountant'
     | '/manager'
   id:
     | '__root__'
@@ -230,14 +283,19 @@ export interface FileRouteTypes {
     | '/residence'
     | '/sale'
     | '/accountant/payments'
+    | '/accountant/tra-cuu-hop-dong'
     | '/accountant/transactions'
     | '/manager/approval'
+    | '/manager/contracts'
     | '/manager/dashboard'
     | '/manager/handover'
     | '/manager/reports'
+    | '/manager/tra-cuu-hop-dong'
     | '/sale/dashboard'
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
+    | '/sale/tra-cuu-hop-dong'
+    | '/accountant/'
     | '/manager/'
   fileRoutesById: FileRoutesById
 }
@@ -317,6 +375,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerIndexRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/accountant/': {
+      id: '/accountant/'
+      path: '/'
+      fullPath: '/accountant/'
+      preLoaderRoute: typeof AccountantIndexRouteImport
+      parentRoute: typeof AccountantRoute
+    }
+    '/sale/tra-cuu-hop-dong': {
+      id: '/sale/tra-cuu-hop-dong'
+      path: '/tra-cuu-hop-dong'
+      fullPath: '/sale/tra-cuu-hop-dong'
+      preLoaderRoute: typeof SaleTraCuuHopDongRouteImport
+      parentRoute: typeof SaleRoute
+    }
     '/sale/lap-hop-dong': {
       id: '/sale/lap-hop-dong'
       path: '/lap-hop-dong'
@@ -337,6 +409,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sale/dashboard'
       preLoaderRoute: typeof SaleDashboardRouteImport
       parentRoute: typeof SaleRoute
+    }
+    '/manager/tra-cuu-hop-dong': {
+      id: '/manager/tra-cuu-hop-dong'
+      path: '/tra-cuu-hop-dong'
+      fullPath: '/manager/tra-cuu-hop-dong'
+      preLoaderRoute: typeof ManagerTraCuuHopDongRouteImport
+      parentRoute: typeof ManagerRoute
     }
     '/manager/reports': {
       id: '/manager/reports'
@@ -359,6 +438,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerDashboardRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/manager/contracts': {
+      id: '/manager/contracts'
+      path: '/contracts'
+      fullPath: '/manager/contracts'
+      preLoaderRoute: typeof ManagerContractsRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/manager/approval': {
       id: '/manager/approval'
       path: '/approval'
@@ -373,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountantTransactionsRouteImport
       parentRoute: typeof AccountantRoute
     }
+    '/accountant/tra-cuu-hop-dong': {
+      id: '/accountant/tra-cuu-hop-dong'
+      path: '/tra-cuu-hop-dong'
+      fullPath: '/accountant/tra-cuu-hop-dong'
+      preLoaderRoute: typeof AccountantTraCuuHopDongRouteImport
+      parentRoute: typeof AccountantRoute
+    }
     '/accountant/payments': {
       id: '/accountant/payments'
       path: '/payments'
@@ -385,12 +478,16 @@ declare module '@tanstack/react-router' {
 
 interface AccountantRouteChildren {
   AccountantPaymentsRoute: typeof AccountantPaymentsRoute
+  AccountantTraCuuHopDongRoute: typeof AccountantTraCuuHopDongRoute
   AccountantTransactionsRoute: typeof AccountantTransactionsRoute
+  AccountantIndexRoute: typeof AccountantIndexRoute
 }
 
 const AccountantRouteChildren: AccountantRouteChildren = {
   AccountantPaymentsRoute: AccountantPaymentsRoute,
+  AccountantTraCuuHopDongRoute: AccountantTraCuuHopDongRoute,
   AccountantTransactionsRoute: AccountantTransactionsRoute,
+  AccountantIndexRoute: AccountantIndexRoute,
 }
 
 const AccountantRouteWithChildren = AccountantRoute._addFileChildren(
@@ -399,17 +496,21 @@ const AccountantRouteWithChildren = AccountantRoute._addFileChildren(
 
 interface ManagerRouteChildren {
   ManagerApprovalRoute: typeof ManagerApprovalRoute
+  ManagerContractsRoute: typeof ManagerContractsRoute
   ManagerDashboardRoute: typeof ManagerDashboardRoute
   ManagerHandoverRoute: typeof ManagerHandoverRoute
   ManagerReportsRoute: typeof ManagerReportsRoute
+  ManagerTraCuuHopDongRoute: typeof ManagerTraCuuHopDongRoute
   ManagerIndexRoute: typeof ManagerIndexRoute
 }
 
 const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerApprovalRoute: ManagerApprovalRoute,
+  ManagerContractsRoute: ManagerContractsRoute,
   ManagerDashboardRoute: ManagerDashboardRoute,
   ManagerHandoverRoute: ManagerHandoverRoute,
   ManagerReportsRoute: ManagerReportsRoute,
+  ManagerTraCuuHopDongRoute: ManagerTraCuuHopDongRoute,
   ManagerIndexRoute: ManagerIndexRoute,
 }
 
@@ -420,12 +521,14 @@ interface SaleRouteChildren {
   SaleDashboardRoute: typeof SaleDashboardRoute
   SaleHoSoLuuTruRoute: typeof SaleHoSoLuuTruRoute
   SaleLapHopDongRoute: typeof SaleLapHopDongRoute
+  SaleTraCuuHopDongRoute: typeof SaleTraCuuHopDongRoute
 }
 
 const SaleRouteChildren: SaleRouteChildren = {
   SaleDashboardRoute: SaleDashboardRoute,
   SaleHoSoLuuTruRoute: SaleHoSoLuuTruRoute,
   SaleLapHopDongRoute: SaleLapHopDongRoute,
+  SaleTraCuuHopDongRoute: SaleTraCuuHopDongRoute,
 }
 
 const SaleRouteWithChildren = SaleRoute._addFileChildren(SaleRouteChildren)

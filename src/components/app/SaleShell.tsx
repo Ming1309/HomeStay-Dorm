@@ -1,18 +1,20 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Bell, Building2, LogOut, UserCircle2 } from "lucide-react";
 
+import { useRoleGuard } from "@/components/app/RoleShell";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useWorkflowStore } from "@/lib/workflow-store";
 
 type SaleNavItem = {
-  to: "/sale/ho-so-luu-tru" | "/sale/lap-hop-dong";
+  to: "/sale/ho-so-luu-tru" | "/sale/lap-hop-dong" | "/sale/tra-cuu-hop-dong";
   label: string;
 };
 
 const saleWorkspaceLinks: SaleNavItem[] = [
   { to: "/sale/ho-so-luu-tru", label: "Nhập hồ sơ lưu trú" },
   { to: "/sale/lap-hop-dong", label: "Lập hợp đồng thuê" },
+  { to: "/sale/tra-cuu-hop-dong", label: "Tra cứu hợp đồng" },
 ];
 
 export function SaleShell({
@@ -26,6 +28,9 @@ export function SaleShell({
 }) {
   const navigate = useNavigate();
   const { setRole } = useWorkflowStore();
+  const allowed = useRoleGuard("sale");
+
+  if (!allowed) return null;
 
   return (
     <div className="h-screen w-full overflow-hidden bg-gray-50">

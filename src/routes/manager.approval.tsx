@@ -33,16 +33,17 @@ type Member = {
   fullName: string;
   gender: "male" | "female";
   birthYear: number;
+  dob: string;
   nationality: string;
   docType: "CCCD" | "Hộ chiếu";
   docNumber: string;
   phone: string;
-  address: {
+  diaChiThuongTru: {
     street: string;
     ward: string;
     district: string;
     province: string;
-  };
+  } | null;
   status: "pending" | "rejected";
 };
 
@@ -66,11 +67,12 @@ const mockApprovalContracts: ApprovalContract[] = [
         fullName: "Phạm Hoàng Sơn",
         gender: "male",
         birthYear: 2000,
+        dob: "20/07/2000",
         nationality: "Việt Nam",
         docType: "CCCD",
         docNumber: "079200456789",
         phone: "0901234567",
-        address: {
+        diaChiThuongTru: {
           street: "12 Nguyễn Huệ",
           ward: "Phường Bến Nghé",
           district: "Quận 1",
@@ -83,16 +85,12 @@ const mockApprovalContracts: ApprovalContract[] = [
         fullName: "Lê Gia Hân",
         gender: "female",
         birthYear: 2001,
+        dob: "12/03/2001",
         nationality: "Singapore",
         docType: "Hộ chiếu",
         docNumber: "E12345678",
         phone: "0909001122",
-        address: {
-          street: "102 Hai Bà Trưng",
-          ward: "Phường Đa Kao",
-          district: "Quận 1",
-          province: "TP. Hồ Chí Minh",
-        },
+        diaChiThuongTru: null,
         status: "pending",
       },
     ],
@@ -108,11 +106,12 @@ const mockApprovalContracts: ApprovalContract[] = [
         fullName: "Nguyễn Khánh Duy",
         gender: "male",
         birthYear: 1999,
+        dob: "05/11/1999",
         nationality: "Việt Nam",
         docType: "CCCD",
         docNumber: "079199123888",
         phone: "0911223344",
-        address: {
+        diaChiThuongTru: {
           street: "45 Hoàng Sa",
           ward: "Phường Tân Định",
           district: "Quận 1",
@@ -239,14 +238,8 @@ function ManagerApprovalPage() {
                           <TableCell className="p-2 text-sm text-gray-600">
                             {member.gender === "male" ? "Nam" : "Nữ"} • {member.birthYear}
                           </TableCell>
-                          <TableCell className="p-2 text-sm">
-                            {member.nationality !== "Việt Nam" ? (
-                              <Badge className="h-5 bg-amber-100 text-[10px] text-amber-700">
-                                {member.nationality}
-                              </Badge>
-                            ) : (
-                              <span className="text-gray-700">{member.nationality}</span>
-                            )}
+                          <TableCell className="p-2 text-sm text-slate-600">
+                            {member.nationality}
                           </TableCell>
                           <TableCell className="p-2 font-mono text-sm text-gray-700">
                             {member.docType}: {member.docNumber}
@@ -273,22 +266,24 @@ function ManagerApprovalPage() {
                                   </DialogHeader>
                                   <div className="grid grid-cols-2 gap-3 text-sm">
                                     <ReadOnlyLine label="Họ và tên" value={member.fullName} />
-                                    <ReadOnlyLine
-                                      label="Đặc điểm"
-                                      value={`${member.gender === "male" ? "Nam" : "Nữ"} • ${member.birthYear}`}
-                                    />
-                                    <ReadOnlyLine label="Quốc tịch" value={member.nationality} />
-                                    <ReadOnlyLine
-                                      label="Giấy tờ"
-                                      value={`${member.docType}: ${member.docNumber}`}
-                                    />
                                     <ReadOnlyLine label="Số điện thoại" value={member.phone} />
-                                    <div className="col-span-2">
-                                      <ReadOnlyLine
-                                        label="Địa chỉ thường trú"
-                                        value={`${member.address.street}, ${member.address.ward}, ${member.address.district}, ${member.address.province}`}
-                                      />
-                                    </div>
+                                    <ReadOnlyLine
+                                      label="Giới tính"
+                                      value={member.gender === "male" ? "Nam" : "Nữ"}
+                                    />
+                                    <ReadOnlyLine label="Ngày sinh" value={member.dob} />
+                                    <ReadOnlyLine label="Loại giấy tờ" value={member.docType} />
+                                    <ReadOnlyLine label="Số giấy tờ" value={member.docNumber} />
+                                    <ReadOnlyLine label="Quốc tịch" value={member.nationality} />
+                                    <div />
+                                    {member.nationality === "Việt Nam" && member.diaChiThuongTru ? (
+                                      <div className="col-span-2">
+                                        <ReadOnlyLine
+                                          label="Địa chỉ thường trú"
+                                          value={`${member.diaChiThuongTru.street}, ${member.diaChiThuongTru.ward}, ${member.diaChiThuongTru.district}, ${member.diaChiThuongTru.province}`}
+                                        />
+                                      </div>
+                                    ) : null}
                                   </div>
                                 </DialogContent>
                               </Dialog>

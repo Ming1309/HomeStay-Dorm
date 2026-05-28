@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileText, Users } from "lucide-react";
+import { FileText, Search, Users } from "lucide-react";
 
 import { SaleShell } from "@/components/app/SaleShell";
 
@@ -17,7 +17,7 @@ export function SaleDashboardPortalPage() {
             <p className="mt-1 text-sm text-gray-500">Chọn nghiệp vụ bạn muốn thực hiện</p>
           </header>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <Link
               to="/sale/ho-so-luu-tru"
               className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
@@ -41,6 +41,19 @@ export function SaleDashboardPortalPage() {
               <h2 className="text-lg font-bold text-gray-800">Lập hợp đồng thuê</h2>
               <p className="mt-2 text-sm text-gray-500">
                 Tạo và xuất hợp đồng thuê phòng cho khách hàng sau khi duyệt.
+              </p>
+            </Link>
+
+            <Link
+              to="/sale/tra-cuu-hop-dong"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-indigo-300 hover:shadow-md"
+            >
+              <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white">
+                <Search className="size-6" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Tra cứu hợp đồng</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Tìm kiếm, tra cứu và xem chi tiết các hợp đồng thuê trong hệ thống.
               </p>
             </Link>
           </div>

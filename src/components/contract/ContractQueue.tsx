@@ -28,12 +28,8 @@ export function ContractQueue({ items, selectedId, onSelect }: Props) {
     <aside className="flex h-full w-[340px] shrink-0 flex-col border-r border-gray-200 bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 px-4 py-3">
-        <h2 className="text-sm font-bold tracking-tight text-gray-800">
-          Chờ lập hợp đồng
-        </h2>
-        <p className="mt-0.5 text-xs text-gray-400">
-          {filtered.length} hồ sơ đã duyệt
-        </p>
+        <h2 className="text-sm font-bold tracking-tight text-gray-800">Chờ lập hợp đồng</h2>
+        <p className="mt-0.5 text-xs text-gray-400">{filtered.length} hồ sơ đã duyệt</p>
       </div>
 
       {/* Search */}
@@ -66,15 +62,12 @@ export function ContractQueue({ items, selectedId, onSelect }: Props) {
                   onClick={() => onSelect(item)}
                   className={cn(
                     "group relative flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left transition-colors hover:bg-emerald-50/60",
-                    active &&
-                      "border-l-emerald-500 bg-emerald-50 hover:bg-emerald-50"
+                    active && "border-l-emerald-500 bg-emerald-50 hover:bg-emerald-50",
                   )}
                 >
                   {/* Row 1 */}
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-bold text-blue-600">
-                      #{item.code}
-                    </span>
+                    <span className="font-mono text-xs font-bold text-blue-600">#{item.code}</span>
                     <Badge className="h-5 border-transparent bg-emerald-100 px-1.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">
                       Đã duyệt
                     </Badge>

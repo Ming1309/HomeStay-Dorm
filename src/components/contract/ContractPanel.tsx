@@ -71,11 +71,7 @@ const contractSchema = z
       const parseDate = (str: string) => {
         const parts = str.split("/");
         if (parts.length !== 3) return new Date(0);
-        return new Date(
-          parseInt(parts[2]),
-          parseInt(parts[1]) - 1,
-          parseInt(parts[0])
-        );
+        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
       };
       const start = parseDate(data.startDate);
       const end = parseDate(data.endDate);
@@ -84,7 +80,7 @@ const contractSchema = z
     {
       message: "Ngày kết thúc phải sau ngày bắt đầu",
       path: ["endDate"],
-    }
+    },
   );
 
 type ContractFormValues = z.infer<typeof contractSchema>;
@@ -99,11 +95,7 @@ type Props = {
   onConfirmSigned: (id: string) => void;
 };
 
-export function ContractPanel({
-  deposit,
-  onCancelContract,
-  onConfirmSigned,
-}: Props) {
+export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Props) {
   const [phase, setPhase] = useState<1 | 2>(1);
 
   const form = useForm<ContractFormValues>({
@@ -154,11 +146,7 @@ export function ContractPanel({
 
   const renderPhase1 = () => (
     <Form {...form}>
-      <form
-        id="contract-form"
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6"
-      >
+      <form id="contract-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
           <SectionHeader
             icon={<FileText className="size-4 text-blue-500" />}
@@ -230,9 +218,7 @@ export function ContractPanel({
 
             {/* Deposit Paid (Readonly) */}
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-gray-600">
-                Tiền cọc đã thu
-              </Label>
+              <Label className="text-xs font-medium text-gray-600">Tiền cọc đã thu</Label>
               <div className="relative">
                 <Lock className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
                 <Input
@@ -252,10 +238,7 @@ export function ContractPanel({
                   <FormLabel className="text-xs font-medium text-gray-600">
                     Kỳ thanh toán <span className="text-red-500">*</span>
                   </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="h-9 border-gray-200 text-sm focus:ring-1 focus:ring-blue-500">
                         <SelectValue placeholder="Chọn kỳ thanh toán" />
@@ -275,9 +258,7 @@ export function ContractPanel({
           </div>
 
           <div className="pt-2">
-            <Label className="text-xs font-medium text-gray-600 mb-3 block">
-              Dịch vụ đi kèm
-            </Label>
+            <Label className="text-xs font-medium text-gray-600 mb-3 block">Dịch vụ đi kèm</Label>
             <div className="space-y-3 rounded-lg border border-gray-100 bg-gray-50/50 p-4">
               {servicesList.map((service) => (
                 <FormField
@@ -297,9 +278,7 @@ export function ContractPanel({
                               return checked
                                 ? field.onChange([...field.value, service.id])
                                 : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== service.id
-                                    )
+                                    field.value?.filter((value) => value !== service.id),
                                   );
                             }}
                             className="border-gray-300 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600"
@@ -327,21 +306,15 @@ export function ContractPanel({
 
   const renderPhase2 = () => {
     const values = form.getValues();
-    const selectedServices = servicesList.filter((s) =>
-      values.services.includes(s.id)
-    );
+    const selectedServices = servicesList.filter((s) => values.services.includes(s.id));
 
     return (
       <div className="mx-auto max-w-2xl">
         <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm print:shadow-none space-y-8">
           {/* Header of document */}
           <div className="text-center space-y-2 border-b border-gray-200 pb-6">
-            <h2 className="text-lg font-bold uppercase text-gray-800">
-              Hợp đồng Thuê Phòng
-            </h2>
-            <p className="text-sm text-gray-500 font-mono">
-              Mã HĐ: HD-{deposit.code}
-            </p>
+            <h2 className="text-lg font-bold uppercase text-gray-800">Hợp đồng Thuê Phòng</h2>
+            <p className="text-sm text-gray-500 font-mono">Mã HĐ: HD-{deposit.code}</p>
           </div>
 
           <div className="space-y-6 text-sm text-gray-700">
@@ -357,9 +330,7 @@ export function ContractPanel({
                 Địa chỉ: {deposit.representativeAddress}
               </div>
               <div>
-                <strong className="block text-xs uppercase text-gray-400 mb-1">
-                  Phòng Thuê
-                </strong>
+                <strong className="block text-xs uppercase text-gray-400 mb-1">Phòng Thuê</strong>
                 {deposit.room} ({deposit.membersCount} người)
               </div>
             </div>
@@ -392,9 +363,7 @@ export function ContractPanel({
             </div>
 
             <div className="border-t border-gray-100 pt-6">
-              <strong className="block text-xs uppercase text-gray-400 mb-3">
-                Dịch vụ đi kèm
-              </strong>
+              <strong className="block text-xs uppercase text-gray-400 mb-3">Dịch vụ đi kèm</strong>
               {selectedServices.length === 0 ? (
                 <span className="text-gray-400 italic">Không có dịch vụ đi kèm</span>
               ) : (
@@ -432,12 +401,8 @@ export function ContractPanel({
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-sm font-bold text-blue-600">
-                #{deposit.code}
-              </span>
-              <h1 className="text-sm font-bold text-gray-800">
-                {deposit.representativeName}
-              </h1>
+              <span className="font-mono text-sm font-bold text-blue-600">#{deposit.code}</span>
+              <h1 className="text-sm font-bold text-gray-800">{deposit.representativeName}</h1>
               {phase === 1 ? (
                 <Badge className="h-5 border-transparent bg-emerald-100 px-2 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">
                   Đã duyệt
@@ -451,10 +416,7 @@ export function ContractPanel({
           </div>
           <div className="shrink-0 text-right text-xs text-gray-400">
             <div>
-              Phòng:{" "}
-              <span className="font-mono font-semibold text-gray-700">
-                {deposit.room}
-              </span>
+              Phòng: <span className="font-mono font-semibold text-gray-700">{deposit.room}</span>
             </div>
           </div>
         </div>
@@ -534,8 +496,7 @@ export function ContractPanel({
                         Hủy hợp đồng này?
                       </AlertDialogTitle>
                       <AlertDialogDescription className="text-sm">
-                        Bạn có chắc chắn muốn hủy hợp đồng này? Hành động này
-                        không thể hoàn tác.
+                        Bạn có chắc chắn muốn hủy hợp đồng này? Hành động này không thể hoàn tác.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -578,18 +539,10 @@ export function ContractPanel({
   );
 }
 
-function SectionHeader({
-  icon,
-  title,
-}: {
-  icon: React.ReactNode;
-  title: string;
-}) {
+function SectionHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
     <div className="flex items-center gap-2.5 border-b border-gray-100 pb-1">
-      <div className="flex size-7 items-center justify-center rounded-md bg-blue-50">
-        {icon}
-      </div>
+      <div className="flex size-7 items-center justify-center rounded-md bg-blue-50">{icon}</div>
       <h2 className="text-sm font-bold text-gray-800">{title}</h2>
     </div>
   );
