@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import { Toaster } from "@/components/ui/sonner";
+import { WorkflowProvider } from "@/lib/workflow-store";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -114,8 +115,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster position="top-right" richColors />
+      <WorkflowProvider>
+        <Outlet />
+        <Toaster position="top-right" richColors />
+      </WorkflowProvider>
     </QueryClientProvider>
   );
 }

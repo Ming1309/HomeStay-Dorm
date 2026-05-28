@@ -9,6 +9,7 @@ import { Eye, EyeOff, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useWorkflowStore } from "@/lib/workflow-store";
 
 export const Route = createFileRoute("/")({
   component: LoginScreen,
@@ -23,6 +24,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 function LoginScreen() {
   const navigate = useNavigate();
+  const { setRole } = useWorkflowStore();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -58,20 +60,24 @@ function LoginScreen() {
 
     switch (username) {
       case "sale":
-        navigate({ to: "/sale" });
+        setRole("sale");
+        navigate({ to: "/sale/dashboard" });
         break;
       case "ketoan":
+        setRole("accountant");
         navigate({ to: "/accountant" });
         break;
       case "quanly":
-        navigate({ to: "/approval" });
+        setRole("manager");
+        navigate({ to: "/manager" });
         break;
       case "admin":
+        setRole("admin");
         navigate({ to: "/admin" });
         break;
       default:
-        // Default to sale if it's a generic successful login
-        navigate({ to: "/sale" });
+        setRole("sale");
+        navigate({ to: "/sale/dashboard" });
         break;
     }
   };
@@ -85,7 +91,6 @@ function LoginScreen() {
   return (
     <div className="h-screen w-full flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-gray-100 p-8 space-y-8">
-        
         {/* Header */}
         <div className="flex flex-col items-center text-center space-y-2">
           <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-inner mb-2">
@@ -94,15 +99,15 @@ function LoginScreen() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
             HomeStay Dorm Management
           </h1>
-          <p className="text-sm text-gray-500">
-            Đăng nhập để quản lý hệ thống lưu trú
-          </p>
+          <p className="text-sm text-gray-500">Đăng nhập để quản lý hệ thống lưu trú</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-1.5">
-            <Label htmlFor="username" className="text-gray-700 font-medium">Tên đăng nhập</Label>
+            <Label htmlFor="username" className="text-gray-700 font-medium">
+              Tên đăng nhập
+            </Label>
             <Input
               id="username"
               placeholder="Nhập tên đăng nhập"
@@ -110,14 +115,14 @@ function LoginScreen() {
               {...register("username")}
             />
             {errors.username && (
-              <p className="text-xs font-medium text-red-500 mt-1">
-                {errors.username.message}
-              </p>
+              <p className="text-xs font-medium text-red-500 mt-1">{errors.username.message}</p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-gray-700 font-medium">Mật khẩu</Label>
+            <Label htmlFor="password" className="text-gray-700 font-medium">
+              Mật khẩu
+            </Label>
             <div className="relative">
               <Input
                 id="password"
@@ -135,13 +140,14 @@ function LoginScreen() {
               </button>
             </div>
             {errors.password && (
-              <p className="text-xs font-medium text-red-500 mt-1">
-                {errors.password.message}
-              </p>
+              <p className="text-xs font-medium text-red-500 mt-1">{errors.password.message}</p>
             )}
           </div>
 
-          <Button type="submit" className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-sm">
+          <Button
+            type="submit"
+            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-sm"
+          >
             Đăng nhập
           </Button>
         </form>
@@ -154,30 +160,65 @@ function LoginScreen() {
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => autofillAndSubmit("sale")} className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => autofillAndSubmit("sale")}
+              className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+            >
               Login as Sale
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => autofillAndSubmit("ketoan")} className="text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => autofillAndSubmit("ketoan")}
+              className="text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300"
+            >
               Login as Kế toán
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => autofillAndSubmit("quanly")} className="text-xs border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => autofillAndSubmit("quanly")}
+              className="text-xs border-amber-200 text-amber-700 hover:bg-amber-50 hover:border-amber-300"
+            >
               Login as Quản lý
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => autofillAndSubmit("admin")} className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => autofillAndSubmit("admin")}
+              className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
+            >
               Login as Quản trị
             </Button>
           </div>
-          
+
           <div className="mt-4 flex justify-center gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={() => autofillAndSubmit("wrong")} className="text-[10px] h-6 px-2 text-gray-400 hover:text-red-600">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => autofillAndSubmit("wrong")}
+              className="text-[10px] h-6 px-2 text-gray-400 hover:text-red-600"
+            >
               Test Wrong Creds
             </Button>
-            <Button type="button" variant="ghost" size="sm" onClick={() => autofillAndSubmit("locked")} className="text-[10px] h-6 px-2 text-gray-400 hover:text-red-600">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => autofillAndSubmit("locked")}
+              className="text-[10px] h-6 px-2 text-gray-400 hover:text-red-600"
+            >
               Test Locked
             </Button>
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -1,20 +1,27 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ProfileApprovalPage } from "@/components/approval/ProfileApprovalPage";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+
+import { useWorkflowStore } from "@/lib/workflow-store";
 
 export const Route = createFileRoute("/approval")({
-  head: () => ({
-    meta: [
-      { title: "Xét duyệt hồ sơ nhận phòng — Quản lý lưu trú" },
-      {
-        name: "description",
-        content:
-          "Màn hình xét duyệt hồ sơ lưu trú dành cho Manager. Xem xét và duyệt hoặc từ chối hồ sơ do Sale nhập.",
-      },
-    ],
-  }),
-  component: Approval,
+  component: LegacyApprovalRedirect,
 });
 
-function Approval() {
-  return <ProfileApprovalPage />;
+function LegacyApprovalRedirect() {
+  const navigate = useNavigate();
+  const { role } = useWorkflowStore();
+
+  useEffect(() => {
+    if (role === "manager") {
+      navigate({ to: "/manager/approval" });
+      return;
+    }
+    if (role === "accountant") {
+      navigate({ to: "/accountant" });
+      return;
+    }
+    navigate({ to: "/" });
+  }, [navigate, role]);
+
+  return null;
 }

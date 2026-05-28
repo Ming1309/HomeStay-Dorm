@@ -1,0 +1,131 @@
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import type { ComponentType, ReactNode } from "react";
+import {
+  BarChart3,
+  Bell,
+  Building2,
+  ClipboardCheck,
+  CreditCard,
+  DoorOpen,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  UserCircle2,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useWorkflowStore, type UserRole } from "@/lib/workflow-store";
+
+type RoleLink = {
+  to: string;
+  label: string;
+  icon: ComponentType<{ className?: string }>;
+};
+
+const roleLinks: Record<"accountant" | "manager", RoleLink[]> = {
+  accountant: [
+    { to: "/accountant", label: "Thu tiền hợp đồng", icon: CreditCard },
+    { to: "/accountant/transactions", label: "Lịch sử giao dịch", icon: FileText },
+  ],
+  manager: [
+    { to: "/manager", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/manager/approval", label: "Xét duyệt hồ sơ", icon: ClipboardCheck },
+    { to: "/manager/handover", label: "Bàn giao phòng", icon: DoorOpen },
+    { to: "/manager/reports", label: "Báo cáo", icon: BarChart3 },
+  ],
+};
+
+export function useRoleGuard(expectedRole: UserRole) {
+  const navigate = useNavigate();
+  const { role } = useWorkflowStore();
+
+  useEffect(() => {
+    if (!role) {
+      navigate({ to: "/" });
+      return;
+    }
+    if (role !== expectedRole) {
+      navigate({
+        to: role === "accountant" ? "/accountant" : role === "manager" ? "/manager" : "/",
+      });
+    }
+  }, [role, expectedRole, navigate]);
+
+  return role === expectedRole;
+}
+
+export function RoleShell({
+  role,
+  currentPath,
+  children,
+}: {
+  role: "accountant" | "manager";
+  currentPath: string;
+  children: ReactNode;
+}) {
+  const navigate = useNavigate();
+  const { setRole } = useWorkflowStore();
+
+  return (
+    <div className="h-screen w-full overflow-hidden bg-gray-50">
+      <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex size-8 items-center justify-center rounded-md bg-blue-50">
+            <Building2 className="size-4 text-blue-600" />
+          </div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-bold text-gray-800">Quản lý lưu trú</h1>
+            <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+              Phân hệ: {role === "accountant" ? "Kế toán" : "Quản lý"}
+            </span>
+          </div>
+        </div>
+
+        <nav className="flex h-full items-end gap-1">
+          {roleLinks[role].map((item) => {
+            const Icon = item.icon;
+            const active = currentPath === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "inline-flex h-12 items-center gap-2 border-b-2 border-transparent px-3 text-sm font-medium text-gray-600 transition-colors hover:text-blue-700",
+                  active && "border-blue-600 text-blue-700",
+                )}
+              >
+                <Icon className="size-4" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <button type="button" className="rounded p-1 text-gray-500 hover:bg-gray-100">
+            <Bell className="size-4" />
+          </button>
+          <div className="flex items-center gap-1.5 text-gray-600">
+            <UserCircle2 className="size-5" />
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 text-xs text-gray-600"
+            onClick={() => {
+              setRole(null);
+              navigate({ to: "/" });
+            }}
+          >
+            <LogOut className="size-3.5" />
+            Đăng xuất
+          </Button>
+        </div>
+      </header>
+      <main className="h-[calc(100vh-64px)] overflow-hidden">{children}</main>
+    </div>
+  );
+}
