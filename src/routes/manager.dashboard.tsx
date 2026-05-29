@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import type { ComponentType } from "react";
-import { Home, Search, ShieldCheck } from "lucide-react";
+import { Bed, Home, Search, ShieldCheck, ShieldHalf } from "lucide-react";
 
 import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +29,13 @@ const launchpadItems = [
     icon: ShieldCheck,
   },
   {
+    to: "/manager/confirm-deposit",
+    title: "Xác nhận tiền cọc",
+    description:
+      "Đối chiếu chứng từ giao dịch và xác nhận khoản tiền cọc của khách hàng.",
+    icon: ShieldHalf,
+  },
+  {
     to: "/manager/handover",
     title: "Bàn giao phòng",
     description:
@@ -41,6 +48,12 @@ const launchpadItems = [
     description: "Tìm kiếm, tra cứu và in ấn thông tin chi tiết các hợp đồng thuê trong hệ thống.",
     icon: Search,
   },
+  {
+    to: "/manager/tra-cuu-phong",
+    title: "Tra cứu phòng / giường",
+    description: "Kiểm tra trạng thái thực tế và tính khả dụng của phòng hoặc giường.",
+    icon: Bed,
+  },
 ] as const;
 
 export function ManagerDashboardScreen({ currentPath }: { currentPath: string }) {
@@ -51,7 +64,7 @@ export function ManagerDashboardScreen({ currentPath }: { currentPath: string })
     <RoleShell role="manager" currentPath={currentPath}>
       <main className="flex h-full items-center justify-center overflow-y-auto px-6 py-10">
         <div className="w-full max-w-6xl">
-          <div className="mb-8 text-center">
+          <div className="mb-6 text-center">
             <h1 className="text-2xl font-bold text-gray-900">Bảng điều khiển Quản lý</h1>
             <p className="mt-2 text-sm text-gray-500">Chọn nghiệp vụ bạn muốn thực hiện</p>
           </div>
