@@ -2,14 +2,18 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import type { ComponentType, ReactNode } from "react";
 import {
+  Bed,
   Bell,
   Building2,
+  Calculator,
   ClipboardCheck,
   CreditCard,
   DoorOpen,
   FileText,
+  Gauge,
   LogOut,
   Search,
+  ShieldCheck,
   UserCircle2,
 } from "lucide-react";
 
@@ -25,14 +29,19 @@ type RoleLink = {
 
 const roleLinks: Record<"accountant" | "manager", RoleLink[]> = {
   accountant: [
-    { to: "/accountant", label: "Thu tiền hợp đồng", icon: CreditCard },
+    { to: "/accountant", label: "Bảng điều khiển", icon: Gauge },
+    { to: "/accountant/payments", label: "Thu tiền hợp đồng", icon: CreditCard },
+    { to: "/accountant/deposit-calc", label: "Tính tiền cọc", icon: Calculator },
     { to: "/accountant/transactions", label: "Lịch sử giao dịch", icon: FileText },
     { to: "/accountant/tra-cuu-hop-dong", label: "Tra cứu hợp đồng", icon: Search },
+    { to: "/accountant/tra-cuu-phong", label: "Tra cứu phòng", icon: Bed },
   ],
   manager: [
     { to: "/manager/approval", label: "Xét duyệt hồ sơ", icon: ClipboardCheck },
     { to: "/manager/handover", label: "Bàn giao phòng", icon: DoorOpen },
+    { to: "/manager/confirm-deposit", label: "Xác nhận tiền cọc", icon: ShieldCheck },
     { to: "/manager/contracts", label: "Tra cứu hợp đồng", icon: Search },
+    { to: "/manager/tra-cuu-phong", label: "Tra cứu phòng", icon: Bed },
   ],
 };
 
