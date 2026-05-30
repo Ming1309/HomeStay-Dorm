@@ -1,20 +1,9 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useWorkflowStore, type DepositRequest } from "@/lib/workflow-store";
-
-const statusLabels: Record<string, string> = {
-  pending_reconciliation: "Chờ đối chiếu",
-  supplement_required: "Yêu cầu bổ sung",
-};
-
-const statusBadgeClass: Record<string, string> = {
-  pending_reconciliation: "bg-amber-100 text-amber-700",
-  supplement_required: "bg-rose-100 text-rose-700",
-};
 
 export function ReconciliationQueue({
   selectedId,
@@ -28,7 +17,7 @@ export function ReconciliationQueue({
 
   const items = useMemo(() => {
     const relevant = depositRequests.filter(
-      (d) => d.status === "pending_reconciliation" || d.status === "supplement_required",
+      (d) => d.status === "pending_reconciliation",
     );
     if (!query.trim()) return relevant;
     const q = query.trim().toLowerCase();
@@ -74,14 +63,7 @@ export function ReconciliationQueue({
                     selectedId === item.id && "border-l-amber-500 bg-amber-50",
                   )}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-bold text-blue-600">{item.code}</span>
-                    <Badge
-                      className={cn("h-5 text-[10px]", statusBadgeClass[item.status] ?? "")}
-                    >
-                      {statusLabels[item.status] ?? item.status}
-                    </Badge>
-                  </div>
+                  <span className="font-mono text-xs font-bold text-blue-600">{item.code}</span>
                   <p className="text-sm font-semibold text-gray-800">{item.customerName}</p>
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <span className="font-mono">{item.room}</span>

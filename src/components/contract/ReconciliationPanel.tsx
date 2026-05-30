@@ -13,20 +13,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkflowStore, type DepositRequest } from "@/lib/workflow-store";
-
-const statusLabels: Record<string, string> = {
-  pending_reconciliation: "Chờ đối chiếu",
-  supplement_required: "Cần bổ sung",
-};
-
-const statusBadgeClass: Record<string, string> = {
-  pending_reconciliation: "bg-amber-100 text-amber-700",
-  supplement_required: "bg-rose-100 text-rose-700",
-};
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("vi-VN", {
@@ -66,12 +55,7 @@ export function ReconciliationPanel({
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
       <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-3 shadow-sm">
-        <div className="flex items-center gap-2">
-          <h1 className="font-mono text-sm font-bold text-gray-900">{deposit.code}</h1>
-          <Badge className={statusBadgeClass[deposit.status] ?? ""}>
-            {statusLabels[deposit.status] ?? deposit.status}
-          </Badge>
-        </div>
+        <h1 className="font-mono text-sm font-bold text-gray-900">{deposit.code}</h1>
         <p className="mt-0.5 text-xs text-gray-500">
           {deposit.customerName} • {deposit.room}
         </p>
@@ -83,7 +67,7 @@ export function ReconciliationPanel({
             <h3 className="mb-3 text-xs font-semibold text-gray-700">Thông tin phiếu cọc</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <InfoRow label="Mã phiếu" value={deposit.code} mono />
-              <InfoRow label="Trạng thái" value={statusLabels[deposit.status] ?? deposit.status} />
+              <InfoRow label="Trạng thái" value="Chờ đối chiếu" />
               <InfoRow label="Khách hàng" value={deposit.customerName} />
               <InfoRow label="Số điện thoại" value={deposit.phone} />
               <InfoRow label="Phòng" value={deposit.room} />
