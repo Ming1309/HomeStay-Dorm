@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Calculator, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,19 +23,11 @@ function formatCurrency(amount: number): string {
 
 export function DepositCalcPanel({
   deposit,
-  onDone,
 }: {
   deposit: DepositRequest;
-  onDone: () => void;
 }) {
   const { updateDepositAmount, rooms } = useWorkflowStore();
-  const [calculated, setCalculated] = useState<number | null>(null);
   const [confirmed, setConfirmed] = useState(false);
-
-  useEffect(() => {
-    setCalculated(null);
-    setConfirmed(false);
-  }, [deposit.id]);
 
   const room = rooms.find((r) => r.id === deposit.roomId);
   const selectedBeds = room?.beds.filter((b) => deposit.selectedBedIds.includes(b.id)) ?? [];
@@ -44,10 +36,6 @@ export function DepositCalcPanel({
   const isShared = deposit.rentalType === "shared";
   const effectiveBeds = isShared ? bedCount : maxCapacity;
   const calculatedAmount = deposit.basePrice * 2 * effectiveBeds;
-
-  const handleCalculate = () => {
-    setCalculated(calculatedAmount);
-  };
 
   const handleConfirm = () => {
     updateDepositAmount(deposit.id, calculatedAmount);
@@ -102,25 +90,13 @@ export function DepositCalcPanel({
                 Tiền cọc = {formula}
               </p>
 
-              {calculated != null && (
-                <div className="mt-2 border-t border-blue-100 pt-2">
-                  <p className="text-xs text-blue-600">Kết quả</p>
-                  <p className="font-mono text-2xl font-bold text-blue-700">
-                    {formatCurrency(calculated)}
-                  </p>
-                </div>
-              )}
+              <div className="mt-2 border-t border-blue-100 pt-2">
+                <p className="text-xs text-blue-600">Kết quả</p>
+                <p className="font-mono text-2xl font-bold text-blue-700">
+                  {formatCurrency(calculatedAmount)}
+                </p>
+              </div>
             </div>
-
-            <Button
-              type="button"
-              size="sm"
-              className="mt-3 h-8 text-xs"
-              onClick={handleCalculate}
-            >
-              <Calculator className="mr-1 size-3.5" />
-              Tính tiền cọc
-            </Button>
           </div>
 
           {room && (
@@ -159,7 +135,7 @@ export function DepositCalcPanel({
         <Button
           type="button"
           className="h-8 bg-emerald-600 text-xs hover:bg-emerald-700"
-          disabled={calculated == null || confirmed}
+          disabled={confirmed}
           onClick={handleConfirm}
         >
           <CheckCircle2 className="mr-1 size-3.5" />

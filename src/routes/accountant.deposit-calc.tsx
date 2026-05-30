@@ -30,7 +30,6 @@ function AccountantDepositCalcPage() {
         ) : (
           <DepositCalcPanel
             deposit={selected}
-            onDone={() => setSelected(null)}
           />
         )}
       </div>
