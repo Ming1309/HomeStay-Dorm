@@ -18,6 +18,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountantRouteImport } from './routes/accountant'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AccountantIndexRouteImport } from './routes/accountant.index'
 import { Route as SaleTraCuuPhongRouteImport } from './routes/sale.tra-cuu-phong'
 import { Route as SaleTraCuuHopDongRouteImport } from './routes/sale.tra-cuu-hop-dong'
@@ -34,6 +35,12 @@ import { Route as ManagerDashboardRouteImport } from './routes/manager.dashboard
 import { Route as ManagerContractsRouteImport } from './routes/manager.contracts'
 import { Route as ManagerConfirmDepositRouteImport } from './routes/manager.confirm-deposit'
 import { Route as ManagerApprovalRouteImport } from './routes/manager.approval'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminServicesRouteImport } from './routes/admin.services'
+import { Route as AdminRoomsBedsRouteImport } from './routes/admin.rooms-beds'
+import { Route as AdminRegulationsRouteImport } from './routes/admin.regulations'
+import { Route as AdminDepositPolicyRouteImport } from './routes/admin.deposit-policy'
+import { Route as AdminAssetsRouteImport } from './routes/admin.assets'
 import { Route as AccountantTransactionsRouteImport } from './routes/accountant.transactions'
 import { Route as AccountantTraCuuPhongRouteImport } from './routes/accountant.tra-cuu-phong'
 import { Route as AccountantTraCuuHopDongRouteImport } from './routes/accountant.tra-cuu-hop-dong'
@@ -84,6 +91,11 @@ const ManagerIndexRoute = ManagerIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ManagerRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AccountantIndexRoute = AccountantIndexRouteImport.update({
   id: '/',
@@ -165,6 +177,36 @@ const ManagerApprovalRoute = ManagerApprovalRouteImport.update({
   path: '/approval',
   getParentRoute: () => ManagerRoute,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminServicesRoute = AdminServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRoomsBedsRoute = AdminRoomsBedsRouteImport.update({
+  id: '/rooms-beds',
+  path: '/rooms-beds',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRegulationsRoute = AdminRegulationsRouteImport.update({
+  id: '/regulations',
+  path: '/regulations',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDepositPolicyRoute = AdminDepositPolicyRouteImport.update({
+  id: '/deposit-policy',
+  path: '/deposit-policy',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAssetsRoute = AdminAssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AccountantTransactionsRoute = AccountantTransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
@@ -194,7 +236,7 @@ const AccountantDepositCalcRoute = AccountantDepositCalcRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accountant': typeof AccountantRouteWithChildren
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/approval': typeof ApprovalRoute
   '/contract': typeof ContractRoute
   '/manager': typeof ManagerRouteWithChildren
@@ -205,6 +247,12 @@ export interface FileRoutesByFullPath {
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
+  '/admin/assets': typeof AdminAssetsRoute
+  '/admin/deposit-policy': typeof AdminDepositPolicyRoute
+  '/admin/regulations': typeof AdminRegulationsRoute
+  '/admin/rooms-beds': typeof AdminRoomsBedsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/users': typeof AdminUsersRoute
   '/manager/approval': typeof ManagerApprovalRoute
   '/manager/confirm-deposit': typeof ManagerConfirmDepositRoute
   '/manager/contracts': typeof ManagerContractsRoute
@@ -221,11 +269,11 @@ export interface FileRoutesByFullPath {
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-phong': typeof SaleTraCuuPhongRoute
   '/accountant/': typeof AccountantIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/manager/': typeof ManagerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/approval': typeof ApprovalRoute
   '/contract': typeof ContractRoute
   '/residence': typeof ResidenceRoute
@@ -235,6 +283,12 @@ export interface FileRoutesByTo {
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
+  '/admin/assets': typeof AdminAssetsRoute
+  '/admin/deposit-policy': typeof AdminDepositPolicyRoute
+  '/admin/regulations': typeof AdminRegulationsRoute
+  '/admin/rooms-beds': typeof AdminRoomsBedsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/users': typeof AdminUsersRoute
   '/manager/approval': typeof ManagerApprovalRoute
   '/manager/confirm-deposit': typeof ManagerConfirmDepositRoute
   '/manager/contracts': typeof ManagerContractsRoute
@@ -251,13 +305,14 @@ export interface FileRoutesByTo {
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-phong': typeof SaleTraCuuPhongRoute
   '/accountant': typeof AccountantIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/manager': typeof ManagerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/accountant': typeof AccountantRouteWithChildren
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/approval': typeof ApprovalRoute
   '/contract': typeof ContractRoute
   '/manager': typeof ManagerRouteWithChildren
@@ -268,6 +323,12 @@ export interface FileRoutesById {
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
+  '/admin/assets': typeof AdminAssetsRoute
+  '/admin/deposit-policy': typeof AdminDepositPolicyRoute
+  '/admin/regulations': typeof AdminRegulationsRoute
+  '/admin/rooms-beds': typeof AdminRoomsBedsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/users': typeof AdminUsersRoute
   '/manager/approval': typeof ManagerApprovalRoute
   '/manager/confirm-deposit': typeof ManagerConfirmDepositRoute
   '/manager/contracts': typeof ManagerContractsRoute
@@ -284,6 +345,7 @@ export interface FileRoutesById {
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-phong': typeof SaleTraCuuPhongRoute
   '/accountant/': typeof AccountantIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/manager/': typeof ManagerIndexRoute
 }
 export interface FileRouteTypes {
@@ -302,6 +364,12 @@ export interface FileRouteTypes {
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
+    | '/admin/assets'
+    | '/admin/deposit-policy'
+    | '/admin/regulations'
+    | '/admin/rooms-beds'
+    | '/admin/services'
+    | '/admin/users'
     | '/manager/approval'
     | '/manager/confirm-deposit'
     | '/manager/contracts'
@@ -318,11 +386,11 @@ export interface FileRouteTypes {
     | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-phong'
     | '/accountant/'
+    | '/admin/'
     | '/manager/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/approval'
     | '/contract'
     | '/residence'
@@ -332,6 +400,12 @@ export interface FileRouteTypes {
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
+    | '/admin/assets'
+    | '/admin/deposit-policy'
+    | '/admin/regulations'
+    | '/admin/rooms-beds'
+    | '/admin/services'
+    | '/admin/users'
     | '/manager/approval'
     | '/manager/confirm-deposit'
     | '/manager/contracts'
@@ -348,6 +422,7 @@ export interface FileRouteTypes {
     | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-phong'
     | '/accountant'
+    | '/admin'
     | '/manager'
   id:
     | '__root__'
@@ -364,6 +439,12 @@ export interface FileRouteTypes {
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
+    | '/admin/assets'
+    | '/admin/deposit-policy'
+    | '/admin/regulations'
+    | '/admin/rooms-beds'
+    | '/admin/services'
+    | '/admin/users'
     | '/manager/approval'
     | '/manager/confirm-deposit'
     | '/manager/contracts'
@@ -380,13 +461,14 @@ export interface FileRouteTypes {
     | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-phong'
     | '/accountant/'
+    | '/admin/'
     | '/manager/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountantRoute: typeof AccountantRouteWithChildren
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   ApprovalRoute: typeof ApprovalRoute
   ContractRoute: typeof ContractRoute
   ManagerRoute: typeof ManagerRouteWithChildren
@@ -458,6 +540,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/manager/'
       preLoaderRoute: typeof ManagerIndexRouteImport
       parentRoute: typeof ManagerRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/accountant/': {
       id: '/accountant/'
@@ -571,6 +660,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerApprovalRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/services': {
+      id: '/admin/services'
+      path: '/services'
+      fullPath: '/admin/services'
+      preLoaderRoute: typeof AdminServicesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/rooms-beds': {
+      id: '/admin/rooms-beds'
+      path: '/rooms-beds'
+      fullPath: '/admin/rooms-beds'
+      preLoaderRoute: typeof AdminRoomsBedsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/regulations': {
+      id: '/admin/regulations'
+      path: '/regulations'
+      fullPath: '/admin/regulations'
+      preLoaderRoute: typeof AdminRegulationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/deposit-policy': {
+      id: '/admin/deposit-policy'
+      path: '/deposit-policy'
+      fullPath: '/admin/deposit-policy'
+      preLoaderRoute: typeof AdminDepositPolicyRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/assets': {
+      id: '/admin/assets'
+      path: '/assets'
+      fullPath: '/admin/assets'
+      preLoaderRoute: typeof AdminAssetsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/accountant/transactions': {
       id: '/accountant/transactions'
       path: '/transactions'
@@ -631,6 +762,28 @@ const AccountantRouteWithChildren = AccountantRoute._addFileChildren(
   AccountantRouteChildren,
 )
 
+interface AdminRouteChildren {
+  AdminAssetsRoute: typeof AdminAssetsRoute
+  AdminDepositPolicyRoute: typeof AdminDepositPolicyRoute
+  AdminRegulationsRoute: typeof AdminRegulationsRoute
+  AdminRoomsBedsRoute: typeof AdminRoomsBedsRoute
+  AdminServicesRoute: typeof AdminServicesRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAssetsRoute: AdminAssetsRoute,
+  AdminDepositPolicyRoute: AdminDepositPolicyRoute,
+  AdminRegulationsRoute: AdminRegulationsRoute,
+  AdminRoomsBedsRoute: AdminRoomsBedsRoute,
+  AdminServicesRoute: AdminServicesRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface ManagerRouteChildren {
   ManagerApprovalRoute: typeof ManagerApprovalRoute
   ManagerConfirmDepositRoute: typeof ManagerConfirmDepositRoute
@@ -683,7 +836,7 @@ const SaleRouteWithChildren = SaleRoute._addFileChildren(SaleRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountantRoute: AccountantRouteWithChildren,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   ApprovalRoute: ApprovalRoute,
   ContractRoute: ContractRoute,
   ManagerRoute: ManagerRouteWithChildren,
