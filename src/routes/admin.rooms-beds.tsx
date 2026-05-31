@@ -282,7 +282,7 @@ function AdminRoomsBedsPage() {
   if (!isHydrated || role !== "admin") return null;
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-gray-50">
+    <div className="h-full w-full overflow-hidden bg-gray-50">
       <section className="flex h-full flex-col">
         <header className="border-b border-gray-200 bg-white px-6 py-4">
           <div className="mb-2">
