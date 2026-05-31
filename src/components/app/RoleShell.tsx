@@ -98,10 +98,7 @@ export function RoleShell({
             <Building2 className="size-4 text-blue-600" />
           </div>
           <div className="flex items-center gap-2">
-            <h1 className="text-sm font-bold text-gray-800">Quản lý lưu trú</h1>
-            <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-              Phân hệ: {role === "accountant" ? "Kế toán" : "Quản lý"}
-            </span>
+            <h1 className="text-sm font-bold text-gray-800">HomeStay Dorm</h1>
           </div>
         </button>
 

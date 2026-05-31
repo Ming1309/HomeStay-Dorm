@@ -52,7 +52,7 @@ export function SaleShell({
           <div className="flex size-8 items-center justify-center rounded-md bg-blue-50">
             <Building2 className="size-4 text-blue-600" />
           </div>
-          <h1 className="text-sm font-bold text-gray-800">Quản lý lưu trú</h1>
+          <h1 className="text-sm font-bold text-gray-800">HomeStay Dorm</h1>
         </button>
 
         <nav className="flex h-full items-end gap-1">
