@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, ChevronLeft } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -196,19 +196,22 @@ function AdminDepositPolicyPage() {
     <div className="h-full w-full overflow-hidden bg-gray-50">
       <section className="flex h-full flex-col">
         <header className="border-b border-gray-200 bg-white px-6 py-4">
-          <div className="mb-2">
-            <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs text-gray-500">
-              <Link to="/admin">
-                <ChevronLeft className="size-3.5" />
-                Admin / Cấu hình / Hoàn cọc
-              </Link>
-            </Button>
+          <div className="space-y-3">
+            <div className="text-xs text-gray-500">
+              <Link to="/admin" className="hover:text-blue-700">
+                Tổng quan
+              </Link>{" "}
+              / <span>Hoàn cọc</span>
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Cấu hình chính sách hoàn cọc</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Quản lý phiên bản chính sách hoàn cọc, mốc lưu trú và tỷ lệ hoàn trả áp dụng trong
+                hệ thống.
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Cấu hình chính sách hoàn cọc</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Thiết lập mốc thời gian lưu trú và tỷ lệ khấu trừ hoàn trả tiền cọc áp dụng toàn hệ
-            thống.
-          </p>
         </header>
 
         <main className="flex-1 overflow-y-auto p-6">

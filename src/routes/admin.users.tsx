@@ -1,11 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  ChevronLeft,
   KeyRound,
   MoreHorizontal,
   Pencil,
-  Plus,
   Shield,
   UserMinus,
   UserX,
@@ -380,83 +378,93 @@ function AdminUsersPage() {
       <div className="h-full w-full overflow-hidden bg-gray-50">
         <section className="flex h-full flex-col">
           <header className="border-b border-gray-200 bg-white px-6 py-4">
-            <div className="mb-2">
-              <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs text-gray-500">
-                <Link to="/admin">
-                  <ChevronLeft className="size-3.5" />
-                  Quay lại Dashboard
-                </Link>
-              </Button>
-            </div>
-
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Quản lý tài khoản nhân viên</h1>
-                <p className="mt-1 text-sm text-gray-500">
-                  Quản trị viên quản lý danh mục tài khoản nhân viên trong hệ thống.
-                </p>
+            <div className="space-y-3">
+              <div className="text-xs text-gray-500">
+                <Link to="/admin" className="hover:text-blue-700">
+                  Tổng quan
+                </Link>{" "}
+                / <span>Người dùng</span>
               </div>
-              <Button
-                type="button"
-                className="bg-blue-600 hover:bg-blue-700"
-                onClick={openCreateDialog}
-              >
-                <Plus className="size-4" />
-                Thêm nhân viên mới
-              </Button>
-            </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
-              <Input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Tìm nhân viên..."
-                className="h-9 text-sm"
-              />
-              <Select
-                value={roleFilter}
-                onValueChange={(value) => setRoleFilter(value as "Tất cả" | UserRole)}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Vai trò" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Tất cả">Tất cả vai trò</SelectItem>
-                  <SelectItem value="Sale">Sale</SelectItem>
-                  <SelectItem value="Kế toán">Kế toán</SelectItem>
-                  <SelectItem value="Quản lý">Quản lý</SelectItem>
-                  <SelectItem value="Quản trị hệ thống">Quản trị hệ thống</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) => setStatusFilter(value as "Tất cả" | UserStatus)}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Tất cả">Tất cả trạng thái</SelectItem>
-                  <SelectItem value="Đang hoạt động">Đang hoạt động</SelectItem>
-                  <SelectItem value="Đã khóa">Đã khóa</SelectItem>
-                  <SelectItem value="Vô hiệu hoá">Vô hiệu hoá</SelectItem>
-                  <SelectItem value="Ngừng làm việc">Ngừng làm việc</SelectItem>
-                  <SelectItem value="Lưu trữ">Lưu trữ</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={branchFilter}
-                onValueChange={(value) => setBranchFilter(value as "Tất cả" | Branch)}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Chi nhánh" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Tất cả">Tất cả chi nhánh</SelectItem>
-                  <SelectItem value="Chi nhánh 1">Chi nhánh 1</SelectItem>
-                  <SelectItem value="Chi nhánh 2">Chi nhánh 2</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Quản lý tài khoản nhân viên</h1>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Quản lý tài khoản nhân viên, vai trò, chi nhánh và trạng thái truy cập hệ thống.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={openCreateDialog}
+                >
+                  + Thêm nhân viên mới
+                </Button>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-end">
+                <div className="w-full md:w-[460px]">
+                  <Input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Tìm nhân viên..."
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="w-full md:w-[200px]">
+                  <p className="mb-1 text-xs font-medium text-gray-600">Vai trò</p>
+                  <Select
+                    value={roleFilter}
+                    onValueChange={(value) => setRoleFilter(value as "Tất cả" | UserRole)}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Vai trò" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Tất cả">Tất cả vai trò</SelectItem>
+                      <SelectItem value="Sale">Sale</SelectItem>
+                      <SelectItem value="Kế toán">Kế toán</SelectItem>
+                      <SelectItem value="Quản lý">Quản lý</SelectItem>
+                      <SelectItem value="Quản trị hệ thống">Quản trị hệ thống</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-full md:w-[220px]">
+                  <p className="mb-1 text-xs font-medium text-gray-600">Trạng thái</p>
+                  <Select
+                    value={statusFilter}
+                    onValueChange={(value) => setStatusFilter(value as "Tất cả" | UserStatus)}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Trạng thái" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Tất cả">Tất cả trạng thái</SelectItem>
+                      <SelectItem value="Đang hoạt động">Đang hoạt động</SelectItem>
+                      <SelectItem value="Đã khóa">Đã khóa</SelectItem>
+                      <SelectItem value="Vô hiệu hoá">Vô hiệu hoá</SelectItem>
+                      <SelectItem value="Ngừng làm việc">Ngừng làm việc</SelectItem>
+                      <SelectItem value="Lưu trữ">Lưu trữ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-full md:w-[200px]">
+                  <p className="mb-1 text-xs font-medium text-gray-600">Chi nhánh</p>
+                  <Select
+                    value={branchFilter}
+                    onValueChange={(value) => setBranchFilter(value as "Tất cả" | Branch)}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Chi nhánh" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Tất cả">Tất cả chi nhánh</SelectItem>
+                      <SelectItem value="Chi nhánh 1">Chi nhánh 1</SelectItem>
+                      <SelectItem value="Chi nhánh 2">Chi nhánh 2</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
           </header>
 

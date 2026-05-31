@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { BedDouble, Landmark, Package, ScrollText, Settings2, Users } from "lucide-react";
 import { useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
 import { useWorkflowStore } from "@/lib/workflow-store";
 
 export const Route = createFileRoute("/admin/")({
@@ -11,7 +10,7 @@ export const Route = createFileRoute("/admin/")({
 
 function AdminDashboardPage() {
   const navigate = useNavigate();
-  const { role, isHydrated, setRole } = useWorkflowStore();
+  const { role, isHydrated } = useWorkflowStore();
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -24,23 +23,9 @@ function AdminDashboardPage() {
     <div className="h-full w-full overflow-hidden bg-gray-50">
       <main className="flex h-full flex-col overflow-hidden">
         <header className="border-b border-gray-200 bg-white px-6 py-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Bảng điều khiển Admin</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Chọn tính năng quản trị bạn muốn thực hiện.
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                setRole(null);
-                navigate({ to: "/" });
-              }}
-            >
-              Đăng xuất
-            </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Bảng điều khiển Admin</h1>
+            <p className="mt-1 text-sm text-gray-500">Chọn tính năng quản trị bạn muốn thực hiện.</p>
           </div>
         </header>
 

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -123,7 +123,7 @@ const initialAssets: Asset[] = [
   },
 ];
 
-const formatVnd = (amount: number) => `${new Intl.NumberFormat("vi-VN").format(amount)} VNĐ`;
+const formatVnd = (amount: number) => `${new Intl.NumberFormat("vi-VN").format(amount)} VND`;
 const formatDigits = (value: string) =>
   value ? new Intl.NumberFormat("vi-VN").format(Number(value)) : "";
 const normalizeDigits = (value: string) => value.replace(/\D/g, "");
@@ -261,67 +261,74 @@ function AdminAssetsPage() {
     <div className="h-full w-full overflow-hidden bg-gray-50">
       <section className="flex h-full flex-col">
         <header className="border-b border-gray-200 bg-white px-6 py-4">
-          <div className="mb-2">
-            <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs text-gray-500">
-              <Link to="/admin">
-                <ChevronLeft className="size-3.5" />
-                Quay lại Dashboard
-              </Link>
-            </Button>
-          </div>
-
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Quản lý danh mục tài sản</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Quản trị viên quản lý danh mục trang thiết bị, vật tư và định mức giá trị bồi thường
-                áp dụng toàn hệ thống.
-              </p>
+          <div className="space-y-3">
+            <div className="text-xs text-gray-500">
+              <Link to="/admin" className="hover:text-blue-700">
+                Tổng quan
+              </Link>{" "}
+              / <span>Tài sản</span>
             </div>
-            <Button
-              type="button"
-              className="bg-blue-600 hover:bg-blue-700"
-              onClick={openCreateDialog}
-            >
-              <Plus className="size-4" />
-              Thêm tài sản mới
-            </Button>
-          </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Tìm kiếm tài sản (giường, tủ, điều hòa, khóa...)"
-              className="h-9 text-sm"
-            />
-            <Select
-              value={categoryFilter}
-              onValueChange={(value) => setCategoryFilter(value as "Tất cả" | AssetCategory)}
-            >
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Phân loại" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Tất cả">Tất cả</SelectItem>
-                <SelectItem value="Nội thất">Nội thất</SelectItem>
-                <SelectItem value="Thiết bị điện">Thiết bị điện</SelectItem>
-                <SelectItem value="Tiện ích bàn giao">Tiện ích bàn giao</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as "Tất cả" | AssetStatus)}
-            >
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Tất cả">Tất cả</SelectItem>
-                <SelectItem value="Đang áp dụng">Đang áp dụng</SelectItem>
-                <SelectItem value="Ngừng áp dụng">Ngừng áp dụng</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Quản lý danh mục tài sản</h1>
+                <p className="mt-1 text-sm text-gray-500">
+                  Quản lý trang thiết bị, vật tư và định mức giá trị bồi thường áp dụng trong hệ
+                  thống.
+                </p>
+              </div>
+              <Button
+                type="button"
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={openCreateDialog}
+              >
+                + Thêm tài sản mới
+              </Button>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-end">
+              <div className="w-full md:w-[460px]">
+                <Input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Tìm kiếm tài sản (giường, tủ, điều hòa, khóa...)"
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="w-full md:w-[220px]">
+                <p className="mb-1 text-xs font-medium text-gray-600">Phân loại</p>
+                <Select
+                  value={categoryFilter}
+                  onValueChange={(value) => setCategoryFilter(value as "Tất cả" | AssetCategory)}
+                >
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Phân loại" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Tất cả">Tất cả</SelectItem>
+                    <SelectItem value="Nội thất">Nội thất</SelectItem>
+                    <SelectItem value="Thiết bị điện">Thiết bị điện</SelectItem>
+                    <SelectItem value="Tiện ích bàn giao">Tiện ích bàn giao</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-full md:w-[220px]">
+                <p className="mb-1 text-xs font-medium text-gray-600">Trạng thái</p>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(value) => setStatusFilter(value as "Tất cả" | AssetStatus)}
+                >
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Trạng thái" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Tất cả">Tất cả</SelectItem>
+                    <SelectItem value="Đang áp dụng">Đang áp dụng</SelectItem>
+                    <SelectItem value="Ngừng áp dụng">Ngừng áp dụng</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -461,7 +468,7 @@ function AdminAssetsPage() {
                         inputMode="numeric"
                         value={formatDigits(field.value)}
                         onChange={(event) => field.onChange(normalizeDigits(event.target.value))}
-                        placeholder="Ví dụ: 200.000 VNĐ"
+                        placeholder="Ví dụ: 200.000 VND"
                       />
                     </FormControl>
                     <FormMessage />

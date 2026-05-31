@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -285,19 +285,19 @@ function AdminRoomsBedsPage() {
     <div className="h-full w-full overflow-hidden bg-gray-50">
       <section className="flex h-full flex-col">
         <header className="border-b border-gray-200 bg-white px-6 py-4">
-          <div className="mb-2">
-            <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs text-gray-500">
-              <Link to="/admin">
-                <ChevronLeft className="size-3.5" />
-                Quay lại Dashboard
-              </Link>
-            </Button>
-          </div>
-          <div className="flex items-start justify-between gap-4">
+          <div className="space-y-3">
+            <div className="text-xs text-gray-500">
+              <Link to="/admin" className="hover:text-blue-700">
+                Tổng quan
+              </Link>{" "}
+              / <span>Phòng / Giường</span>
+            </div>
+
+            <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Quản lý Phòng / Giường</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Quản lý phòng / giường</h1>
               <p className="mt-1 text-sm text-gray-500">
-                Quản trị viên quản lý danh mục phòng và giường trong hệ thống.
+                Quản lý danh mục phòng, giường, sức chứa và trạng thái vận hành trong hệ thống.
               </p>
             </div>
             <div className="flex gap-2">
@@ -315,8 +315,7 @@ function AdminRoomsBedsPage() {
                   setRoomOpen(true);
                 }}
               >
-                <Plus className="size-4" />
-                Thêm phòng mới
+                + Thêm phòng mới
               </Button>
               <Button
                 className="bg-blue-600 hover:bg-blue-700"
@@ -326,44 +325,52 @@ function AdminRoomsBedsPage() {
                   setBedOpen(true);
                 }}
               >
-                <Plus className="size-4" />
-                Thêm giường mới
+                + Thêm giường mới
               </Button>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm phòng, tòa nhà, giường..."
-              className="h-9 text-sm"
-            />
-            <Select
-              value={building}
-              onValueChange={(v) => setBuilding(v as "all" | "Toà A" | "Toà B")}
-            >
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Tòa nhà" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả tòa nhà</SelectItem>
-                <SelectItem value="Toà A">Toà A</SelectItem>
-                <SelectItem value="Toà B">Toà B</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={branch}
-              onValueChange={(v) => setBranch(v as "all" | "Chi nhánh 1" | "Chi nhánh 2")}
-            >
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Chi nhánh" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả chi nhánh</SelectItem>
-                <SelectItem value="Chi nhánh 1">Chi nhánh 1</SelectItem>
-                <SelectItem value="Chi nhánh 2">Chi nhánh 2</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-end">
+            <div className="w-full md:w-[460px]">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Tìm phòng, tòa nhà, giường..."
+                className="h-9 text-sm"
+              />
+            </div>
+            <div className="w-full md:w-[220px]">
+              <p className="mb-1 text-xs font-medium text-gray-600">Tòa nhà</p>
+              <Select
+                value={building}
+                onValueChange={(v) => setBuilding(v as "all" | "Toà A" | "Toà B")}
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Tòa nhà" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả tòa nhà</SelectItem>
+                  <SelectItem value="Toà A">Toà A</SelectItem>
+                  <SelectItem value="Toà B">Toà B</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-full md:w-[220px]">
+              <p className="mb-1 text-xs font-medium text-gray-600">Chi nhánh</p>
+              <Select
+                value={branch}
+                onValueChange={(v) => setBranch(v as "all" | "Chi nhánh 1" | "Chi nhánh 2")}
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Chi nhánh" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả chi nhánh</SelectItem>
+                  <SelectItem value="Chi nhánh 1">Chi nhánh 1</SelectItem>
+                  <SelectItem value="Chi nhánh 2">Chi nhánh 2</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           </div>
         </header>
         <div className="flex-1 overflow-hidden p-6">
@@ -403,7 +410,7 @@ function AdminRoomsBedsPage() {
                       <TableCell>{r.roomType}</TableCell>
                       <TableCell>{r.capacity}</TableCell>
                       <TableCell className="text-right">
-                        {new Intl.NumberFormat("vi-VN").format(r.rent)} VNĐ
+                        {new Intl.NumberFormat("vi-VN").format(r.rent)} VND
                       </TableCell>
                       <TableCell>{r.bedCount}</TableCell>
                       <TableCell>
