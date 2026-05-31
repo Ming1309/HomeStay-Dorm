@@ -12,12 +12,14 @@ export const Route = createFileRoute("/sale/lap-phieu-coc")({
 
 function SaleDepositWorkspacePage() {
   const [selected, setSelected] = useState<Appointment | null>(null);
+  const [processedIds, setProcessedIds] = useState<string[]>([]);
 
   return (
     <SaleShell currentPath="/sale/lap-phieu-coc" showWorkspaceNav>
       <div className="flex h-full overflow-hidden">
         <AppointmentQueue
           selectedId={selected?.id ?? null}
+          excludedIds={processedIds}
           onSelect={setSelected}
         />
         {!selected ? (
@@ -27,7 +29,10 @@ function SaleDepositWorkspacePage() {
         ) : (
           <DepositForm
             appointment={selected}
-            onDone={() => setSelected(null)}
+            onDone={(appointmentId) => {
+              setProcessedIds((prev) => [...prev, appointmentId]);
+              setSelected(null);
+            }}
           />
         )}
       </div>

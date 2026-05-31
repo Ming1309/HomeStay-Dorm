@@ -19,18 +19,13 @@ function AccountantDepositCalcPage() {
   return (
     <RoleShell role="accountant" currentPath="/accountant/deposit-calc">
       <div className="flex h-full overflow-hidden">
-        <DepositQueue
-          selectedId={selected?.id ?? null}
-          onSelect={setSelected}
-        />
+        <DepositQueue selectedId={selected?.id ?? null} onSelect={setSelected} />
         {!selected ? (
           <section className="flex flex-1 items-center justify-center bg-gray-50/60">
             <p className="text-sm text-gray-500">Chọn phiếu cọc để tính tiền.</p>
           </section>
         ) : (
-          <DepositCalcPanel
-            deposit={selected}
-          />
+          <DepositCalcPanel deposit={selected} />
         )}
       </div>
     </RoleShell>

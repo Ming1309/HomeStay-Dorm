@@ -16,9 +16,7 @@ export function ReconciliationQueue({
   const [query, setQuery] = useState("");
 
   const items = useMemo(() => {
-    const relevant = depositRequests.filter(
-      (d) => d.status === "pending_reconciliation",
-    );
+    const relevant = depositRequests.filter((d) => d.status === "pending_reconciliation");
     if (!query.trim()) return relevant;
     const q = query.trim().toLowerCase();
     return relevant.filter(

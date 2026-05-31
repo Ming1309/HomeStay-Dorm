@@ -7,7 +7,13 @@ import { cn } from "@/lib/utils";
 import { useWorkflowStore } from "@/lib/workflow-store";
 
 type SaleNavItem = {
-  to: "/sale/ho-so-luu-tru" | "/sale/lap-hop-dong" | "/sale/tra-cuu-hop-dong" | "/sale/tra-cuu-phong" | "/sale/lap-phieu-coc" | "/sale/ghi-nhan-coc";
+  to:
+    | "/sale/ho-so-luu-tru"
+    | "/sale/lap-hop-dong"
+    | "/sale/tra-cuu-hop-dong"
+    | "/sale/tra-cuu-phong"
+    | "/sale/lap-phieu-coc"
+    | "/sale/ghi-nhan-coc";
   label: string;
 };
 

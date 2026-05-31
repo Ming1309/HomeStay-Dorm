@@ -31,8 +31,7 @@ const launchpadItems = [
   {
     to: "/manager/confirm-deposit",
     title: "Xác nhận tiền cọc",
-    description:
-      "Đối chiếu chứng từ giao dịch và xác nhận khoản tiền cọc của khách hàng.",
+    description: "Đối chiếu chứng từ giao dịch và xác nhận khoản tiền cọc của khách hàng.",
     icon: ShieldHalf,
   },
   {

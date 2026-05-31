@@ -16,19 +16,13 @@ function SalePaymentProofPage() {
   return (
     <SaleShell currentPath="/sale/ghi-nhan-coc" showWorkspaceNav>
       <div className="flex h-full overflow-hidden">
-        <PendingDepositQueue
-          selectedId={selected?.id ?? null}
-          onSelect={setSelected}
-        />
+        <PendingDepositQueue selectedId={selected?.id ?? null} onSelect={setSelected} />
         {!selected ? (
           <section className="flex flex-1 items-center justify-center bg-gray-50/60">
             <p className="text-sm text-gray-500">Chọn phiếu cọc để ghi nhận thanh toán.</p>
           </section>
         ) : (
-          <PaymentProofForm
-            deposit={selected}
-            onDone={() => setSelected(null)}
-          />
+          <PaymentProofForm deposit={selected} onDone={() => setSelected(null)} />
         )}
       </div>
     </SaleShell>

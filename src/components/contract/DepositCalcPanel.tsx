@@ -21,11 +21,7 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export function DepositCalcPanel({
-  deposit,
-}: {
-  deposit: DepositRequest;
-}) {
+export function DepositCalcPanel({ deposit }: { deposit: DepositRequest }) {
   const { updateDepositAmount, rooms } = useWorkflowStore();
   const [confirmed, setConfirmed] = useState(false);
 
@@ -39,9 +35,12 @@ export function DepositCalcPanel({
 
   const handleConfirm = () => {
     updateDepositAmount(deposit.id, calculatedAmount);
-    toast.success(`Phiếu cọc ${deposit.code} đã được xác nhận. Chuyển sang trạng thái chờ thanh toán.`, {
-      icon: <CheckCircle2 className="size-4 text-emerald-100" />,
-    });
+    toast.success(
+      `Phiếu cọc ${deposit.code} đã được xác nhận. Chuyển sang trạng thái chờ thanh toán.`,
+      {
+        icon: <CheckCircle2 className="size-4 text-emerald-100" />,
+      },
+    );
     setConfirmed(true);
   };
 
@@ -86,9 +85,7 @@ export function DepositCalcPanel({
             </h3>
             <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-3">
               <p className="mb-1 text-xs font-medium text-blue-700">Công thức áp dụng</p>
-              <p className="font-mono text-sm text-blue-800">
-                Tiền cọc = {formula}
-              </p>
+              <p className="font-mono text-sm text-blue-800">Tiền cọc = {formula}</p>
 
               <div className="mt-2 border-t border-blue-100 pt-2">
                 <p className="text-xs text-blue-600">Kết quả</p>
@@ -118,7 +115,10 @@ export function DepositCalcPanel({
                         {bed.code}
                       </TableCell>
                       <TableCell className="px-2 py-2">
-                        <Badge variant="outline" className="h-5 text-[10px] border-amber-200 text-amber-700">
+                        <Badge
+                          variant="outline"
+                          className="h-5 text-[10px] border-amber-200 text-amber-700"
+                        >
                           Giữ chỗ
                         </Badge>
                       </TableCell>

@@ -48,8 +48,11 @@ export type Appointment = {
   phone: string;
   email: string;
   gender: "male" | "female";
-  roomId: string;
-  room: string;
+  nationality?: string;
+  docType?: "CCCD" | "Hộ chiếu";
+  docNumber?: string;
+  roomId?: string;
+  room?: string;
   type: "viewing";
   status: "success" | "pending" | "cancelled";
   createdAt: string;
@@ -173,11 +176,7 @@ type WorkflowStore = {
   }) => void;
   updateDepositAmount: (depositId: string, amount: number) => void;
   confirmDepositPayment: (depositId: string) => void;
-  recordDepositPayment: (
-    depositId: string,
-    method: PaymentMethod,
-    proof: string,
-  ) => void;
+  recordDepositPayment: (depositId: string, method: PaymentMethod, proof: string) => void;
   rejectDepositPayment: (depositId: string, reason: string) => void;
   cancelDepositRequest: (depositId: string) => void;
 };
@@ -459,8 +458,8 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [contracts, setContracts] = useState<ContractItem[]>(initialContracts);
   const [paymentLogs, setPaymentLogs] = useState<PaymentLog[]>([]);
-  const [rooms] = useState<Room[]>(mockRooms);
-  const [appointments] = useState<Appointment[]>(mockAppointments);
+  const [rooms, setRooms] = useState<Room[]>(mockRooms);
+  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
   const [depositRequests, setDepositRequests] = useState<DepositRequest[]>(initialDepositRequests);
 
   useEffect(() => {
@@ -582,13 +581,31 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
       groupId: data.groupId,
     };
     setDepositRequests((current) => [newDeposit, ...current]);
+    setRooms((current) =>
+      current.map((room) =>
+        room.id !== data.roomId
+          ? room
+          : {
+              ...room,
+              beds: room.beds.map((bed) =>
+                data.selectedBedIds.includes(bed.id) ? { ...bed, status: "deposited" } : bed,
+              ),
+            },
+      ),
+    );
+    setAppointments((current) => current.filter((apt) => apt.id !== data.appointmentId));
   };
 
   const updateDepositAmount: WorkflowStore["updateDepositAmount"] = (depositId, amount) => {
     setDepositRequests((current) =>
       current.map((d) =>
         d.id === depositId
-          ? { ...d, depositAmount: amount, status: "pending_payment", updatedAt: new Date().toISOString() }
+          ? {
+              ...d,
+              depositAmount: amount,
+              status: "pending_payment",
+              updatedAt: new Date().toISOString(),
+            }
           : d,
       ),
     );
@@ -597,18 +614,26 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   const confirmDepositPayment: WorkflowStore["confirmDepositPayment"] = (depositId) => {
     setDepositRequests((current) =>
       current.map((d) =>
-        d.id === depositId
-          ? { ...d, status: "paid", updatedAt: new Date().toISOString() }
-          : d,
+        d.id === depositId ? { ...d, status: "paid", updatedAt: new Date().toISOString() } : d,
       ),
     );
   };
 
-  const recordDepositPayment: WorkflowStore["recordDepositPayment"] = (depositId, method, proof) => {
+  const recordDepositPayment: WorkflowStore["recordDepositPayment"] = (
+    depositId,
+    method,
+    proof,
+  ) => {
     setDepositRequests((current) =>
       current.map((d) =>
         d.id === depositId
-          ? { ...d, paymentMethod: method, paymentProof: proof, status: "pending_reconciliation", updatedAt: new Date().toISOString() }
+          ? {
+              ...d,
+              paymentMethod: method,
+              paymentProof: proof,
+              status: "pending_reconciliation",
+              updatedAt: new Date().toISOString(),
+            }
           : d,
       ),
     );
@@ -618,7 +643,12 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
     setDepositRequests((current) =>
       current.map((d) =>
         d.id === depositId
-          ? { ...d, supplementReason: reason, status: "supplement_required", updatedAt: new Date().toISOString() }
+          ? {
+              ...d,
+              supplementReason: reason,
+              status: "supplement_required",
+              updatedAt: new Date().toISOString(),
+            }
           : d,
       ),
     );
@@ -627,9 +657,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   const cancelDepositRequest: WorkflowStore["cancelDepositRequest"] = (depositId) => {
     setDepositRequests((current) =>
       current.map((d) =>
-        d.id === depositId
-          ? { ...d, status: "cancelled", updatedAt: new Date().toISOString() }
-          : d,
+        d.id === depositId ? { ...d, status: "cancelled", updatedAt: new Date().toISOString() } : d,
       ),
     );
   };

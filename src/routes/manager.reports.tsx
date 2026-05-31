@@ -89,9 +89,7 @@ function ManagerReportsPage() {
             <CardContent className="p-4">
               <p className="text-xs uppercase tracking-wide text-gray-400">Trạng thái phiếu cọc</p>
               <ul className="mt-2 space-y-1 text-sm text-gray-700">
-                <li>
-                  Khởi tạo: {depositRequests.filter((d) => d.status === "init").length}
-                </li>
+                <li>Khởi tạo: {depositRequests.filter((d) => d.status === "init").length}</li>
                 <li>
                   Chờ thanh toán:{" "}
                   {depositRequests.filter((d) => d.status === "pending_payment").length}
@@ -104,9 +102,7 @@ function ManagerReportsPage() {
                   Cần bổ sung:{" "}
                   {depositRequests.filter((d) => d.status === "supplement_required").length}
                 </li>
-                <li>
-                  Đã thanh toán: {depositRequests.filter((d) => d.status === "paid").length}
-                </li>
+                <li>Đã thanh toán: {depositRequests.filter((d) => d.status === "paid").length}</li>
               </ul>
             </CardContent>
           </Card>
@@ -161,10 +157,7 @@ function ManagerReportsPage() {
               </TableHeader>
               <TableBody>
                 {[...depositRequests]
-                  .sort(
-                    (a, b) =>
-                      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-                  )
+                  .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
                   .slice(0, 10)
                   .map((d) => {
                     const config = depositStatusConfig[d.status] ?? {
@@ -181,9 +174,7 @@ function ManagerReportsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="px-3 py-2 text-right font-mono text-sm">
-                          {d.depositAmount != null
-                            ? formatCurrency(d.depositAmount)
-                            : "—"}
+                          {d.depositAmount != null ? formatCurrency(d.depositAmount) : "—"}
                         </TableCell>
                       </TableRow>
                     );

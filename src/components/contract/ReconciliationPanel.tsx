@@ -71,7 +71,10 @@ export function ReconciliationPanel({
               <InfoRow label="Khách hàng" value={deposit.customerName} />
               <InfoRow label="Số điện thoại" value={deposit.phone} />
               <InfoRow label="Phòng" value={deposit.room} />
-              <InfoRow label="Hình thức thuê" value={deposit.rentalType === "shared" ? "Ở ghép" : "Nguyên phòng"} />
+              <InfoRow
+                label="Hình thức thuê"
+                value={deposit.rentalType === "shared" ? "Ở ghép" : "Nguyên phòng"}
+              />
               <InfoRow label="Đơn giá phòng" value={formatCurrency(deposit.basePrice)} />
               {deposit.depositAmount != null && (
                 <InfoRow label="Tiền cọc" value={formatCurrency(deposit.depositAmount)} />

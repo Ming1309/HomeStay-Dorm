@@ -1,23 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Pencil, Save } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Lock, Search, Send } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -26,17 +28,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import {
-  useWorkflowStore,
-  type Appointment,
-  type Bed,
-} from "@/lib/workflow-store";
+import { useWorkflowStore, type Appointment, type Bed, type Room } from "@/lib/workflow-store";
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
+const customerSchema = z.object({
+  fullName: z.string().min(1, "Vui lòng nhập họ tên"),
+  phone: z.string().min(1, "Vui lòng nhập số điện thoại"),
+  birthDate: z.string().min(1, "Vui lòng chọn ngày sinh"),
+  email: z.string().optional(),
+  gender: z.enum(["male", "female"]),
+  nationality: z.string().min(1, "Vui lòng nhập quốc tịch"),
+  docType: z.enum(["CCCD", "Hộ chiếu"]),
+  docNumber: z.string().min(1, "Vui lòng nhập số giấy tờ"),
+});
+
+const formatCurrency = (amount: number) =>
+  `${new Intl.NumberFormat("vi-VN").format(Math.max(amount, 0))} VNĐ`;
+
+function bedStatusLabel(status: Bed["status"]) {
+  if (status === "available")
+    return { text: "Trống", className: "bg-emerald-100 text-emerald-700" };
+  if (status === "deposited") return { text: "Đã cọc", className: "bg-amber-100 text-amber-700" };
+  if (status === "occupied")
+    return { text: "Đang sử dụng", className: "bg-blue-100 text-blue-700" };
+  return { text: "Đang bảo trì", className: "bg-gray-200 text-gray-700" };
 }
 
 export function DepositForm({
@@ -44,326 +58,656 @@ export function DepositForm({
   onDone,
 }: {
   appointment: Appointment;
-  onDone: () => void;
+  onDone: (appointmentId: string) => void;
 }) {
   const { rooms, createDepositRequest } = useWorkflowStore();
 
-  const room = rooms.find((r) => r.id === appointment.roomId);
-
-  const [editing, setEditing] = useState(false);
-  const [customerName, setCustomerName] = useState(appointment.customerName);
-  const [phone, setPhone] = useState(appointment.phone);
-  const [email, setEmail] = useState(appointment.email);
-  const [gender, setGender] = useState<"male" | "female">(appointment.gender);
+  const [isEditingCustomer, setIsEditingCustomer] = useState(false);
   const [rentalType, setRentalType] = useState<"shared" | "whole">("shared");
+  const [quantity, setQuantity] = useState(1);
+  const [buildingFilter, setBuildingFilter] = useState<"all" | "Toà A" | "Toà B">("all");
+  const [roomTypeFilter, setRoomTypeFilter] = useState<"all" | "4" | "6">("all");
+  const [priceFilter, setPriceFilter] = useState<"all" | "under4" | "4to5" | "over5">("all");
+  const [searched, setSearched] = useState(false);
+  const [searchResults, setSearchResults] = useState<Room[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [selectedBeds, setSelectedBeds] = useState<string[]>([]);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [heldBeds, setHeldBeds] = useState<Set<string>>(new Set());
+
+  const form = useForm<z.infer<typeof customerSchema>>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      fullName: appointment.customerName,
+      phone: appointment.phone,
+      birthDate: "",
+      email: appointment.email,
+      gender: appointment.gender,
+      nationality: "Việt Nam",
+      docType: "CCCD",
+      docNumber: "",
+    },
+  });
 
   useEffect(() => {
-    setCustomerName(appointment.customerName);
-    setPhone(appointment.phone);
-    setEmail(appointment.email);
-    setGender(appointment.gender);
+    form.reset({
+      fullName: appointment.customerName,
+      phone: appointment.phone,
+      birthDate: "",
+      email: appointment.email,
+      gender: appointment.gender,
+      nationality: "Việt Nam",
+      docType: "CCCD",
+      docNumber: "",
+    });
+    setIsEditingCustomer(false);
     setRentalType("shared");
+    setQuantity(1);
+    setSearched(false);
+    setSearchResults([]);
+    setSelectedRoomId(null);
     setSelectedBeds([]);
-    setAgreedToTerms(false);
-    setEditing(false);
-  }, [appointment.id]);
+  }, [
+    appointment.id,
+    appointment.customerName,
+    appointment.phone,
+    appointment.email,
+    appointment.gender,
+    form,
+  ]);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        handleSave();
+    const handler = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        void handleSubmit();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [rentalType, selectedBeds, agreedToTerms]);
+  });
 
-  const availableBeds: Bed[] = useMemo(() => {
-    if (!room) return [];
-    if (rentalType === "whole") {
-      return room.beds.filter((b) => b.status === "available");
-    }
-    return room.beds.filter((b) => b.status === "available");
-  }, [room, rentalType]);
+  const selectedRoom = useMemo(
+    () => searchResults.find((room) => room.id === selectedRoomId) ?? null,
+    [searchResults, selectedRoomId],
+  );
 
-  const handleBedToggle = (bedId: string) => {
-    setSelectedBeds((prev) =>
-      prev.includes(bedId) ? prev.filter((id) => id !== bedId) : [...prev, bedId],
-    );
+  const selectedBedCodes = useMemo(() => {
+    if (!selectedRoom) return [];
+    const map = new Map(selectedRoom.beds.map((b) => [b.id, b.code]));
+    return selectedBeds.map((id) => map.get(id) ?? id);
+  }, [selectedBeds, selectedRoom]);
+
+  const bedCountForDeposit =
+    rentalType === "whole" ? (selectedRoom?.maxCapacity ?? 0) : selectedBeds.length;
+  const estimatedDeposit = (selectedRoom?.basePrice ?? 0) * 2 * bedCountForDeposit;
+
+  const handleSearch = () => {
+    const normalized = rooms.filter((room) => {
+      if (buildingFilter !== "all") {
+        const roomBuilding = room.code.endsWith("1") || room.code.endsWith("2") ? "Toà A" : "Toà B";
+        if (roomBuilding !== buildingFilter) return false;
+      }
+      if (roomTypeFilter !== "all" && !room.type.includes(roomTypeFilter)) return false;
+      if (priceFilter === "under4" && room.basePrice >= 4_000_000) return false;
+      if (priceFilter === "4to5" && (room.basePrice < 4_000_000 || room.basePrice > 5_000_000))
+        return false;
+      if (priceFilter === "over5" && room.basePrice <= 5_000_000) return false;
+      return true;
+    });
+
+    const result = normalized.filter((room) => {
+      const vacantBeds = room.beds.filter((bed) => bed.status === "available");
+      if (rentalType === "whole") return vacantBeds.length === room.maxCapacity;
+      return vacantBeds.length >= quantity;
+    });
+
+    setSearchResults(result);
+    setSearched(true);
+    setSelectedRoomId(null);
+    setSelectedBeds([]);
   };
 
-  const handleSave = () => {
-    if (!agreedToTerms) {
-      toast.error("Vui lòng xác nhận khách hàng đã đồng ý với điều khoản và nội quy.");
-      return;
-    }
-    if (selectedBeds.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một giường.");
-      return;
-    }
-    if (rentalType === "whole" && room && selectedBeds.length < room.maxCapacity) {
-      toast.warning("Thuê nguyên phòng cần chọn tất cả giường trong phòng.");
+  const handleChooseWholeRoom = (room: Room) => {
+    setSelectedRoomId(room.id);
+    setSelectedBeds(room.beds.filter((bed) => bed.status === "available").map((bed) => bed.id));
+  };
+
+  const handleToggleBed = (room: Room, bed: Bed) => {
+    if (bed.status !== "available") return;
+    if (selectedRoomId && selectedRoomId !== room.id) {
+      setSelectedBeds([bed.id]);
+      setSelectedRoomId(room.id);
       return;
     }
 
-    setSaving(true);
+    setSelectedRoomId(room.id);
+    setSelectedBeds((prev) => {
+      if (prev.includes(bed.id)) return prev.filter((id) => id !== bed.id);
+      if (prev.length >= quantity) return prev;
+      return [...prev, bed.id];
+    });
+  };
+
+  const handleSubmit = async () => {
+    const valid = await form.trigger();
+    if (!valid) return;
+
+    if (!selectedRoom || bedCountForDeposit === 0) {
+      toast.error("Vui lòng chọn phòng/giường trước khi tạo yêu cầu cọc.");
+      return;
+    }
+
+    if (rentalType === "shared" && selectedBeds.length !== quantity) {
+      toast.error("Vui lòng chọn đủ số lượng giường cần cọc.");
+      return;
+    }
+
+    const values = form.getValues();
+
     createDepositRequest({
       appointmentId: appointment.id,
-      customerName,
-      phone,
-      email,
-      gender,
-      roomId: appointment.roomId,
-      room: appointment.room,
+      customerName: values.fullName,
+      phone: values.phone,
+      email: values.email ?? "",
+      gender: values.gender,
+      roomId: selectedRoom.id,
+      room: selectedRoom.code,
       rentalType,
       selectedBedIds: selectedBeds,
-      basePrice: room?.basePrice ?? 0,
+      basePrice: selectedRoom.basePrice,
       groupId: null,
     });
-    toast.success(`Phiếu cọc đã được tạo thành công.`, {
-      icon: <CheckCircle2 className="size-4 text-emerald-100" />,
+
+    setHeldBeds((prev) => {
+      const next = new Set(prev);
+      selectedBeds.forEach((id) => next.add(id));
+      return next;
     });
-    setSaving(false);
+
+    toast.success("Yêu cầu đặt cọc đã được khởi tạo và chuyển sang bộ phận Kế toán.");
+    onDone(appointment.id);
   };
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
-      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white px-5 py-3 shadow-sm">
-        <div className="flex items-center gap-2">
-          <h1 className="font-mono text-sm font-bold text-gray-900">
-            Lập phiếu cọc — {appointment.code}
-          </h1>
-        </div>
-        <p className="mt-0.5 text-xs text-gray-500">
-          {appointment.customerName} • {appointment.room}
-        </p>
+      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white px-5 py-3">
+        <h1 className="font-mono text-sm font-bold text-gray-900">
+          Lập phiếu cọc — {appointment.code}
+        </h1>
+        <p className="mt-0.5 text-xs text-gray-500">{appointment.customerName}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4 pb-24">
         <div className="space-y-4">
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-gray-700">Thông tin khách hàng</h3>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs text-blue-600"
-                onClick={() => setEditing(!editing)}
+          <Card className="border-gray-200">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">Thông tin khách hàng</CardTitle>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditingCustomer((v) => !v)}
+                >
+                  {isEditingCustomer ? "Khóa chỉnh sửa" : "Chỉnh sửa"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Họ và tên *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              {...field}
+                              value={String(field.value ?? "")}
+                              readOnly={!isEditingCustomer}
+                              className={cn(!isEditingCustomer && "bg-gray-50 pr-8")}
+                            />
+                            {!isEditingCustomer && (
+                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Số điện thoại *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              {...field}
+                              value={String(field.value ?? "")}
+                              readOnly={!isEditingCustomer}
+                              className={cn(!isEditingCustomer && "bg-gray-50 pr-8")}
+                            />
+                            {!isEditingCustomer && (
+                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="birthDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ngày sinh *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type="date"
+                              {...field}
+                              value={String(field.value ?? "")}
+                              readOnly={!isEditingCustomer}
+                              className={cn(!isEditingCustomer && "bg-gray-50 pr-8")}
+                            />
+                            {!isEditingCustomer && (
+                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="gender"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Giới tính *</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={!isEditingCustomer}
+                        >
+                          <FormControl>
+                            <SelectTrigger className={cn(!isEditingCustomer && "bg-gray-50")}>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="male">Nam</SelectItem>
+                            <SelectItem value="female">Nữ</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nationality"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Quốc tịch *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              {...field}
+                              value={String(field.value ?? "")}
+                              readOnly={!isEditingCustomer}
+                              className={cn(!isEditingCustomer && "bg-gray-50 pr-8")}
+                            />
+                            {!isEditingCustomer && (
+                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              {...field}
+                              value={String(field.value ?? "")}
+                              readOnly={!isEditingCustomer}
+                              className={cn(!isEditingCustomer && "bg-gray-50 pr-8")}
+                            />
+                            {!isEditingCustomer && (
+                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="docType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Loại giấy tờ *</FormLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={!isEditingCustomer}
+                        >
+                          <FormControl>
+                            <SelectTrigger className={cn(!isEditingCustomer && "bg-gray-50")}>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="CCCD">CCCD</SelectItem>
+                            <SelectItem value="Hộ chiếu">Hộ chiếu</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="docNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Số giấy tờ *</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              {...field}
+                              value={String(field.value ?? "")}
+                              readOnly={!isEditingCustomer}
+                              className={cn(!isEditingCustomer && "bg-gray-50 pr-8")}
+                            />
+                            {!isEditingCustomer && (
+                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </Form>
+            </CardContent>
+          </Card>
+
+          <Card className="border-gray-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">Nhu cầu thuê</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <RadioGroup
+                value={rentalType}
+                onValueChange={(value) => {
+                  setRentalType(value as "shared" | "whole");
+                  setSelectedRoomId(null);
+                  setSelectedBeds([]);
+                  setSearched(false);
+                }}
+                className="grid grid-cols-1 gap-3 md:grid-cols-2"
               >
-                <Pencil className="mr-1 size-3" />
-                {editing ? "Đóng" : "Chỉnh sửa"}
-              </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <FormFieldReadonly
-                label="Họ và tên"
-                value={customerName}
-                editing={editing}
-                onChange={setCustomerName}
-              />
-              <FormFieldReadonly
-                label="Số điện thoại"
-                value={phone}
-                editing={editing}
-                onChange={setPhone}
-              />
-              <FormFieldReadonly
-                label="Email"
-                value={email}
-                editing={editing}
-                onChange={setEmail}
-              />
-              <div>
-                <p className="mb-1 text-xs text-gray-500">Giới tính</p>
-                {editing ? (
+                <label
+                  className={cn(
+                    "cursor-pointer rounded-lg border p-3",
+                    rentalType === "shared" && "border-blue-500 bg-blue-50",
+                  )}
+                >
+                  <RadioGroupItem value="shared" className="sr-only" />
+                  <p className="text-sm font-semibold">Thuê ở ghép</p>
+                  <p className="text-xs text-gray-500">Chọn giường cụ thể còn trống</p>
+                </label>
+                <label
+                  className={cn(
+                    "cursor-pointer rounded-lg border p-3",
+                    rentalType === "whole" && "border-blue-500 bg-blue-50",
+                  )}
+                >
+                  <RadioGroupItem value="whole" className="sr-only" />
+                  <p className="text-sm font-semibold">Thuê nguyên phòng</p>
+                  <p className="text-xs text-gray-500">Khóa toàn bộ phòng khi chọn</p>
+                </label>
+              </RadioGroup>
+
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
+                <div>
+                  <Label className="text-xs text-gray-500">
+                    {rentalType === "shared"
+                      ? "Số lượng giường cần cọc *"
+                      : "Số lượng người ở dự kiến *"}
+                  </Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={quantity}
+                    onChange={(event) => setQuantity(Math.max(1, Number(event.target.value) || 1))}
+                    className="mt-1 h-8 text-xs"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">Tòa nhà</Label>
                   <Select
-                    value={gender}
-                    onValueChange={(v) => setGender(v as "male" | "female")}
+                    value={buildingFilter}
+                    onValueChange={(v) => setBuildingFilter(v as typeof buildingFilter)}
                   >
-                    <SelectTrigger className="h-8 text-xs">
+                    <SelectTrigger className="mt-1 h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="male" className="text-xs">Nam</SelectItem>
-                      <SelectItem value="female" className="text-xs">Nữ</SelectItem>
+                      <SelectItem value="all">Tất cả</SelectItem>
+                      <SelectItem value="Toà A">Toà A</SelectItem>
+                      <SelectItem value="Toà B">Toà B</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">Loại phòng</Label>
+                  <Select
+                    value={roomTypeFilter}
+                    onValueChange={(v) => setRoomTypeFilter(v as typeof roomTypeFilter)}
+                  >
+                    <SelectTrigger className="mt-1 h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tất cả</SelectItem>
+                      <SelectItem value="4">Phòng 4</SelectItem>
+                      <SelectItem value="6">Phòng 6</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">Mức giá</Label>
+                  <Select
+                    value={priceFilter}
+                    onValueChange={(v) => setPriceFilter(v as typeof priceFilter)}
+                  >
+                    <SelectTrigger className="mt-1 h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tất cả</SelectItem>
+                      <SelectItem value="under4">Dưới 4 triệu</SelectItem>
+                      <SelectItem value="4to5">4 - 5 triệu</SelectItem>
+                      <SelectItem value="over5">Trên 5 triệu</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    className="h-8 w-full bg-blue-600 text-xs hover:bg-blue-700"
+                    onClick={handleSearch}
+                  >
+                    <Search className="size-3.5" />
+                    Tìm kiếm
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {searched && (
+            <Card className="border-gray-200">
+              <CardContent className="pt-6">
+                {searchResults.length === 0 ? (
+                  <p className="text-sm text-amber-600">
+                    Không tìm thấy phòng phù hợp với nhu cầu hiện tại.
+                  </p>
                 ) : (
-                  <p className="text-gray-800">{gender === "male" ? "Nam" : "Nữ"}</p>
+                  <div className="space-y-3">
+                    {searchResults.map((room) => (
+                      <div
+                        key={room.id}
+                        className={cn(
+                          "rounded-lg border p-3",
+                          selectedRoomId === room.id && "border-blue-300 bg-blue-50/40",
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {room.code} • Phòng {room.type}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Sức chứa {room.maxCapacity} • {formatCurrency(room.basePrice)}/tháng
+                            </p>
+                          </div>
+                          {rentalType === "whole" && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => handleChooseWholeRoom(room)}
+                            >
+                              Chọn phòng
+                            </Button>
+                          )}
+                        </div>
+
+                        {rentalType === "shared" && (
+                          <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
+                            {room.beds.map((bed) => {
+                              const isSelected = selectedBeds.includes(bed.id);
+                              const statusMeta = bedStatusLabel(
+                                heldBeds.has(bed.id) ? "deposited" : bed.status,
+                              );
+                              const disabled = bed.status !== "available" || heldBeds.has(bed.id);
+
+                              return (
+                                <label
+                                  key={bed.id}
+                                  className={cn(
+                                    "flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs",
+                                    disabled
+                                      ? "cursor-not-allowed bg-gray-50 text-gray-400"
+                                      : "cursor-pointer hover:border-blue-300",
+                                    isSelected && "border-blue-400 bg-blue-50",
+                                  )}
+                                >
+                                  <Checkbox
+                                    checked={isSelected}
+                                    disabled={disabled}
+                                    onCheckedChange={() => handleToggleBed(room, bed)}
+                                  />
+                                  <span className="font-mono">{bed.code}</span>
+                                  <Badge
+                                    className={cn("ml-auto h-5 text-[10px]", statusMeta.className)}
+                                  >
+                                    {statusMeta.text}
+                                  </Badge>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </div>
-            </div>
-          </div>
+              </CardContent>
+            </Card>
+          )}
 
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <h3 className="mb-3 text-xs font-semibold text-gray-700">Thông tin thuê</h3>
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs text-gray-500">Hình thức thuê</Label>
-                <Select
-                  value={rentalType}
-                  onValueChange={(v) => {
-                    const type = v as "shared" | "whole";
-                    setRentalType(type);
-                    if (type === "whole") {
-                      setSelectedBeds(availableBeds.map((b) => b.id));
-                    } else {
-                      setSelectedBeds([]);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="mt-1 h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="shared" className="text-xs">Thuê ở ghép</SelectItem>
-                    <SelectItem value="whole" className="text-xs">Thuê nguyên phòng</SelectItem>
-                  </SelectContent>
-                </Select>
+          <Card className="border-gray-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">Bảng tính tiền cọc</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1 text-sm text-gray-600">
+                <p>
+                  Phòng đã chọn:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {selectedRoom?.code ?? "Chưa chọn"}
+                  </span>
+                </p>
+                <p>
+                  Giường đã chọn:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {selectedBedCodes.length ? selectedBedCodes.join(", ") : "Chưa chọn"}
+                  </span>
+                </p>
+                <p>
+                  Số giường tính cọc:{" "}
+                  <span className="font-semibold text-gray-900">{bedCountForDeposit}</span>
+                </p>
               </div>
-              <p className="text-xs text-gray-500">
-                Phòng: <span className="font-mono text-gray-700">{appointment.room}</span>
-                {room && (
-                  <>
-                    {" • "}
-                    <span className="text-gray-700">{room.type}</span>
-                    {" • "}
-                    <span className="text-gray-700">{formatCurrency(room.basePrice)}/tháng</span>
-                  </>
-                )}
+              <p className="mt-3 text-lg font-bold text-emerald-600">
+                Tạm tính tiền cọc: {formatCurrency(estimatedDeposit)}
               </p>
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <h3 className="mb-3 text-xs font-semibold text-gray-700">
-              Chọn giường
-              {rentalType === "whole" && (
-                <span className="ml-1 font-normal text-gray-400">
-                  (chọn {room?.maxCapacity ?? 0} giường)
-                </span>
-              )}
-            </h3>
-            {availableBeds.length === 0 ? (
-              <p className="text-sm text-amber-600">
-                Không còn giường trống trong phòng này.
+              <p className="mt-1 text-xs text-gray-500">
+                Khoản cọc chính thức sẽ được kế toán phê duyệt trước khi thu tiền.
               </p>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {availableBeds.map((bed) => {
-                  const selected = selectedBeds.includes(bed.id);
-                  return (
-                    <label
-                      key={bed.id}
-                      className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 transition-colors",
-                        selected
-                          ? "border-emerald-200 bg-emerald-50"
-                          : "border-gray-200 hover:border-emerald-200 hover:bg-emerald-50/30",
-                      )}
-                    >
-                      <Checkbox
-                        checked={selected}
-                        onCheckedChange={() => handleBedToggle(bed.id)}
-                      />
-                      <span className="font-mono text-xs text-gray-800">{bed.code}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="terms"
-                checked={agreedToTerms}
-                onCheckedChange={(v) => setAgreedToTerms(v === true)}
-              />
-              <div>
-                <Label htmlFor="terms" className="text-sm text-gray-700">
-                  Khách hàng đã đồng ý với các điều khoản thuê và nội quy ký túc xá
-                </Label>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
+      <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5">
         <span className="text-xs text-gray-400">
-          {saving ? "Đang lưu..." : "Ctrl+S để lưu nhanh"}
+          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
+            Ctrl
+          </kbd>{" "}
+          +{" "}
+          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
+            S
+          </kbd>{" "}
+          : Tạo yêu cầu cọc
         </span>
-        <div className="flex items-center gap-2">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button type="button" variant="outline" className="h-8 text-xs" disabled={saving}>
-                Hủy
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Hủy lập phiếu cọc?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Thông tin sẽ không được lưu lại.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="h-8 text-xs">Tiếp tục</AlertDialogCancel>
-                <AlertDialogAction
-                  className="h-8 text-xs"
-                  onClick={() => onDone()}
-                >
-                  Hủy bỏ
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <Button
-            type="button"
-            className="h-8 text-xs"
-            onClick={handleSave}
-            disabled={saving || !agreedToTerms || selectedBeds.length === 0}
-          >
-            <Save className="mr-1 size-3.5" />
-            Lưu
-          </Button>
-        </div>
+        <Button
+          type="button"
+          className="bg-emerald-600 hover:bg-emerald-700"
+          onClick={() => void handleSubmit()}
+        >
+          <Send className="size-4" />
+          Tạo yêu cầu cọc & Gửi kế toán
+        </Button>
       </footer>
     </section>
-  );
-}
-
-function FormFieldReadonly({
-  label,
-  value,
-  editing,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  editing: boolean;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div>
-      <p className="mb-1 text-xs text-gray-500">{label}</p>
-      {editing ? (
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-8 text-xs"
-        />
-      ) : (
-        <p className="text-gray-800">{value}</p>
-      )}
-    </div>
   );
 }

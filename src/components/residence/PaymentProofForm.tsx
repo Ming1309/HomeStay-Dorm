@@ -149,7 +149,10 @@ export function PaymentProofForm({
                 value={deposit.rentalType === "shared" ? "Ở ghép" : "Nguyên phòng"}
               />
               {deposit.depositAmount != null && (
-                <InfoRow label="Số tiền cần thanh toán" value={formatCurrency(deposit.depositAmount)} />
+                <InfoRow
+                  label="Số tiền cần thanh toán"
+                  value={formatCurrency(deposit.depositAmount)}
+                />
               )}
             </div>
           </div>
@@ -165,17 +168,21 @@ export function PaymentProofForm({
                 <SelectValue placeholder="Chọn phương thức" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="bank-transfer" className="text-xs">Chuyển khoản ngân hàng</SelectItem>
-                <SelectItem value="cash" className="text-xs">Tiền mặt</SelectItem>
+                <SelectItem value="bank-transfer" className="text-xs">
+                  Chuyển khoản ngân hàng
+                </SelectItem>
+                <SelectItem value="cash" className="text-xs">
+                  Tiền mặt
+                </SelectItem>
               </SelectContent>
             </Select>
 
             {paymentMethod === "cash" && (
               <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50/50 p-3">
                 <p className="text-xs text-blue-700">
-                  Hướng dẫn: Nhận đủ tiền mặt từ khách hàng, lập Phiếu biên nhận viết tay
-                  và ký cùng khách hàng. Sau đó chụp ảnh Phiếu biên nhận đã ký và tải lên
-                  tại mục chứng từ bên dưới.
+                  Hướng dẫn: Nhận đủ tiền mặt từ khách hàng, lập Phiếu biên nhận viết tay và ký cùng
+                  khách hàng. Sau đó chụp ảnh Phiếu biên nhận đã ký và tải lên tại mục chứng từ bên
+                  dưới.
                 </p>
               </div>
             )}
@@ -203,12 +210,8 @@ export function PaymentProofForm({
               onClick={() => document.getElementById("proof-upload")?.click()}
             >
               <Upload className="mb-2 size-6 text-gray-400" />
-              <p className="text-sm text-gray-500">
-                Kéo thả file hoặc nhấp để chọn
-              </p>
-              <p className="mt-1 text-xs text-gray-400">
-                Hỗ trợ JPG, PNG, PDF (tối đa 5MB)
-              </p>
+              <p className="text-sm text-gray-500">Kéo thả file hoặc nhấp để chọn</p>
+              <p className="mt-1 text-xs text-gray-400">Hỗ trợ JPG, PNG, PDF (tối đa 5MB)</p>
               <input
                 id="proof-upload"
                 type="file"

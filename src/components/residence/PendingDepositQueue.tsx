@@ -76,9 +76,7 @@ export function PendingDepositQueue({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-xs font-bold text-blue-600">{item.code}</span>
-                    <Badge
-                      className={cn("h-5 text-[10px]", depositStatusBadge[item.status] ?? "")}
-                    >
+                    <Badge className={cn("h-5 text-[10px]", depositStatusBadge[item.status] ?? "")}>
                       {depositStatusLabels[item.status] ?? item.status}
                     </Badge>
                   </div>

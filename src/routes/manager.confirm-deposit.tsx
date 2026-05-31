@@ -19,19 +19,13 @@ function ManagerConfirmDepositPage() {
   return (
     <RoleShell role="manager" currentPath="/manager/confirm-deposit">
       <div className="flex h-full overflow-hidden">
-        <ReconciliationQueue
-          selectedId={selected?.id ?? null}
-          onSelect={setSelected}
-        />
+        <ReconciliationQueue selectedId={selected?.id ?? null} onSelect={setSelected} />
         {!selected ? (
           <section className="flex flex-1 items-center justify-center bg-gray-50/60">
             <p className="text-sm text-gray-500">Chọn phiếu cọc để đối chiếu.</p>
           </section>
         ) : (
-          <ReconciliationPanel
-            deposit={selected}
-            onDone={() => setSelected(null)}
-          />
+          <ReconciliationPanel deposit={selected} onDone={() => setSelected(null)} />
         )}
       </div>
     </RoleShell>

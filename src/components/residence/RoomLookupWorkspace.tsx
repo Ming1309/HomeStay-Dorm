@@ -8,12 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useWorkflowStore, type Room, type BedStatus } from "@/lib/workflow-store";
 import { roomAreas, roomTypes } from "@/lib/residence/mock-rooms";
 
@@ -74,9 +69,13 @@ export function RoomLookupWorkspace() {
                 </SelectTrigger>
                 <SelectContent>
                   {roomAreas.map((area) => (
-                    <SelectItem key={area} value={area} className="text-xs">{area}</SelectItem>
+                    <SelectItem key={area} value={area} className="text-xs">
+                      {area}
+                    </SelectItem>
                   ))}
-                  <SelectItem value="all" className="text-xs">Tất cả</SelectItem>
+                  <SelectItem value="all" className="text-xs">
+                    Tất cả
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -89,9 +88,13 @@ export function RoomLookupWorkspace() {
                 </SelectTrigger>
                 <SelectContent>
                   {roomTypes.map((type) => (
-                    <SelectItem key={type} value={type} className="text-xs">{type}</SelectItem>
+                    <SelectItem key={type} value={type} className="text-xs">
+                      {type}
+                    </SelectItem>
                   ))}
-                  <SelectItem value="all" className="text-xs">Tất cả</SelectItem>
+                  <SelectItem value="all" className="text-xs">
+                    Tất cả
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -103,15 +106,24 @@ export function RoomLookupWorkspace() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="available" className="text-xs">Còn trống</SelectItem>
-                  <SelectItem value="partially_available" className="text-xs">Còn giường trống</SelectItem>
-                  <SelectItem value="full" className="text-xs">Đã đầy</SelectItem>
-                  <SelectItem value="maintenance" className="text-xs">Đang bảo trì</SelectItem>
-                  <SelectItem value="all" className="text-xs">Tất cả</SelectItem>
+                  <SelectItem value="available" className="text-xs">
+                    Còn trống
+                  </SelectItem>
+                  <SelectItem value="partially_available" className="text-xs">
+                    Còn giường trống
+                  </SelectItem>
+                  <SelectItem value="full" className="text-xs">
+                    Đã đầy
+                  </SelectItem>
+                  <SelectItem value="maintenance" className="text-xs">
+                    Đang bảo trì
+                  </SelectItem>
+                  <SelectItem value="all" className="text-xs">
+                    Tất cả
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
           </div>
 
           <div className="flex items-center gap-4 text-xs">
@@ -153,9 +165,7 @@ function RoomCard({ room }: { room: Room }) {
   const [showDetail, setShowDetail] = useState(false);
 
   return (
-    <div
-      className="rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md"
-    >
+    <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md">
       <div className="border-b border-gray-100 px-4 py-3">
         <span className="font-mono text-sm font-bold text-blue-600">{room.code}</span>
         <p className="mt-0.5 text-xs text-gray-500">
@@ -173,10 +183,7 @@ function RoomCard({ room }: { room: Room }) {
             <Tooltip key={bed.id}>
               <TooltipTrigger asChild>
                 <div className="flex size-7 items-center justify-center rounded">
-                  <User
-                    className={bedColor[bed.status]}
-                    fill="currentColor"
-                  />
+                  <User className={bedColor[bed.status]} fill="currentColor" />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top" className="text-xs">
