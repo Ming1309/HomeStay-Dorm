@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, Search, Send } from "lucide-react";
+import { Lock, Search, Send, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -43,6 +43,9 @@ const customerSchema = z.object({
 
 const formatCurrency = (amount: number) =>
   `${new Intl.NumberFormat("vi-VN").format(Math.max(amount, 0))} VNĐ`;
+const formatAmountInput = (value: string) =>
+  value ? new Intl.NumberFormat("vi-VN").format(Number(value)) : "";
+const normalizeAmountInput = (value: string) => value.replace(/\D/g, "");
 
 function bedStatusLabel(status: Bed["status"]) {
   if (status === "available")
@@ -67,12 +70,16 @@ export function DepositForm({
   const [quantity, setQuantity] = useState(1);
   const [buildingFilter, setBuildingFilter] = useState<"all" | "Toà A" | "Toà B">("all");
   const [roomTypeFilter, setRoomTypeFilter] = useState<"all" | "4" | "6">("all");
-  const [priceFilter, setPriceFilter] = useState<"all" | "under4" | "4to5" | "over5">("all");
+  const [priceFrom, setPriceFrom] = useState("");
+  const [priceTo, setPriceTo] = useState("");
   const [searched, setSearched] = useState(false);
   const [searchResults, setSearchResults] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [selectedBeds, setSelectedBeds] = useState<string[]>([]);
   const [heldBeds, setHeldBeds] = useState<Set<string>>(new Set());
+  const minPrice = priceFrom ? Number(priceFrom) : null;
+  const maxPrice = priceTo ? Number(priceTo) : null;
+  const invalidPriceRange = minPrice != null && maxPrice != null && minPrice > maxPrice;
 
   const form = useForm<z.infer<typeof customerSchema>>({
     resolver: zodResolver(customerSchema),
@@ -106,6 +113,8 @@ export function DepositForm({
     setSearchResults([]);
     setSelectedRoomId(null);
     setSelectedBeds([]);
+    setPriceFrom("");
+    setPriceTo("");
   }, [
     appointment.id,
     appointment.customerName,
@@ -142,16 +151,19 @@ export function DepositForm({
   const estimatedDeposit = (selectedRoom?.basePrice ?? 0) * 2 * bedCountForDeposit;
 
   const handleSearch = () => {
+    if (invalidPriceRange) {
+      toast.error("Khoảng giá không hợp lệ.");
+      return;
+    }
+
     const normalized = rooms.filter((room) => {
       if (buildingFilter !== "all") {
         const roomBuilding = room.code.endsWith("1") || room.code.endsWith("2") ? "Toà A" : "Toà B";
         if (roomBuilding !== buildingFilter) return false;
       }
       if (roomTypeFilter !== "all" && !room.type.includes(roomTypeFilter)) return false;
-      if (priceFilter === "under4" && room.basePrice >= 4_000_000) return false;
-      if (priceFilter === "4to5" && (room.basePrice < 4_000_000 || room.basePrice > 5_000_000))
-        return false;
-      if (priceFilter === "over5" && room.basePrice <= 5_000_000) return false;
+      if (minPrice != null && room.basePrice < minPrice) return false;
+      if (maxPrice != null && room.basePrice > maxPrice) return false;
       return true;
     });
 
@@ -494,8 +506,8 @@ export function DepositForm({
                 </label>
               </RadioGroup>
 
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
-                <div>
+              <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
+                <div className="xl:col-span-2">
                   <Label className="text-xs text-gray-500">
                     {rentalType === "shared"
                       ? "Số lượng giường cần cọc *"
@@ -509,7 +521,7 @@ export function DepositForm({
                     className="mt-1 h-8 text-xs"
                   />
                 </div>
-                <div>
+                <div className="xl:col-span-2">
                   <Label className="text-xs text-gray-500">Tòa nhà</Label>
                   <Select
                     value={buildingFilter}
@@ -525,7 +537,7 @@ export function DepositForm({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
+                <div className="xl:col-span-2">
                   <Label className="text-xs text-gray-500">Loại phòng</Label>
                   <Select
                     value={roomTypeFilter}
@@ -541,27 +553,43 @@ export function DepositForm({
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className="text-xs text-gray-500">Mức giá</Label>
-                  <Select
-                    value={priceFilter}
-                    onValueChange={(v) => setPriceFilter(v as typeof priceFilter)}
-                  >
-                    <SelectTrigger className="mt-1 h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tất cả</SelectItem>
-                      <SelectItem value="under4">Dưới 4 triệu</SelectItem>
-                      <SelectItem value="4to5">4 - 5 triệu</SelectItem>
-                      <SelectItem value="over5">Trên 5 triệu</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="xl:col-span-4">
+                  <Label className="text-xs text-gray-500">Khoảng giá</Label>
+                  <div className="mt-1 flex items-center gap-2">
+                    <Input
+                      inputMode="numeric"
+                      value={formatAmountInput(priceFrom)}
+                      onChange={(event) => setPriceFrom(normalizeAmountInput(event.target.value))}
+                      className="h-8 min-w-0 text-xs"
+                    />
+                    <Label className="shrink-0 text-xs text-gray-500">-</Label>
+                    <Input
+                      inputMode="numeric"
+                      value={formatAmountInput(priceTo)}
+                      onChange={(event) => setPriceTo(normalizeAmountInput(event.target.value))}
+                      className="h-8 min-w-0 text-xs"
+                    />
+                    <span className="shrink-0 text-[11px] text-gray-400">VNĐ</span>
+                    {(priceFrom || priceTo) && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 shrink-0 text-gray-400 hover:text-gray-700"
+                        onClick={() => {
+                          setPriceFrom("");
+                          setPriceTo("");
+                        }}
+                      >
+                        <X className="size-3.5" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-end">
+                <div className="flex items-end xl:col-span-2">
                   <Button
                     type="button"
-                    className="h-8 w-full bg-blue-600 text-xs hover:bg-blue-700"
+                    className="h-8 w-full xl:ml-auto xl:w-[140px] bg-blue-600 text-xs hover:bg-blue-700"
                     onClick={handleSearch}
                   >
                     <Search className="size-3.5" />
@@ -569,6 +597,9 @@ export function DepositForm({
                   </Button>
                 </div>
               </div>
+              {invalidPriceRange && (
+                <p className="text-xs font-medium text-red-600">Khoảng giá không hợp lệ.</p>
+              )}
             </CardContent>
           </Card>
 

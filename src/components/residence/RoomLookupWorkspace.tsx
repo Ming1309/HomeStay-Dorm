@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
-import { User } from "lucide-react";
+import { User, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -33,16 +35,37 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+function formatAmountInput(value: string): string {
+  return value ? new Intl.NumberFormat("vi-VN").format(Number(value)) : "";
+}
+
+function normalizeAmountInput(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
 export function RoomLookupWorkspace() {
   const { rooms } = useWorkflowStore();
 
+  const [buildingFilter, setBuildingFilter] = useState("all");
   const [areaFilter, setAreaFilter] = useState("Tầng 1");
   const [typeFilter, setTypeFilter] = useState("2 người");
   const [statusFilter, setStatusFilter] = useState("available");
+  const [priceFrom, setPriceFrom] = useState("");
+  const [priceTo, setPriceTo] = useState("");
+  const minPrice = priceFrom ? Number(priceFrom) : null;
+  const maxPrice = priceTo ? Number(priceTo) : null;
+  const invalidPriceRange = minPrice != null && maxPrice != null && minPrice > maxPrice;
 
   const filtered = useMemo(() => {
     let result = rooms;
 
+    if (buildingFilter !== "all") {
+      result = result.filter((r) => {
+        const floor = Number(r.area.replace(/\D/g, ""));
+        const building = floor <= 2 ? "toa-a" : "toa-b";
+        return building === buildingFilter;
+      });
+    }
     if (areaFilter !== "all") {
       result = result.filter((r) => r.area === areaFilter);
     }
@@ -52,79 +75,161 @@ export function RoomLookupWorkspace() {
     if (statusFilter !== "all") {
       result = result.filter((r) => r.status === statusFilter);
     }
+    if (!invalidPriceRange) {
+      if (minPrice != null) {
+        result = result.filter((r) => r.basePrice >= minPrice);
+      }
+      if (maxPrice != null) {
+        result = result.filter((r) => r.basePrice <= maxPrice);
+      }
+    }
 
     return result;
-  }, [rooms, areaFilter, typeFilter, statusFilter]);
+  }, [
+    rooms,
+    buildingFilter,
+    areaFilter,
+    typeFilter,
+    statusFilter,
+    minPrice,
+    maxPrice,
+    invalidPriceRange,
+  ]);
 
   return (
     <TooltipProvider>
       <div className="flex h-full flex-col overflow-hidden bg-gray-50/60">
         <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-4 shadow-sm">
-          <div className="mb-3 flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Label className="w-12 text-xs text-gray-500">Tầng</Label>
-              <Select value={areaFilter} onValueChange={setAreaFilter}>
-                <SelectTrigger className="h-8 w-[140px] text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {roomAreas.map((area) => (
-                    <SelectItem key={area} value={area} className="text-xs">
-                      {area}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="all" className="text-xs">
-                    Tất cả
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="mb-3 max-w-[1240px] space-y-1.5">
+            <div className="hidden grid-cols-[180px_180px_190px_190px_320px] gap-3 lg:grid">
+              <Label className="text-xs text-gray-500">Tòa nhà</Label>
+              <Label className="text-xs text-gray-500">Tầng</Label>
+              <Label className="text-xs text-gray-500">Loại phòng</Label>
+              <Label className="text-xs text-gray-500">Trạng thái</Label>
+              <Label className="text-xs text-gray-500">Khoảng giá</Label>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Label className="w-20 text-xs text-gray-500">Loại phòng</Label>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="h-8 w-[140px] text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {roomTypes.map((type) => (
-                    <SelectItem key={type} value={type} className="text-xs">
-                      {type}
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[180px_180px_190px_190px_320px]">
+              <div>
+                <Label className="mb-1 text-xs text-gray-500 lg:hidden">Tòa nhà</Label>
+                <Select value={buildingFilter} onValueChange={setBuildingFilter}>
+                  <SelectTrigger className="h-8 w-[180px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-xs">
+                      Tất cả
                     </SelectItem>
-                  ))}
-                  <SelectItem value="all" className="text-xs">
-                    Tất cả
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Label className="w-20 text-xs text-gray-500">Trạng thái</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-8 w-[140px] text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="available" className="text-xs">
-                    Còn trống
-                  </SelectItem>
-                  <SelectItem value="partially_available" className="text-xs">
-                    Còn giường trống
-                  </SelectItem>
-                  <SelectItem value="full" className="text-xs">
-                    Đã đầy
-                  </SelectItem>
-                  <SelectItem value="maintenance" className="text-xs">
-                    Đang bảo trì
-                  </SelectItem>
-                  <SelectItem value="all" className="text-xs">
-                    Tất cả
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                    <SelectItem value="toa-a" className="text-xs">
+                      Tòa A
+                    </SelectItem>
+                    <SelectItem value="toa-b" className="text-xs">
+                      Tòa B
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="mb-1 text-xs text-gray-500 lg:hidden">Tầng</Label>
+                <Select value={areaFilter} onValueChange={setAreaFilter}>
+                  <SelectTrigger className="h-8 w-[180px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roomAreas.map((area) => (
+                      <SelectItem key={area} value={area} className="text-xs">
+                        {area}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="all" className="text-xs">
+                      Tất cả
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="mb-1 text-xs text-gray-500 lg:hidden">Loại phòng</Label>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="h-8 w-[190px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roomTypes.map((type) => (
+                      <SelectItem key={type} value={type} className="text-xs">
+                        {type}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="all" className="text-xs">
+                      Tất cả
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="mb-1 text-xs text-gray-500 lg:hidden">Trạng thái</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="h-8 w-[190px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="available" className="text-xs">
+                      Còn trống
+                    </SelectItem>
+                    <SelectItem value="partially_available" className="text-xs">
+                      Còn giường trống
+                    </SelectItem>
+                    <SelectItem value="full" className="text-xs">
+                      Đã đầy
+                    </SelectItem>
+                    <SelectItem value="maintenance" className="text-xs">
+                      Đang bảo trì
+                    </SelectItem>
+                    <SelectItem value="all" className="text-xs">
+                      Tất cả
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="mb-1 text-xs text-gray-500 lg:hidden">Khoảng giá</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    inputMode="numeric"
+                    value={formatAmountInput(priceFrom)}
+                    onChange={(event) => setPriceFrom(normalizeAmountInput(event.target.value))}
+                    placeholder="Từ"
+                    className="h-8 w-[120px] min-w-0 text-xs"
+                  />
+                  <span className="text-xs text-gray-400">-</span>
+                  <Input
+                    inputMode="numeric"
+                    value={formatAmountInput(priceTo)}
+                    onChange={(event) => setPriceTo(normalizeAmountInput(event.target.value))}
+                    placeholder="Đến"
+                    className="h-8 w-[120px] min-w-0 text-xs"
+                  />
+                  <span className="shrink-0 text-xs text-gray-400">VND</span>
+                  {(priceFrom || priceTo) && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 shrink-0 text-gray-400 hover:text-gray-700"
+                      onClick={() => {
+                        setPriceFrom("");
+                        setPriceTo("");
+                      }}
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
+
+          {invalidPriceRange && (
+            <p className="mb-3 text-xs font-medium text-red-600">Khoảng giá không hợp lệ.</p>
+          )}
 
           <div className="flex items-center gap-4 text-xs">
             <span className="text-gray-400">Chú thích:</span>
