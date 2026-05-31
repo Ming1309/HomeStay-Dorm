@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
+import { mockAppointments } from "@/lib/residence/mock-appointments";
+import { mockRooms } from "@/lib/residence/mock-rooms";
+
 export type UserRole = "accountant" | "manager" | "sale" | "admin";
 export type ContractStatus =
   | "pending_payment"
@@ -7,6 +10,87 @@ export type ContractStatus =
   | "pending_handover"
   | "handed_over";
 export type MemberStatus = "pending" | "rejected";
+
+// --- Room / Bed types (UC 1.4.4) ---
+export type RoomStatus = "available" | "partially_available" | "full" | "maintenance";
+export type BedStatus = "available" | "deposited" | "occupied" | "maintenance";
+
+export type Asset = {
+  id: string;
+  name: string;
+  quantity: number;
+  condition: string;
+};
+
+export type Bed = {
+  id: string;
+  code: string;
+  status: BedStatus;
+};
+
+export type Room = {
+  id: string;
+  code: string;
+  area: string;
+  type: string;
+  maxCapacity: number;
+  basePrice: number;
+  beds: Bed[];
+  assets: Asset[];
+  status: RoomStatus;
+};
+
+// --- Appointment types (UC 1.4.5) ---
+export type Appointment = {
+  id: string;
+  code: string;
+  customerName: string;
+  phone: string;
+  email: string;
+  gender: "male" | "female";
+  nationality?: string;
+  docType?: "CCCD" | "Hộ chiếu";
+  docNumber?: string;
+  roomId?: string;
+  room?: string;
+  type: "viewing";
+  status: "success" | "pending" | "cancelled";
+  createdAt: string;
+};
+
+// --- Deposit Request types (UC 1.4.5-1.4.8) ---
+export type DepositRequestStatus =
+  | "init"
+  | "pending_payment"
+  | "pending_reconciliation"
+  | "supplement_required"
+  | "paid"
+  | "cancelled";
+
+export type PaymentMethod = "bank-transfer" | "cash";
+
+export type DepositRequest = {
+  id: string;
+  code: string;
+  appointmentId: string;
+  customerName: string;
+  phone: string;
+  email: string;
+  gender: "male" | "female";
+  roomId: string;
+  room: string;
+  rentalType: "shared" | "whole";
+  selectedBedIds: string[];
+  basePrice: number;
+  depositAmount: number | null;
+  status: DepositRequestStatus;
+  paymentMethod: PaymentMethod | null;
+  paymentProof: string | null; // base64 or URL
+  supplementReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+  groupId: string | null; // MaNhom for group registration
+};
 
 export type ContractMember = {
   id: string;
@@ -60,6 +144,9 @@ type WorkflowStore = {
   isHydrated: boolean;
   contracts: ContractItem[];
   paymentLogs: PaymentLog[];
+  rooms: Room[];
+  appointments: Appointment[];
+  depositRequests: DepositRequest[];
   setRole: (role: UserRole | null) => void;
   recordPayment: (
     contractId: string,
@@ -73,10 +160,142 @@ type WorkflowStore = {
   outstandingDebt: number;
   partialContractsCount: number;
   pendingHandoverCount: number;
+  // Deposit workflow actions (UC 1.4.5-1.4.8)
+  createDepositRequest: (data: {
+    appointmentId: string;
+    customerName: string;
+    phone: string;
+    email: string;
+    gender: "male" | "female";
+    roomId: string;
+    room: string;
+    rentalType: "shared" | "whole";
+    selectedBedIds: string[];
+    basePrice: number;
+    groupId: string | null;
+  }) => void;
+  updateDepositAmount: (depositId: string, amount: number) => void;
+  confirmDepositPayment: (depositId: string) => void;
+  recordDepositPayment: (depositId: string, method: PaymentMethod, proof: string) => void;
+  rejectDepositPayment: (depositId: string, reason: string) => void;
+  cancelDepositRequest: (depositId: string) => void;
 };
 
 const STORAGE_KEY = "homestay-workflow-store-v1";
 const ROLE_KEY = "homestay-current-role-v1";
+
+const initialDepositRequests: DepositRequest[] = [
+  {
+    id: "DR001",
+    code: "PC006",
+    appointmentId: "apt-1",
+    customerName: "Nguyễn Thị Hồng",
+    phone: "0901122334",
+    email: "hong.nguyen@example.com",
+    gender: "female",
+    roomId: "room-2",
+    room: "P.102",
+    rentalType: "shared",
+    selectedBedIds: ["bed-102-1"],
+    basePrice: 4200000,
+    depositAmount: null,
+    status: "init",
+    paymentMethod: null,
+    paymentProof: null,
+    supplementReason: null,
+    createdAt: "2026-05-28T08:00:00.000Z",
+    updatedAt: "2026-05-28T08:00:00.000Z",
+    groupId: null,
+  },
+  {
+    id: "DR002",
+    code: "PC007",
+    appointmentId: "apt-2",
+    customerName: "Trần Văn Hùng",
+    phone: "0911223344",
+    email: "hung.tran@example.com",
+    gender: "male",
+    roomId: "room-5",
+    room: "P.305",
+    rentalType: "whole",
+    selectedBedIds: ["bed-305-1", "bed-305-2", "bed-305-3", "bed-305-4", "bed-305-5", "bed-305-6"],
+    basePrice: 4500000,
+    depositAmount: 54000000,
+    status: "pending_payment",
+    paymentMethod: null,
+    paymentProof: null,
+    supplementReason: null,
+    createdAt: "2026-05-28T09:00:00.000Z",
+    updatedAt: "2026-05-28T09:00:00.000Z",
+    groupId: null,
+  },
+  {
+    id: "DR003",
+    code: "PC008",
+    appointmentId: "apt-3",
+    customerName: "Lê Thị Mai",
+    phone: "0933445566",
+    email: "mai.le@example.com",
+    gender: "female",
+    roomId: "room-7",
+    room: "P.401",
+    rentalType: "whole",
+    selectedBedIds: ["bed-401-1", "bed-401-2"],
+    basePrice: 5500000,
+    depositAmount: 11000000,
+    status: "pending_reconciliation",
+    paymentMethod: "bank-transfer",
+    paymentProof: null,
+    supplementReason: null,
+    createdAt: "2026-05-28T10:00:00.000Z",
+    updatedAt: "2026-05-28T10:30:00.000Z",
+    groupId: null,
+  },
+  {
+    id: "DR004",
+    code: "PC009",
+    appointmentId: "apt-4",
+    customerName: "Phạm Quốc Bảo",
+    phone: "0977889900",
+    email: "bao.pham@example.com",
+    gender: "male",
+    roomId: "room-1",
+    room: "P.101",
+    rentalType: "shared",
+    selectedBedIds: ["bed-101-1"],
+    basePrice: 4000000,
+    depositAmount: 24000000,
+    status: "supplement_required",
+    paymentMethod: "cash",
+    paymentProof: null,
+    supplementReason: "Hình ảnh biên nhận không rõ, vui lòng chụp lại.",
+    createdAt: "2026-05-28T11:00:00.000Z",
+    updatedAt: "2026-05-28T11:30:00.000Z",
+    groupId: null,
+  },
+  {
+    id: "DR005",
+    code: "PC010",
+    appointmentId: "apt-5",
+    customerName: "Hoàng Minh Tâm",
+    phone: "0909090909",
+    email: "tam.hoang@example.com",
+    gender: "male",
+    roomId: "room-5",
+    room: "P.305",
+    rentalType: "shared",
+    selectedBedIds: ["bed-305-1"],
+    basePrice: 4500000,
+    depositAmount: 54000000,
+    status: "paid",
+    paymentMethod: "bank-transfer",
+    paymentProof: null,
+    supplementReason: null,
+    createdAt: "2026-05-27T14:00:00.000Z",
+    updatedAt: "2026-05-27T15:00:00.000Z",
+    groupId: null,
+  },
+];
 
 const initialContracts: ContractItem[] = [
   {
@@ -239,28 +458,15 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [contracts, setContracts] = useState<ContractItem[]>(initialContracts);
   const [paymentLogs, setPaymentLogs] = useState<PaymentLog[]>([]);
+  const [rooms, setRooms] = useState<Room[]>(mockRooms);
+  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+  const [depositRequests, setDepositRequests] = useState<DepositRequest[]>(initialDepositRequests);
 
   useEffect(() => {
     const savedRole = localStorage.getItem(ROLE_KEY) as UserRole | null;
-    const savedStore = localStorage.getItem(STORAGE_KEY);
     if (savedRole) setRoleState(savedRole);
-    if (savedStore) {
-      const parsed = JSON.parse(savedStore) as {
-        contracts: ContractItem[];
-        paymentLogs: PaymentLog[];
-      };
-      const parsedContracts = parsed.contracts ?? initialContracts;
-      const hasPendingHandover = parsedContracts.some((c) => c.status === "pending_handover");
-      // Keep demo queue non-empty even with stale localStorage snapshots.
-      setContracts(hasPendingHandover ? parsedContracts : initialContracts);
-      setPaymentLogs(parsed.paymentLogs ?? []);
-    }
     setIsHydrated(true);
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ contracts, paymentLogs }));
-  }, [contracts, paymentLogs]);
 
   const setRole = (nextRole: UserRole | null) => {
     setRoleState(nextRole);
@@ -271,37 +477,33 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   const recordPayment: WorkflowStore["recordPayment"] = (contractId, amount, method) => {
     const now = new Date().toISOString();
     let scenario: "partial" | "full" = "partial";
-    let nextContract: ContractItem | null = null;
-    let paidThisTimeForLog = 0;
+    let logEntry: PaymentLog | null = null;
 
     setContracts((current) =>
       current.map((item) => {
         if (item.id !== contractId) return item;
         const remaining = Math.max(item.invoiceTotal - item.paidAmount, 0);
         const paidThisTime = Math.min(Math.max(amount, 0), remaining);
-        paidThisTimeForLog = paidThisTime;
         const paidAmount = item.paidAmount + paidThisTime;
         const left = Math.max(item.invoiceTotal - paidAmount, 0);
         const status: ContractStatus = left === 0 ? "pending_handover" : "partial_payment";
         scenario = left === 0 ? "full" : "partial";
-        nextContract = { ...item, paidAmount, status };
-        return nextContract;
+        const updated = { ...item, paidAmount, status };
+        logEntry = {
+          id: `${contractId}-${Date.now()}`,
+          contractId: updated.id,
+          customerName: updated.customerName,
+          room: updated.room,
+          amount: paidThisTime,
+          method,
+          time: now,
+        };
+        return updated;
       }),
     );
 
-    if (nextContract) {
-      setPaymentLogs((current) => [
-        {
-          id: `${contractId}-${Date.now()}`,
-          contractId: nextContract.id,
-          customerName: nextContract.customerName,
-          room: nextContract.room,
-          amount: paidThisTimeForLog,
-          method,
-          time: now,
-        },
-        ...current,
-      ]);
+    if (logEntry) {
+      setPaymentLogs((current) => [logEntry!, ...current]);
     }
 
     return { scenario };
@@ -350,6 +552,116 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // --- Deposit workflow actions (UC 1.4.5-1.4.8) ---
+
+  const createDepositRequest: WorkflowStore["createDepositRequest"] = (data) => {
+    const now = new Date().toISOString();
+    const count = depositRequests.length + 1;
+    const code = `PC${String(count).padStart(3, "0")}`;
+    const newDeposit: DepositRequest = {
+      id: `DR${code}`,
+      code,
+      appointmentId: data.appointmentId,
+      customerName: data.customerName,
+      phone: data.phone,
+      email: data.email,
+      gender: data.gender,
+      roomId: data.roomId,
+      room: data.room,
+      rentalType: data.rentalType,
+      selectedBedIds: data.selectedBedIds,
+      basePrice: data.basePrice,
+      depositAmount: null,
+      status: "init",
+      paymentMethod: null,
+      paymentProof: null,
+      supplementReason: null,
+      createdAt: now,
+      updatedAt: now,
+      groupId: data.groupId,
+    };
+    setDepositRequests((current) => [newDeposit, ...current]);
+    setRooms((current) =>
+      current.map((room) =>
+        room.id !== data.roomId
+          ? room
+          : {
+              ...room,
+              beds: room.beds.map((bed) =>
+                data.selectedBedIds.includes(bed.id) ? { ...bed, status: "deposited" } : bed,
+              ),
+            },
+      ),
+    );
+    setAppointments((current) => current.filter((apt) => apt.id !== data.appointmentId));
+  };
+
+  const updateDepositAmount: WorkflowStore["updateDepositAmount"] = (depositId, amount) => {
+    setDepositRequests((current) =>
+      current.map((d) =>
+        d.id === depositId
+          ? {
+              ...d,
+              depositAmount: amount,
+              status: "pending_payment",
+              updatedAt: new Date().toISOString(),
+            }
+          : d,
+      ),
+    );
+  };
+
+  const confirmDepositPayment: WorkflowStore["confirmDepositPayment"] = (depositId) => {
+    setDepositRequests((current) =>
+      current.map((d) =>
+        d.id === depositId ? { ...d, status: "paid", updatedAt: new Date().toISOString() } : d,
+      ),
+    );
+  };
+
+  const recordDepositPayment: WorkflowStore["recordDepositPayment"] = (
+    depositId,
+    method,
+    proof,
+  ) => {
+    setDepositRequests((current) =>
+      current.map((d) =>
+        d.id === depositId
+          ? {
+              ...d,
+              paymentMethod: method,
+              paymentProof: proof,
+              status: "pending_reconciliation",
+              updatedAt: new Date().toISOString(),
+            }
+          : d,
+      ),
+    );
+  };
+
+  const rejectDepositPayment: WorkflowStore["rejectDepositPayment"] = (depositId, reason) => {
+    setDepositRequests((current) =>
+      current.map((d) =>
+        d.id === depositId
+          ? {
+              ...d,
+              supplementReason: reason,
+              status: "supplement_required",
+              updatedAt: new Date().toISOString(),
+            }
+          : d,
+      ),
+    );
+  };
+
+  const cancelDepositRequest: WorkflowStore["cancelDepositRequest"] = (depositId) => {
+    setDepositRequests((current) =>
+      current.map((d) =>
+        d.id === depositId ? { ...d, status: "cancelled", updatedAt: new Date().toISOString() } : d,
+      ),
+    );
+  };
+
   const metrics = useMemo(() => {
     const today = new Date().toDateString();
     const todayCollected = paymentLogs
@@ -371,11 +683,20 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
         isHydrated,
         contracts,
         paymentLogs,
+        rooms,
+        appointments,
+        depositRequests,
         setRole,
         recordPayment,
         rejectMember,
         undoRejectMember,
         approveHandover,
+        createDepositRequest,
+        updateDepositAmount,
+        confirmDepositPayment,
+        recordDepositPayment,
+        rejectDepositPayment,
+        cancelDepositRequest,
         ...metrics,
       }}
     >
