@@ -81,8 +81,10 @@ export function RoleShell({
 }) {
   const navigate = useNavigate();
   const { setRole } = useWorkflowStore();
-  const hideManagerTopNav =
-    role === "manager" && (currentPath === "/manager" || currentPath === "/manager/dashboard");
+  const hideTopNavOnDashboard =
+    (role === "manager" && (currentPath === "/manager" || currentPath === "/manager/dashboard")) ||
+    (role === "accountant" &&
+      (currentPath === "/accountant" || currentPath === "/accountant/dashboard"));
 
   return (
     <div className="h-screen w-full overflow-hidden bg-gray-50">
@@ -103,7 +105,7 @@ export function RoleShell({
           </div>
         </button>
 
-        {hideManagerTopNav ? (
+        {hideTopNavOnDashboard ? (
           <div className="h-full" />
         ) : (
           <nav className="flex h-full items-end gap-1">

@@ -20,7 +20,7 @@ function AccountantDashboardPage() {
             <p className="mt-2 text-sm text-gray-500">Chọn nghiệp vụ bạn muốn thực hiện</p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-5">
             <Link
               to="/accountant/payments"
               className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-emerald-300 hover:shadow-md"
@@ -57,6 +57,19 @@ function AccountantDashboardPage() {
               <h2 className="text-base font-bold text-gray-800">Lịch sử giao dịch</h2>
               <p className="mt-1 text-sm text-gray-500">
                 Xem nhật ký các khoản thu và giao dịch trong hệ thống.
+              </p>
+            </Link>
+
+            <Link
+              to="/accountant/tra-cuu-hop-dong"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-amber-300 hover:shadow-md"
+            >
+              <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white">
+                <Search className="size-5" />
+              </div>
+              <h2 className="text-base font-bold text-gray-800">Tra cứu hợp đồng</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Tìm kiếm, tra cứu và xem chi tiết trạng thái các hợp đồng thuê.
               </p>
             </Link>
 
