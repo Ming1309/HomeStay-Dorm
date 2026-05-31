@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as AccountantIndexRouteImport } from './routes/accountant.index'
 import { Route as SaleTraCuuHopDongRouteImport } from './routes/sale.tra-cuu-hop-dong'
+import { Route as SaleLapPhieuDangKyRouteImport } from './routes/sale.lap-phieu-dang-ky'
 import { Route as SaleLapHopDongRouteImport } from './routes/sale.lap-hop-dong'
 import { Route as SaleHoSoLuuTruRouteImport } from './routes/sale.ho-so-luu-tru'
 import { Route as SaleDashboardRouteImport } from './routes/sale.dashboard'
@@ -86,6 +87,11 @@ const AccountantIndexRoute = AccountantIndexRouteImport.update({
 const SaleTraCuuHopDongRoute = SaleTraCuuHopDongRouteImport.update({
   id: '/tra-cuu-hop-dong',
   path: '/tra-cuu-hop-dong',
+  getParentRoute: () => SaleRoute,
+} as any)
+const SaleLapPhieuDangKyRoute = SaleLapPhieuDangKyRouteImport.update({
+  id: '/lap-phieu-dang-ky',
+  path: '/lap-phieu-dang-ky',
   getParentRoute: () => SaleRoute,
 } as any)
 const SaleLapHopDongRoute = SaleLapHopDongRouteImport.update({
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/sale/dashboard': typeof SaleDashboardRoute
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
+  '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/accountant/': typeof AccountantIndexRoute
   '/manager/': typeof ManagerIndexRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/sale/dashboard': typeof SaleDashboardRoute
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
+  '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/accountant': typeof AccountantIndexRoute
   '/manager': typeof ManagerIndexRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/sale/dashboard': typeof SaleDashboardRoute
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
+  '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/accountant/': typeof AccountantIndexRoute
   '/manager/': typeof ManagerIndexRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/sale/dashboard'
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
+    | '/sale/lap-phieu-dang-ky'
     | '/sale/tra-cuu-hop-dong'
     | '/accountant/'
     | '/manager/'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/sale/dashboard'
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
+    | '/sale/lap-phieu-dang-ky'
     | '/sale/tra-cuu-hop-dong'
     | '/accountant'
     | '/manager'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/sale/dashboard'
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
+    | '/sale/lap-phieu-dang-ky'
     | '/sale/tra-cuu-hop-dong'
     | '/accountant/'
     | '/manager/'
@@ -387,6 +399,13 @@ declare module '@tanstack/react-router' {
       path: '/tra-cuu-hop-dong'
       fullPath: '/sale/tra-cuu-hop-dong'
       preLoaderRoute: typeof SaleTraCuuHopDongRouteImport
+      parentRoute: typeof SaleRoute
+    }
+    '/sale/lap-phieu-dang-ky': {
+      id: '/sale/lap-phieu-dang-ky'
+      path: '/lap-phieu-dang-ky'
+      fullPath: '/sale/lap-phieu-dang-ky'
+      preLoaderRoute: typeof SaleLapPhieuDangKyRouteImport
       parentRoute: typeof SaleRoute
     }
     '/sale/lap-hop-dong': {
@@ -521,6 +540,7 @@ interface SaleRouteChildren {
   SaleDashboardRoute: typeof SaleDashboardRoute
   SaleHoSoLuuTruRoute: typeof SaleHoSoLuuTruRoute
   SaleLapHopDongRoute: typeof SaleLapHopDongRoute
+  SaleLapPhieuDangKyRoute: typeof SaleLapPhieuDangKyRoute
   SaleTraCuuHopDongRoute: typeof SaleTraCuuHopDongRoute
 }
 
@@ -528,6 +548,7 @@ const SaleRouteChildren: SaleRouteChildren = {
   SaleDashboardRoute: SaleDashboardRoute,
   SaleHoSoLuuTruRoute: SaleHoSoLuuTruRoute,
   SaleLapHopDongRoute: SaleLapHopDongRoute,
+  SaleLapPhieuDangKyRoute: SaleLapPhieuDangKyRoute,
   SaleTraCuuHopDongRoute: SaleTraCuuHopDongRoute,
 }
 

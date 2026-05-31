@@ -7,11 +7,16 @@ import { cn } from "@/lib/utils";
 import { useWorkflowStore } from "@/lib/workflow-store";
 
 type SaleNavItem = {
-  to: "/sale/ho-so-luu-tru" | "/sale/lap-hop-dong" | "/sale/tra-cuu-hop-dong";
+  to:
+    | "/sale/lap-phieu-dang-ky"
+    | "/sale/ho-so-luu-tru"
+    | "/sale/lap-hop-dong"
+    | "/sale/tra-cuu-hop-dong";
   label: string;
 };
 
 const saleWorkspaceLinks: SaleNavItem[] = [
+  { to: "/sale/lap-phieu-dang-ky", label: "Lập phiếu đăng ký" },
   { to: "/sale/ho-so-luu-tru", label: "Nhập hồ sơ lưu trú" },
   { to: "/sale/lap-hop-dong", label: "Lập hợp đồng thuê" },
   { to: "/sale/tra-cuu-hop-dong", label: "Tra cứu hợp đồng" },

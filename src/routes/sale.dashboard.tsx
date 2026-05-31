@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileText, Search, Users } from "lucide-react";
+import { ClipboardList, FileText, Search, Users } from "lucide-react";
 
 import { SaleShell } from "@/components/app/SaleShell";
 
@@ -18,6 +18,19 @@ export function SaleDashboardPortalPage() {
           </header>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <Link
+              to="/sale/lap-phieu-dang-ky"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-emerald-300 hover:shadow-md"
+            >
+              <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                <ClipboardList className="size-6" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Lập phiếu đăng ký</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Tạo phiếu đăng ký dịch vụ cho khách hàng mới với thông tin chi tiết.
+              </p>
+            </Link>
+
             <Link
               to="/sale/ho-so-luu-tru"
               className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
