@@ -181,47 +181,34 @@ function SaleAppointmentPage() {
     setSearch("");
   }, [appointmentType]);
 
-  const results = useMemo(() => {
+  const { allowedResults, excludedResults } = useMemo(() => {
     const query = search.toLowerCase().trim();
 
-    if (appointmentType === "view-room") {
-      return mockRegistrations.filter((item) => {
+    const filterByQuery = <T extends Record<string, any>>(arr: T[], fields: string[]) =>
+      arr.filter((item) => {
         if (!query) return true;
-        return (
-          item.registrationNumber.toLowerCase().includes(query) ||
-          item.customerName.toLowerCase().includes(query) ||
-          item.phone.includes(query) ||
-          item.email.toLowerCase().includes(query)
-        );
+        return fields.some((f) => String(item[f] ?? "").toLowerCase().includes(query));
       });
+
+    if (appointmentType === "view-room") {
+      const raw = filterByQuery(mockRegistrations, ["registrationNumber", "customerName", "phone", "email"]);
+      const allowed = raw.filter((r) => r.status === "Đã duyệt");
+      const excluded = raw.filter((r) => r.status !== "Đã duyệt");
+      return { allowedResults: allowed, excludedResults: excluded };
     }
 
     if (appointmentType === "checkin") {
-      return mockApprovedDeposits.filter((item) => {
-        if (!query) return true;
-        return (
-          item.code.toLowerCase().includes(query) ||
-          item.customerName.toLowerCase().includes(query) ||
-          item.phone.includes(query) ||
-          item.room.toLowerCase().includes(query)
-        );
-      });
+      const raw = filterByQuery(mockApprovedDeposits, ["code", "customerName", "phone", "room"]);
+      return { allowedResults: raw, excludedResults: [] };
     }
 
-    return mockActiveContracts.filter((item) => {
-      if (!query) return true;
-      return (
-        item.contractNumber.toLowerCase().includes(query) ||
-        item.customerName.toLowerCase().includes(query) ||
-        item.phone.includes(query) ||
-        item.room.toLowerCase().includes(query)
-      );
-    });
+    const raw = filterByQuery(mockActiveContracts, ["contractNumber", "customerName", "phone", "room"]);
+    return { allowedResults: raw, excludedResults: [] };
   }, [appointmentType, search]);
 
   const selectedReference = useMemo(() => {
-    return results.find((item) => item.id === selectedId) ?? null;
-  }, [results, selectedId]);
+    return allowedResults.find((item) => item.id === selectedId) ?? null;
+  }, [allowedResults, selectedId]);
 
   const currentTypeInfo = APPOINTMENT_TYPES.find((item) => item.value === appointmentType)!;
 
@@ -316,27 +303,25 @@ function SaleAppointmentPage() {
             <ScrollArea className="h-full px-4 py-3">
               <div className="space-y-3">
                 <div className="rounded-xl border border-gray-200 bg-slate-50 p-3 text-xs text-gray-600">
-                  {results.length > 0 ? (
-                    <>
-                      {results.length} chứng từ phù hợp với loại {currentTypeInfo.label}.
-                    </>
+                  {allowedResults.length > 0 ? (
+                    <>{allowedResults.length} chứng từ phù hợp với loại {currentTypeInfo.label}.</>
                   ) : (
                     'Không tìm thấy chứng từ phù hợp. Thử lại với tiêu chí khác.'
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  {results.map((item) => {
+                  {allowedResults.map((item) => {
                     const active = item.id === selectedId;
                     const label =
                       appointmentType === "view-room"
-                        ? `${item.registrationNumber} · ${item.customerName}`
+                        ? `${(item as RegistrationItem).registrationNumber} · ${(item as RegistrationItem).customerName}`
                         : appointmentType === "checkin"
                         ? `${(item as DepositItem).code} · ${(item as DepositItem).customerName}`
                         : `${(item as ContractItem).contractNumber} · ${(item as ContractItem).customerName}`;
                     const subtitle =
                       appointmentType === "view-room"
-                        ? `${item.phone} • ${item.email}`
+                        ? `${(item as RegistrationItem).phone} • ${(item as RegistrationItem).email}`
                         : appointmentType === "checkin"
                         ? `${(item as DepositItem).phone} • ${(item as DepositItem).room}`
                         : `${(item as ContractItem).phone} • ${(item as ContractItem).room}`;
@@ -363,6 +348,53 @@ function SaleAppointmentPage() {
                       </button>
                     );
                   })}
+
+                  {excludedResults.length > 0 && (
+                    <div className="pt-2">
+                      <div className="mb-2 text-xs font-semibold text-gray-500">Chứng từ không phù hợp (không thể chọn)</div>
+                      <div className="space-y-2">
+                        {appointmentType === "view-room" &&
+                          (excludedResults as RegistrationItem[]).map((item) => (
+                            <div
+                              key={item.id}
+                              className="group w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-left opacity-60"
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <p className="truncate text-sm font-semibold text-gray-700">{`${item.registrationNumber} · ${item.customerName}`}</p>
+                                <Badge className="h-6 rounded-full bg-amber-100 px-2 text-[11px] text-amber-700">{item.status}</Badge>
+                              </div>
+                              <p className="mt-2 text-xs text-gray-500">{`${item.phone} • ${item.email}`}</p>
+                            </div>
+                          ))}
+
+                        {appointmentType === "checkin" &&
+                          (excludedResults as DepositItem[]).map((item) => (
+                            <div
+                              key={item.id}
+                              className="group w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-left opacity-60"
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <p className="truncate text-sm font-semibold text-gray-700">{`${item.code} · ${item.customerName}`}</p>
+                              </div>
+                              <p className="mt-2 text-xs text-gray-500">{`${item.phone} • ${item.room}`}</p>
+                            </div>
+                          ))}
+
+                        {appointmentType === "checkout" &&
+                          (excludedResults as ContractItem[]).map((item) => (
+                            <div
+                              key={item.id}
+                              className="group w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-left opacity-60"
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <p className="truncate text-sm font-semibold text-gray-700">{`${item.contractNumber} · ${item.customerName}`}</p>
+                              </div>
+                              <p className="mt-2 text-xs text-gray-500">{`${item.phone} • ${item.room}`}</p>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </ScrollArea>
