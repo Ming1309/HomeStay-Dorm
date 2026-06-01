@@ -19,6 +19,7 @@ import { Route as AccountantRouteImport } from './routes/accountant'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as AccountantIndexRouteImport } from './routes/accountant.index'
+import { Route as SaleTraCuuPhieuDangKyRouteImport } from './routes/sale.tra-cuu-phieu-dang-ky'
 import { Route as SaleTraCuuHopDongRouteImport } from './routes/sale.tra-cuu-hop-dong'
 import { Route as SaleLapPhieuDangKyRouteImport } from './routes/sale.lap-phieu-dang-ky'
 import { Route as SaleLapHopDongRouteImport } from './routes/sale.lap-hop-dong'
@@ -83,6 +84,11 @@ const AccountantIndexRoute = AccountantIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AccountantRoute,
+} as any)
+const SaleTraCuuPhieuDangKyRoute = SaleTraCuuPhieuDangKyRouteImport.update({
+  id: '/tra-cuu-phieu-dang-ky',
+  path: '/tra-cuu-phieu-dang-ky',
+  getParentRoute: () => SaleRoute,
 } as any)
 const SaleTraCuuHopDongRoute = SaleTraCuuHopDongRouteImport.update({
   id: '/tra-cuu-hop-dong',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
   '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
+  '/sale/tra-cuu-phieu-dang-ky': typeof SaleTraCuuPhieuDangKyRoute
   '/accountant/': typeof AccountantIndexRoute
   '/manager/': typeof ManagerIndexRoute
 }
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
   '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
+  '/sale/tra-cuu-phieu-dang-ky': typeof SaleTraCuuPhieuDangKyRoute
   '/accountant': typeof AccountantIndexRoute
   '/manager': typeof ManagerIndexRoute
 }
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
   '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
+  '/sale/tra-cuu-phieu-dang-ky': typeof SaleTraCuuPhieuDangKyRoute
   '/accountant/': typeof AccountantIndexRoute
   '/manager/': typeof ManagerIndexRoute
 }
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/sale/lap-hop-dong'
     | '/sale/lap-phieu-dang-ky'
     | '/sale/tra-cuu-hop-dong'
+    | '/sale/tra-cuu-phieu-dang-ky'
     | '/accountant/'
     | '/manager/'
   fileRoutesByTo: FileRoutesByTo
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/sale/lap-hop-dong'
     | '/sale/lap-phieu-dang-ky'
     | '/sale/tra-cuu-hop-dong'
+    | '/sale/tra-cuu-phieu-dang-ky'
     | '/accountant'
     | '/manager'
   id:
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/sale/lap-hop-dong'
     | '/sale/lap-phieu-dang-ky'
     | '/sale/tra-cuu-hop-dong'
+    | '/sale/tra-cuu-phieu-dang-ky'
     | '/accountant/'
     | '/manager/'
   fileRoutesById: FileRoutesById
@@ -393,6 +405,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/accountant/'
       preLoaderRoute: typeof AccountantIndexRouteImport
       parentRoute: typeof AccountantRoute
+    }
+    '/sale/tra-cuu-phieu-dang-ky': {
+      id: '/sale/tra-cuu-phieu-dang-ky'
+      path: '/tra-cuu-phieu-dang-ky'
+      fullPath: '/sale/tra-cuu-phieu-dang-ky'
+      preLoaderRoute: typeof SaleTraCuuPhieuDangKyRouteImport
+      parentRoute: typeof SaleRoute
     }
     '/sale/tra-cuu-hop-dong': {
       id: '/sale/tra-cuu-hop-dong'
@@ -542,6 +561,7 @@ interface SaleRouteChildren {
   SaleLapHopDongRoute: typeof SaleLapHopDongRoute
   SaleLapPhieuDangKyRoute: typeof SaleLapPhieuDangKyRoute
   SaleTraCuuHopDongRoute: typeof SaleTraCuuHopDongRoute
+  SaleTraCuuPhieuDangKyRoute: typeof SaleTraCuuPhieuDangKyRoute
 }
 
 const SaleRouteChildren: SaleRouteChildren = {
@@ -550,6 +570,7 @@ const SaleRouteChildren: SaleRouteChildren = {
   SaleLapHopDongRoute: SaleLapHopDongRoute,
   SaleLapPhieuDangKyRoute: SaleLapPhieuDangKyRoute,
   SaleTraCuuHopDongRoute: SaleTraCuuHopDongRoute,
+  SaleTraCuuPhieuDangKyRoute: SaleTraCuuPhieuDangKyRoute,
 }
 
 const SaleRouteWithChildren = SaleRoute._addFileChildren(SaleRouteChildren)

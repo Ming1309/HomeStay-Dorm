@@ -7,7 +7,7 @@ export const Route = createFileRoute("/sale/dashboard")({
   component: SaleDashboardPortalPage,
 });
 
-export function SaleDashboardPortalPage() {
+function SaleDashboardPortalPage() {
   return (
     <SaleShell currentPath="/sale/dashboard" showWorkspaceNav={false}>
       <div className="flex h-full items-start justify-center overflow-y-auto bg-gray-50/60 p-6">
@@ -67,6 +67,19 @@ export function SaleDashboardPortalPage() {
               <h2 className="text-lg font-bold text-gray-800">Tra cứu hợp đồng</h2>
               <p className="mt-2 text-sm text-gray-500">
                 Tìm kiếm, tra cứu và xem chi tiết các hợp đồng thuê trong hệ thống.
+              </p>
+            </Link>
+
+            <Link
+              to="/sale/tra-cuu-phieu-dang-ky"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-amber-300 hover:shadow-md"
+            >
+              <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-amber-50 text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white">
+                <Search className="size-6" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Tra cứu phiếu đăng ký</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Tìm kiếm và xem chi tiết phiếu đăng ký khách hàng để hỗ trợ tư vấn.
               </p>
             </Link>
           </div>
