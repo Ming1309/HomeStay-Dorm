@@ -21,6 +21,7 @@ import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as AccountantIndexRouteImport } from './routes/accountant.index'
 import { Route as SaleTraCuuPhieuDangKyRouteImport } from './routes/sale.tra-cuu-phieu-dang-ky'
 import { Route as SaleTraCuuHopDongRouteImport } from './routes/sale.tra-cuu-hop-dong'
+import { Route as SaleLichHenRouteImport } from './routes/sale.lich-hen'
 import { Route as SaleLapPhieuDangKyRouteImport } from './routes/sale.lap-phieu-dang-ky'
 import { Route as SaleLapHopDongRouteImport } from './routes/sale.lap-hop-dong'
 import { Route as SaleHoSoLuuTruRouteImport } from './routes/sale.ho-so-luu-tru'
@@ -93,6 +94,11 @@ const SaleTraCuuPhieuDangKyRoute = SaleTraCuuPhieuDangKyRouteImport.update({
 const SaleTraCuuHopDongRoute = SaleTraCuuHopDongRouteImport.update({
   id: '/tra-cuu-hop-dong',
   path: '/tra-cuu-hop-dong',
+  getParentRoute: () => SaleRoute,
+} as any)
+const SaleLichHenRoute = SaleLichHenRouteImport.update({
+  id: '/lich-hen',
+  path: '/lich-hen',
   getParentRoute: () => SaleRoute,
 } as any)
 const SaleLapPhieuDangKyRoute = SaleLapPhieuDangKyRouteImport.update({
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
   '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
+  '/sale/lich-hen': typeof SaleLichHenRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-phieu-dang-ky': typeof SaleTraCuuPhieuDangKyRoute
   '/accountant/': typeof AccountantIndexRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
   '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
+  '/sale/lich-hen': typeof SaleLichHenRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-phieu-dang-ky': typeof SaleTraCuuPhieuDangKyRoute
   '/accountant': typeof AccountantIndexRoute
@@ -236,6 +244,7 @@ export interface FileRoutesById {
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
   '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
+  '/sale/lich-hen': typeof SaleLichHenRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-phieu-dang-ky': typeof SaleTraCuuPhieuDangKyRoute
   '/accountant/': typeof AccountantIndexRoute
@@ -265,6 +274,7 @@ export interface FileRouteTypes {
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
     | '/sale/lap-phieu-dang-ky'
+    | '/sale/lich-hen'
     | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-phieu-dang-ky'
     | '/accountant/'
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
     | '/sale/lap-phieu-dang-ky'
+    | '/sale/lich-hen'
     | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-phieu-dang-ky'
     | '/accountant'
@@ -317,6 +328,7 @@ export interface FileRouteTypes {
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
     | '/sale/lap-phieu-dang-ky'
+    | '/sale/lich-hen'
     | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-phieu-dang-ky'
     | '/accountant/'
@@ -418,6 +430,13 @@ declare module '@tanstack/react-router' {
       path: '/tra-cuu-hop-dong'
       fullPath: '/sale/tra-cuu-hop-dong'
       preLoaderRoute: typeof SaleTraCuuHopDongRouteImport
+      parentRoute: typeof SaleRoute
+    }
+    '/sale/lich-hen': {
+      id: '/sale/lich-hen'
+      path: '/lich-hen'
+      fullPath: '/sale/lich-hen'
+      preLoaderRoute: typeof SaleLichHenRouteImport
       parentRoute: typeof SaleRoute
     }
     '/sale/lap-phieu-dang-ky': {
@@ -560,6 +579,7 @@ interface SaleRouteChildren {
   SaleHoSoLuuTruRoute: typeof SaleHoSoLuuTruRoute
   SaleLapHopDongRoute: typeof SaleLapHopDongRoute
   SaleLapPhieuDangKyRoute: typeof SaleLapPhieuDangKyRoute
+  SaleLichHenRoute: typeof SaleLichHenRoute
   SaleTraCuuHopDongRoute: typeof SaleTraCuuHopDongRoute
   SaleTraCuuPhieuDangKyRoute: typeof SaleTraCuuPhieuDangKyRoute
 }
@@ -569,6 +589,7 @@ const SaleRouteChildren: SaleRouteChildren = {
   SaleHoSoLuuTruRoute: SaleHoSoLuuTruRoute,
   SaleLapHopDongRoute: SaleLapHopDongRoute,
   SaleLapPhieuDangKyRoute: SaleLapPhieuDangKyRoute,
+  SaleLichHenRoute: SaleLichHenRoute,
   SaleTraCuuHopDongRoute: SaleTraCuuHopDongRoute,
   SaleTraCuuPhieuDangKyRoute: SaleTraCuuPhieuDangKyRoute,
 }

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ClipboardList, FileText, Search, Users } from "lucide-react";
+import { ClipboardList, FileText, Search, Users, CalendarDays } from "lucide-react";
 
 import { SaleShell } from "@/components/app/SaleShell";
 
@@ -80,6 +80,19 @@ function SaleDashboardPortalPage() {
               <h2 className="text-lg font-bold text-gray-800">Tra cứu phiếu đăng ký</h2>
               <p className="mt-2 text-sm text-gray-500">
                 Tìm kiếm và xem chi tiết phiếu đăng ký khách hàng để hỗ trợ tư vấn.
+              </p>
+            </Link>
+
+            <Link
+              to="/sale/lich-hen"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-sky-300 hover:shadow-md"
+            >
+              <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-sky-50 text-sky-600 transition-colors group-hover:bg-sky-600 group-hover:text-white">
+                <CalendarDays className="size-6" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Tạo lịch hẹn</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Tạo lịch hẹn với khách hàng, liên kết chứng từ và lên lịch nhắc tự động.
               </p>
             </Link>
           </div>
