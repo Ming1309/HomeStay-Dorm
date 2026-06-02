@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  Bed,
   Calculator,
+  ClipboardCheck,
   CreditCard,
   FileText,
   FileWarning,
   Receipt,
   Search,
-  Bed,
   Undo2,
 } from "lucide-react";
 
@@ -53,6 +54,32 @@ function AccountantDashboardPage() {
               <h2 className="text-base font-bold text-gray-800">Tính tiền cọc</h2>
               <p className="mt-1 text-sm text-gray-500">
                 Tính toán và xác nhận số tiền cọc cho khách thuê.
+              </p>
+            </Link>
+
+            <Link
+              to="/accountant/doi-soat"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-amber-300 hover:shadow-md"
+            >
+              <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white">
+                <ClipboardCheck className="size-5" />
+              </div>
+              <h2 className="text-base font-bold text-gray-800">Phiếu đối soát</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Lập và xác nhận phiếu đối soát tiền cọc cho hợp đồng thuê.
+              </p>
+            </Link>
+
+            <Link
+              to="/accountant/thanh-toan-tra-phong"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-emerald-300 hover:shadow-md"
+            >
+              <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                <CreditCard className="size-5" />
+              </div>
+              <h2 className="text-base font-bold text-gray-800">Thanh toán trả phòng</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Xử lý thu tiền khách phải trả sau khi phiếu đối soát đã chốt.
               </p>
             </Link>
 

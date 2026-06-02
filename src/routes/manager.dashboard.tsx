@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import type { ComponentType } from "react";
-import { Bed, Home, ScrollText, Search, ShieldCheck, ShieldHalf } from "lucide-react";
+import { Bed, Home, ScrollText, Search, ShieldCheck, ShieldHalf, ClipboardCheck } from "lucide-react";
 
 import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,6 +47,12 @@ const launchpadItems = [
     description:
       "Xác nhận thanh lý hợp đồng sau khi hoàn tất mọi nghĩa vụ tài chính và bàn giao phòng.",
     icon: ScrollText,
+  },
+  {
+    to: "/manager/thu-hoi-tai-san",
+    title: "Thu hồi tài sản",
+    description: "Lập biên bản thu hồi tài sản khi khách trả phòng để Kế toán đối soát.",
+    icon: ClipboardCheck,
   },
   {
     to: "/manager/contracts",

@@ -275,16 +275,19 @@ export function ContractLookupWorkspace() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewMemberDetails, setViewMemberDetails] = useState<ApprovedMember | null>(null);
 
+  const buildSearchText = (contract: LookupContract) => {
+    const memberText = contract.approvedMembers
+      .map((member) => `${member.fullName} ${member.docNumber} ${member.phone}`)
+      .join(" ");
+
+    return `${contract.customerName} ${contract.representativeName} ${contract.phone} ${contract.id} ${contract.room} ${memberText}`.toLowerCase();
+  };
+
   const results = useMemo(() => {
     const q = appliedQuery.trim().toLowerCase();
     return contracts.filter((contract) => {
       const statusMatched = appliedStatus === "all" ? true : contract.status === appliedStatus;
-      const textMatched =
-        q.length === 0
-          ? true
-          : `${contract.customerName} ${contract.phone} ${contract.id} ${contract.room}`
-              .toLowerCase()
-              .includes(q);
+      const textMatched = q.length === 0 ? true : buildSearchText(contract).includes(q);
       return statusMatched && textMatched;
     });
   }, [appliedQuery, appliedStatus]);
@@ -292,15 +295,9 @@ export function ContractLookupWorkspace() {
   const selected = results.find((item) => item.id === selectedId) ?? null;
 
   const onSearch = () => {
-    const q = queryInput.trim().toLowerCase();
     const next = contracts.filter((contract) => {
       const statusMatched = statusInput === "all" ? true : contract.status === statusInput;
-      const textMatched =
-        q.length === 0
-          ? true
-          : `${contract.customerName} ${contract.phone} ${contract.id} ${contract.room}`
-              .toLowerCase()
-              .includes(q);
+      const textMatched = queryInput.trim().length === 0 ? true : buildSearchText(contract).includes(queryInput.trim().toLowerCase());
       return statusMatched && textMatched;
     });
     setAppliedQuery(queryInput);

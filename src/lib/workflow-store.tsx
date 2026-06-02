@@ -66,6 +66,7 @@ export type DepositRequestStatus =
   | "pending_payment"
   | "pending_reconciliation"
   | "supplement_required"
+  | "pending_settlement"
   | "paid"
   | "cancelled";
 
@@ -89,6 +90,7 @@ export type DepositRequest = {
   paymentMethod: PaymentMethod | null;
   paymentProof: string | null; // base64 or URL
   supplementReason: string | null;
+  reconciliationItems?: Array<{ id: string; description: string; amount: number }>;
   createdAt: string;
   updatedAt: string;
   groupId: string | null; // MaNhom for group registration
@@ -279,6 +281,7 @@ type WorkflowStore = {
   }) => void;
   updateDepositAmount: (depositId: string, amount: number) => void;
   confirmDepositPayment: (depositId: string) => void;
+  settleDepositReconciliation: (depositId: string) => void;
   recordDepositPayment: (depositId: string, method: PaymentMethod, proof: string) => void;
   rejectDepositPayment: (depositId: string, reason: string) => void;
   cancelDepositRequest: (depositId: string) => void;
@@ -432,6 +435,33 @@ const initialDepositRequests: DepositRequest[] = [
     supplementReason: null,
     createdAt: "2026-05-27T14:00:00.000Z",
     updatedAt: "2026-05-27T15:00:00.000Z",
+    groupId: null,
+  },
+  {
+    id: "DR006",
+    code: "PC011",
+    appointmentId: "apt-6",
+    customerName: "Võ Minh Quân",
+    phone: "0912333445",
+    email: "quan.vo@example.com",
+    gender: "male",
+    roomId: "room-2",
+    room: "P.202",
+    rentalType: "whole",
+    selectedBedIds: ["bed-202-1", "bed-202-2"],
+    basePrice: 4600000,
+    depositAmount: 46000000,
+    status: "pending_settlement",
+    paymentMethod: "bank-transfer",
+    paymentProof: "proof-settlement.jpg",
+    supplementReason: null,
+    reconciliationItems: [
+      { id: "ri-1", description: "Tiền điện tháng 5", amount: 220000 },
+      { id: "ri-2", description: "Tiền nước tháng 5", amount: 110000 },
+      { id: "ri-3", description: "Phí vệ sinh cuối kỳ", amount: 150000 },
+    ],
+    createdAt: "2026-05-29T09:00:00.000Z",
+    updatedAt: "2026-05-29T09:15:00.000Z",
     groupId: null,
   },
 ];
@@ -1014,6 +1044,16 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  const settleDepositReconciliation: WorkflowStore["settleDepositReconciliation"] = (depositId) => {
+    setDepositRequests((current) =>
+      current.map((d) =>
+        d.id === depositId
+          ? { ...d, status: "paid", updatedAt: new Date().toISOString() }
+          : d,
+      ),
+    );
+  };
+
   const rejectDepositPayment: WorkflowStore["rejectDepositPayment"] = (depositId, reason) => {
     setDepositRequests((current) =>
       current.map((d) =>
@@ -1187,6 +1227,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
         createDepositRequest,
         updateDepositAmount,
         confirmDepositPayment,
+        settleDepositReconciliation,
         recordDepositPayment,
         rejectDepositPayment,
         cancelDepositRequest,
