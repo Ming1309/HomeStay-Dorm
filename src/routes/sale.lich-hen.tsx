@@ -15,18 +15,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-const APPOINTMENT_TYPES = [
-  { value: "view-room", label: "Xem phòng", helper: "Cho phép tìm kiếm Phiếu đăng ký." },
-  { value: "checkin", label: "Nhận phòng", helper: "Cho phép tìm kiếm Phiếu cọc đã duyệt." },
-  { value: "checkout", label: "Trả phòng", helper: "Cho phép tìm kiếm Hợp đồng đang hiệu lực." },
-] as const;
-
-const BRANCHES = [
-  { value: "CN-A", label: "Chi nhánh A" },
-  { value: "CN-B", label: "Chi nhánh B" },
-  { value: "CN-C", label: "Chi nhánh C" },
-];
+import {
+  APPOINTMENT_TYPES,
+  AppointmentRecord,
+  AppointmentType,
+  BRANCHES,
+  loadAppointments,
+  saveAppointments,
+} from "@/lib/appointments";
 
 const appointmentSchema = z.object({
   branch: z.string().min(1, "Chi nhánh hẹn là bắt buộc"),
@@ -35,8 +31,6 @@ const appointmentSchema = z.object({
 });
 
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
-
-type AppointmentType = (typeof APPOINTMENT_TYPES)[number]["value"];
 
 type RegistrationItem = {
   id: string;
@@ -61,16 +55,6 @@ type ContractItem = {
   customerName: string;
   phone: string;
   room: string;
-};
-
-type AppointmentRecord = {
-  id: string;
-  appointmentType: AppointmentType;
-  referenceLabel: string;
-  branch: string;
-  date: string;
-  time: string;
-  status: string;
 };
 
 const mockRegistrations: RegistrationItem[] = [
@@ -148,6 +132,8 @@ const mockActiveContracts: ContractItem[] = [
   },
 ];
 
+ 
+
 export const Route = createFileRoute("/sale/lich-hen")({
   component: SaleAppointmentPage,
 });
@@ -156,7 +142,7 @@ function SaleAppointmentPage() {
   const [appointmentType, setAppointmentType] = useState<AppointmentType>("view-room");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentRecord[]>(() => loadAppointments());
 
   const {
     register,
@@ -180,6 +166,10 @@ function SaleAppointmentPage() {
     setSelectedId(null);
     setSearch("");
   }, [appointmentType]);
+
+  useEffect(() => {
+    saveAppointments(appointments);
+  }, [appointments]);
 
   const { allowedResults, excludedResults } = useMemo(() => {
     const query = search.toLowerCase().trim();

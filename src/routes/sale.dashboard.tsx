@@ -95,6 +95,19 @@ function SaleDashboardPortalPage() {
                 Tạo lịch hẹn với khách hàng, liên kết chứng từ và lên lịch nhắc tự động.
               </p>
             </Link>
+
+            <Link
+              to="/sale/tra-cuu-lich-hen"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-violet-300 hover:shadow-md"
+            >
+              <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-violet-50 text-violet-600 transition-colors group-hover:bg-violet-600 group-hover:text-white">
+                <Search className="size-6" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Tra cứu lịch hẹn</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Xem lại các lịch hẹn đã tạo và tìm nhanh theo thời gian, chi nhánh hoặc khách hàng.
+              </p>
+            </Link>
           </div>
         </div>
       </div>

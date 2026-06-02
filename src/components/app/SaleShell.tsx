@@ -13,7 +13,8 @@ type SaleNavItem = {
     | "/sale/lap-hop-dong"
     | "/sale/tra-cuu-hop-dong"
     | "/sale/tra-cuu-phieu-dang-ky"
-    | "/sale/lich-hen";
+    | "/sale/lich-hen"
+    | "/sale/tra-cuu-lich-hen";
   label: string;
 };
 
@@ -24,6 +25,7 @@ const saleWorkspaceLinks: SaleNavItem[] = [
   { to: "/sale/lap-hop-dong", label: "Lập hợp đồng thuê" },
   { to: "/sale/tra-cuu-hop-dong", label: "Tra cứu hợp đồng" },
   { to: "/sale/lich-hen", label: "Tạo lịch hẹn" },
+  { to: "/sale/tra-cuu-lich-hen", label: "Tra cứu lịch hẹn" },
 ];
 
 export function SaleShell({
