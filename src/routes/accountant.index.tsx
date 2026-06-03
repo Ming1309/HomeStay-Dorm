@@ -1,5 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calculator, CreditCard, FileText, Search, Bed } from "lucide-react";
+import {
+  Calculator,
+  CreditCard,
+  FileText,
+  FileWarning,
+  Receipt,
+  Search,
+  Bed,
+  Undo2,
+} from "lucide-react";
 
 import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
 
@@ -57,6 +66,45 @@ function AccountantDashboardPage() {
               <h2 className="text-base font-bold text-gray-800">Lịch sử giao dịch</h2>
               <p className="mt-1 text-sm text-gray-500">
                 Xem nhật ký các khoản thu và giao dịch trong hệ thống.
+              </p>
+            </Link>
+
+            <Link
+              to="/accountant/compensation"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-rose-300 hover:shadow-md"
+            >
+              <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600 transition-colors group-hover:bg-rose-600 group-hover:text-white">
+                <FileWarning className="size-5" />
+              </div>
+              <h2 className="text-base font-bold text-gray-800">Hóa đơn bồi thường</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Lập hóa đơn bồi thường tài sản hư hỏng hoặc mất khi trả phòng.
+              </p>
+            </Link>
+
+            <Link
+              to="/accountant/receipts"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-amber-300 hover:shadow-md"
+            >
+              <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white">
+                <Receipt className="size-5" />
+              </div>
+              <h2 className="text-base font-bold text-gray-800">Lập phiếu thu</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Thu khoản phát sinh khi chi phí trả phòng vượt quá tiền cọc.
+              </p>
+            </Link>
+
+            <Link
+              to="/accountant/refunds"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-teal-300 hover:shadow-md"
+            >
+              <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-teal-50 text-teal-600 transition-colors group-hover:bg-teal-600 group-hover:text-white">
+                <Undo2 className="size-5" />
+              </div>
+              <h2 className="text-base font-bold text-gray-800">Lập phiếu hoàn cọc</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Hoàn trả phần cọc còn lại cho khách sau khi đối soát trả phòng.
               </p>
             </Link>
 
