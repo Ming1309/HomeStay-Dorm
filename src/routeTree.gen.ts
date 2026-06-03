@@ -46,6 +46,7 @@ import { Route as AccountantTraCuuPhongRouteImport } from './routes/accountant.t
 import { Route as AccountantTraCuuHopDongRouteImport } from './routes/accountant.tra-cuu-hop-dong'
 import { Route as AccountantPaymentsRouteImport } from './routes/accountant.payments'
 import { Route as AccountantDepositCalcRouteImport } from './routes/accountant.deposit-calc'
+import { Route as AccountantCompensationRouteImport } from './routes/accountant.compensation'
 
 const SaleRoute = SaleRouteImport.update({
   id: '/sale',
@@ -232,6 +233,11 @@ const AccountantDepositCalcRoute = AccountantDepositCalcRouteImport.update({
   path: '/deposit-calc',
   getParentRoute: () => AccountantRoute,
 } as any)
+const AccountantCompensationRoute = AccountantCompensationRouteImport.update({
+  id: '/compensation',
+  path: '/compensation',
+  getParentRoute: () => AccountantRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -242,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/manager': typeof ManagerRouteWithChildren
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
+  '/accountant/compensation': typeof AccountantCompensationRoute
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
@@ -278,6 +285,7 @@ export interface FileRoutesByTo {
   '/contract': typeof ContractRoute
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
+  '/accountant/compensation': typeof AccountantCompensationRoute
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
@@ -318,6 +326,7 @@ export interface FileRoutesById {
   '/manager': typeof ManagerRouteWithChildren
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
+  '/accountant/compensation': typeof AccountantCompensationRoute
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/manager'
     | '/residence'
     | '/sale'
+    | '/accountant/compensation'
     | '/accountant/deposit-calc'
     | '/accountant/payments'
     | '/accountant/tra-cuu-hop-dong'
@@ -395,6 +405,7 @@ export interface FileRouteTypes {
     | '/contract'
     | '/residence'
     | '/sale'
+    | '/accountant/compensation'
     | '/accountant/deposit-calc'
     | '/accountant/payments'
     | '/accountant/tra-cuu-hop-dong'
@@ -434,6 +445,7 @@ export interface FileRouteTypes {
     | '/manager'
     | '/residence'
     | '/sale'
+    | '/accountant/compensation'
     | '/accountant/deposit-calc'
     | '/accountant/payments'
     | '/accountant/tra-cuu-hop-dong'
@@ -737,10 +749,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountantDepositCalcRouteImport
       parentRoute: typeof AccountantRoute
     }
+    '/accountant/compensation': {
+      id: '/accountant/compensation'
+      path: '/compensation'
+      fullPath: '/accountant/compensation'
+      preLoaderRoute: typeof AccountantCompensationRouteImport
+      parentRoute: typeof AccountantRoute
+    }
   }
 }
 
 interface AccountantRouteChildren {
+  AccountantCompensationRoute: typeof AccountantCompensationRoute
   AccountantDepositCalcRoute: typeof AccountantDepositCalcRoute
   AccountantPaymentsRoute: typeof AccountantPaymentsRoute
   AccountantTraCuuHopDongRoute: typeof AccountantTraCuuHopDongRoute
@@ -750,6 +770,7 @@ interface AccountantRouteChildren {
 }
 
 const AccountantRouteChildren: AccountantRouteChildren = {
+  AccountantCompensationRoute: AccountantCompensationRoute,
   AccountantDepositCalcRoute: AccountantDepositCalcRoute,
   AccountantPaymentsRoute: AccountantPaymentsRoute,
   AccountantTraCuuHopDongRoute: AccountantTraCuuHopDongRoute,
