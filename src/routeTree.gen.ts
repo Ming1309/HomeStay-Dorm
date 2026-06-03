@@ -44,6 +44,7 @@ import { Route as AdminAssetsRouteImport } from './routes/admin.assets'
 import { Route as AccountantTransactionsRouteImport } from './routes/accountant.transactions'
 import { Route as AccountantTraCuuPhongRouteImport } from './routes/accountant.tra-cuu-phong'
 import { Route as AccountantTraCuuHopDongRouteImport } from './routes/accountant.tra-cuu-hop-dong'
+import { Route as AccountantRefundsRouteImport } from './routes/accountant.refunds'
 import { Route as AccountantReceiptsRouteImport } from './routes/accountant.receipts'
 import { Route as AccountantPaymentsRouteImport } from './routes/accountant.payments'
 import { Route as AccountantDepositCalcRouteImport } from './routes/accountant.deposit-calc'
@@ -224,6 +225,11 @@ const AccountantTraCuuHopDongRoute = AccountantTraCuuHopDongRouteImport.update({
   path: '/tra-cuu-hop-dong',
   getParentRoute: () => AccountantRoute,
 } as any)
+const AccountantRefundsRoute = AccountantRefundsRouteImport.update({
+  id: '/refunds',
+  path: '/refunds',
+  getParentRoute: () => AccountantRoute,
+} as any)
 const AccountantReceiptsRoute = AccountantReceiptsRouteImport.update({
   id: '/receipts',
   path: '/receipts',
@@ -258,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
   '/accountant/receipts': typeof AccountantReceiptsRoute
+  '/accountant/refunds': typeof AccountantRefundsRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
@@ -296,6 +303,7 @@ export interface FileRoutesByTo {
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
   '/accountant/receipts': typeof AccountantReceiptsRoute
+  '/accountant/refunds': typeof AccountantRefundsRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
@@ -338,6 +346,7 @@ export interface FileRoutesById {
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
   '/accountant/receipts': typeof AccountantReceiptsRoute
+  '/accountant/refunds': typeof AccountantRefundsRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
@@ -381,6 +390,7 @@ export interface FileRouteTypes {
     | '/accountant/deposit-calc'
     | '/accountant/payments'
     | '/accountant/receipts'
+    | '/accountant/refunds'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
@@ -419,6 +429,7 @@ export interface FileRouteTypes {
     | '/accountant/deposit-calc'
     | '/accountant/payments'
     | '/accountant/receipts'
+    | '/accountant/refunds'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
@@ -460,6 +471,7 @@ export interface FileRouteTypes {
     | '/accountant/deposit-calc'
     | '/accountant/payments'
     | '/accountant/receipts'
+    | '/accountant/refunds'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
@@ -747,6 +759,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountantTraCuuHopDongRouteImport
       parentRoute: typeof AccountantRoute
     }
+    '/accountant/refunds': {
+      id: '/accountant/refunds'
+      path: '/refunds'
+      fullPath: '/accountant/refunds'
+      preLoaderRoute: typeof AccountantRefundsRouteImport
+      parentRoute: typeof AccountantRoute
+    }
     '/accountant/receipts': {
       id: '/accountant/receipts'
       path: '/receipts'
@@ -783,6 +802,7 @@ interface AccountantRouteChildren {
   AccountantDepositCalcRoute: typeof AccountantDepositCalcRoute
   AccountantPaymentsRoute: typeof AccountantPaymentsRoute
   AccountantReceiptsRoute: typeof AccountantReceiptsRoute
+  AccountantRefundsRoute: typeof AccountantRefundsRoute
   AccountantTraCuuHopDongRoute: typeof AccountantTraCuuHopDongRoute
   AccountantTraCuuPhongRoute: typeof AccountantTraCuuPhongRoute
   AccountantTransactionsRoute: typeof AccountantTransactionsRoute
@@ -794,6 +814,7 @@ const AccountantRouteChildren: AccountantRouteChildren = {
   AccountantDepositCalcRoute: AccountantDepositCalcRoute,
   AccountantPaymentsRoute: AccountantPaymentsRoute,
   AccountantReceiptsRoute: AccountantReceiptsRoute,
+  AccountantRefundsRoute: AccountantRefundsRoute,
   AccountantTraCuuHopDongRoute: AccountantTraCuuHopDongRoute,
   AccountantTraCuuPhongRoute: AccountantTraCuuPhongRoute,
   AccountantTransactionsRoute: AccountantTransactionsRoute,
