@@ -29,6 +29,7 @@ import { Route as SaleGhiNhanCocRouteImport } from './routes/sale.ghi-nhan-coc'
 import { Route as SaleDashboardRouteImport } from './routes/sale.dashboard'
 import { Route as ManagerTraCuuPhongRouteImport } from './routes/manager.tra-cuu-phong'
 import { Route as ManagerTraCuuHopDongRouteImport } from './routes/manager.tra-cuu-hop-dong'
+import { Route as ManagerTerminationRouteImport } from './routes/manager.termination'
 import { Route as ManagerReportsRouteImport } from './routes/manager.reports'
 import { Route as ManagerHandoverRouteImport } from './routes/manager.handover'
 import { Route as ManagerDashboardRouteImport } from './routes/manager.dashboard'
@@ -148,6 +149,11 @@ const ManagerTraCuuPhongRoute = ManagerTraCuuPhongRouteImport.update({
 const ManagerTraCuuHopDongRoute = ManagerTraCuuHopDongRouteImport.update({
   id: '/tra-cuu-hop-dong',
   path: '/tra-cuu-hop-dong',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerTerminationRoute = ManagerTerminationRouteImport.update({
+  id: '/termination',
+  path: '/termination',
   getParentRoute: () => ManagerRoute,
 } as any)
 const ManagerReportsRoute = ManagerReportsRouteImport.update({
@@ -280,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
+  '/manager/termination': typeof ManagerTerminationRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/manager/tra-cuu-phong': typeof ManagerTraCuuPhongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
@@ -319,6 +326,7 @@ export interface FileRoutesByTo {
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
+  '/manager/termination': typeof ManagerTerminationRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/manager/tra-cuu-phong': typeof ManagerTraCuuPhongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
@@ -362,6 +370,7 @@ export interface FileRoutesById {
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
+  '/manager/termination': typeof ManagerTerminationRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/manager/tra-cuu-phong': typeof ManagerTraCuuPhongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
     | '/manager/dashboard'
     | '/manager/handover'
     | '/manager/reports'
+    | '/manager/termination'
     | '/manager/tra-cuu-hop-dong'
     | '/manager/tra-cuu-phong'
     | '/sale/dashboard'
@@ -445,6 +455,7 @@ export interface FileRouteTypes {
     | '/manager/dashboard'
     | '/manager/handover'
     | '/manager/reports'
+    | '/manager/termination'
     | '/manager/tra-cuu-hop-dong'
     | '/manager/tra-cuu-phong'
     | '/sale/dashboard'
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/manager/dashboard'
     | '/manager/handover'
     | '/manager/reports'
+    | '/manager/termination'
     | '/manager/tra-cuu-hop-dong'
     | '/manager/tra-cuu-phong'
     | '/sale/dashboard'
@@ -652,6 +664,13 @@ declare module '@tanstack/react-router' {
       path: '/tra-cuu-hop-dong'
       fullPath: '/manager/tra-cuu-hop-dong'
       preLoaderRoute: typeof ManagerTraCuuHopDongRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/manager/termination': {
+      id: '/manager/termination'
+      path: '/termination'
+      fullPath: '/manager/termination'
+      preLoaderRoute: typeof ManagerTerminationRouteImport
       parentRoute: typeof ManagerRoute
     }
     '/manager/reports': {
@@ -854,6 +873,7 @@ interface ManagerRouteChildren {
   ManagerDashboardRoute: typeof ManagerDashboardRoute
   ManagerHandoverRoute: typeof ManagerHandoverRoute
   ManagerReportsRoute: typeof ManagerReportsRoute
+  ManagerTerminationRoute: typeof ManagerTerminationRoute
   ManagerTraCuuHopDongRoute: typeof ManagerTraCuuHopDongRoute
   ManagerTraCuuPhongRoute: typeof ManagerTraCuuPhongRoute
   ManagerIndexRoute: typeof ManagerIndexRoute
@@ -866,6 +886,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerDashboardRoute: ManagerDashboardRoute,
   ManagerHandoverRoute: ManagerHandoverRoute,
   ManagerReportsRoute: ManagerReportsRoute,
+  ManagerTerminationRoute: ManagerTerminationRoute,
   ManagerTraCuuHopDongRoute: ManagerTraCuuHopDongRoute,
   ManagerTraCuuPhongRoute: ManagerTraCuuPhongRoute,
   ManagerIndexRoute: ManagerIndexRoute,
