@@ -657,6 +657,18 @@ const initialAssetRecoveries: AssetRecovery[] = [
     recordedAt: "2026-05-30T14:00:00.000Z",
     items: [{ id: "ar-6", assetName: "Tủ quần áo", violation: "damaged", quantity: 1, unitPrice: 600000 }],
   },
+  {
+    id: "BBTH-004",
+    code: "BBTH004",
+    contractId: "HD-PC018",
+    recordedAt: "2026-06-03T08:30:00.000Z",
+    items: [
+      { id: "ar-7", assetName: "Điều hòa", violation: "damaged", quantity: 1, unitPrice: 1800000 },
+      { id: "ar-8", assetName: "Tủ quần áo", violation: "damaged", quantity: 1, unitPrice: 1500000 },
+      { id: "ar-9", assetName: "Rèm cửa", violation: "damaged", quantity: 2, unitPrice: 350000 },
+      { id: "ar-10", assetName: "Thẻ từ", violation: "lost", quantity: 3, unitPrice: 100000 },
+    ],
+  },
 ];
 
 const initialSettlementContracts: ContractItem[] = [
@@ -757,6 +769,39 @@ const initialSettlementContracts: ContractItem[] = [
     ],
     lines: [
       { id: "l17-1", description: "Tiền thuê phòng kỳ đầu", cycle: "3 tháng", amount: 4200000 },
+    ],
+  },
+  {
+    id: "HD-PC018",
+    customerName: "Phan Văn Cường",
+    room: "D101",
+    phone: "0912 345 678",
+    rentalPeriod: "01/03/2026 - 31/05/2026",
+    createdAt: "2026-03-01T08:00:00.000Z",
+    invoiceTotal: 3000000,
+    paidAmount: 3000000,
+    status: "pending_settlement",
+    members: [
+      {
+        id: "m18-1",
+        fullName: "Phan Văn Cường",
+        gender: "male",
+        birthYear: 1997,
+        nationality: "Việt Nam",
+        docType: "CCCD",
+        docNumber: "079197777888",
+        phone: "0912345678",
+        address: {
+          street: "22 Bạch Đằng",
+          ward: "Phường 2",
+          district: "Quận Tân Bình",
+          province: "TP. Hồ Chí Minh",
+        },
+        status: "pending",
+      },
+    ],
+    lines: [
+      { id: "l18-1", description: "Tiền thuê phòng kỳ đầu", cycle: "3 tháng", amount: 3000000 },
     ],
   },
 ];
