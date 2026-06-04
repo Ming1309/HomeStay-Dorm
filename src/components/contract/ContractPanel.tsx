@@ -53,6 +53,12 @@ const servicesList = [
   { id: "cleaning", label: "Dọn phòng (2 lần/tuần)", price: 300000 },
   { id: "laundry", label: "Giặt ủi (5kg/tuần)", price: 200000 },
 ];
+const applicableDocs = [
+  "Nội quy ký túc xá v2.0",
+  "Điều khoản thuê v1.0",
+  "Quy định xử lý vi phạm v1.1",
+  "Bảng phí dịch vụ v1.0",
+] as const;
 
 const contractSchema = z
   .object({
@@ -97,6 +103,7 @@ type Props = {
 
 export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Props) {
   const [phase, setPhase] = useState<1 | 2>(1);
+  const [agreedDocs, setAgreedDocs] = useState(false);
 
   const form = useForm<ContractFormValues>({
     resolver: zodResolver(contractSchema),
@@ -112,6 +119,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
   // Reset state when selection changes
   useEffect(() => {
     setPhase(1);
+    setAgreedDocs(false);
     form.reset({
       startDate: "",
       endDate: "",
@@ -137,6 +145,10 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
   }
 
   const onSubmit = (data: ContractFormValues) => {
+    if (!agreedDocs) {
+      toast.error("Vui lòng xác nhận khách hàng đã đồng ý với các tài liệu/quy định áp dụng.");
+      return;
+    }
     // Phase 1 -> Phase 2 transition
     setPhase(2);
     toast.info("Đã chuyển sang chế độ Xem trước hợp đồng", {
@@ -297,6 +309,57 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                   }}
                 />
               ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <h3 className="text-sm font-semibold text-gray-800">Tài liệu áp dụng</h3>
+            <div className="mt-3 space-y-2">
+              {applicableDocs.map((doc) => (
+                <div
+                  key={doc}
+                  className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm"
+                >
+                  <span className="text-gray-700">{doc}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() =>
+                      toast.success(`Đang mở tài liệu: ${doc}`, {
+                        icon: <FileText className="size-3.5 text-blue-600" />,
+                      })
+                    }
+                  >
+                    Xem
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 rounded-md border border-emerald-100 bg-emerald-50 p-3 text-sm">
+              <p className="font-medium text-emerald-700">
+                Chính sách hoàn cọc: Chính sách hoàn cọc mặc định 2026
+              </p>
+              <ul className="mt-2 space-y-1 text-emerald-700/90">
+                <li>- Chưa ký hợp đồng: hoàn 80%</li>
+                <li>- Trước hạn dưới 6 tháng: hoàn 50%</li>
+                <li>- Trước hạn trên 6 tháng: hoàn 70%</li>
+                <li>- Đúng hạn: hoàn 100%</li>
+              </ul>
+            </div>
+
+            <div className="mt-4 flex items-start gap-2">
+              <Checkbox
+                id="agreed-docs"
+                checked={agreedDocs}
+                onCheckedChange={(checked) => setAgreedDocs(checked === true)}
+                className="mt-0.5"
+              />
+              <Label htmlFor="agreed-docs" className="text-sm leading-5 text-gray-700">
+                Khách hàng đã được thông báo và đồng ý với các tài liệu/quy định áp dụng
+              </Label>
             </div>
           </div>
         </div>

@@ -15,6 +15,12 @@ type SaleNavItem = {
     | "/sale/tra-cuu-phieu-dang-ky"
     | "/sale/lich-hen"
     | "/sale/tra-cuu-lich-hen";
+    | "/sale/ho-so-luu-tru"
+    | "/sale/lap-hop-dong"
+    | "/sale/tra-cuu-hop-dong"
+    | "/sale/tra-cuu-phong"
+    | "/sale/lap-phieu-coc"
+    | "/sale/ghi-nhan-coc";
   label: string;
 };
 
@@ -22,10 +28,13 @@ const saleWorkspaceLinks: SaleNavItem[] = [
   { to: "/sale/lap-phieu-dang-ky", label: "Lập phiếu đăng ký" },
   { to: "/sale/tra-cuu-phieu-dang-ky", label: "Tra cứu phiếu đăng ký" },
   { to: "/sale/ho-so-luu-tru", label: "Nhập hồ sơ lưu trú" },
+  { to: "/sale/lap-phieu-coc", label: "Lập phiếu cọc" },
+  { to: "/sale/ghi-nhan-coc", label: "Ghi nhận cọc" },
   { to: "/sale/lap-hop-dong", label: "Lập hợp đồng thuê" },
   { to: "/sale/tra-cuu-hop-dong", label: "Tra cứu hợp đồng" },
   { to: "/sale/lich-hen", label: "Tạo lịch hẹn" },
   { to: "/sale/tra-cuu-lich-hen", label: "Tra cứu lịch hẹn" },
+  { to: "/sale/tra-cuu-phong", label: "Tra cứu phòng" },
 ];
 
 export function SaleShell({
@@ -54,7 +63,7 @@ export function SaleShell({
           <div className="flex size-8 items-center justify-center rounded-md bg-blue-50">
             <Building2 className="size-4 text-blue-600" />
           </div>
-          <h1 className="text-sm font-bold text-gray-800">Quản lý lưu trú</h1>
+          <h1 className="text-sm font-bold text-gray-800">HomeStay Dorm</h1>
         </button>
 
         <nav className="flex h-full items-end gap-1">

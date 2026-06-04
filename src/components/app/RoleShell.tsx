@@ -2,14 +2,18 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import type { ComponentType, ReactNode } from "react";
 import {
+  Bed,
   Bell,
   Building2,
+  Calculator,
   ClipboardCheck,
   CreditCard,
   DoorOpen,
   FileText,
+  Gauge,
   LogOut,
   Search,
+  ShieldCheck,
   UserCircle2,
 } from "lucide-react";
 
@@ -25,14 +29,19 @@ type RoleLink = {
 
 const roleLinks: Record<"accountant" | "manager", RoleLink[]> = {
   accountant: [
-    { to: "/accountant", label: "Thu tiền hợp đồng", icon: CreditCard },
+    { to: "/accountant", label: "Bảng điều khiển", icon: Gauge },
+    { to: "/accountant/payments", label: "Thu tiền hợp đồng", icon: CreditCard },
+    { to: "/accountant/deposit-calc", label: "Tính tiền cọc", icon: Calculator },
     { to: "/accountant/transactions", label: "Lịch sử giao dịch", icon: FileText },
     { to: "/accountant/tra-cuu-hop-dong", label: "Tra cứu hợp đồng", icon: Search },
+    { to: "/accountant/tra-cuu-phong", label: "Tra cứu phòng", icon: Bed },
   ],
   manager: [
     { to: "/manager/approval", label: "Xét duyệt hồ sơ", icon: ClipboardCheck },
     { to: "/manager/handover", label: "Bàn giao phòng", icon: DoorOpen },
+    { to: "/manager/confirm-deposit", label: "Xác nhận tiền cọc", icon: ShieldCheck },
     { to: "/manager/contracts", label: "Tra cứu hợp đồng", icon: Search },
+    { to: "/manager/tra-cuu-phong", label: "Tra cứu phòng", icon: Bed },
   ],
 };
 
@@ -72,8 +81,10 @@ export function RoleShell({
 }) {
   const navigate = useNavigate();
   const { setRole } = useWorkflowStore();
-  const hideManagerTopNav =
-    role === "manager" && (currentPath === "/manager" || currentPath === "/manager/dashboard");
+  const hideTopNavOnDashboard =
+    (role === "manager" && (currentPath === "/manager" || currentPath === "/manager/dashboard")) ||
+    (role === "accountant" &&
+      (currentPath === "/accountant" || currentPath === "/accountant/dashboard"));
 
   return (
     <div className="h-screen w-full overflow-hidden bg-gray-50">
@@ -87,14 +98,11 @@ export function RoleShell({
             <Building2 className="size-4 text-blue-600" />
           </div>
           <div className="flex items-center gap-2">
-            <h1 className="text-sm font-bold text-gray-800">Quản lý lưu trú</h1>
-            <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-              Phân hệ: {role === "accountant" ? "Kế toán" : "Quản lý"}
-            </span>
+            <h1 className="text-sm font-bold text-gray-800">HomeStay Dorm</h1>
           </div>
         </button>
 
-        {hideManagerTopNav ? (
+        {hideTopNavOnDashboard ? (
           <div className="h-full" />
         ) : (
           <nav className="flex h-full items-end gap-1">

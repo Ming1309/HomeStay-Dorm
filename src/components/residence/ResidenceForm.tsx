@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BedDouble,
   Building2Icon,
@@ -32,32 +32,22 @@ type Props = { deposit: Deposit | null };
 
 export function ResidenceForm({ deposit }: Props) {
   const [members, setMembers] = useState<Member[]>([]);
-  const [dob, setDob] = useState("");
-  const [nationality, setNationality] = useState("Việt Nam");
-  const [docType, setDocType] = useState("cccd");
-  const [docId, setDocId] = useState("");
   // Address sub-fields — concatenated on save
   const [addrStreet, setAddrStreet] = useState("");
   const [addrTinh, setAddrTinh] = useState("");
   const [addrQuan, setAddrQuan] = useState("");
   const [addrPhuong, setAddrPhuong] = useState("");
   const [addrOverseas, setAddrOverseas] = useState("");
-  const dobRef = useRef<HTMLInputElement>(null);
-  const isVietnamese = nationality.trim().toLowerCase() === "việt nam";
+  const isVietnamese = (deposit?.nationality ?? "Việt Nam").trim().toLowerCase() === "việt nam";
 
   // Reset form when deposit changes
   useEffect(() => {
     setMembers([]);
-    setDob("");
-    setNationality("Việt Nam");
-    setDocType("cccd");
-    setDocId("");
     setAddrStreet("");
     setAddrTinh("");
     setAddrQuan("");
     setAddrPhuong("");
     setAddrOverseas("");
-    setTimeout(() => dobRef.current?.focus(), 80);
   }, [deposit?.id]);
 
   // Ctrl/Cmd + S → save
@@ -81,20 +71,6 @@ export function ResidenceForm({ deposit }: Props) {
         : `Phiếu #${deposit.code} chuyển sang trạng thái "Chờ duyệt".`,
       icon: <CheckCircle2 className="size-4 text-emerald-500" />,
     });
-  };
-
-  const handleNationalityChange = (value: string) => {
-    setNationality(value);
-    if (value.trim().toLowerCase() === "việt nam") {
-      setDocType("cccd");
-      setAddrOverseas("");
-    } else {
-      setDocType("passport");
-      setAddrStreet("");
-      setAddrTinh("");
-      setAddrQuan("");
-      setAddrPhuong("");
-    }
   };
 
   const canAddMember = deposit ? 1 + members.length < deposit.bedsRented : false;
@@ -187,6 +163,10 @@ export function ResidenceForm({ deposit }: Props) {
                 <LockedField label="Số điện thoại" value={deposit.phone} mono />
                 <LockedField label="Địa chỉ email" value={deposit.email} />
                 <LockedField label="Giới tính" value={deposit.gender === "male" ? "Nam" : "Nữ"} />
+                <LockedField label="Ngày sinh" value={deposit.birthDate || "—"} />
+                <LockedField label="Quốc tịch" value={deposit.nationality || "—"} />
+                <LockedField label="Loại giấy tờ" value={deposit.docType || "—"} />
+                <LockedField label="Số giấy tờ" value={deposit.docNumber || "—"} mono />
               </div>
             </div>
 
@@ -200,45 +180,6 @@ export function ResidenceForm({ deposit }: Props) {
 
             {/* Block B: Editable residence fields */}
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
-              <FormField label="Ngày sinh" required>
-                <Input
-                  ref={dobRef}
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  placeholder="DD/MM/YYYY"
-                  className={inputCls}
-                />
-              </FormField>
-
-              <FormField label="Quốc tịch" required>
-                <Input
-                  value={nationality}
-                  onChange={(e) => handleNationalityChange(e.target.value)}
-                  className={inputCls}
-                />
-              </FormField>
-
-              <FormField label="Loại giấy tờ" required>
-                <Select value={docType} onValueChange={setDocType}>
-                  <SelectTrigger className={inputCls}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cccd">CCCD</SelectItem>
-                    <SelectItem value="passport">Hộ chiếu</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-
-              <FormField label="Số giấy tờ" required>
-                <Input
-                  value={docId}
-                  onChange={(e) => setDocId(e.target.value)}
-                  placeholder={docType === "cccd" ? "012 345 678 901" : "B1234567"}
-                  className={cn(inputCls, "font-mono")}
-                />
-              </FormField>
-
               <div className="col-span-2 space-y-2">
                 <div className="flex items-baseline gap-1">
                   <span className="text-xs font-medium text-gray-600">

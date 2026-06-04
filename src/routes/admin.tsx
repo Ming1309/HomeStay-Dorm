@@ -1,14 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+
+import { AdminShell } from "@/components/app/AdminShell";
 
 export const Route = createFileRoute("/admin")({
-  component: AdminDashboard,
+  component: AdminRoute,
 });
 
-function AdminDashboard() {
+function AdminRoute() {
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-      <p className="text-gray-500 mt-2">Placeholder for Quản trị người dùng screen.</p>
-    </div>
+    <AdminShell>
+      <Outlet />
+    </AdminShell>
   );
 }
