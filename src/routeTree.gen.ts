@@ -29,6 +29,7 @@ import { Route as SaleGhiNhanCocRouteImport } from './routes/sale.ghi-nhan-coc'
 import { Route as SaleDashboardRouteImport } from './routes/sale.dashboard'
 import { Route as ManagerTraCuuPhongRouteImport } from './routes/manager.tra-cuu-phong'
 import { Route as ManagerTraCuuHopDongRouteImport } from './routes/manager.tra-cuu-hop-dong'
+import { Route as ManagerTerminationRouteImport } from './routes/manager.termination'
 import { Route as ManagerReportsRouteImport } from './routes/manager.reports'
 import { Route as ManagerHandoverRouteImport } from './routes/manager.handover'
 import { Route as ManagerDashboardRouteImport } from './routes/manager.dashboard'
@@ -44,8 +45,11 @@ import { Route as AdminAssetsRouteImport } from './routes/admin.assets'
 import { Route as AccountantTransactionsRouteImport } from './routes/accountant.transactions'
 import { Route as AccountantTraCuuPhongRouteImport } from './routes/accountant.tra-cuu-phong'
 import { Route as AccountantTraCuuHopDongRouteImport } from './routes/accountant.tra-cuu-hop-dong'
+import { Route as AccountantRefundsRouteImport } from './routes/accountant.refunds'
+import { Route as AccountantReceiptsRouteImport } from './routes/accountant.receipts'
 import { Route as AccountantPaymentsRouteImport } from './routes/accountant.payments'
 import { Route as AccountantDepositCalcRouteImport } from './routes/accountant.deposit-calc'
+import { Route as AccountantCompensationRouteImport } from './routes/accountant.compensation'
 
 const SaleRoute = SaleRouteImport.update({
   id: '/sale',
@@ -147,6 +151,11 @@ const ManagerTraCuuHopDongRoute = ManagerTraCuuHopDongRouteImport.update({
   path: '/tra-cuu-hop-dong',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerTerminationRoute = ManagerTerminationRouteImport.update({
+  id: '/termination',
+  path: '/termination',
+  getParentRoute: () => ManagerRoute,
+} as any)
 const ManagerReportsRoute = ManagerReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -222,6 +231,16 @@ const AccountantTraCuuHopDongRoute = AccountantTraCuuHopDongRouteImport.update({
   path: '/tra-cuu-hop-dong',
   getParentRoute: () => AccountantRoute,
 } as any)
+const AccountantRefundsRoute = AccountantRefundsRouteImport.update({
+  id: '/refunds',
+  path: '/refunds',
+  getParentRoute: () => AccountantRoute,
+} as any)
+const AccountantReceiptsRoute = AccountantReceiptsRouteImport.update({
+  id: '/receipts',
+  path: '/receipts',
+  getParentRoute: () => AccountantRoute,
+} as any)
 const AccountantPaymentsRoute = AccountantPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
@@ -230,6 +249,11 @@ const AccountantPaymentsRoute = AccountantPaymentsRouteImport.update({
 const AccountantDepositCalcRoute = AccountantDepositCalcRouteImport.update({
   id: '/deposit-calc',
   path: '/deposit-calc',
+  getParentRoute: () => AccountantRoute,
+} as any)
+const AccountantCompensationRoute = AccountantCompensationRouteImport.update({
+  id: '/compensation',
+  path: '/compensation',
   getParentRoute: () => AccountantRoute,
 } as any)
 
@@ -242,8 +266,11 @@ export interface FileRoutesByFullPath {
   '/manager': typeof ManagerRouteWithChildren
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
+  '/accountant/compensation': typeof AccountantCompensationRoute
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
+  '/accountant/receipts': typeof AccountantReceiptsRoute
+  '/accountant/refunds': typeof AccountantRefundsRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
@@ -259,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
+  '/manager/termination': typeof ManagerTerminationRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/manager/tra-cuu-phong': typeof ManagerTraCuuPhongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
@@ -278,8 +306,11 @@ export interface FileRoutesByTo {
   '/contract': typeof ContractRoute
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
+  '/accountant/compensation': typeof AccountantCompensationRoute
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
+  '/accountant/receipts': typeof AccountantReceiptsRoute
+  '/accountant/refunds': typeof AccountantRefundsRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
@@ -295,6 +326,7 @@ export interface FileRoutesByTo {
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
+  '/manager/termination': typeof ManagerTerminationRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/manager/tra-cuu-phong': typeof ManagerTraCuuPhongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
@@ -318,8 +350,11 @@ export interface FileRoutesById {
   '/manager': typeof ManagerRouteWithChildren
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
+  '/accountant/compensation': typeof AccountantCompensationRoute
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
+  '/accountant/receipts': typeof AccountantReceiptsRoute
+  '/accountant/refunds': typeof AccountantRefundsRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
@@ -335,6 +370,7 @@ export interface FileRoutesById {
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
+  '/manager/termination': typeof ManagerTerminationRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/manager/tra-cuu-phong': typeof ManagerTraCuuPhongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
@@ -359,8 +395,11 @@ export interface FileRouteTypes {
     | '/manager'
     | '/residence'
     | '/sale'
+    | '/accountant/compensation'
     | '/accountant/deposit-calc'
     | '/accountant/payments'
+    | '/accountant/receipts'
+    | '/accountant/refunds'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
@@ -376,6 +415,7 @@ export interface FileRouteTypes {
     | '/manager/dashboard'
     | '/manager/handover'
     | '/manager/reports'
+    | '/manager/termination'
     | '/manager/tra-cuu-hop-dong'
     | '/manager/tra-cuu-phong'
     | '/sale/dashboard'
@@ -395,8 +435,11 @@ export interface FileRouteTypes {
     | '/contract'
     | '/residence'
     | '/sale'
+    | '/accountant/compensation'
     | '/accountant/deposit-calc'
     | '/accountant/payments'
+    | '/accountant/receipts'
+    | '/accountant/refunds'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
@@ -412,6 +455,7 @@ export interface FileRouteTypes {
     | '/manager/dashboard'
     | '/manager/handover'
     | '/manager/reports'
+    | '/manager/termination'
     | '/manager/tra-cuu-hop-dong'
     | '/manager/tra-cuu-phong'
     | '/sale/dashboard'
@@ -434,8 +478,11 @@ export interface FileRouteTypes {
     | '/manager'
     | '/residence'
     | '/sale'
+    | '/accountant/compensation'
     | '/accountant/deposit-calc'
     | '/accountant/payments'
+    | '/accountant/receipts'
+    | '/accountant/refunds'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
@@ -451,6 +498,7 @@ export interface FileRouteTypes {
     | '/manager/dashboard'
     | '/manager/handover'
     | '/manager/reports'
+    | '/manager/termination'
     | '/manager/tra-cuu-hop-dong'
     | '/manager/tra-cuu-phong'
     | '/sale/dashboard'
@@ -618,6 +666,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerTraCuuHopDongRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/manager/termination': {
+      id: '/manager/termination'
+      path: '/termination'
+      fullPath: '/manager/termination'
+      preLoaderRoute: typeof ManagerTerminationRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/manager/reports': {
       id: '/manager/reports'
       path: '/reports'
@@ -723,6 +778,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountantTraCuuHopDongRouteImport
       parentRoute: typeof AccountantRoute
     }
+    '/accountant/refunds': {
+      id: '/accountant/refunds'
+      path: '/refunds'
+      fullPath: '/accountant/refunds'
+      preLoaderRoute: typeof AccountantRefundsRouteImport
+      parentRoute: typeof AccountantRoute
+    }
+    '/accountant/receipts': {
+      id: '/accountant/receipts'
+      path: '/receipts'
+      fullPath: '/accountant/receipts'
+      preLoaderRoute: typeof AccountantReceiptsRouteImport
+      parentRoute: typeof AccountantRoute
+    }
     '/accountant/payments': {
       id: '/accountant/payments'
       path: '/payments'
@@ -737,12 +806,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountantDepositCalcRouteImport
       parentRoute: typeof AccountantRoute
     }
+    '/accountant/compensation': {
+      id: '/accountant/compensation'
+      path: '/compensation'
+      fullPath: '/accountant/compensation'
+      preLoaderRoute: typeof AccountantCompensationRouteImport
+      parentRoute: typeof AccountantRoute
+    }
   }
 }
 
 interface AccountantRouteChildren {
+  AccountantCompensationRoute: typeof AccountantCompensationRoute
   AccountantDepositCalcRoute: typeof AccountantDepositCalcRoute
   AccountantPaymentsRoute: typeof AccountantPaymentsRoute
+  AccountantReceiptsRoute: typeof AccountantReceiptsRoute
+  AccountantRefundsRoute: typeof AccountantRefundsRoute
   AccountantTraCuuHopDongRoute: typeof AccountantTraCuuHopDongRoute
   AccountantTraCuuPhongRoute: typeof AccountantTraCuuPhongRoute
   AccountantTransactionsRoute: typeof AccountantTransactionsRoute
@@ -750,8 +829,11 @@ interface AccountantRouteChildren {
 }
 
 const AccountantRouteChildren: AccountantRouteChildren = {
+  AccountantCompensationRoute: AccountantCompensationRoute,
   AccountantDepositCalcRoute: AccountantDepositCalcRoute,
   AccountantPaymentsRoute: AccountantPaymentsRoute,
+  AccountantReceiptsRoute: AccountantReceiptsRoute,
+  AccountantRefundsRoute: AccountantRefundsRoute,
   AccountantTraCuuHopDongRoute: AccountantTraCuuHopDongRoute,
   AccountantTraCuuPhongRoute: AccountantTraCuuPhongRoute,
   AccountantTransactionsRoute: AccountantTransactionsRoute,
@@ -791,6 +873,7 @@ interface ManagerRouteChildren {
   ManagerDashboardRoute: typeof ManagerDashboardRoute
   ManagerHandoverRoute: typeof ManagerHandoverRoute
   ManagerReportsRoute: typeof ManagerReportsRoute
+  ManagerTerminationRoute: typeof ManagerTerminationRoute
   ManagerTraCuuHopDongRoute: typeof ManagerTraCuuHopDongRoute
   ManagerTraCuuPhongRoute: typeof ManagerTraCuuPhongRoute
   ManagerIndexRoute: typeof ManagerIndexRoute
@@ -803,6 +886,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerDashboardRoute: ManagerDashboardRoute,
   ManagerHandoverRoute: ManagerHandoverRoute,
   ManagerReportsRoute: ManagerReportsRoute,
+  ManagerTerminationRoute: ManagerTerminationRoute,
   ManagerTraCuuHopDongRoute: ManagerTraCuuHopDongRoute,
   ManagerTraCuuPhongRoute: ManagerTraCuuPhongRoute,
   ManagerIndexRoute: ManagerIndexRoute,

@@ -8,7 +8,9 @@ export type ContractStatus =
   | "pending_payment"
   | "partial_payment"
   | "pending_handover"
-  | "handed_over";
+  | "handed_over"
+  | "pending_settlement"
+  | "liquidated";
 export type MemberStatus = "pending" | "rejected";
 
 // --- Room / Bed types (UC 1.4.4) ---
@@ -139,6 +141,101 @@ export type PaymentLog = {
   time: string;
 };
 
+// --- Deposit refund policy (lifted from admin.deposit-policy) ---
+export type DepositPolicyVersion = {
+  maChinhSach: string;
+  tenChinhSach: string;
+  tiLeChuaKy: number;
+  tiLeTruocHanNganHan: number;
+  tiLeTruocHanDaiHan: number;
+  tiLeDungHan: number;
+  mocLuuTru: number;
+  ngayApDung: string;
+  ngayKetThuc: string | null;
+};
+
+// --- Settlement phase types (UC 1.4.20-1.4.23) ---
+export type AssetRecoveryItem = {
+  id: string;
+  assetName: string;
+  violation: "damaged" | "lost";
+  quantity: number;
+  unitPrice: number;
+};
+
+export type AssetRecovery = {
+  id: string;
+  code: string;
+  contractId: string;
+  recordedAt: string;
+  items: AssetRecoveryItem[];
+};
+
+export type ReconciliationResult = {
+  contractId: string;
+  initialDeposit: number;
+  refundRate: number;
+  policyCode: string;
+  baseRefund: number;
+  deductions: number;
+  netRefund: number;
+  additionalDue: number;
+};
+
+export type CompensationInvoice = {
+  id: string;
+  code: string;
+  contractId: string;
+  customerName: string;
+  room: string;
+  items: AssetRecoveryItem[];
+  total: number;
+  note: string;
+  status: "draft" | "issued";
+  createdAt: string;
+};
+
+export type ReceiptVoucher = {
+  id: string;
+  code: string;
+  contractId: string;
+  customerName: string;
+  amount: number;
+  paymentMethod: "cash" | "bank-transfer";
+  collector: string;
+  date: string;
+  note?: string;
+};
+
+export type RefundVoucher = {
+  id: string;
+  code: string;
+  contractId: string;
+  customerName: string;
+  amount: number;
+  method: "cash" | "bank-transfer";
+  bankAccount?: string;
+  executor: string;
+  date: string;
+  note?: string;
+};
+
+export type TerminationRecord = {
+  id: string;
+  code: string;
+  contractId: string;
+  customerName: string;
+  date: string;
+  executor: string;
+  note: string;
+  confirmations: {
+    customerReturned: boolean;
+    keysRecovered: boolean;
+    financialSettled: boolean;
+    roomUpdated: boolean;
+  };
+};
+
 type WorkflowStore = {
   role: UserRole | null;
   isHydrated: boolean;
@@ -147,6 +244,12 @@ type WorkflowStore = {
   rooms: Room[];
   appointments: Appointment[];
   depositRequests: DepositRequest[];
+  depositPolicies: DepositPolicyVersion[];
+  assetRecoveries: AssetRecovery[];
+  compensationInvoices: CompensationInvoice[];
+  receiptVouchers: ReceiptVoucher[];
+  refundVouchers: RefundVoucher[];
+  terminationRecords: TerminationRecord[];
   setRole: (role: UserRole | null) => void;
   recordPayment: (
     contractId: string,
@@ -179,6 +282,42 @@ type WorkflowStore = {
   recordDepositPayment: (depositId: string, method: PaymentMethod, proof: string) => void;
   rejectDepositPayment: (depositId: string, reason: string) => void;
   cancelDepositRequest: (depositId: string) => void;
+  // Settlement phase actions (UC 1.4.20-1.4.23)
+  getActivePolicy: () => DepositPolicyVersion | null;
+  getReconciliation: (contractId: string) => ReconciliationResult | null;
+  createCompensationInvoice: (input: {
+    contractId: string;
+    customerName: string;
+    room: string;
+    items: AssetRecoveryItem[];
+    note: string;
+  }) => CompensationInvoice;
+  createReceiptVoucher: (input: {
+    contractId: string;
+    customerName: string;
+    amount: number;
+    paymentMethod: "cash" | "bank-transfer";
+    collector: string;
+    date: string;
+    note?: string;
+  }) => ReceiptVoucher;
+  createRefundVoucher: (input: {
+    contractId: string;
+    customerName: string;
+    amount: number;
+    method: "cash" | "bank-transfer";
+    bankAccount?: string;
+    executor: string;
+    date: string;
+    note?: string;
+  }) => RefundVoucher;
+  terminateContract: (input: {
+    contractId: string;
+    customerName: string;
+    executor: string;
+    note: string;
+    confirmations: TerminationRecord["confirmations"];
+  }) => TerminationRecord;
 };
 
 const STORAGE_KEY = "homestay-workflow-store-v1";
@@ -451,16 +590,241 @@ const initialContracts: ContractItem[] = [
   },
 ];
 
+// --- Settlement phase mock data (UC 1.4.20-1.4.23) ---
+
+const initialDepositPolicies: DepositPolicyVersion[] = [
+  {
+    maChinhSach: "CSHC_003",
+    tenChinhSach: "Chính sách hoàn cọc chuẩn 2026",
+    tiLeChuaKy: 80,
+    tiLeTruocHanNganHan: 50,
+    tiLeTruocHanDaiHan: 70,
+    tiLeDungHan: 100,
+    mocLuuTru: 6,
+    ngayApDung: "2026-05-15",
+    ngayKetThuc: null,
+  },
+  {
+    maChinhSach: "CSHC_002",
+    tenChinhSach: "Chính sách hoàn cọc điều chỉnh Q1/2026",
+    tiLeChuaKy: 75,
+    tiLeTruocHanNganHan: 45,
+    tiLeTruocHanDaiHan: 65,
+    tiLeDungHan: 100,
+    mocLuuTru: 9,
+    ngayApDung: "2026-01-10",
+    ngayKetThuc: "2026-05-14",
+  },
+  {
+    maChinhSach: "CSHC_004",
+    tenChinhSach: "Chính sách hoàn cọc dự kiến 2027",
+    tiLeChuaKy: 78,
+    tiLeTruocHanNganHan: 48,
+    tiLeTruocHanDaiHan: 68,
+    tiLeDungHan: 100,
+    mocLuuTru: 6,
+    ngayApDung: "2027-01-01",
+    ngayKetThuc: null,
+  },
+];
+
+const initialAssetRecoveries: AssetRecovery[] = [
+  {
+    id: "BBTH-001",
+    code: "BBTH001",
+    contractId: "HD-PC015",
+    recordedAt: "2026-06-01T09:30:00.000Z",
+    items: [
+      { id: "ar-1", assetName: "Ghế nhựa", violation: "damaged", quantity: 1, unitPrice: 250000 },
+      { id: "ar-2", assetName: "Thẻ từ", violation: "lost", quantity: 1, unitPrice: 100000 },
+    ],
+  },
+  {
+    id: "BBTH-002",
+    code: "BBTH002",
+    contractId: "HD-PC016",
+    recordedAt: "2026-06-02T10:00:00.000Z",
+    items: [
+      { id: "ar-3", assetName: "Điều hòa", violation: "damaged", quantity: 1, unitPrice: 1500000 },
+      { id: "ar-4", assetName: "Rèm cửa", violation: "damaged", quantity: 1, unitPrice: 350000 },
+      { id: "ar-5", assetName: "Chìa khóa phòng", violation: "lost", quantity: 2, unitPrice: 200000 },
+    ],
+  },
+  {
+    id: "BBTH-003",
+    code: "BBTH003",
+    contractId: "HD-PC017",
+    recordedAt: "2026-05-30T14:00:00.000Z",
+    items: [{ id: "ar-6", assetName: "Tủ quần áo", violation: "damaged", quantity: 1, unitPrice: 600000 }],
+  },
+  {
+    id: "BBTH-004",
+    code: "BBTH004",
+    contractId: "HD-PC018",
+    recordedAt: "2026-06-03T08:30:00.000Z",
+    items: [
+      { id: "ar-7", assetName: "Điều hòa", violation: "damaged", quantity: 1, unitPrice: 1800000 },
+      { id: "ar-8", assetName: "Tủ quần áo", violation: "damaged", quantity: 1, unitPrice: 1500000 },
+      { id: "ar-9", assetName: "Rèm cửa", violation: "damaged", quantity: 2, unitPrice: 350000 },
+      { id: "ar-10", assetName: "Thẻ từ", violation: "lost", quantity: 3, unitPrice: 100000 },
+    ],
+  },
+];
+
+const initialSettlementContracts: ContractItem[] = [
+  {
+    id: "HD-PC015",
+    customerName: "Lê Hoàng Anh",
+    room: "A203",
+    phone: "0935 112 233",
+    rentalPeriod: "01/01/2026 - 31/05/2026",
+    createdAt: "2026-01-02T08:00:00.000Z",
+    invoiceTotal: 5000000,
+    paidAmount: 5000000,
+    status: "pending_settlement",
+    members: [
+      {
+        id: "m15-1",
+        fullName: "Lê Hoàng Anh",
+        gender: "male",
+        birthYear: 2000,
+        nationality: "Việt Nam",
+        docType: "CCCD",
+        docNumber: "079200111222",
+        phone: "0935112233",
+        address: {
+          street: "12 Nguyễn Trãi",
+          ward: "Phường 2",
+          district: "Quận 5",
+          province: "TP. Hồ Chí Minh",
+        },
+        status: "pending",
+      },
+    ],
+    lines: [
+      { id: "l15-1", description: "Tiền thuê phòng kỳ đầu", cycle: "5 tháng", amount: 5000000 },
+    ],
+  },
+  {
+    id: "HD-PC016",
+    customerName: "Phạm Thị Lan",
+    room: "B105",
+    phone: "0987 665 544",
+    rentalPeriod: "15/01/2026 - 14/05/2026",
+    createdAt: "2026-01-15T08:00:00.000Z",
+    invoiceTotal: 4800000,
+    paidAmount: 4800000,
+    status: "pending_settlement",
+    members: [
+      {
+        id: "m16-1",
+        fullName: "Phạm Thị Lan",
+        gender: "female",
+        birthYear: 2001,
+        nationality: "Việt Nam",
+        docType: "CCCD",
+        docNumber: "079201333444",
+        phone: "0987665544",
+        address: {
+          street: "5 Trần Hưng Đạo",
+          ward: "Phường Phan Chu Trinh",
+          district: "Quận Hoàn Kiếm",
+          province: "Hà Nội",
+        },
+        status: "pending",
+      },
+    ],
+    lines: [
+      { id: "l16-1", description: "Tiền thuê phòng kỳ đầu", cycle: "4 tháng", amount: 4800000 },
+    ],
+  },
+  {
+    id: "HD-PC017",
+    customerName: "Trần Quốc Bình",
+    room: "C302",
+    phone: "0902 778 899",
+    rentalPeriod: "01/02/2026 - 30/04/2026",
+    createdAt: "2026-02-01T08:00:00.000Z",
+    invoiceTotal: 4200000,
+    paidAmount: 4200000,
+    status: "liquidated",
+    members: [
+      {
+        id: "m17-1",
+        fullName: "Trần Quốc Bình",
+        gender: "male",
+        birthYear: 1998,
+        nationality: "Việt Nam",
+        docType: "CCCD",
+        docNumber: "079198555666",
+        phone: "0902778899",
+        address: {
+          street: "88 Hai Bà Trưng",
+          ward: "Phường Bến Nghé",
+          district: "Quận 1",
+          province: "TP. Hồ Chí Minh",
+        },
+        status: "pending",
+      },
+    ],
+    lines: [
+      { id: "l17-1", description: "Tiền thuê phòng kỳ đầu", cycle: "3 tháng", amount: 4200000 },
+    ],
+  },
+  {
+    id: "HD-PC018",
+    customerName: "Phan Văn Cường",
+    room: "D101",
+    phone: "0912 345 678",
+    rentalPeriod: "01/03/2026 - 31/05/2026",
+    createdAt: "2026-03-01T08:00:00.000Z",
+    invoiceTotal: 3000000,
+    paidAmount: 3000000,
+    status: "pending_settlement",
+    members: [
+      {
+        id: "m18-1",
+        fullName: "Phan Văn Cường",
+        gender: "male",
+        birthYear: 1997,
+        nationality: "Việt Nam",
+        docType: "CCCD",
+        docNumber: "079197777888",
+        phone: "0912345678",
+        address: {
+          street: "22 Bạch Đằng",
+          ward: "Phường 2",
+          district: "Quận Tân Bình",
+          province: "TP. Hồ Chí Minh",
+        },
+        status: "pending",
+      },
+    ],
+    lines: [
+      { id: "l18-1", description: "Tiền thuê phòng kỳ đầu", cycle: "3 tháng", amount: 3000000 },
+    ],
+  },
+];
+
 const WorkflowContext = createContext<WorkflowStore | null>(null);
 
 export function WorkflowProvider({ children }: { children: ReactNode }) {
   const [role, setRoleState] = useState<UserRole | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [contracts, setContracts] = useState<ContractItem[]>(initialContracts);
+  const [contracts, setContracts] = useState<ContractItem[]>([
+    ...initialContracts,
+    ...initialSettlementContracts,
+  ]);
   const [paymentLogs, setPaymentLogs] = useState<PaymentLog[]>([]);
   const [rooms, setRooms] = useState<Room[]>(mockRooms);
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
   const [depositRequests, setDepositRequests] = useState<DepositRequest[]>(initialDepositRequests);
+  const [depositPolicies] = useState<DepositPolicyVersion[]>(initialDepositPolicies);
+  const [assetRecoveries] = useState<AssetRecovery[]>(initialAssetRecoveries);
+  const [compensationInvoices, setCompensationInvoices] = useState<CompensationInvoice[]>([]);
+  const [receiptVouchers, setReceiptVouchers] = useState<ReceiptVoucher[]>([]);
+  const [refundVouchers, setRefundVouchers] = useState<RefundVoucher[]>([]);
+  const [terminationRecords, setTerminationRecords] = useState<TerminationRecord[]>([]);
 
   useEffect(() => {
     const savedRole = localStorage.getItem(ROLE_KEY) as UserRole | null;
@@ -662,6 +1026,118 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // --- Settlement phase actions (UC 1.4.20-1.4.23) ---
+
+  const getActivePolicy: WorkflowStore["getActivePolicy"] = () => {
+    const today = new Date();
+    const current = depositPolicies.find((p) => {
+      const start = new Date(`${p.ngayApDung}T00:00:00`);
+      const end = p.ngayKetThuc ? new Date(`${p.ngayKetThuc}T00:00:00`) : null;
+      return start <= today && (!end || end >= today);
+    });
+    return current ?? depositPolicies[0] ?? null;
+  };
+
+  const getReconciliation: WorkflowStore["getReconciliation"] = (contractId) => {
+    const contract = contracts.find((c) => c.id === contractId);
+    if (!contract) return null;
+    const policy = getActivePolicy();
+    if (!policy) return null;
+    const recovery = assetRecoveries.find((a) => a.contractId === contractId);
+    const deductions = recovery ? recovery.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0) : 0;
+    const baseRefund = Math.round(contract.invoiceTotal * (policy.tiLeTruocHanDaiHan / 100));
+    const netRefund = Math.max(baseRefund - deductions, 0);
+    const additionalDue = Math.max(deductions - baseRefund, 0);
+    return {
+      contractId,
+      initialDeposit: contract.invoiceTotal,
+      refundRate: policy.tiLeTruocHanDaiHan,
+      policyCode: policy.maChinhSach,
+      baseRefund,
+      deductions,
+      netRefund,
+      additionalDue,
+    };
+  };
+
+  const createCompensationInvoice: WorkflowStore["createCompensationInvoice"] = (input) => {
+    const now = new Date();
+    const count = compensationInvoices.length + 1;
+    const code = `HDBT${String(count).padStart(3, "0")}`;
+    const total = input.items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
+    const invoice: CompensationInvoice = {
+      id: `HDBT-${code}`,
+      code,
+      contractId: input.contractId,
+      customerName: input.customerName,
+      room: input.room,
+      items: input.items,
+      total,
+      note: input.note,
+      status: "issued",
+      createdAt: now.toISOString(),
+    };
+    setCompensationInvoices((current) => [invoice, ...current]);
+    return invoice;
+  };
+
+  const createReceiptVoucher: WorkflowStore["createReceiptVoucher"] = (input) => {
+    const count = receiptVouchers.length + 1;
+    const code = `PT${String(count).padStart(3, "0")}`;
+    const voucher: ReceiptVoucher = {
+      id: `PT-${code}`,
+      code,
+      contractId: input.contractId,
+      customerName: input.customerName,
+      amount: input.amount,
+      paymentMethod: input.paymentMethod,
+      collector: input.collector,
+      date: input.date,
+      note: input.note,
+    };
+    setReceiptVouchers((current) => [voucher, ...current]);
+    return voucher;
+  };
+
+  const createRefundVoucher: WorkflowStore["createRefundVoucher"] = (input) => {
+    const count = refundVouchers.length + 1;
+    const code = `PHC${String(count).padStart(3, "0")}`;
+    const voucher: RefundVoucher = {
+      id: `PHC-${code}`,
+      code,
+      contractId: input.contractId,
+      customerName: input.customerName,
+      amount: input.amount,
+      method: input.method,
+      bankAccount: input.bankAccount,
+      executor: input.executor,
+      date: input.date,
+      note: input.note,
+    };
+    setRefundVouchers((current) => [voucher, ...current]);
+    return voucher;
+  };
+
+  const terminateContract: WorkflowStore["terminateContract"] = (input) => {
+    const count = terminationRecords.length + 1;
+    const code = `BBTL${String(count).padStart(3, "0")}`;
+    const record: TerminationRecord = {
+      id: `BBTL-${code}`,
+      code,
+      contractId: input.contractId,
+      customerName: input.customerName,
+      date: new Date().toISOString(),
+      executor: input.executor,
+      note: input.note,
+      confirmations: input.confirmations,
+    };
+    setTerminationRecords((current) => [record, ...current]);
+    setContracts((current) =>
+      current.map((c) => (c.id === input.contractId ? { ...c, status: "liquidated" } : c)),
+    );
+    return record;
+  };
+
   const metrics = useMemo(() => {
     const today = new Date().toDateString();
     const todayCollected = paymentLogs
@@ -686,6 +1162,12 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
         rooms,
         appointments,
         depositRequests,
+        depositPolicies,
+        assetRecoveries,
+        compensationInvoices,
+        receiptVouchers,
+        refundVouchers,
+        terminationRecords,
         setRole,
         recordPayment,
         rejectMember,
@@ -697,6 +1179,12 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
         recordDepositPayment,
         rejectDepositPayment,
         cancelDepositRequest,
+        getActivePolicy,
+        getReconciliation,
+        createCompensationInvoice,
+        createReceiptVoucher,
+        createRefundVoucher,
+        terminateContract,
         ...metrics,
       }}
     >
