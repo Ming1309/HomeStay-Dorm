@@ -14,10 +14,7 @@ type SaleNavItem = {
     | "/sale/tra-cuu-hop-dong"
     | "/sale/tra-cuu-phieu-dang-ky"
     | "/sale/lich-hen"
-    | "/sale/tra-cuu-lich-hen";
-    | "/sale/ho-so-luu-tru"
-    | "/sale/lap-hop-dong"
-    | "/sale/tra-cuu-hop-dong"
+    | "/sale/tra-cuu-lich-hen"
     | "/sale/tra-cuu-phong"
     | "/sale/lap-phieu-coc"
     | "/sale/ghi-nhan-coc";

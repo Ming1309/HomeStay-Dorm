@@ -20,13 +20,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ManagerIndexRouteImport } from './routes/manager.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AccountantIndexRouteImport } from './routes/accountant.index'
+import { Route as SaleTraCuuPhongRouteImport } from './routes/sale.tra-cuu-phong'
 import { Route as SaleTraCuuPhieuDangKyRouteImport } from './routes/sale.tra-cuu-phieu-dang-ky'
 import { Route as SaleTraCuuLichHenRouteImport } from './routes/sale.tra-cuu-lich-hen'
 import { Route as SaleTraCuuHopDongRouteImport } from './routes/sale.tra-cuu-hop-dong'
 import { Route as SaleLichHenRouteImport } from './routes/sale.lich-hen'
 import { Route as SaleLapPhieuDangKyRouteImport } from './routes/sale.lap-phieu-dang-ky'
-import { Route as SaleTraCuuPhongRouteImport } from './routes/sale.tra-cuu-phong'
-import { Route as SaleTraCuuHopDongRouteImport } from './routes/sale.tra-cuu-hop-dong'
 import { Route as SaleLapPhieuCocRouteImport } from './routes/sale.lap-phieu-coc'
 import { Route as SaleLapHopDongRouteImport } from './routes/sale.lap-hop-dong'
 import { Route as SaleHoSoLuuTruRouteImport } from './routes/sale.ho-so-luu-tru'
@@ -34,6 +33,7 @@ import { Route as SaleGhiNhanCocRouteImport } from './routes/sale.ghi-nhan-coc'
 import { Route as SaleDashboardRouteImport } from './routes/sale.dashboard'
 import { Route as ManagerTraCuuPhongRouteImport } from './routes/manager.tra-cuu-phong'
 import { Route as ManagerTraCuuHopDongRouteImport } from './routes/manager.tra-cuu-hop-dong'
+import { Route as ManagerThuHoiTaiSanRouteImport } from './routes/manager.thu-hoi-tai-san'
 import { Route as ManagerTerminationRouteImport } from './routes/manager.termination'
 import { Route as ManagerReportsRouteImport } from './routes/manager.reports'
 import { Route as ManagerHandoverRouteImport } from './routes/manager.handover'
@@ -50,9 +50,11 @@ import { Route as AdminAssetsRouteImport } from './routes/admin.assets'
 import { Route as AccountantTransactionsRouteImport } from './routes/accountant.transactions'
 import { Route as AccountantTraCuuPhongRouteImport } from './routes/accountant.tra-cuu-phong'
 import { Route as AccountantTraCuuHopDongRouteImport } from './routes/accountant.tra-cuu-hop-dong'
+import { Route as AccountantThanhToanTraPhongRouteImport } from './routes/accountant.thanh-toan-tra-phong'
 import { Route as AccountantRefundsRouteImport } from './routes/accountant.refunds'
 import { Route as AccountantReceiptsRouteImport } from './routes/accountant.receipts'
 import { Route as AccountantPaymentsRouteImport } from './routes/accountant.payments'
+import { Route as AccountantDoiSoatRouteImport } from './routes/accountant.doi-soat'
 import { Route as AccountantDepositCalcRouteImport } from './routes/accountant.deposit-calc'
 import { Route as AccountantCompensationRouteImport } from './routes/accountant.compensation'
 
@@ -111,6 +113,11 @@ const AccountantIndexRoute = AccountantIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AccountantRoute,
 } as any)
+const SaleTraCuuPhongRoute = SaleTraCuuPhongRouteImport.update({
+  id: '/tra-cuu-phong',
+  path: '/tra-cuu-phong',
+  getParentRoute: () => SaleRoute,
+} as any)
 const SaleTraCuuPhieuDangKyRoute = SaleTraCuuPhieuDangKyRouteImport.update({
   id: '/tra-cuu-phieu-dang-ky',
   path: '/tra-cuu-phieu-dang-ky',
@@ -119,9 +126,6 @@ const SaleTraCuuPhieuDangKyRoute = SaleTraCuuPhieuDangKyRouteImport.update({
 const SaleTraCuuLichHenRoute = SaleTraCuuLichHenRouteImport.update({
   id: '/tra-cuu-lich-hen',
   path: '/tra-cuu-lich-hen',
-const SaleTraCuuPhongRoute = SaleTraCuuPhongRouteImport.update({
-  id: '/tra-cuu-phong',
-  path: '/tra-cuu-phong',
   getParentRoute: () => SaleRoute,
 } as any)
 const SaleTraCuuHopDongRoute = SaleTraCuuHopDongRouteImport.update({
@@ -137,6 +141,8 @@ const SaleLichHenRoute = SaleLichHenRouteImport.update({
 const SaleLapPhieuDangKyRoute = SaleLapPhieuDangKyRouteImport.update({
   id: '/lap-phieu-dang-ky',
   path: '/lap-phieu-dang-ky',
+  getParentRoute: () => SaleRoute,
+} as any)
 const SaleLapPhieuCocRoute = SaleLapPhieuCocRouteImport.update({
   id: '/lap-phieu-coc',
   path: '/lap-phieu-coc',
@@ -170,6 +176,11 @@ const ManagerTraCuuPhongRoute = ManagerTraCuuPhongRouteImport.update({
 const ManagerTraCuuHopDongRoute = ManagerTraCuuHopDongRouteImport.update({
   id: '/tra-cuu-hop-dong',
   path: '/tra-cuu-hop-dong',
+  getParentRoute: () => ManagerRoute,
+} as any)
+const ManagerThuHoiTaiSanRoute = ManagerThuHoiTaiSanRouteImport.update({
+  id: '/thu-hoi-tai-san',
+  path: '/thu-hoi-tai-san',
   getParentRoute: () => ManagerRoute,
 } as any)
 const ManagerTerminationRoute = ManagerTerminationRouteImport.update({
@@ -252,6 +263,12 @@ const AccountantTraCuuHopDongRoute = AccountantTraCuuHopDongRouteImport.update({
   path: '/tra-cuu-hop-dong',
   getParentRoute: () => AccountantRoute,
 } as any)
+const AccountantThanhToanTraPhongRoute =
+  AccountantThanhToanTraPhongRouteImport.update({
+    id: '/thanh-toan-tra-phong',
+    path: '/thanh-toan-tra-phong',
+    getParentRoute: () => AccountantRoute,
+  } as any)
 const AccountantRefundsRoute = AccountantRefundsRouteImport.update({
   id: '/refunds',
   path: '/refunds',
@@ -265,6 +282,11 @@ const AccountantReceiptsRoute = AccountantReceiptsRouteImport.update({
 const AccountantPaymentsRoute = AccountantPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
+  getParentRoute: () => AccountantRoute,
+} as any)
+const AccountantDoiSoatRoute = AccountantDoiSoatRouteImport.update({
+  id: '/doi-soat',
+  path: '/doi-soat',
   getParentRoute: () => AccountantRoute,
 } as any)
 const AccountantDepositCalcRoute = AccountantDepositCalcRouteImport.update({
@@ -289,9 +311,11 @@ export interface FileRoutesByFullPath {
   '/sale': typeof SaleRouteWithChildren
   '/accountant/compensation': typeof AccountantCompensationRoute
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
+  '/accountant/doi-soat': typeof AccountantDoiSoatRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
   '/accountant/receipts': typeof AccountantReceiptsRoute
   '/accountant/refunds': typeof AccountantRefundsRoute
+  '/accountant/thanh-toan-tra-phong': typeof AccountantThanhToanTraPhongRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
@@ -308,19 +332,19 @@ export interface FileRoutesByFullPath {
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
   '/manager/termination': typeof ManagerTerminationRoute
+  '/manager/thu-hoi-tai-san': typeof ManagerThuHoiTaiSanRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/manager/tra-cuu-phong': typeof ManagerTraCuuPhongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
   '/sale/ghi-nhan-coc': typeof SaleGhiNhanCocRoute
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
+  '/sale/lap-phieu-coc': typeof SaleLapPhieuCocRoute
   '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
   '/sale/lich-hen': typeof SaleLichHenRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-lich-hen': typeof SaleTraCuuLichHenRoute
   '/sale/tra-cuu-phieu-dang-ky': typeof SaleTraCuuPhieuDangKyRoute
-  '/sale/lap-phieu-coc': typeof SaleLapPhieuCocRoute
-  '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-phong': typeof SaleTraCuuPhongRoute
   '/accountant/': typeof AccountantIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -334,9 +358,11 @@ export interface FileRoutesByTo {
   '/sale': typeof SaleRouteWithChildren
   '/accountant/compensation': typeof AccountantCompensationRoute
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
+  '/accountant/doi-soat': typeof AccountantDoiSoatRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
   '/accountant/receipts': typeof AccountantReceiptsRoute
   '/accountant/refunds': typeof AccountantRefundsRoute
+  '/accountant/thanh-toan-tra-phong': typeof AccountantThanhToanTraPhongRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
@@ -353,19 +379,19 @@ export interface FileRoutesByTo {
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
   '/manager/termination': typeof ManagerTerminationRoute
+  '/manager/thu-hoi-tai-san': typeof ManagerThuHoiTaiSanRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/manager/tra-cuu-phong': typeof ManagerTraCuuPhongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
   '/sale/ghi-nhan-coc': typeof SaleGhiNhanCocRoute
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
+  '/sale/lap-phieu-coc': typeof SaleLapPhieuCocRoute
   '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
   '/sale/lich-hen': typeof SaleLichHenRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-lich-hen': typeof SaleTraCuuLichHenRoute
   '/sale/tra-cuu-phieu-dang-ky': typeof SaleTraCuuPhieuDangKyRoute
-  '/sale/lap-phieu-coc': typeof SaleLapPhieuCocRoute
-  '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-phong': typeof SaleTraCuuPhongRoute
   '/accountant': typeof AccountantIndexRoute
   '/admin': typeof AdminIndexRoute
@@ -383,9 +409,11 @@ export interface FileRoutesById {
   '/sale': typeof SaleRouteWithChildren
   '/accountant/compensation': typeof AccountantCompensationRoute
   '/accountant/deposit-calc': typeof AccountantDepositCalcRoute
+  '/accountant/doi-soat': typeof AccountantDoiSoatRoute
   '/accountant/payments': typeof AccountantPaymentsRoute
   '/accountant/receipts': typeof AccountantReceiptsRoute
   '/accountant/refunds': typeof AccountantRefundsRoute
+  '/accountant/thanh-toan-tra-phong': typeof AccountantThanhToanTraPhongRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
   '/accountant/transactions': typeof AccountantTransactionsRoute
@@ -402,19 +430,19 @@ export interface FileRoutesById {
   '/manager/handover': typeof ManagerHandoverRoute
   '/manager/reports': typeof ManagerReportsRoute
   '/manager/termination': typeof ManagerTerminationRoute
+  '/manager/thu-hoi-tai-san': typeof ManagerThuHoiTaiSanRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
   '/manager/tra-cuu-phong': typeof ManagerTraCuuPhongRoute
   '/sale/dashboard': typeof SaleDashboardRoute
   '/sale/ghi-nhan-coc': typeof SaleGhiNhanCocRoute
   '/sale/ho-so-luu-tru': typeof SaleHoSoLuuTruRoute
   '/sale/lap-hop-dong': typeof SaleLapHopDongRoute
+  '/sale/lap-phieu-coc': typeof SaleLapPhieuCocRoute
   '/sale/lap-phieu-dang-ky': typeof SaleLapPhieuDangKyRoute
   '/sale/lich-hen': typeof SaleLichHenRoute
   '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-lich-hen': typeof SaleTraCuuLichHenRoute
   '/sale/tra-cuu-phieu-dang-ky': typeof SaleTraCuuPhieuDangKyRoute
-  '/sale/lap-phieu-coc': typeof SaleLapPhieuCocRoute
-  '/sale/tra-cuu-hop-dong': typeof SaleTraCuuHopDongRoute
   '/sale/tra-cuu-phong': typeof SaleTraCuuPhongRoute
   '/accountant/': typeof AccountantIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -433,9 +461,11 @@ export interface FileRouteTypes {
     | '/sale'
     | '/accountant/compensation'
     | '/accountant/deposit-calc'
+    | '/accountant/doi-soat'
     | '/accountant/payments'
     | '/accountant/receipts'
     | '/accountant/refunds'
+    | '/accountant/thanh-toan-tra-phong'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
@@ -452,19 +482,19 @@ export interface FileRouteTypes {
     | '/manager/handover'
     | '/manager/reports'
     | '/manager/termination'
+    | '/manager/thu-hoi-tai-san'
     | '/manager/tra-cuu-hop-dong'
     | '/manager/tra-cuu-phong'
     | '/sale/dashboard'
     | '/sale/ghi-nhan-coc'
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
+    | '/sale/lap-phieu-coc'
     | '/sale/lap-phieu-dang-ky'
     | '/sale/lich-hen'
     | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-lich-hen'
     | '/sale/tra-cuu-phieu-dang-ky'
-    | '/sale/lap-phieu-coc'
-    | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-phong'
     | '/accountant/'
     | '/admin/'
@@ -478,9 +508,11 @@ export interface FileRouteTypes {
     | '/sale'
     | '/accountant/compensation'
     | '/accountant/deposit-calc'
+    | '/accountant/doi-soat'
     | '/accountant/payments'
     | '/accountant/receipts'
     | '/accountant/refunds'
+    | '/accountant/thanh-toan-tra-phong'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
@@ -497,19 +529,19 @@ export interface FileRouteTypes {
     | '/manager/handover'
     | '/manager/reports'
     | '/manager/termination'
+    | '/manager/thu-hoi-tai-san'
     | '/manager/tra-cuu-hop-dong'
     | '/manager/tra-cuu-phong'
     | '/sale/dashboard'
     | '/sale/ghi-nhan-coc'
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
+    | '/sale/lap-phieu-coc'
     | '/sale/lap-phieu-dang-ky'
     | '/sale/lich-hen'
     | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-lich-hen'
     | '/sale/tra-cuu-phieu-dang-ky'
-    | '/sale/lap-phieu-coc'
-    | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-phong'
     | '/accountant'
     | '/admin'
@@ -526,9 +558,11 @@ export interface FileRouteTypes {
     | '/sale'
     | '/accountant/compensation'
     | '/accountant/deposit-calc'
+    | '/accountant/doi-soat'
     | '/accountant/payments'
     | '/accountant/receipts'
     | '/accountant/refunds'
+    | '/accountant/thanh-toan-tra-phong'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
     | '/accountant/transactions'
@@ -545,19 +579,19 @@ export interface FileRouteTypes {
     | '/manager/handover'
     | '/manager/reports'
     | '/manager/termination'
+    | '/manager/thu-hoi-tai-san'
     | '/manager/tra-cuu-hop-dong'
     | '/manager/tra-cuu-phong'
     | '/sale/dashboard'
     | '/sale/ghi-nhan-coc'
     | '/sale/ho-so-luu-tru'
     | '/sale/lap-hop-dong'
+    | '/sale/lap-phieu-coc'
     | '/sale/lap-phieu-dang-ky'
     | '/sale/lich-hen'
     | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-lich-hen'
     | '/sale/tra-cuu-phieu-dang-ky'
-    | '/sale/lap-phieu-coc'
-    | '/sale/tra-cuu-hop-dong'
     | '/sale/tra-cuu-phong'
     | '/accountant/'
     | '/admin/'
@@ -654,6 +688,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountantIndexRouteImport
       parentRoute: typeof AccountantRoute
     }
+    '/sale/tra-cuu-phong': {
+      id: '/sale/tra-cuu-phong'
+      path: '/tra-cuu-phong'
+      fullPath: '/sale/tra-cuu-phong'
+      preLoaderRoute: typeof SaleTraCuuPhongRouteImport
+      parentRoute: typeof SaleRoute
+    }
     '/sale/tra-cuu-phieu-dang-ky': {
       id: '/sale/tra-cuu-phieu-dang-ky'
       path: '/tra-cuu-phieu-dang-ky'
@@ -666,11 +707,6 @@ declare module '@tanstack/react-router' {
       path: '/tra-cuu-lich-hen'
       fullPath: '/sale/tra-cuu-lich-hen'
       preLoaderRoute: typeof SaleTraCuuLichHenRouteImport
-    '/sale/tra-cuu-phong': {
-      id: '/sale/tra-cuu-phong'
-      path: '/tra-cuu-phong'
-      fullPath: '/sale/tra-cuu-phong'
-      preLoaderRoute: typeof SaleTraCuuPhongRouteImport
       parentRoute: typeof SaleRoute
     }
     '/sale/tra-cuu-hop-dong': {
@@ -692,6 +728,8 @@ declare module '@tanstack/react-router' {
       path: '/lap-phieu-dang-ky'
       fullPath: '/sale/lap-phieu-dang-ky'
       preLoaderRoute: typeof SaleLapPhieuDangKyRouteImport
+      parentRoute: typeof SaleRoute
+    }
     '/sale/lap-phieu-coc': {
       id: '/sale/lap-phieu-coc'
       path: '/lap-phieu-coc'
@@ -739,6 +777,13 @@ declare module '@tanstack/react-router' {
       path: '/tra-cuu-hop-dong'
       fullPath: '/manager/tra-cuu-hop-dong'
       preLoaderRoute: typeof ManagerTraCuuHopDongRouteImport
+      parentRoute: typeof ManagerRoute
+    }
+    '/manager/thu-hoi-tai-san': {
+      id: '/manager/thu-hoi-tai-san'
+      path: '/thu-hoi-tai-san'
+      fullPath: '/manager/thu-hoi-tai-san'
+      preLoaderRoute: typeof ManagerThuHoiTaiSanRouteImport
       parentRoute: typeof ManagerRoute
     }
     '/manager/termination': {
@@ -853,6 +898,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountantTraCuuHopDongRouteImport
       parentRoute: typeof AccountantRoute
     }
+    '/accountant/thanh-toan-tra-phong': {
+      id: '/accountant/thanh-toan-tra-phong'
+      path: '/thanh-toan-tra-phong'
+      fullPath: '/accountant/thanh-toan-tra-phong'
+      preLoaderRoute: typeof AccountantThanhToanTraPhongRouteImport
+      parentRoute: typeof AccountantRoute
+    }
     '/accountant/refunds': {
       id: '/accountant/refunds'
       path: '/refunds'
@@ -872,6 +924,13 @@ declare module '@tanstack/react-router' {
       path: '/payments'
       fullPath: '/accountant/payments'
       preLoaderRoute: typeof AccountantPaymentsRouteImport
+      parentRoute: typeof AccountantRoute
+    }
+    '/accountant/doi-soat': {
+      id: '/accountant/doi-soat'
+      path: '/doi-soat'
+      fullPath: '/accountant/doi-soat'
+      preLoaderRoute: typeof AccountantDoiSoatRouteImport
       parentRoute: typeof AccountantRoute
     }
     '/accountant/deposit-calc': {
@@ -894,9 +953,11 @@ declare module '@tanstack/react-router' {
 interface AccountantRouteChildren {
   AccountantCompensationRoute: typeof AccountantCompensationRoute
   AccountantDepositCalcRoute: typeof AccountantDepositCalcRoute
+  AccountantDoiSoatRoute: typeof AccountantDoiSoatRoute
   AccountantPaymentsRoute: typeof AccountantPaymentsRoute
   AccountantReceiptsRoute: typeof AccountantReceiptsRoute
   AccountantRefundsRoute: typeof AccountantRefundsRoute
+  AccountantThanhToanTraPhongRoute: typeof AccountantThanhToanTraPhongRoute
   AccountantTraCuuHopDongRoute: typeof AccountantTraCuuHopDongRoute
   AccountantTraCuuPhongRoute: typeof AccountantTraCuuPhongRoute
   AccountantTransactionsRoute: typeof AccountantTransactionsRoute
@@ -906,9 +967,11 @@ interface AccountantRouteChildren {
 const AccountantRouteChildren: AccountantRouteChildren = {
   AccountantCompensationRoute: AccountantCompensationRoute,
   AccountantDepositCalcRoute: AccountantDepositCalcRoute,
+  AccountantDoiSoatRoute: AccountantDoiSoatRoute,
   AccountantPaymentsRoute: AccountantPaymentsRoute,
   AccountantReceiptsRoute: AccountantReceiptsRoute,
   AccountantRefundsRoute: AccountantRefundsRoute,
+  AccountantThanhToanTraPhongRoute: AccountantThanhToanTraPhongRoute,
   AccountantTraCuuHopDongRoute: AccountantTraCuuHopDongRoute,
   AccountantTraCuuPhongRoute: AccountantTraCuuPhongRoute,
   AccountantTransactionsRoute: AccountantTransactionsRoute,
@@ -949,6 +1012,7 @@ interface ManagerRouteChildren {
   ManagerHandoverRoute: typeof ManagerHandoverRoute
   ManagerReportsRoute: typeof ManagerReportsRoute
   ManagerTerminationRoute: typeof ManagerTerminationRoute
+  ManagerThuHoiTaiSanRoute: typeof ManagerThuHoiTaiSanRoute
   ManagerTraCuuHopDongRoute: typeof ManagerTraCuuHopDongRoute
   ManagerTraCuuPhongRoute: typeof ManagerTraCuuPhongRoute
   ManagerIndexRoute: typeof ManagerIndexRoute
@@ -962,6 +1026,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerHandoverRoute: ManagerHandoverRoute,
   ManagerReportsRoute: ManagerReportsRoute,
   ManagerTerminationRoute: ManagerTerminationRoute,
+  ManagerThuHoiTaiSanRoute: ManagerThuHoiTaiSanRoute,
   ManagerTraCuuHopDongRoute: ManagerTraCuuHopDongRoute,
   ManagerTraCuuPhongRoute: ManagerTraCuuPhongRoute,
   ManagerIndexRoute: ManagerIndexRoute,
@@ -975,13 +1040,12 @@ interface SaleRouteChildren {
   SaleGhiNhanCocRoute: typeof SaleGhiNhanCocRoute
   SaleHoSoLuuTruRoute: typeof SaleHoSoLuuTruRoute
   SaleLapHopDongRoute: typeof SaleLapHopDongRoute
+  SaleLapPhieuCocRoute: typeof SaleLapPhieuCocRoute
   SaleLapPhieuDangKyRoute: typeof SaleLapPhieuDangKyRoute
   SaleLichHenRoute: typeof SaleLichHenRoute
   SaleTraCuuHopDongRoute: typeof SaleTraCuuHopDongRoute
   SaleTraCuuLichHenRoute: typeof SaleTraCuuLichHenRoute
   SaleTraCuuPhieuDangKyRoute: typeof SaleTraCuuPhieuDangKyRoute
-  SaleLapPhieuCocRoute: typeof SaleLapPhieuCocRoute
-  SaleTraCuuHopDongRoute: typeof SaleTraCuuHopDongRoute
   SaleTraCuuPhongRoute: typeof SaleTraCuuPhongRoute
 }
 
@@ -990,13 +1054,12 @@ const SaleRouteChildren: SaleRouteChildren = {
   SaleGhiNhanCocRoute: SaleGhiNhanCocRoute,
   SaleHoSoLuuTruRoute: SaleHoSoLuuTruRoute,
   SaleLapHopDongRoute: SaleLapHopDongRoute,
+  SaleLapPhieuCocRoute: SaleLapPhieuCocRoute,
   SaleLapPhieuDangKyRoute: SaleLapPhieuDangKyRoute,
   SaleLichHenRoute: SaleLichHenRoute,
   SaleTraCuuHopDongRoute: SaleTraCuuHopDongRoute,
   SaleTraCuuLichHenRoute: SaleTraCuuLichHenRoute,
   SaleTraCuuPhieuDangKyRoute: SaleTraCuuPhieuDangKyRoute,
-  SaleLapPhieuCocRoute: SaleLapPhieuCocRoute,
-  SaleTraCuuHopDongRoute: SaleTraCuuHopDongRoute,
   SaleTraCuuPhongRoute: SaleTraCuuPhongRoute,
 }
 

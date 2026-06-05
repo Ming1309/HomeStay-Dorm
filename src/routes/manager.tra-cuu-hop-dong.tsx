@@ -1,16 +1,19 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+
+import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { ContractLookupWorkspace } from "@/components/contract/ContractLookupWorkspace";
 
 export const Route = createFileRoute("/manager/tra-cuu-hop-dong")({
-  component: LegacyManagerContractLookupPage,
+  component: ManagerContractLookupPage,
 });
 
-function LegacyManagerContractLookupPage() {
-  const navigate = useNavigate();
+function ManagerContractLookupPage() {
+  const allowed = useRoleGuard("manager");
+  if (!allowed) return null;
 
-  useEffect(() => {
-    navigate({ to: "/manager/contracts" });
-  }, [navigate]);
-
-  return null;
+  return (
+    <RoleShell role="manager" currentPath="/manager/tra-cuu-hop-dong">
+      <ContractLookupWorkspace />
+    </RoleShell>
+  );
 }
