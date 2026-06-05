@@ -841,6 +841,9 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   const recordPayment: WorkflowStore["recordPayment"] = (contractId, amount, method) => {
     const now = new Date().toISOString();
     let scenario: "partial" | "full" = "partial";
+    let nextContract: ContractItem | null = null;
+    let paymentLog: any = null;
+    let paidThisTimeForLog = 0;
     let logEntry: PaymentLog | null = null;
 
     setContracts((current) =>
@@ -852,6 +855,8 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
         const left = Math.max(item.invoiceTotal - paidAmount, 0);
         const status: ContractStatus = left === 0 ? "pending_handover" : "partial_payment";
         scenario = left === 0 ? "full" : "partial";
+        nextContract = { ...item, paidAmount, status };
+        paymentLog = {
         const updated = { ...item, paidAmount, status };
         logEntry = {
           id: `${contractId}-${Date.now()}`,
@@ -862,6 +867,12 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
           method,
           time: now,
         };
+        return nextContract;
+      }),
+    );
+
+    if (paymentLog) {
+      setPaymentLogs((current) => [paymentLog, ...current]);
         return updated;
       }),
     );

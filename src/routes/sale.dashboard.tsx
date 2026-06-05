@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ClipboardList, FileText, Search, Users, CalendarDays } from "lucide-react";
 import { FileText, HandCoins, Search, UserPlus, Users } from "lucide-react";
 
 import { SaleShell } from "@/components/app/SaleShell";
@@ -7,7 +8,7 @@ export const Route = createFileRoute("/sale/dashboard")({
   component: SaleDashboardPortalPage,
 });
 
-export function SaleDashboardPortalPage() {
+function SaleDashboardPortalPage() {
   return (
     <SaleShell currentPath="/sale/dashboard" showWorkspaceNav={false}>
       <div className="flex h-full items-start justify-center overflow-y-auto bg-gray-50/60 p-6">
@@ -41,6 +42,19 @@ export function SaleDashboardPortalPage() {
               <h2 className="text-base font-bold text-gray-800">Ghi nhận thanh toán cọc</h2>
               <p className="mt-1 text-sm text-gray-500">
                 Cập nhật chứng từ thanh toán và gửi Quản lý đối chiếu.
+              </p>
+            </Link>
+
+            <Link
+              to="/sale/lap-phieu-dang-ky"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-emerald-300 hover:shadow-md"
+            >
+              <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                <ClipboardList className="size-6" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Lập phiếu đăng ký</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Tạo phiếu đăng ký dịch vụ cho khách hàng mới với thông tin chi tiết.
               </p>
             </Link>
 
@@ -84,6 +98,41 @@ export function SaleDashboardPortalPage() {
             </Link>
 
             <Link
+              to="/sale/tra-cuu-phieu-dang-ky"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-amber-300 hover:shadow-md"
+            >
+              <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-amber-50 text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white">
+                <Search className="size-6" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Tra cứu phiếu đăng ký</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Tìm kiếm và xem chi tiết phiếu đăng ký khách hàng để hỗ trợ tư vấn.
+              </p>
+            </Link>
+
+            <Link
+              to="/sale/lich-hen"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-sky-300 hover:shadow-md"
+            >
+              <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-sky-50 text-sky-600 transition-colors group-hover:bg-sky-600 group-hover:text-white">
+                <CalendarDays className="size-6" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Tạo lịch hẹn</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Tạo lịch hẹn với khách hàng, liên kết chứng từ và lên lịch nhắc tự động.
+              </p>
+            </Link>
+
+            <Link
+              to="/sale/tra-cuu-lich-hen"
+              className="group flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-violet-300 hover:shadow-md"
+            >
+              <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-violet-50 text-violet-600 transition-colors group-hover:bg-violet-600 group-hover:text-white">
+                <Search className="size-6" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-800">Tra cứu lịch hẹn</h2>
+              <p className="mt-2 text-sm text-gray-500">
+                Xem lại các lịch hẹn đã tạo và tìm nhanh theo thời gian, chi nhánh hoặc khách hàng.
               to="/sale/tra-cuu-phong"
               className="group flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
             >

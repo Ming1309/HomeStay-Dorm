@@ -8,6 +8,13 @@ import { useWorkflowStore } from "@/lib/workflow-store";
 
 type SaleNavItem = {
   to:
+    | "/sale/lap-phieu-dang-ky"
+    | "/sale/ho-so-luu-tru"
+    | "/sale/lap-hop-dong"
+    | "/sale/tra-cuu-hop-dong"
+    | "/sale/tra-cuu-phieu-dang-ky"
+    | "/sale/lich-hen"
+    | "/sale/tra-cuu-lich-hen";
     | "/sale/ho-so-luu-tru"
     | "/sale/lap-hop-dong"
     | "/sale/tra-cuu-hop-dong"
@@ -18,11 +25,15 @@ type SaleNavItem = {
 };
 
 const saleWorkspaceLinks: SaleNavItem[] = [
+  { to: "/sale/lap-phieu-dang-ky", label: "Lập phiếu đăng ký" },
+  { to: "/sale/tra-cuu-phieu-dang-ky", label: "Tra cứu phiếu đăng ký" },
   { to: "/sale/ho-so-luu-tru", label: "Nhập hồ sơ lưu trú" },
   { to: "/sale/lap-phieu-coc", label: "Lập phiếu cọc" },
   { to: "/sale/ghi-nhan-coc", label: "Ghi nhận cọc" },
   { to: "/sale/lap-hop-dong", label: "Lập hợp đồng thuê" },
   { to: "/sale/tra-cuu-hop-dong", label: "Tra cứu hợp đồng" },
+  { to: "/sale/lich-hen", label: "Tạo lịch hẹn" },
+  { to: "/sale/tra-cuu-lich-hen", label: "Tra cứu lịch hẹn" },
   { to: "/sale/tra-cuu-phong", label: "Tra cứu phòng" },
 ];
 
@@ -42,7 +53,7 @@ export function SaleShell({
   if (!allowed) return null;
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-gray-50">
+    <div className="fixed inset-0 overflow-hidden bg-gray-50">
       <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-6">
         <button
           type="button"
