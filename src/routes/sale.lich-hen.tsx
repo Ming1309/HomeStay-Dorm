@@ -11,7 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -132,8 +138,6 @@ const mockActiveContracts: ContractItem[] = [
   },
 ];
 
- 
-
 export const Route = createFileRoute("/sale/lich-hen")({
   component: SaleAppointmentPage,
 });
@@ -174,14 +178,23 @@ function SaleAppointmentPage() {
   const { allowedResults, excludedResults } = useMemo(() => {
     const query = search.toLowerCase().trim();
 
-    const filterByQuery = <T extends Record<string, any>>(arr: T[], fields: string[]) =>
+    const filterByQuery = <T extends Record<string, string>>(arr: T[], fields: Array<keyof T>) =>
       arr.filter((item) => {
         if (!query) return true;
-        return fields.some((f) => String(item[f] ?? "").toLowerCase().includes(query));
+        return fields.some((f) =>
+          String(item[f] ?? "")
+            .toLowerCase()
+            .includes(query),
+        );
       });
 
     if (appointmentType === "view-room") {
-      const raw = filterByQuery(mockRegistrations, ["registrationNumber", "customerName", "phone", "email"]);
+      const raw = filterByQuery(mockRegistrations, [
+        "registrationNumber",
+        "customerName",
+        "phone",
+        "email",
+      ]);
       const allowed = raw.filter((r) => r.status === "Đã duyệt");
       const excluded = raw.filter((r) => r.status !== "Đã duyệt");
       return { allowedResults: allowed, excludedResults: excluded };
@@ -192,7 +205,12 @@ function SaleAppointmentPage() {
       return { allowedResults: raw, excludedResults: [] };
     }
 
-    const raw = filterByQuery(mockActiveContracts, ["contractNumber", "customerName", "phone", "room"]);
+    const raw = filterByQuery(mockActiveContracts, [
+      "contractNumber",
+      "customerName",
+      "phone",
+      "room",
+    ]);
     return { allowedResults: raw, excludedResults: [] };
   }, [appointmentType, search]);
 
@@ -224,8 +242,8 @@ function SaleAppointmentPage() {
         appointmentType === "view-room"
           ? `${(selectedReference as RegistrationItem).registrationNumber} • ${(selectedReference as RegistrationItem).customerName}`
           : appointmentType === "checkin"
-          ? `${(selectedReference as DepositItem).code} • ${(selectedReference as DepositItem).customerName}`
-          : `${(selectedReference as ContractItem).contractNumber} • ${(selectedReference as ContractItem).customerName}`,
+            ? `${(selectedReference as DepositItem).code} • ${(selectedReference as DepositItem).customerName}`
+            : `${(selectedReference as ContractItem).contractNumber} • ${(selectedReference as ContractItem).customerName}`,
       branch: formData.branch,
       date: formData.date,
       time: formData.time,
@@ -242,22 +260,28 @@ function SaleAppointmentPage() {
   return (
     <SaleShell currentPath="/sale/lich-hen" showWorkspaceNav>
       <div className="flex h-full overflow-hidden bg-gray-50">
-        <aside className="flex w-full max-w-[360px] flex-col border-r border-gray-200 bg-white">
+        <aside className="flex w-full max-w-[340px] flex-col border-r border-gray-200 bg-white">
           <div className="sticky top-0 z-10 border-b border-gray-200 bg-white p-4">
-            <div className="mb-4">
+            <div className="mb-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
                 <CalendarDays className="size-4 text-blue-600" />
                 <span>Tạo lịch hẹn</span>
               </div>
-              <p className="mt-2 text-xs text-gray-500">Chọn loại lịch hẹn và tìm kiếm chứng từ phù hợp.</p>
+              <p className="mt-1 text-xs text-gray-500">Chọn loại lịch hẹn và chứng từ liên kết.</p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <Label htmlFor="appointmentType" className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
+                <Label
+                  htmlFor="appointmentType"
+                  className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500"
+                >
                   Loại lịch hẹn
                 </Label>
-                <Select value={appointmentType} onValueChange={(value) => setAppointmentType(value as AppointmentType)}>
+                <Select
+                  value={appointmentType}
+                  onValueChange={(value) => setAppointmentType(value as AppointmentType)}
+                >
                   <SelectTrigger id="appointmentType" className="mt-1 h-10 text-sm">
                     <SelectValue placeholder="Chọn loại lịch hẹn" />
                   </SelectTrigger>
@@ -271,7 +295,10 @@ function SaleAppointmentPage() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="search" className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">
+                <Label
+                  htmlFor="search"
+                  className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500"
+                >
                   Tìm kiếm chứng từ
                 </Label>
                 <div className="relative mt-1">
@@ -290,13 +317,15 @@ function SaleAppointmentPage() {
           </div>
 
           <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full px-4 py-3">
+            <ScrollArea className="h-full px-3 py-3">
               <div className="space-y-3">
-                <div className="rounded-xl border border-gray-200 bg-slate-50 p-3 text-xs text-gray-600">
+                <div className="rounded-lg border border-gray-200 bg-slate-50 p-3 text-xs text-gray-600">
                   {allowedResults.length > 0 ? (
-                    <>{allowedResults.length} chứng từ phù hợp với loại {currentTypeInfo.label}.</>
+                    <>
+                      {allowedResults.length} chứng từ phù hợp với loại {currentTypeInfo.label}.
+                    </>
                   ) : (
-                    'Không tìm thấy chứng từ phù hợp. Thử lại với tiêu chí khác.'
+                    "Không tìm thấy chứng từ phù hợp. Thử lại với tiêu chí khác."
                   )}
                 </div>
 
@@ -307,14 +336,14 @@ function SaleAppointmentPage() {
                       appointmentType === "view-room"
                         ? `${(item as RegistrationItem).registrationNumber} · ${(item as RegistrationItem).customerName}`
                         : appointmentType === "checkin"
-                        ? `${(item as DepositItem).code} · ${(item as DepositItem).customerName}`
-                        : `${(item as ContractItem).contractNumber} · ${(item as ContractItem).customerName}`;
+                          ? `${(item as DepositItem).code} · ${(item as DepositItem).customerName}`
+                          : `${(item as ContractItem).contractNumber} · ${(item as ContractItem).customerName}`;
                     const subtitle =
                       appointmentType === "view-room"
                         ? `${(item as RegistrationItem).phone} • ${(item as RegistrationItem).email}`
                         : appointmentType === "checkin"
-                        ? `${(item as DepositItem).phone} • ${(item as DepositItem).room}`
-                        : `${(item as ContractItem).phone} • ${(item as ContractItem).room}`;
+                          ? `${(item as DepositItem).phone} • ${(item as DepositItem).room}`
+                          : `${(item as ContractItem).phone} • ${(item as ContractItem).room}`;
 
                     return (
                       <button
@@ -322,8 +351,10 @@ function SaleAppointmentPage() {
                         type="button"
                         onClick={() => setSelectedId(item.id)}
                         className={cn(
-                          "group w-full overflow-hidden rounded-2xl border px-4 py-3 text-left transition",
-                          active ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50",
+                          "group w-full overflow-hidden rounded-xl border px-3 py-3 text-left transition",
+                          active
+                            ? "border-blue-600 bg-blue-50"
+                            : "border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50",
                         )}
                       >
                         <div className="flex items-center justify-between gap-3">
@@ -341,17 +372,21 @@ function SaleAppointmentPage() {
 
                   {excludedResults.length > 0 && (
                     <div className="pt-2">
-                      <div className="mb-2 text-xs font-semibold text-gray-500">Chứng từ không phù hợp (không thể chọn)</div>
+                      <div className="mb-2 text-xs font-semibold text-gray-500">
+                        Chứng từ không phù hợp (không thể chọn)
+                      </div>
                       <div className="space-y-2">
                         {appointmentType === "view-room" &&
                           (excludedResults as RegistrationItem[]).map((item) => (
                             <div
                               key={item.id}
-                              className="group w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-left opacity-60"
+                              className="group w-full overflow-hidden rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 text-left opacity-60"
                             >
                               <div className="flex items-center justify-between gap-3">
                                 <p className="truncate text-sm font-semibold text-gray-700">{`${item.registrationNumber} · ${item.customerName}`}</p>
-                                <Badge className="h-6 rounded-full bg-amber-100 px-2 text-[11px] text-amber-700">{item.status}</Badge>
+                                <Badge className="h-6 rounded-full bg-amber-100 px-2 text-[11px] text-amber-700">
+                                  {item.status}
+                                </Badge>
                               </div>
                               <p className="mt-2 text-xs text-gray-500">{`${item.phone} • ${item.email}`}</p>
                             </div>
@@ -361,7 +396,7 @@ function SaleAppointmentPage() {
                           (excludedResults as DepositItem[]).map((item) => (
                             <div
                               key={item.id}
-                              className="group w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-left opacity-60"
+                              className="group w-full overflow-hidden rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 text-left opacity-60"
                             >
                               <div className="flex items-center justify-between gap-3">
                                 <p className="truncate text-sm font-semibold text-gray-700">{`${item.code} · ${item.customerName}`}</p>
@@ -374,7 +409,7 @@ function SaleAppointmentPage() {
                           (excludedResults as ContractItem[]).map((item) => (
                             <div
                               key={item.id}
-                              className="group w-full overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-left opacity-60"
+                              className="group w-full overflow-hidden rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 text-left opacity-60"
                             >
                               <div className="flex items-center justify-between gap-3">
                                 <p className="truncate text-sm font-semibold text-gray-700">{`${item.contractNumber} · ${item.customerName}`}</p>
@@ -391,126 +426,140 @@ function SaleAppointmentPage() {
           </div>
         </aside>
 
-        <section className="flex-1 overflow-hidden bg-white">
-          <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-6 py-5">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">Chi tiết lịch hẹn</h1>
-                  <p className="text-sm text-gray-500">Nhập thông tin chi nhánh và thời gian hẹn.</p>
-                </div>
-                <Badge className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
-                  Đã xác nhận
-                </Badge>
+        <section className="flex min-w-0 flex-1 flex-col overflow-hidden bg-white">
+          <div className="shrink-0 border-b border-gray-200 bg-white px-5 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="text-xl font-bold text-gray-900">Chi tiết lịch hẹn</h1>
+                <p className="mt-1 text-sm text-gray-500">
+                  Nhập thông tin chi nhánh và thời gian hẹn.
+                </p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-gray-200 bg-slate-50 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Loại lịch hẹn</p>
-                  <p className="mt-2 text-sm font-semibold text-gray-900">{currentTypeInfo.label}</p>
-                </div>
-                <div className="rounded-2xl border border-gray-200 bg-slate-50 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Chứng từ liên kết</p>
-                  <p className="mt-2 text-sm font-semibold text-gray-900">
-                    {selectedReference
-                      ? appointmentType === "view-room"
-                        ? `${(selectedReference as RegistrationItem).registrationNumber} • ${(selectedReference as RegistrationItem).customerName}`
-                        : appointmentType === "checkin"
+              <Badge className="shrink-0 rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
+                Đã xác nhận
+              </Badge>
+            </div>
+
+            <div className="mt-3 grid gap-3 xl:grid-cols-2">
+              <div className="rounded-xl border border-gray-200 bg-slate-50 px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                  Loại lịch hẹn
+                </p>
+                <p className="mt-1 truncate text-sm font-semibold text-gray-900">
+                  {currentTypeInfo.label}
+                </p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-slate-50 px-3 py-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                  Chứng từ liên kết
+                </p>
+                <p className="mt-1 truncate text-sm font-semibold text-gray-900">
+                  {selectedReference
+                    ? appointmentType === "view-room"
+                      ? `${(selectedReference as RegistrationItem).registrationNumber} • ${(selectedReference as RegistrationItem).customerName}`
+                      : appointmentType === "checkin"
                         ? `${(selectedReference as DepositItem).code} • ${(selectedReference as DepositItem).customerName}`
                         : `${(selectedReference as ContractItem).contractNumber} • ${(selectedReference as ContractItem).customerName}`
-                      : "Chưa chọn chứng từ"}
-                  </p>
-                </div>
+                    : "Chưa chọn chứng từ"}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="h-full overflow-y-auto px-6 py-6">
-            <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-              <Card className="h-fit">
-                <CardHeader>
-                  <CardTitle className="text-lg">Thông tin lịch hẹn</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-3">
-                    <Label htmlFor="branch" className="text-sm font-medium">
-                      Chi nhánh hẹn <span className="text-red-500">*</span>
-                    </Label>
-                    <Select value={branch} onValueChange={(value) => setValue("branch", value)}>
-                      <SelectTrigger id="branch" className="h-10 text-sm">
-                        <SelectValue placeholder="Chọn chi nhánh" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {BRANCHES.map((branchOption) => (
-                          <SelectItem key={branchOption.value} value={branchOption.value}>
-                            {branchOption.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.branch && (
-                      <p className="text-sm text-red-500">{errors.branch.message}</p>
-                    )}
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-3">
-                      <Label htmlFor="date" className="text-sm font-medium">
-                        Ngày hẹn <span className="text-red-500">*</span>
+          <div className="min-h-0 flex-1 overflow-hidden px-5 py-5">
+            <div className="grid h-full min-h-0 gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="min-h-0 overflow-y-auto pr-1">
+                <Card className="h-fit rounded-xl border-gray-200 shadow-sm">
+                  <CardHeader className="px-5 py-4">
+                    <CardTitle className="text-lg">Thông tin lịch hẹn</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-5 px-5 pb-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="branch" className="text-sm font-medium">
+                        Chi nhánh hẹn <span className="text-red-500">*</span>
                       </Label>
-                      <Input
-                        id="date"
-                        type="date"
-                        {...register("date")}
-                        className="h-10 text-sm"
-                      />
-                      {errors.date && (
-                        <p className="text-sm text-red-500">{errors.date.message}</p>
+                      <Select value={branch} onValueChange={(value) => setValue("branch", value)}>
+                        <SelectTrigger id="branch" className="h-10 text-sm">
+                          <SelectValue placeholder="Chọn chi nhánh" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BRANCHES.map((branchOption) => (
+                            <SelectItem key={branchOption.value} value={branchOption.value}>
+                              {branchOption.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.branch && (
+                        <p className="text-sm text-red-500">{errors.branch.message}</p>
                       )}
                     </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="time" className="text-sm font-medium">
-                        Giờ hẹn <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="time"
-                        type="time"
-                        {...register("time")}
-                        className="h-10 text-sm"
-                      />
-                      {errors.time && (
-                        <p className="text-sm text-red-500">{errors.time.message}</p>
-                      )}
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="date" className="text-sm font-medium">
+                          Ngày hẹn <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="date"
+                          type="date"
+                          {...register("date")}
+                          className="h-10 text-sm"
+                        />
+                        {errors.date && (
+                          <p className="text-sm text-red-500">{errors.date.message}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="time" className="text-sm font-medium">
+                          Giờ hẹn <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="time"
+                          type="time"
+                          {...register("time")}
+                          className="h-10 text-sm"
+                        />
+                        {errors.time && (
+                          <p className="text-sm text-red-500">{errors.time.message}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="rounded-2xl border border-dashed border-gray-200 bg-slate-50 p-4 text-sm text-gray-600">
-                    <p className="font-semibold text-gray-900">Ghi chú luồng</p>
-                    <p className="mt-2 leading-6">
-                      Sau khi lưu, hệ thống ghi nhận lịch hẹn mới và hiển thị trạng thái "Đã xác nhận".
-                      Một thông báo Email/SMS sẽ được kích hoạt đến khách hàng.
-                    </p>
-                  </div>
+                    <div className="rounded-xl border border-dashed border-gray-200 bg-slate-50 p-4 text-sm text-gray-600">
+                      <p className="font-semibold text-gray-900">Ghi chú luồng</p>
+                      <p className="mt-2 leading-6">
+                        Sau khi lưu, hệ thống ghi nhận lịch hẹn mới và hiển thị trạng thái "Đã xác
+                        nhận". Một thông báo Email/SMS sẽ được kích hoạt đến khách hàng.
+                      </p>
+                    </div>
 
-                  <Button type="button" className="w-full" onClick={handleSave}>
-                    Lưu lịch hẹn
-                  </Button>
-                </CardContent>
-              </Card>
+                    <Button type="button" className="w-full" onClick={handleSave}>
+                      Lưu lịch hẹn
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card className="h-fit">
-                <CardHeader>
+              <Card className="flex min-h-0 flex-col rounded-xl border-gray-200 shadow-sm">
+                <CardHeader className="shrink-0 px-5 py-4">
                   <CardTitle className="text-lg">Lịch hẹn vừa tạo</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
                   {appointments.length === 0 ? (
                     <p className="text-sm text-gray-500">Chưa có lịch hẹn mới nào được tạo.</p>
                   ) : (
                     <div className="space-y-3">
                       {appointments.map((item) => (
-                        <div key={item.id} className="rounded-2xl border border-gray-200 bg-white p-4">
-                          <div className="flex items-center justify-between gap-3">
-                            <p className="text-sm font-semibold text-gray-900">{item.referenceLabel}</p>
-                            <Badge className="rounded-full bg-emerald-100 px-2 py-1 text-[11px] text-emerald-700">
+                        <div
+                          key={item.id}
+                          className="rounded-xl border border-gray-200 bg-white p-4"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="min-w-0 text-sm font-semibold text-gray-900">
+                              {item.referenceLabel}
+                            </p>
+                            <Badge className="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[11px] text-emerald-700">
                               {item.status}
                             </Badge>
                           </div>

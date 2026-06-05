@@ -4,14 +4,14 @@ import { useState } from "react";
 import { SaleShell } from "@/components/app/SaleShell";
 import { DepositList } from "@/components/residence/DepositList";
 import { ResidenceForm } from "@/components/residence/ResidenceForm";
-import type { Deposit } from "@/lib/residence/mock-deposits";
+import { mockDeposits, type Deposit } from "@/lib/residence/mock-deposits";
 
 export const Route = createFileRoute("/sale/ho-so-luu-tru")({
   component: SaleResidenceWorkspacePage,
 });
 
 function SaleResidenceWorkspacePage() {
-  const [selected, setSelected] = useState<Deposit | null>(null);
+  const [selected, setSelected] = useState<Deposit | null>(mockDeposits[0] ?? null);
 
   return (
     <SaleShell currentPath="/sale/ho-so-luu-tru" showWorkspaceNav>
