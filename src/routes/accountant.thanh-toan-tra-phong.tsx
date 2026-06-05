@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CreditCard, Search } from "lucide-react";
 import { toast } from "sonner";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,8 +24,7 @@ export const Route = createFileRoute("/accountant/thanh-toan-tra-phong")({
   component: AccountantSettlementPage,
 });
 
-const formatCurrency = (amount: number) =>
-  `${new Intl.NumberFormat("vi-VN").format(amount)} VNĐ`;
+const formatCurrency = (amount: number) => `${new Intl.NumberFormat("vi-VN").format(amount)} VNĐ`;
 
 function AccountantSettlementPage() {
   return <AccountantSettlementScreen currentPath="/accountant/thanh-toan-tra-phong" />;
@@ -93,7 +93,8 @@ function QueuePanel({
       <div className="flex-1 overflow-y-auto">
         <ul className="divide-y divide-gray-100">
           {filtered.map((item) => {
-            const dueTotal = item.reconciliationItems?.reduce((sum, line) => sum + line.amount, 0) ?? 0;
+            const dueTotal =
+              item.reconciliationItems?.reduce((sum, line) => sum + line.amount, 0) ?? 0;
             return (
               <li key={item.id}>
                 <button
@@ -110,7 +111,9 @@ function QueuePanel({
                       Có khoản cần thu
                     </Badge>
                   </div>
-                  <p className="truncate text-sm font-semibold text-gray-800">{item.customerName}</p>
+                  <p className="truncate text-sm font-semibold text-gray-800">
+                    {item.customerName}
+                  </p>
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-mono text-gray-500">{item.room}</span>
                     <span className="font-semibold text-gray-700">{formatCurrency(dueTotal)}</span>
@@ -172,7 +175,9 @@ function SettlementWorkspace({
               <TableBody>
                 {request.reconciliationItems?.map((item) => (
                   <TableRow key={item.id} className="hover:bg-transparent">
-                    <TableCell className="px-4 py-2 text-sm font-mono text-gray-700">{item.id}</TableCell>
+                    <TableCell className="px-4 py-2 text-sm font-mono text-gray-700">
+                      {item.id}
+                    </TableCell>
                     <TableCell className="py-2 text-sm text-gray-600">{item.description}</TableCell>
                     <TableCell className="px-4 py-2 text-right font-mono text-sm text-gray-900">
                       {formatCurrency(item.amount)}
@@ -197,7 +202,8 @@ function SettlementWorkspace({
 
       <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5">
         <p className="text-xs text-gray-500">
-          Sau khi xác nhận, hệ thống sẽ tạo phiếu thu và cập nhật trạng thái phiếu đối soát thành "Đã tất toán".
+          Sau khi xác nhận, hệ thống sẽ tạo phiếu thu và cập nhật trạng thái phiếu đối soát thành
+          "Đã tất toán".
         </p>
         <Button
           type="button"

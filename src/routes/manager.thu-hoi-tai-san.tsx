@@ -6,7 +6,8 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -91,7 +92,9 @@ const schema = z
           id: z.string().min(1),
           name: z.string().min(1),
           expectedQty: z.coerce.number().min(0),
-          recoveredQty: z.coerce.number({ invalid_type_error: "Nhập số lượng thu hồi" }).min(0, "Số lượng phải lớn hơn hoặc bằng 0"),
+          recoveredQty: z.coerce
+            .number({ invalid_type_error: "Nhập số lượng thu hồi" })
+            .min(0, "Số lượng phải lớn hơn hoặc bằng 0"),
           condition: z.string().min(1, "Chọn tình trạng"),
           note: z.string().optional(),
         })
@@ -182,7 +185,9 @@ function ManagerAssetRecoveryPage() {
                       )}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-slate-700">{item.id}</span>
+                        <span className="font-mono text-xs font-bold text-slate-700">
+                          {item.id}
+                        </span>
                         <Badge className="h-5 bg-blue-100 text-[10px] text-blue-700">
                           {item.returnDate}
                         </Badge>
@@ -200,8 +205,13 @@ function ManagerAssetRecoveryPage() {
         {!selected ? (
           <section className="flex flex-1 items-center justify-center bg-gray-50/60 p-6">
             <div className="max-w-xl rounded-2xl border border-dashed border-gray-200 bg-white px-8 py-10 text-center text-sm text-gray-500 shadow-sm">
-              <p className="mb-2 text-base font-semibold text-gray-900">Chọn hợp đồng để lập biên bản thu hồi tài sản</p>
-              <p>Hệ thống sẽ hiện danh sách tài sản cho sẵn. Ghi số lượng thu hồi và tình trạng của từng thứ.</p>
+              <p className="mb-2 text-base font-semibold text-gray-900">
+                Chọn hợp đồng để lập biên bản thu hồi tài sản
+              </p>
+              <p>
+                Hệ thống sẽ hiện danh sách tài sản cho sẵn. Ghi số lượng thu hồi và tình trạng của
+                từng thứ.
+              </p>
             </div>
           </section>
         ) : (
@@ -275,7 +285,9 @@ function RecoveryForm({
               {contract.customerName} • {contract.room}
             </p>
           </div>
-          <Badge className="h-6 bg-emerald-100 text-[10px] text-emerald-700">Lịch trả: {contract.returnDate}</Badge>
+          <Badge className="h-6 bg-emerald-100 text-[10px] text-emerald-700">
+            Lịch trả: {contract.returnDate}
+          </Badge>
         </div>
       </div>
 
@@ -376,9 +388,13 @@ function RecoveryForm({
 
       <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5">
         <div className="text-xs text-gray-400">
-          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">Ctrl</kbd>
-          {" "}/
-          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">S</kbd>
+          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
+            Ctrl
+          </kbd>{" "}
+          /
+          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
+            S
+          </kbd>
           : Lưu biên bản thu hồi
         </div>
         <div className="flex items-center gap-2">
@@ -407,7 +423,11 @@ function RecoveryForm({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button type="submit" form="recovery-form" className="bg-emerald-600 hover:bg-emerald-700">
+          <Button
+            type="submit"
+            form="recovery-form"
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
             <ClipboardCheck className="size-4" />
             Lưu biên bản thu hồi
           </Button>

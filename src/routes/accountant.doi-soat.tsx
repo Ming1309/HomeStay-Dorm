@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import { ReconciliationPanel } from "@/components/contract/ReconciliationPanel";
 import { ReconciliationQueue } from "@/components/contract/ReconciliationQueue";
 import type { DepositRequest } from "@/lib/workflow-store";

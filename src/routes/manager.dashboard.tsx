@@ -1,9 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import type { ComponentType } from "react";
-import { Bed, Home, ScrollText, Search, ShieldCheck, ShieldHalf, ClipboardCheck } from "lucide-react";
+import {
+  Bed,
+  Home,
+  ScrollText,
+  Search,
+  ShieldCheck,
+  ShieldHalf,
+  ClipboardCheck,
+} from "lucide-react";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const Route = createFileRoute("/manager/dashboard")({

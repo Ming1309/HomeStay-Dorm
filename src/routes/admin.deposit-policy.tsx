@@ -36,34 +36,35 @@ const percentField = z
   .min(0, "Tỷ lệ hoàn cọc phải nằm trong khoảng 0 – 100%.")
   .max(100, "Tỷ lệ hoàn cọc phải nằm trong khoảng 0 – 100%.");
 
-const policySchema = z.object({
-  policyName: z
-    .string({ required_error: "Vui lòng nhập tên chính sách." })
-    .trim()
-    .min(1, "Vui lòng nhập tên chính sách."),
-  effectiveFrom: z.string().min(1, "Vui lòng chọn ngày áp dụng."),
-  effectiveTo: z.string().optional(),
-  leaseThresholdMonths: z
-    .number({ invalid_type_error: "Vui lòng nhập số" })
-    .min(1, "Mốc lưu trú tối thiểu là 1 tháng."),
-  refundUnsigned: percentField,
-  refundShortTerm: percentField,
-  refundLongTerm: percentField,
-  refundOnTime: percentField,
-})
-.superRefine((values, ctx) => {
-  if (!values.effectiveTo) return;
+const policySchema = z
+  .object({
+    policyName: z
+      .string({ required_error: "Vui lòng nhập tên chính sách." })
+      .trim()
+      .min(1, "Vui lòng nhập tên chính sách."),
+    effectiveFrom: z.string().min(1, "Vui lòng chọn ngày áp dụng."),
+    effectiveTo: z.string().optional(),
+    leaseThresholdMonths: z
+      .number({ invalid_type_error: "Vui lòng nhập số" })
+      .min(1, "Mốc lưu trú tối thiểu là 1 tháng."),
+    refundUnsigned: percentField,
+    refundShortTerm: percentField,
+    refundLongTerm: percentField,
+    refundOnTime: percentField,
+  })
+  .superRefine((values, ctx) => {
+    if (!values.effectiveTo) return;
 
-  const fromDate = parseDate(values.effectiveFrom);
-  const toDate = parseDate(values.effectiveTo);
-  if (toDate <= fromDate) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["effectiveTo"],
-      message: "Ngày kết thúc phải sau ngày áp dụng.",
-    });
-  }
-});
+    const fromDate = parseDate(values.effectiveFrom);
+    const toDate = parseDate(values.effectiveTo);
+    if (toDate <= fromDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["effectiveTo"],
+        message: "Ngày kết thúc phải sau ngày áp dụng.",
+      });
+    }
+  });
 
 type PolicyValues = z.infer<typeof policySchema>;
 
@@ -258,7 +259,9 @@ function AdminDepositPolicyPage() {
                                 />
                               </FormControl>
                               {effectiveFrom ? (
-                                <p className="text-xs text-gray-500">{formatDateVN(effectiveFrom)}</p>
+                                <p className="text-xs text-gray-500">
+                                  {formatDateVN(effectiveFrom)}
+                                </p>
                               ) : null}
                               <FormMessage />
                             </FormItem>
@@ -294,154 +297,154 @@ function AdminDepositPolicyPage() {
                     <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
                       <p className="text-sm font-semibold text-gray-700">Tỷ lệ hoàn cọc</p>
                       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <FormField
-                        control={form.control}
-                        name="leaseThresholdMonths"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Mốc lưu trú *</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  className="pr-14"
-                                  value={field.value ?? ""}
-                                  onChange={(event) =>
-                                    field.onChange(
-                                      event.target.value === "" ? 1 : Number(event.target.value),
-                                    )
-                                  }
-                                />
-                                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
-                                  tháng
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name="leaseThresholdMonths"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Mốc lưu trú *</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    type="number"
+                                    min={1}
+                                    className="pr-14"
+                                    value={field.value ?? ""}
+                                    onChange={(event) =>
+                                      field.onChange(
+                                        event.target.value === "" ? 1 : Number(event.target.value),
+                                      )
+                                    }
+                                  />
+                                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
+                                    tháng
+                                  </span>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name="refundUnsigned"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Chưa ký hợp đồng *</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={100}
-                                  className="pr-10"
-                                  value={field.value ?? ""}
-                                  onChange={(event) =>
-                                    field.onChange(
-                                      event.target.value === "" ? 0 : Number(event.target.value),
-                                    )
-                                  }
-                                />
-                                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
-                                  %
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name="refundUnsigned"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Chưa ký hợp đồng *</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    className="pr-10"
+                                    value={field.value ?? ""}
+                                    onChange={(event) =>
+                                      field.onChange(
+                                        event.target.value === "" ? 0 : Number(event.target.value),
+                                      )
+                                    }
+                                  />
+                                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
+                                    %
+                                  </span>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name="refundShortTerm"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Đã ký hợp đồng, lưu trú dưới mốc *</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={100}
-                                  className="pr-10"
-                                  value={field.value ?? ""}
-                                  onChange={(event) =>
-                                    field.onChange(
-                                      event.target.value === "" ? 0 : Number(event.target.value),
-                                    )
-                                  }
-                                />
-                                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
-                                  %
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name="refundShortTerm"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Đã ký hợp đồng, lưu trú dưới mốc *</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    className="pr-10"
+                                    value={field.value ?? ""}
+                                    onChange={(event) =>
+                                      field.onChange(
+                                        event.target.value === "" ? 0 : Number(event.target.value),
+                                      )
+                                    }
+                                  />
+                                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
+                                    %
+                                  </span>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name="refundLongTerm"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Đã ký hợp đồng, lưu trú từ mốc trở lên *</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={100}
-                                  className="pr-10"
-                                  value={field.value ?? ""}
-                                  onChange={(event) =>
-                                    field.onChange(
-                                      event.target.value === "" ? 0 : Number(event.target.value),
-                                    )
-                                  }
-                                />
-                                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
-                                  %
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name="refundLongTerm"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Đã ký hợp đồng, lưu trú từ mốc trở lên *</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    className="pr-10"
+                                    value={field.value ?? ""}
+                                    onChange={(event) =>
+                                      field.onChange(
+                                        event.target.value === "" ? 0 : Number(event.target.value),
+                                      )
+                                    }
+                                  />
+                                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
+                                    %
+                                  </span>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <FormField
-                        control={form.control}
-                        name="refundOnTime"
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2 md:max-w-[50%]">
-                            <FormLabel>Hết hạn hợp đồng / Đúng hạn *</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={100}
-                                  className="pr-10"
-                                  value={field.value ?? ""}
-                                  onChange={(event) =>
-                                    field.onChange(
-                                      event.target.value === "" ? 0 : Number(event.target.value),
-                                    )
-                                  }
-                                />
-                                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
-                                  %
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        <FormField
+                          control={form.control}
+                          name="refundOnTime"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2 md:max-w-[50%]">
+                              <FormLabel>Hết hạn hợp đồng / Đúng hạn *</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    className="pr-10"
+                                    value={field.value ?? ""}
+                                    onChange={(event) =>
+                                      field.onChange(
+                                        event.target.value === "" ? 0 : Number(event.target.value),
+                                      )
+                                    }
+                                  />
+                                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-gray-500">
+                                    %
+                                  </span>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     </div>
 
