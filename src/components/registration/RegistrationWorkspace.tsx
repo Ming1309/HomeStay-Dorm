@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 const MOCK_REGISTRATIONS = [
   {
     id: "1",
-    number: "REG-20260531-12345",
+    number: "REG-1",
     name: "Nguyễn Văn A",
     phone: "0912345678",
     people: 2,
@@ -22,7 +22,7 @@ const MOCK_REGISTRATIONS = [
   },
   {
     id: "2",
-    number: "REG-20260530-54321",
+    number: "REG-2",
     name: "Trần Thị B",
     phone: "0987654321",
     people: 3,
@@ -33,7 +33,7 @@ const MOCK_REGISTRATIONS = [
   },
   {
     id: "3",
-    number: "REG-20260529-98765",
+    number: "REG-3",
     name: "Phạm Hoàng C",
     phone: "0988888888",
     people: 1,

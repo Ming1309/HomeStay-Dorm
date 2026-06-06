@@ -84,7 +84,7 @@ type ContractItem = {
 const mockRegistrations: RegistrationItem[] = [
   {
     id: "reg-1",
-    registrationNumber: "REG-20260601-10001",
+    registrationNumber: "REG-1",
     customerName: "Nguyễn Văn A",
     phone: "0912345678",
     email: "nguyenvana@example.com",
@@ -92,7 +92,7 @@ const mockRegistrations: RegistrationItem[] = [
   },
   {
     id: "reg-2",
-    registrationNumber: "REG-20260529-10002",
+    registrationNumber: "REG-2",
     customerName: "Trần Thị B",
     phone: "0987654321",
     email: "tranthib@gmail.com",
@@ -100,7 +100,7 @@ const mockRegistrations: RegistrationItem[] = [
   },
   {
     id: "reg-3",
-    registrationNumber: "REG-20260528-10003",
+    registrationNumber: "REG-3",
     customerName: "Phạm Hoàng C",
     phone: "0968887777",
     email: "phamhoangc@company.vn",
