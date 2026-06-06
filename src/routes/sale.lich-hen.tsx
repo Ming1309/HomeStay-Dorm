@@ -36,6 +36,24 @@ const appointmentSchema = z.object({
   time: z.string().min(1, "Giờ hẹn là bắt buộc"),
 });
 
+const APPOINTMENT_STATUSES = [
+  "Đã xác nhận",
+  "Đã huỷ",
+  "Đã Check-in",
+  "Vắng mặt",
+  "Hoàn thành",
+];
+
+function getStatusBadgeClass(status: string) {
+  const s = status?.toLowerCase() ?? "";
+  if (s.includes("hủy") || s.includes("huy")) return "shrink-0 rounded bg-red-100 px-2 py-1 text-[11px] text-red-700";
+  if (s.includes("chờ") || s.includes("chờ xác")) return "shrink-0 rounded bg-amber-100 px-2 py-1 text-[11px] text-amber-700";
+  if (s.includes("xác") || s.includes("đã xác")) return "shrink-0 rounded bg-emerald-100 px-2 py-1 text-[11px] text-emerald-700";
+  if (s.includes("check-in") || s.includes("checkin")) return "shrink-0 rounded bg-blue-100 px-2 py-1 text-[11px] text-blue-700";
+  if (s.includes("vắng")) return "shrink-0 rounded bg-slate-100 px-2 py-1 text-[11px] text-slate-700";
+  return "shrink-0 rounded bg-slate-100 px-2 py-1 text-[11px] text-slate-700";
+}
+
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
 type RegistrationItem = {
@@ -66,7 +84,7 @@ type ContractItem = {
 const mockRegistrations: RegistrationItem[] = [
   {
     id: "reg-1",
-    registrationNumber: "REG-20260601-10001",
+    registrationNumber: "REG-1",
     customerName: "Nguyễn Văn A",
     phone: "0912345678",
     email: "nguyenvana@example.com",
@@ -74,7 +92,7 @@ const mockRegistrations: RegistrationItem[] = [
   },
   {
     id: "reg-2",
-    registrationNumber: "REG-20260529-10002",
+    registrationNumber: "REG-2",
     customerName: "Trần Thị B",
     phone: "0987654321",
     email: "tranthib@gmail.com",
@@ -82,7 +100,7 @@ const mockRegistrations: RegistrationItem[] = [
   },
   {
     id: "reg-3",
-    registrationNumber: "REG-20260528-10003",
+    registrationNumber: "REG-3",
     customerName: "Phạm Hoàng C",
     phone: "0968887777",
     email: "phamhoangc@company.vn",
@@ -145,6 +163,7 @@ export const Route = createFileRoute("/sale/lich-hen")({
 function SaleAppointmentPage() {
   const [appointmentType, setAppointmentType] = useState<AppointmentType>("view-room");
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<string>("Đã xác nhận");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appointments, setAppointments] = useState<AppointmentRecord[]>(() => loadAppointments());
 
@@ -247,7 +266,7 @@ function SaleAppointmentPage() {
       branch: formData.branch,
       date: formData.date,
       time: formData.time,
-      status: "Đã xác nhận",
+      status,
     };
 
     setAppointments((prev) => [record, ...prev]);
@@ -435,9 +454,7 @@ function SaleAppointmentPage() {
                   Nhập thông tin chi nhánh và thời gian hẹn.
                 </p>
               </div>
-              <Badge className="shrink-0 rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
-                Đã xác nhận
-              </Badge>
+              <Badge className={getStatusBadgeClass(status)}>{status}</Badge>
             </div>
 
             <div className="mt-3 grid gap-3 xl:grid-cols-2">
@@ -524,6 +541,23 @@ function SaleAppointmentPage() {
                           <p className="text-sm text-red-500">{errors.time.message}</p>
                         )}
                       </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="status" className="text-sm font-medium">
+                          Trạng thái
+                        </Label>
+                        <Select value={status} onValueChange={(v) => setStatus(v)}>
+                          <SelectTrigger id="status" className="h-10 text-sm">
+                            <SelectValue placeholder="Chọn trạng thái" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {APPOINTMENT_STATUSES.map((s) => (
+                              <SelectItem key={s} value={s}>
+                                {s}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     <div className="rounded-lg border border-dashed border-gray-200 bg-slate-50 p-3 text-sm text-gray-600">
@@ -559,9 +593,7 @@ function SaleAppointmentPage() {
                             <p className="min-w-0 text-sm font-semibold text-gray-900">
                               {item.referenceLabel}
                             </p>
-                            <Badge className="shrink-0 rounded bg-emerald-100 px-2 py-1 text-[11px] text-emerald-700">
-                              {item.status}
-                            </Badge>
+                            <Badge className={getStatusBadgeClass(item.status)}>{item.status}</Badge>
                           </div>
                           <p className="mt-2 text-sm text-gray-600">{item.branch}</p>
                           <p className="mt-1 text-xs text-gray-500">

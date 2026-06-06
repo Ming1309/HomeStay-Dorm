@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +31,7 @@ type RegistrationLookupItem = {
 const MOCK_REGISTRATIONS: RegistrationLookupItem[] = [
   {
     id: "1",
-    registrationNumber: "REG-20260601-10001",
+    registrationNumber: "REG-1",
     customerName: "Nguyễn Văn A",
     phone: "0912345678",
     email: "nguyenvana@example.com",
@@ -49,7 +49,7 @@ const MOCK_REGISTRATIONS: RegistrationLookupItem[] = [
   },
   {
     id: "2",
-    registrationNumber: "REG-20260529-10002",
+    registrationNumber: "REG-2",
     customerName: "Trần Thị B",
     phone: "0987654321",
     email: "tranthib@gmail.com",
@@ -67,7 +67,7 @@ const MOCK_REGISTRATIONS: RegistrationLookupItem[] = [
   },
   {
     id: "3",
-    registrationNumber: "REG-20260528-10003",
+    registrationNumber: "REG-3",
     customerName: "Phạm Hoàng C",
     phone: "0968887777",
     email: "phamhoangc@company.vn",
@@ -98,9 +98,7 @@ const getStatusBadge = (status: RegistrationStatus) => {
 };
 
 export function RegistrationLookupWorkspace() {
-  const [phone, setPhone] = useState("");
-  const [idNumber, setIdNumber] = useState("");
-  const [email, setEmail] = useState("");
+  const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchKey, setSearchKey] = useState("");
@@ -108,17 +106,18 @@ export function RegistrationLookupWorkspace() {
   const results = useMemo(() => {
     if (!hasSearched) return [];
 
-    const queryPhone = phone.trim();
-    const queryId = idNumber.trim().toLowerCase();
-    const queryEmail = email.trim().toLowerCase();
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
 
     return MOCK_REGISTRATIONS.filter((item) => {
-      const matchPhone = queryPhone ? item.phone.includes(queryPhone) : false;
-      const matchId = queryId ? item.idNumber.toLowerCase().includes(queryId) : false;
-      const matchEmail = queryEmail ? item.email.toLowerCase().includes(queryEmail) : false;
-      return matchPhone || matchId || matchEmail;
+      const matchPhone = item.phone.includes(q) || item.phone.includes(query.trim());
+      const matchId = item.idNumber.toLowerCase().includes(q);
+      const matchEmail = item.email.toLowerCase().includes(q);
+      const matchNumber = item.registrationNumber.toLowerCase().includes(q);
+      const matchName = item.customerName.toLowerCase().includes(q);
+      return matchPhone || matchId || matchEmail || matchNumber || matchName;
     });
-  }, [hasSearched, phone, idNumber, email]);
+  }, [hasSearched, query]);
 
   const selectedRegistration = selectedId
     ? (results.find((item) => item.id === selectedId) ?? null)
@@ -131,22 +130,22 @@ export function RegistrationLookupWorkspace() {
   }, [results, selectedId]);
 
   const handleSearch = () => {
-    if (!phone.trim() && !idNumber.trim() && !email.trim()) {
+    if (!query.trim()) {
       toast.error("Vui lòng nhập ít nhất một tiêu chí tìm kiếm");
       return;
     }
 
+    const q = query.trim().toLowerCase();
     const nextResults = MOCK_REGISTRATIONS.filter((item) => {
-      const queryPhone = phone.trim();
-      const queryId = idNumber.trim().toLowerCase();
-      const queryEmail = email.trim().toLowerCase();
-      const matchPhone = queryPhone ? item.phone.includes(queryPhone) : false;
-      const matchId = queryId ? item.idNumber.toLowerCase().includes(queryId) : false;
-      const matchEmail = queryEmail ? item.email.toLowerCase().includes(queryEmail) : false;
-      return matchPhone || matchId || matchEmail;
+      const matchPhone = item.phone.includes(q) || item.phone.includes(query.trim());
+      const matchId = item.idNumber.toLowerCase().includes(q);
+      const matchEmail = item.email.toLowerCase().includes(q);
+      const matchNumber = item.registrationNumber.toLowerCase().includes(q);
+      const matchName = item.customerName.toLowerCase().includes(q);
+      return matchPhone || matchId || matchEmail || matchNumber || matchName;
     });
 
-    setSearchKey([phone.trim(), idNumber.trim(), email.trim()].filter(Boolean).join(" • "));
+    setSearchKey(query.trim());
     setHasSearched(true);
     if (selectedId && !nextResults.some((item) => item.id === selectedId)) {
       setSelectedId(null);
@@ -167,36 +166,27 @@ export function RegistrationLookupWorkspace() {
           <div className="space-y-3">
             <div>
               <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-500">
-                Số điện thoại
+                Tìm kiếm (SĐT / CCCD / Email / Tên / Mã)
               </label>
-              <Input
-                placeholder="0912 345 678"
-                value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                className="h-10 text-sm"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-500">
-                CCCD / Hộ chiếu
-              </label>
-              <Input
-                placeholder="079200123456"
-                value={idNumber}
-                onChange={(event) => setIdNumber(event.target.value)}
-                className="h-10 text-sm"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-500">
-                Email
-              </label>
-              <Input
-                placeholder="khachhang@example.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="h-10 text-sm"
-              />
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Nhập SĐT, CCCD, Email, tên hoặc mã"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  className="pl-10 pr-10 h-10 text-sm"
+                />
+                {query ? (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    aria-label="clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : null}
+              </div>
             </div>
             <Button
               type="button"

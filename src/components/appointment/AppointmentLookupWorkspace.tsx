@@ -1,20 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, X, Edit2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
+import { 
   APPOINTMENT_TYPES,
   AppointmentRecord,
   loadAppointments,
   seedMockAppointments,
+  saveAppointments,
 } from "@/lib/appointments";
 
 const getTypeLabel = (type: string) =>
   APPOINTMENT_TYPES.find((item) => item.value === type)?.label ?? "Không xác định";
+
+const APPOINTMENT_STATUSES = [
+  "Đã xác nhận",
+  "Đã huỷ",
+  "Đã Check-in",
+  "Vắng mặt",
+  "Hoàn thành",
+];
 
 export function AppointmentLookupWorkspace() {
   const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
@@ -25,6 +34,8 @@ export function AppointmentLookupWorkspace() {
   const [appliedDate, setAppliedDate] = useState("");
   const [appliedTime, setAppliedTime] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedAppointment, setEditedAppointment] = useState<AppointmentRecord | null>(null);
 
   useEffect(() => {
     seedMockAppointments();
@@ -69,6 +80,46 @@ export function AppointmentLookupWorkspace() {
     }
   }, [filteredAppointments, selectedId]);
 
+  function getTypeBadgeClass(type: string) {
+    switch (type) {
+      case "view-room":
+        return "h-6 rounded bg-sky-100 px-2 text-[11px] text-sky-700";
+      case "checkin":
+        return "h-6 rounded bg-emerald-100 px-2 text-[11px] text-emerald-700";
+      case "checkout":
+        return "h-6 rounded bg-amber-100 px-2 text-[11px] text-amber-700";
+      default:
+        return "h-6 rounded bg-slate-100 px-2 text-[11px] text-slate-700";
+    }
+  }
+
+  function getStatusBadgeClass(status: string) {
+    const s = status?.toLowerCase() ?? "";
+    if (s.includes("hủy")) return "h-6 rounded bg-red-100 px-2 text-[11px] text-red-700";
+    if (s.includes("chờ") || s.includes("chờ xác")) return "h-6 rounded bg-amber-100 px-2 text-[11px] text-amber-700";
+    if (s.includes("xác")) return "h-6 rounded bg-emerald-100 px-2 text-[11px] text-emerald-700";
+    return "h-6 rounded bg-slate-100 px-2 text-[11px] text-slate-700";
+  }
+
+  function startEdit() {
+    if (!selectedAppointment) return;
+    setEditedAppointment({ ...selectedAppointment });
+    setIsEditing(true);
+  }
+
+  function cancelEdit() {
+    setIsEditing(false);
+    setEditedAppointment(null);
+  }
+
+  function saveEdit() {
+    if (!editedAppointment) return;
+    const updated = appointments.map((a) => (a.id === editedAppointment.id ? editedAppointment : a));
+    saveAppointments(updated);
+    setAppointments(updated);
+    setIsEditing(false);
+    setEditedAppointment(null);
+  }
   return (
     <div className="flex h-full overflow-hidden bg-gray-50">
       <aside className="flex w-full max-w-[380px] flex-col border-r border-gray-200 bg-white">
@@ -85,8 +136,18 @@ export function AppointmentLookupWorkspace() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Gõ mã, tên, chi nhánh, ngày, giờ hoặc trạng thái"
-              className="h-10 pl-10 text-sm"
+              className="h-10 pl-10 pr-10 text-sm"
             />
+            {search ? (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                aria-label="clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
           </div>
 
           <div className="mt-3 flex items-center gap-2">
@@ -112,20 +173,6 @@ export function AppointmentLookupWorkspace() {
             >
               Tra cứu
             </Button>
-            <button
-              type="button"
-              onClick={() => {
-                setDateFilter("");
-                setTimeFilter("");
-                setSearch("");
-                setAppliedSearch("");
-                setAppliedDate("");
-                setAppliedTime("");
-              }}
-              className="ml-2 rounded-md border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700"
-            >
-              Xóa
-            </button>
           </div>
           <div className="mt-3 rounded-lg border border-gray-200 bg-slate-50 p-3 text-xs text-gray-600">
             {filteredAppointments.length === 0 ? (
@@ -145,13 +192,19 @@ export function AppointmentLookupWorkspace() {
             <div className="space-y-3">
               {filteredAppointments.map((appointment) => {
                 const active = appointment.id === selectedId;
+                const disabled = isEditing && appointment.id !== selectedId;
                 return (
                   <button
                     key={appointment.id}
                     type="button"
-                    onClick={() => setSelectedId(appointment.id)}
+                    onClick={() => {
+                      if (!disabled) setSelectedId(appointment.id);
+                    }}
+                    disabled={disabled}
                     className={
-                      active
+                      disabled
+                        ? "w-full rounded-lg border border-gray-100 bg-gray-50 px-4 py-3 text-left opacity-60 cursor-not-allowed"
+                        : active
                         ? "w-full rounded-lg border border-blue-600 bg-blue-50 px-4 py-3 text-left"
                         : "w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-left hover:border-blue-300 hover:bg-gray-50"
                     }
@@ -165,7 +218,7 @@ export function AppointmentLookupWorkspace() {
                           {appointment.branch} • {appointment.date} • {appointment.time}
                         </p>
                       </div>
-                      <Badge className="h-6 rounded bg-slate-100 px-2 text-[11px] text-slate-700">
+                      <Badge className={getTypeBadgeClass(appointment.appointmentType)}>
                         {getTypeLabel(appointment.appointmentType)}
                       </Badge>
                     </div>
@@ -180,59 +233,158 @@ export function AppointmentLookupWorkspace() {
       <section className="flex-1 overflow-hidden bg-white">
         <div className="h-full overflow-y-auto px-6 py-6">
           <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="text-lg">Chi tiết lịch hẹn</CardTitle>
-            </CardHeader>
+              <CardHeader className="flex items-center gap-4">
+                <CardTitle className="text-lg">Chi tiết lịch hẹn</CardTitle>
+                <div className="ml-auto">
+                  <Button
+                    onClick={startEdit}
+                    disabled={!selectedAppointment}
+                    className="h-8"
+                  >
+                    <Edit2 className="mr-2 h-4 w-4" /> Sửa
+                  </Button>
+                </div>
+              </CardHeader>
             <CardContent className="space-y-6">
               {selectedAppointment ? (
-                <div className="space-y-4">
-                  <div className="rounded-lg border border-gray-200 bg-slate-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
-                      Mã / khách hàng
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-gray-900">
-                      {selectedAppointment.referenceLabel}
-                    </p>
-                  </div>
+                isEditing && editedAppointment ? (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs uppercase tracking-[0.2em] text-gray-500">Mã / khách hàng</label>
+                      <Input
+                        value={editedAppointment.referenceLabel}
+                        onChange={(e) =>
+                          setEditedAppointment({ ...editedAppointment, referenceLabel: e.target.value })
+                        }
+                        className="mt-2"
+                      />
+                    </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="text-xs uppercase tracking-[0.2em] text-gray-500">Loại lịch hẹn</label>
+                        <select
+                          value={editedAppointment.appointmentType}
+                          onChange={(e) =>
+                            setEditedAppointment({ ...editedAppointment, appointmentType: e.target.value as any })
+                          }
+                          className="mt-2 w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm"
+                        >
+                          {APPOINTMENT_TYPES.map((t) => (
+                            <option key={t.value} value={t.value}>
+                              {t.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs uppercase tracking-[0.2em] text-gray-500">Trạng thái</label>
+                        <select
+                          value={editedAppointment.status}
+                          onChange={(e) => setEditedAppointment({ ...editedAppointment, status: e.target.value })}
+                          className="mt-2 w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm"
+                        >
+                          {APPOINTMENT_STATUSES.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div>
+                        <label className="text-xs uppercase tracking-[0.2em] text-gray-500">Chi nhánh</label>
+                        <Input
+                          value={editedAppointment.branch}
+                          onChange={(e) => setEditedAppointment({ ...editedAppointment, branch: e.target.value })}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs uppercase tracking-[0.2em] text-gray-500">Ngày</label>
+                        <Input
+                          type="date"
+                          value={editedAppointment.date}
+                          onChange={(e) => setEditedAppointment({ ...editedAppointment, date: e.target.value })}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs uppercase tracking-[0.2em] text-gray-500">Giờ</label>
+                        <Input
+                          type="time"
+                          value={editedAppointment.time}
+                          onChange={(e) => setEditedAppointment({ ...editedAppointment, time: e.target.value })}
+                          className="mt-2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button onClick={saveEdit} className="h-9">
+                        Lưu
+                      </Button>
+                      <Button variant="outline" onClick={cancelEdit} className="h-9">
+                        Hủy
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
                     <div className="rounded-lg border border-gray-200 bg-slate-50 p-4">
                       <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
-                        Loại lịch hẹn
+                        Mã / khách hàng
                       </p>
                       <p className="mt-2 text-sm font-semibold text-gray-900">
-                        {getTypeLabel(selectedAppointment.appointmentType)}
+                        {selectedAppointment.referenceLabel}
                       </p>
                     </div>
-                    <div className="rounded-lg border border-gray-200 bg-slate-50 p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Trạng thái</p>
-                      <p className="mt-2 text-sm font-semibold text-gray-900">
-                        {selectedAppointment.status}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="rounded-lg border border-gray-200 bg-white p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Chi nhánh</p>
-                      <p className="mt-2 text-sm font-semibold text-gray-900">
-                        {selectedAppointment.branch}
-                      </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="rounded-lg border border-gray-200 bg-slate-50 p-4">
+                        <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
+                          Loại lịch hẹn
+                        </p>
+                        <div className="mt-2">
+                          <Badge className={getTypeBadgeClass(selectedAppointment.appointmentType)}>
+                            {getTypeLabel(selectedAppointment.appointmentType)}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-gray-200 bg-slate-50 p-4">
+                        <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Trạng thái</p>
+                        <div className="mt-2">
+                          <Badge className={getStatusBadgeClass(selectedAppointment.status)}>
+                            {selectedAppointment.status}
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
-                    <div className="rounded-lg border border-gray-200 bg-white p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Ngày</p>
-                      <p className="mt-2 text-sm font-semibold text-gray-900">
-                        {selectedAppointment.date}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-gray-200 bg-white p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Giờ</p>
-                      <p className="mt-2 text-sm font-semibold text-gray-900">
-                        {selectedAppointment.time}
-                      </p>
+
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div className="rounded-lg border border-gray-200 bg-white p-4">
+                        <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Chi nhánh</p>
+                        <p className="mt-2 text-sm font-semibold text-gray-900">
+                          {selectedAppointment.branch}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-gray-200 bg-white p-4">
+                        <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Ngày</p>
+                        <p className="mt-2 text-sm font-semibold text-gray-900">
+                          {selectedAppointment.date}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-gray-200 bg-white p-4">
+                        <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Giờ</p>
+                        <p className="mt-2 text-sm font-semibold text-gray-900">
+                          {selectedAppointment.time}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )
               ) : (
                 <div className="rounded-lg border border-dashed border-gray-200 bg-slate-50 p-8 text-center text-sm text-gray-600">
                   <p className="text-base font-semibold text-gray-900">
