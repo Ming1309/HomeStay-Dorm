@@ -1,10 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CheckCircle2, Eye, Search, Users } from "lucide-react";
+import { AlertCircle, CheckCircle2, Eye, Search, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { RoleShell } from "@/components/app/RoleShell";
 import { useRoleGuard } from "@/components/app/useRoleGuard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +56,7 @@ type Member = {
     district: string;
     province: string;
   } | null;
-  status: "pending" | "rejected";
+  status: "pending" | "approved" | "rejected";
 };
 
 type ApprovalContract = {
@@ -140,6 +151,18 @@ function ManagerApprovalPage() {
     );
   }, [items, query]);
   const selected = filtered.find((item) => item.id === selectedId) ?? null;
+  const pendingMembers = selected?.members.filter((member) => member.status === "pending") ?? [];
+  const approvedMembers = selected?.members.filter((member) => member.status === "approved") ?? [];
+  const rejectedMembers = selected?.members.filter((member) => member.status === "rejected") ?? [];
+  const hasPendingValidMembers = pendingMembers.length > 0;
+  const hasRejectedMembers = rejectedMembers.length > 0;
+  const hasMembers = !!selected && selected.members.length > 0;
+  const allMembersRejected = hasMembers && rejectedMembers.length === selected.members.length;
+  const allMembersApproved =
+    hasMembers &&
+    !hasPendingValidMembers &&
+    approvedMembers.length + rejectedMembers.length === selected.members.length;
+  const canCompleteApproval = hasMembers && !hasRejectedMembers && hasPendingValidMembers;
 
   if (!allowed) return null;
 
@@ -222,16 +245,21 @@ function ManagerApprovalPage() {
                   <TableBody>
                     {selected.members.map((member, index) => {
                       const rejected = member.status === "rejected";
+                      const approved = member.status === "approved";
                       return (
                         <TableRow
                           key={member.id}
-                          className={cn(rejected ? "bg-red-50/50 hover:bg-red-50/50" : "")}
+                          className={cn(
+                            rejected ? "bg-red-50/50 hover:bg-red-50/50" : "",
+                            approved ? "bg-emerald-50/50 hover:bg-emerald-50/50" : "",
+                          )}
                         >
                           <TableCell className="p-2 text-xs text-gray-500">{index + 1}</TableCell>
                           <TableCell
                             className={cn(
                               "p-2 text-sm font-medium",
                               rejected ? "text-gray-500 line-through" : "text-gray-800",
+                              approved ? "text-emerald-700" : "",
                             )}
                           >
                             {member.fullName}
@@ -250,6 +278,11 @@ function ManagerApprovalPage() {
                           </TableCell>
                           <TableCell className="p-2 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              {approved ? (
+                                <Badge className="h-6 bg-emerald-100 text-[10px] text-emerald-700">
+                                  Đã duyệt
+                                </Badge>
+                              ) : null}
                               <Dialog>
                                 <DialogTrigger asChild>
                                   <Button
@@ -293,6 +326,7 @@ function ManagerApprovalPage() {
                                 type="button"
                                 size="sm"
                                 variant="outline"
+                                disabled={approved}
                                 className={cn(
                                   "h-7 text-xs",
                                   rejected
@@ -336,26 +370,124 @@ function ManagerApprovalPage() {
               </div>
             </div>
 
-            <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5">
-              <div className="flex items-center gap-1 text-xs text-gray-400">
-                <Users className="size-3.5" />
-                <span>Sub-flow A4: Duyệt theo thành viên</span>
-              </div>
-              <Button
-                type="button"
-                className="bg-emerald-600 hover:bg-emerald-700"
-                onClick={() => {
-                  setItems((current) => current.filter((c) => c.id !== selected.id));
-                  setSelectedId(null);
-                  toast.success("Duyệt hồ sơ thành công.", {
-                    icon: <CheckCircle2 className="size-4 text-emerald-100" />,
-                  });
-                }}
-              >
-                {selected.members.some((m) => m.status === "rejected")
-                  ? "Duyệt các thành viên còn lại"
-                  : "Duyệt toàn bộ"}
-              </Button>
+            <footer className="sticky bottom-0 flex min-h-14 items-center justify-between gap-4 border-t border-gray-200 bg-white px-5 py-2">
+              {allMembersRejected ? (
+                <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                  <AlertCircle className="size-3.5" />
+                  <span>Hồ sơ không còn thành viên hợp lệ để duyệt</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-xs text-gray-400">
+                  <Users className="size-3.5" />
+                  <span>Sub-flow A4: Duyệt theo thành viên</span>
+                </div>
+              )}
+              {allMembersRejected ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button type="button" className="bg-red-600 hover:bg-red-700">
+                      Từ chối hồ sơ
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Từ chối hồ sơ này?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Hồ sơ {selected.id} không còn thành viên hợp lệ để duyệt và sẽ bị loại khỏi
+                        danh sách chờ xét duyệt.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Hủy</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        onClick={() => {
+                          setItems((current) => current.filter((c) => c.id !== selected.id));
+                          setSelectedId(null);
+                          toast.success("Đã từ chối hồ sơ.");
+                        }}
+                      >
+                        Từ chối hồ sơ
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : allMembersApproved || canCompleteApproval ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button type="button" className="bg-emerald-600 hover:bg-emerald-700">
+                      Hoàn tất xét duyệt hồ sơ
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Hoàn tất xét duyệt hồ sơ?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Hồ sơ {selected.id} sẽ được duyệt và chuyển sang bước tiếp theo.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Hủy</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                        onClick={() => {
+                          setItems((current) => current.filter((c) => c.id !== selected.id));
+                          setSelectedId(null);
+                          toast.success("Hoàn tất xét duyệt hồ sơ.", {
+                            icon: <CheckCircle2 className="size-4 text-emerald-100" />,
+                          });
+                        }}
+                      >
+                        Xác nhận
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : hasPendingValidMembers ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button type="button" className="bg-emerald-600 hover:bg-emerald-700">
+                      Duyệt các thành viên còn lại
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Duyệt các thành viên còn lại?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {pendingMembers.length} thành viên hợp lệ còn lại trong hồ sơ {selected.id}{" "}
+                        sẽ được chuyển sang trạng thái đã duyệt.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Hủy</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                        onClick={() => {
+                          setItems((current) =>
+                            current.map((contract) =>
+                              contract.id !== selected.id
+                                ? contract
+                                : {
+                                    ...contract,
+                                    members: contract.members.map((member) =>
+                                      member.status === "pending"
+                                        ? { ...member, status: "approved" }
+                                        : member,
+                                    ),
+                                  },
+                            ),
+                          );
+                          toast.success("Đã duyệt các thành viên còn lại.", {
+                            icon: <CheckCircle2 className="size-4 text-emerald-100" />,
+                          });
+                        }}
+                      >
+                        Xác nhận
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : null}
             </footer>
           </section>
         )}

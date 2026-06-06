@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { KeyRound, MoreHorizontal, Pencil, Shield, UserMinus, UserX } from "lucide-react";
+import { KeyRound, MoreHorizontal, Pencil, Plus, Shield, UserMinus, UserX } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -391,7 +391,8 @@ function AdminUsersPage() {
                   className="bg-blue-600 hover:bg-blue-700"
                   onClick={openCreateDialog}
                 >
-                  + Thêm nhân viên mới
+                  <Plus className="size-4" />
+                  Thêm nhân viên mới
                 </Button>
               </div>
 
@@ -793,7 +794,7 @@ function AdminUsersPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Hủy</AlertDialogCancel>
+              <AlertDialogCancel>Quay lại</AlertDialogCancel>
               <AlertDialogAction onClick={confirmLockToggle}>Xác nhận</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -821,7 +822,7 @@ function AdminUsersPage() {
               )}
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Hủy</AlertDialogCancel>
+              <AlertDialogCancel>Quay lại</AlertDialogCancel>
               <AlertDialogAction onClick={confirmStatusChange}>Xác nhận</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

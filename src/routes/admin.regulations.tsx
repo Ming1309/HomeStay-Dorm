@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FileText, Pencil, Trash2, UploadCloud } from "lucide-react";
+import { FileText, Pencil, Plus, Trash2, UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -301,7 +301,8 @@ function AdminRegulationsPage() {
                 className="bg-blue-600 hover:bg-blue-700"
                 onClick={openCreateDialog}
               >
-                + Thêm quy định mới
+                <Plus className="size-4" />
+                Thêm quy định mới
               </Button>
             </div>
 
@@ -596,7 +597,7 @@ function AdminRegulationsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>Quay lại</AlertDialogCancel>
             <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={confirmDelete}>
               Xóa
             </AlertDialogAction>

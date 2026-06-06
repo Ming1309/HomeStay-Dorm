@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -282,7 +282,8 @@ function AdminAssetsPage() {
                 className="bg-blue-600 hover:bg-blue-700"
                 onClick={openCreateDialog}
               >
-                + Thêm tài sản mới
+                <Plus className="size-4" />
+                Thêm tài sản mới
               </Button>
             </div>
 
@@ -537,7 +538,7 @@ function AdminAssetsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>Quay lại</AlertDialogCancel>
             <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={confirmDelete}>
               Xóa
             </AlertDialogAction>

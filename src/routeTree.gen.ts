@@ -35,7 +35,6 @@ import { Route as ManagerTraCuuPhongRouteImport } from './routes/manager.tra-cuu
 import { Route as ManagerTraCuuHopDongRouteImport } from './routes/manager.tra-cuu-hop-dong'
 import { Route as ManagerThuHoiTaiSanRouteImport } from './routes/manager.thu-hoi-tai-san'
 import { Route as ManagerTerminationRouteImport } from './routes/manager.termination'
-import { Route as ManagerReportsRouteImport } from './routes/manager.reports'
 import { Route as ManagerHandoverRouteImport } from './routes/manager.handover'
 import { Route as ManagerDashboardRouteImport } from './routes/manager.dashboard'
 import { Route as ManagerContractsRouteImport } from './routes/manager.contracts'
@@ -47,7 +46,6 @@ import { Route as AdminRoomsBedsRouteImport } from './routes/admin.rooms-beds'
 import { Route as AdminRegulationsRouteImport } from './routes/admin.regulations'
 import { Route as AdminDepositPolicyRouteImport } from './routes/admin.deposit-policy'
 import { Route as AdminAssetsRouteImport } from './routes/admin.assets'
-import { Route as AccountantTransactionsRouteImport } from './routes/accountant.transactions'
 import { Route as AccountantTraCuuPhongRouteImport } from './routes/accountant.tra-cuu-phong'
 import { Route as AccountantTraCuuHopDongRouteImport } from './routes/accountant.tra-cuu-hop-dong'
 import { Route as AccountantThanhToanTraPhongRouteImport } from './routes/accountant.thanh-toan-tra-phong'
@@ -188,11 +186,6 @@ const ManagerTerminationRoute = ManagerTerminationRouteImport.update({
   path: '/termination',
   getParentRoute: () => ManagerRoute,
 } as any)
-const ManagerReportsRoute = ManagerReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => ManagerRoute,
-} as any)
 const ManagerHandoverRoute = ManagerHandoverRouteImport.update({
   id: '/handover',
   path: '/handover',
@@ -247,11 +240,6 @@ const AdminAssetsRoute = AdminAssetsRouteImport.update({
   id: '/assets',
   path: '/assets',
   getParentRoute: () => AdminRoute,
-} as any)
-const AccountantTransactionsRoute = AccountantTransactionsRouteImport.update({
-  id: '/transactions',
-  path: '/transactions',
-  getParentRoute: () => AccountantRoute,
 } as any)
 const AccountantTraCuuPhongRoute = AccountantTraCuuPhongRouteImport.update({
   id: '/tra-cuu-phong',
@@ -318,7 +306,6 @@ export interface FileRoutesByFullPath {
   '/accountant/thanh-toan-tra-phong': typeof AccountantThanhToanTraPhongRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
-  '/accountant/transactions': typeof AccountantTransactionsRoute
   '/admin/assets': typeof AdminAssetsRoute
   '/admin/deposit-policy': typeof AdminDepositPolicyRoute
   '/admin/regulations': typeof AdminRegulationsRoute
@@ -330,7 +317,6 @@ export interface FileRoutesByFullPath {
   '/manager/contracts': typeof ManagerContractsRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
-  '/manager/reports': typeof ManagerReportsRoute
   '/manager/termination': typeof ManagerTerminationRoute
   '/manager/thu-hoi-tai-san': typeof ManagerThuHoiTaiSanRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
@@ -365,7 +351,6 @@ export interface FileRoutesByTo {
   '/accountant/thanh-toan-tra-phong': typeof AccountantThanhToanTraPhongRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
-  '/accountant/transactions': typeof AccountantTransactionsRoute
   '/admin/assets': typeof AdminAssetsRoute
   '/admin/deposit-policy': typeof AdminDepositPolicyRoute
   '/admin/regulations': typeof AdminRegulationsRoute
@@ -377,7 +362,6 @@ export interface FileRoutesByTo {
   '/manager/contracts': typeof ManagerContractsRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
-  '/manager/reports': typeof ManagerReportsRoute
   '/manager/termination': typeof ManagerTerminationRoute
   '/manager/thu-hoi-tai-san': typeof ManagerThuHoiTaiSanRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
@@ -416,7 +400,6 @@ export interface FileRoutesById {
   '/accountant/thanh-toan-tra-phong': typeof AccountantThanhToanTraPhongRoute
   '/accountant/tra-cuu-hop-dong': typeof AccountantTraCuuHopDongRoute
   '/accountant/tra-cuu-phong': typeof AccountantTraCuuPhongRoute
-  '/accountant/transactions': typeof AccountantTransactionsRoute
   '/admin/assets': typeof AdminAssetsRoute
   '/admin/deposit-policy': typeof AdminDepositPolicyRoute
   '/admin/regulations': typeof AdminRegulationsRoute
@@ -428,7 +411,6 @@ export interface FileRoutesById {
   '/manager/contracts': typeof ManagerContractsRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
-  '/manager/reports': typeof ManagerReportsRoute
   '/manager/termination': typeof ManagerTerminationRoute
   '/manager/thu-hoi-tai-san': typeof ManagerThuHoiTaiSanRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
@@ -468,7 +450,6 @@ export interface FileRouteTypes {
     | '/accountant/thanh-toan-tra-phong'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
-    | '/accountant/transactions'
     | '/admin/assets'
     | '/admin/deposit-policy'
     | '/admin/regulations'
@@ -480,7 +461,6 @@ export interface FileRouteTypes {
     | '/manager/contracts'
     | '/manager/dashboard'
     | '/manager/handover'
-    | '/manager/reports'
     | '/manager/termination'
     | '/manager/thu-hoi-tai-san'
     | '/manager/tra-cuu-hop-dong'
@@ -515,7 +495,6 @@ export interface FileRouteTypes {
     | '/accountant/thanh-toan-tra-phong'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
-    | '/accountant/transactions'
     | '/admin/assets'
     | '/admin/deposit-policy'
     | '/admin/regulations'
@@ -527,7 +506,6 @@ export interface FileRouteTypes {
     | '/manager/contracts'
     | '/manager/dashboard'
     | '/manager/handover'
-    | '/manager/reports'
     | '/manager/termination'
     | '/manager/thu-hoi-tai-san'
     | '/manager/tra-cuu-hop-dong'
@@ -565,7 +543,6 @@ export interface FileRouteTypes {
     | '/accountant/thanh-toan-tra-phong'
     | '/accountant/tra-cuu-hop-dong'
     | '/accountant/tra-cuu-phong'
-    | '/accountant/transactions'
     | '/admin/assets'
     | '/admin/deposit-policy'
     | '/admin/regulations'
@@ -577,7 +554,6 @@ export interface FileRouteTypes {
     | '/manager/contracts'
     | '/manager/dashboard'
     | '/manager/handover'
-    | '/manager/reports'
     | '/manager/termination'
     | '/manager/thu-hoi-tai-san'
     | '/manager/tra-cuu-hop-dong'
@@ -793,13 +769,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerTerminationRouteImport
       parentRoute: typeof ManagerRoute
     }
-    '/manager/reports': {
-      id: '/manager/reports'
-      path: '/reports'
-      fullPath: '/manager/reports'
-      preLoaderRoute: typeof ManagerReportsRouteImport
-      parentRoute: typeof ManagerRoute
-    }
     '/manager/handover': {
       id: '/manager/handover'
       path: '/handover'
@@ -877,13 +846,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAssetsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/accountant/transactions': {
-      id: '/accountant/transactions'
-      path: '/transactions'
-      fullPath: '/accountant/transactions'
-      preLoaderRoute: typeof AccountantTransactionsRouteImport
-      parentRoute: typeof AccountantRoute
-    }
     '/accountant/tra-cuu-phong': {
       id: '/accountant/tra-cuu-phong'
       path: '/tra-cuu-phong'
@@ -960,7 +922,6 @@ interface AccountantRouteChildren {
   AccountantThanhToanTraPhongRoute: typeof AccountantThanhToanTraPhongRoute
   AccountantTraCuuHopDongRoute: typeof AccountantTraCuuHopDongRoute
   AccountantTraCuuPhongRoute: typeof AccountantTraCuuPhongRoute
-  AccountantTransactionsRoute: typeof AccountantTransactionsRoute
   AccountantIndexRoute: typeof AccountantIndexRoute
 }
 
@@ -974,7 +935,6 @@ const AccountantRouteChildren: AccountantRouteChildren = {
   AccountantThanhToanTraPhongRoute: AccountantThanhToanTraPhongRoute,
   AccountantTraCuuHopDongRoute: AccountantTraCuuHopDongRoute,
   AccountantTraCuuPhongRoute: AccountantTraCuuPhongRoute,
-  AccountantTransactionsRoute: AccountantTransactionsRoute,
   AccountantIndexRoute: AccountantIndexRoute,
 }
 
@@ -1010,7 +970,6 @@ interface ManagerRouteChildren {
   ManagerContractsRoute: typeof ManagerContractsRoute
   ManagerDashboardRoute: typeof ManagerDashboardRoute
   ManagerHandoverRoute: typeof ManagerHandoverRoute
-  ManagerReportsRoute: typeof ManagerReportsRoute
   ManagerTerminationRoute: typeof ManagerTerminationRoute
   ManagerThuHoiTaiSanRoute: typeof ManagerThuHoiTaiSanRoute
   ManagerTraCuuHopDongRoute: typeof ManagerTraCuuHopDongRoute
@@ -1024,7 +983,6 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerContractsRoute: ManagerContractsRoute,
   ManagerDashboardRoute: ManagerDashboardRoute,
   ManagerHandoverRoute: ManagerHandoverRoute,
-  ManagerReportsRoute: ManagerReportsRoute,
   ManagerTerminationRoute: ManagerTerminationRoute,
   ManagerThuHoiTaiSanRoute: ManagerThuHoiTaiSanRoute,
   ManagerTraCuuHopDongRoute: ManagerTraCuuHopDongRoute,

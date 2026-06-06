@@ -62,6 +62,9 @@ const inputCls =
   "h-9 border-gray-200 text-sm shadow-none focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500";
 
 const isVietnameseNationality = (value: string) => value.trim().toLowerCase() === "việt nam";
+const usesOverseasAddress = (member: Pick<Member, "docType" | "nationality">) =>
+  member.docType === "passport" ||
+  (!!member.nationality && !isVietnameseNationality(member.nationality));
 
 function FormField({
   label,
@@ -114,19 +117,19 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
 
   const openEdit = (m: Member) => {
     setFormData({ ...m });
-    if (isVietnameseNationality(m.nationality) || !m.nationality) {
+    if (usesOverseasAddress(m)) {
+      setAddrOverseas(m.diaChiThuongTru);
+      setAddrStreet("");
+      setAddrPhuong("");
+      setAddrQuan("");
+      setAddrTinh("");
+    } else {
       const parts = m.diaChiThuongTru.split(", ");
       setAddrStreet(parts[0] || "");
       setAddrPhuong(parts[1] || "");
       setAddrQuan(parts[2] || "");
       setAddrTinh(parts[3] || "");
       setAddrOverseas("");
-    } else {
-      setAddrOverseas(m.diaChiThuongTru);
-      setAddrStreet("");
-      setAddrPhuong("");
-      setAddrQuan("");
-      setAddrTinh("");
     }
     setEditingId(m.id);
     setIsOpen(true);
@@ -134,10 +137,10 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
 
   const handleSave = () => {
     let fullAddress = "";
-    if (isVietnameseNationality(formData.nationality) || !formData.nationality) {
-      fullAddress = [addrStreet, addrPhuong, addrQuan, addrTinh].filter(Boolean).join(", ");
-    } else {
+    if (usesOverseasAddress(formData)) {
       fullAddress = addrOverseas;
+    } else {
+      fullAddress = [addrStreet, addrPhuong, addrQuan, addrTinh].filter(Boolean).join(", ");
     }
 
     const finalMember = { ...formData, diaChiThuongTru: fullAddress };
@@ -162,6 +165,20 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
       setAddrPhuong("");
     }
   };
+
+  const handleDocTypeChange = (value: Member["docType"]) => {
+    setFormData({ ...formData, docType: value });
+    if (value === "passport") {
+      setAddrStreet("");
+      setAddrTinh("");
+      setAddrQuan("");
+      setAddrPhuong("");
+    } else if (isVietnameseNationality(formData.nationality) || !formData.nationality) {
+      setAddrOverseas("");
+    }
+  };
+
+  const showOverseasAddress = usesOverseasAddress(formData);
 
   return (
     <div className="space-y-2">
@@ -349,9 +366,7 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
               <FormField label="Loại giấy tờ" required>
                 <Select
                   value={formData.docType}
-                  onValueChange={(v) =>
-                    setFormData({ ...formData, docType: v as Member["docType"] })
-                  }
+                  onValueChange={(v) => handleDocTypeChange(v as Member["docType"])}
                 >
                   <SelectTrigger className={inputCls}>
                     <SelectValue />
@@ -377,14 +392,21 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
             <div className="space-y-2">
               <div className="flex items-baseline gap-1">
                 <span className="text-xs font-medium text-gray-600">
-                  {isVietnameseNationality(formData.nationality) || !formData.nationality
-                    ? "Địa chỉ thường trú"
-                    : "Địa chỉ tại nước ngoài"}
+                  {showOverseasAddress ? "Địa chỉ tại nước ngoài" : "Địa chỉ thường trú"}
                 </span>
                 <span className="text-red-500 text-xs">*</span>
               </div>
 
-              {isVietnameseNationality(formData.nationality) || !formData.nationality ? (
+              {showOverseasAddress ? (
+                <div className="w-full">
+                  <Input
+                    value={addrOverseas}
+                    onChange={(e) => setAddrOverseas(e.target.value)}
+                    placeholder="Nhập địa chỉ đầy đủ tại nước ngoài"
+                    className={inputCls}
+                  />
+                </div>
+              ) : (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                   <FormField label="Số nhà, Tên đường" required>
                     <Input
@@ -454,15 +476,6 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
                       </SelectContent>
                     </Select>
                   </FormField>
-                </div>
-              ) : (
-                <div className="w-full">
-                  <Input
-                    value={addrOverseas}
-                    onChange={(e) => setAddrOverseas(e.target.value)}
-                    placeholder="Nhập địa chỉ đầy đủ tại nước ngoài"
-                    className={inputCls}
-                  />
                 </div>
               )}
             </div>

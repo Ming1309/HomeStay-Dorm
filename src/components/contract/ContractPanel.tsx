@@ -563,7 +563,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Đóng</AlertDialogCancel>
+                      <AlertDialogCancel>Quay lại</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => {
                           toast.error("Đã hủy", {
