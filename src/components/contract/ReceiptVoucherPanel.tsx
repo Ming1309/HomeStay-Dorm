@@ -242,7 +242,7 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
             <div className="mt-3 grid gap-3 text-sm md:grid-cols-3">
               <SummaryLine label="Tổng công nợ" value={totals.totalDebt} />
               <SummaryLine label="Đã thu trước đó" value={totals.previouslyPaid} />
-              <SummaryLine label="Còn phải thu" value={totals.outstanding} highlight />
+              <SummaryLine label="Cần thu thêm" value={totals.outstanding} highlight />
             </div>
           </Card>
 

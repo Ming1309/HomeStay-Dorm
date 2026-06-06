@@ -101,7 +101,7 @@ export function ReconciliationSummary({
                   tone={paidAmount > 0 ? "good" : "muted"}
                 />
                 <SummaryRow
-                  label="Còn phải thu"
+                  label="Cần thu thêm"
                   value={formatCurrency(remainingDebt)}
                   tone={remainingDebt > 0 ? "bad" : "good"}
                   important

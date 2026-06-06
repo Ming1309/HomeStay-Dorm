@@ -7,7 +7,7 @@ import {
   ClipboardCheck,
   CreditCard,
   HandCoins,
-  Receipt,
+  ReceiptText,
   Undo2,
 } from "lucide-react";
 import { useMemo, type ComponentType } from "react";
@@ -35,12 +35,6 @@ const quickActions = [
     title: "Lập phiếu hoàn cọc",
     description: "Hoàn phần cọc còn lại",
     icon: Undo2,
-  },
-  {
-    to: "/accountant/receipts",
-    title: "Lập phiếu thu",
-    description: "Thu khoản phát sinh trả phòng",
-    icon: Receipt,
   },
 ] as const;
 
@@ -114,7 +108,7 @@ function AccountantDashboardPage() {
           label: "Phiếu thu/hoàn cần xử lý",
           value: String(pendingVoucherCount),
           subtext: `${refundDue.length} hoàn cọc, ${additionalDue.length} thu thêm`,
-          icon: Receipt,
+          icon: ReceiptText,
           tone: "blue",
         },
       ],

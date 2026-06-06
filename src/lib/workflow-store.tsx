@@ -304,6 +304,17 @@ type WorkflowStore = {
     date: string;
     note?: string;
   }) => ReceiptVoucher;
+  collectReceiptForInvoices: (input: {
+    source: "contract_payment" | "checkout_settlement";
+    contractId: string;
+    customerName: string;
+    amount: number;
+    totalDebt: number;
+    paymentMethod: "cash" | "bank-transfer";
+    collector: string;
+    date: string;
+    note?: string;
+  }) => { voucher: ReceiptVoucher; scenario: "partial" | "full" };
   createRefundVoucher: (input: {
     contractId: string;
     customerName: string;
@@ -450,15 +461,14 @@ const initialDepositRequests: DepositRequest[] = [
     rentalType: "whole",
     selectedBedIds: ["bed-202-1", "bed-202-2"],
     basePrice: 4600000,
-    depositAmount: 46000000,
+    depositAmount: 5000000,
     status: "pending_settlement",
     paymentMethod: "bank-transfer",
     paymentProof: "proof-settlement.jpg",
     supplementReason: null,
     reconciliationItems: [
-      { id: "ri-1", description: "Tiền điện tháng 5", amount: 220000 },
-      { id: "ri-2", description: "Tiền nước tháng 5", amount: 110000 },
-      { id: "ri-3", description: "Phí vệ sinh cuối kỳ", amount: 150000 },
+      { id: "ri-1", description: "Bồi thường hư hỏng điều hòa", amount: 3500000 },
+      { id: "ri-2", description: "Phí vệ sinh cuối kỳ", amount: 480000 },
     ],
     createdAt: "2026-05-29T09:00:00.000Z",
     updatedAt: "2026-05-29T09:15:00.000Z",
@@ -1139,6 +1149,26 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
     return voucher;
   };
 
+  const collectReceiptForInvoices: WorkflowStore["collectReceiptForInvoices"] = (input) => {
+    const voucher = createReceiptVoucher({
+      contractId: input.contractId,
+      customerName: input.customerName,
+      amount: input.amount,
+      paymentMethod: input.paymentMethod,
+      collector: input.collector,
+      date: input.date,
+      note: input.note,
+    });
+    const scenario: "partial" | "full" =
+      input.amount >= Math.max(input.totalDebt, 0) ? "full" : "partial";
+
+    if (input.source === "contract_payment") {
+      recordPayment(input.contractId, input.amount, input.paymentMethod);
+    }
+
+    return { voucher, scenario };
+  };
+
   const createRefundVoucher: WorkflowStore["createRefundVoucher"] = (input) => {
     const count = refundVouchers.length + 1;
     const code = `PHC${String(count).padStart(3, "0")}`;
@@ -1224,6 +1254,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
         getReconciliation,
         createCompensationInvoice,
         createReceiptVoucher,
+        collectReceiptForInvoices,
         createRefundVoucher,
         terminateContract,
         ...metrics,

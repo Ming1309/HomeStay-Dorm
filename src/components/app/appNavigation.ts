@@ -159,10 +159,7 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
     {
       title: "Thu tiền",
       icon: CreditCard,
-      items: [
-        { to: "/accountant/payments", label: "Thu tiền hợp đồng", icon: CreditCard },
-        { to: "/accountant/receipts", label: "Lập phiếu thu", icon: Receipt },
-      ],
+      items: [{ to: "/accountant/payments", label: "Thu tiền hợp đồng", icon: CreditCard }],
     },
     {
       title: "Cọc / đối soát",

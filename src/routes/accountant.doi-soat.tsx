@@ -56,12 +56,11 @@ type ReconciliationProfile =
 
 type DeductionRow = {
   id: string;
-  type: "Tiền thuê" | "Điện nước/Dịch vụ" | "Bồi thường/Hư hỏng" | "Khoản phạt";
+  type: "Điện nước" | "Dịch vụ" | "Bồi thường";
   content: string;
   date: string;
   amount: number;
-  status: "Chưa thanh toán" | "Chờ xử lý";
-  note: string;
+  status: "Chưa thanh toán";
 };
 
 export const Route = createFileRoute("/accountant/doi-soat")({
@@ -150,18 +149,19 @@ function AccountantReconciliationPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-mono text-xs font-bold text-blue-700">{profile.id}</p>
+                      <p className="font-mono text-xs font-bold text-blue-700">
+                        {getProfileDisplayId(profile)}
+                      </p>
                       <p className="mt-1 truncate text-sm font-semibold text-gray-900">
                         {profile.customerName}
                       </p>
-                      <p className="mt-1 text-xs text-gray-500">{profile.room}</p>
                     </div>
-                    <Badge className="shrink-0 bg-slate-100 text-[10px] text-slate-700">
+                    <Badge className="shrink-0 bg-amber-100 text-[10px] font-semibold text-amber-700">
                       Chờ đối soát
                     </Badge>
                   </div>
-                  <div className="mt-3 flex items-center justify-between gap-3 text-xs">
-                    <span className="text-gray-500">{getProfileTypeLabel(profile)}</span>
+                  <div className="mt-2 flex items-center justify-between gap-3 text-xs">
+                    <span className="text-gray-500">{getRoomBedSummary(profile)}</span>
                     <span className="font-mono font-bold text-gray-800">
                       {formatCurrency(profile.initialDeposit)}
                     </span>
@@ -185,18 +185,22 @@ function AccountantReconciliationPage() {
             <header className="sticky top-0 z-10 flex min-h-16 items-center justify-between gap-4 border-b border-gray-200 bg-white px-5 py-3">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-sm font-bold text-blue-700">{selected.id}</span>
+                  <span className="font-mono text-sm font-bold text-blue-700">
+                    {getProfileDisplayId(selected)}
+                  </span>
                   <h2 className="truncate text-base font-bold text-gray-900">
                     {selected.customerName}
                   </h2>
-                  <Badge className="h-5 bg-blue-100 text-[10px] font-semibold text-blue-700">
-                    {getProfileTypeLabel(selected)}
-                  </Badge>
-                  <Badge className="h-5 bg-slate-100 text-[10px] font-semibold text-slate-700">
+                  {selected.kind === "cancelled_deposit" && (
+                    <Badge className="h-5 bg-blue-100 text-[10px] font-semibold text-blue-700">
+                      {getProfileTypeLabel(selected)}
+                    </Badge>
+                  )}
+                  <Badge className="h-5 bg-amber-100 text-[10px] font-semibold text-amber-700">
                     Chờ đối soát
                   </Badge>
                 </div>
-                <p className="mt-1 text-sm text-gray-500">{selected.room}</p>
+                <p className="mt-1 text-sm text-gray-500">{getRoomBedSummary(selected)}</p>
               </div>
               <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-right">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
@@ -331,8 +335,8 @@ function AccountantReconciliationPage() {
                 )}
                 {issuedCode && calculation.finalAmount < 0 && (
                   <Button type="button" variant="outline" className="h-9" asChild>
-                    <Link to="/accountant/receipts">
-                      Lập phiếu thu
+                    <Link to="/accountant/thanh-toan-tra-phong">
+                      Thanh toán trả phòng
                       <ArrowRight className="size-4" />
                     </Link>
                   </Button>
@@ -395,18 +399,14 @@ function calculateReconciliation(
   const totalDeductions = deductions.reduce((sum, item) => sum + item.amount, 0);
   const finalAmount = baseRefund - totalDeductions;
   const deductionTotals = {
-    rent: deductions
-      .filter((item) => item.type === "Tiền thuê")
-      .reduce((sum, item) => sum + item.amount, 0),
+    rent: 0,
     service: deductions
-      .filter((item) => item.type === "Điện nước/Dịch vụ")
+      .filter((item) => item.type === "Điện nước" || item.type === "Dịch vụ")
       .reduce((sum, item) => sum + item.amount, 0),
     compensation: deductions
-      .filter((item) => item.type === "Bồi thường/Hư hỏng")
+      .filter((item) => item.type === "Bồi thường")
       .reduce((sum, item) => sum + item.amount, 0),
-    penalty: deductions
-      .filter((item) => item.type === "Khoản phạt")
-      .reduce((sum, item) => sum + item.amount, 0),
+    penalty: 0,
   };
   return {
     initialDeposit: profile.initialDeposit,
@@ -420,52 +420,33 @@ function calculateReconciliation(
 }
 
 function buildDeductions(contract: ContractItem, assetRecoveries: AssetRecovery[]): DeductionRow[] {
-  const rows: DeductionRow[] = [];
-  const unpaidRent = Math.max(contract.invoiceTotal - contract.paidAmount, 0);
-  const baseDate = new Date();
-  if (unpaidRent > 0) {
-    rows.push({
-      id: `KT-${contract.id}`,
-      type: "Tiền thuê",
-      content: "Tiền thuê còn nợ theo hợp đồng",
-      date: formatDate(baseDate),
-      amount: unpaidRent,
-      status: "Chưa thanh toán",
-      note: "Tự động lấy từ công nợ hợp đồng",
-    });
-  }
-
-  contract.lines
-    .filter((line) => /điện|nước|dịch vụ|dọn|gửi xe/i.test(line.description))
-    .forEach((line, index) => {
-      rows.push({
-        id: `DV-${contract.id}-${index + 1}`,
-        type: "Điện nước/Dịch vụ",
-        content: line.description,
-        date: formatDate(baseDate),
-        amount: Math.round(line.amount * 0.35),
-        status: "Chờ xử lý",
-        note: "Khoản dịch vụ phát sinh cuối kỳ",
-      });
-    });
-
   const recovery = assetRecoveries.find((item) => item.contractId === contract.id);
-  recovery?.items.forEach((item, index) => {
-    rows.push({
-      id: `BT-${contract.id}-${index + 1}`,
-      type: "Bồi thường/Hư hỏng",
-      content: `${item.violation === "lost" ? "Mất" : "Hư hỏng"} ${item.assetName}`,
-      date: formatDate(new Date(recovery.recordedAt)),
-      amount: item.quantity * item.unitPrice,
-      status: "Chưa thanh toán",
-      note: `${item.quantity} x ${formatCurrency(item.unitPrice)}`,
-    });
-  });
+  const invoiceDate = recovery ? formatDate(new Date(recovery.recordedAt)) : "03/06/2026";
+  const compensationTotal =
+    recovery?.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0) ?? 0;
 
-  return rows;
+  return [
+    {
+      id: "HD-DV-002",
+      type: "Dịch vụ",
+      content: "Phí vệ sinh cuối kỳ",
+      date: invoiceDate,
+      amount: 150000,
+      status: "Chưa thanh toán",
+    },
+    {
+      id: "HD-BT-003",
+      type: "Bồi thường",
+      content: "Bồi thường hư hỏng tài sản",
+      date: invoiceDate,
+      amount: compensationTotal,
+      status: "Chưa thanh toán",
+    },
+  ];
 }
 
 function ProfileInfo({ profile }: { profile: ReconciliationProfile }) {
+  const rental = getRentalDisplay(profile);
   if (profile.kind === "cancelled_deposit") {
     return (
       <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
@@ -473,7 +454,9 @@ function ProfileInfo({ profile }: { profile: ReconciliationProfile }) {
         <Info label="Mã khách hàng" value={profile.customerCode} mono />
         <Info label="Họ tên khách hàng" value={profile.customerName} />
         <Info label="Số điện thoại" value={profile.phone} mono />
-        <Info label="Phòng/giường đã cọc" value={profile.room} />
+        <Info label="Hình thức thuê" value={rental.typeLabel} />
+        <Info label="Phòng" value={rental.room} mono />
+        {rental.bed && <Info label="Giường" value={rental.bed} mono />}
         <Info label="Ngày đặt cọc" value={profile.createdAt} />
         <Info label="Ngày hủy cọc" value={profile.returnedAt} />
         <Info label="Tiền cọc đã thanh toán" value={formatCurrency(profile.initialDeposit)} mono />
@@ -483,11 +466,13 @@ function ProfileInfo({ profile }: { profile: ReconciliationProfile }) {
 
   return (
     <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-5">
-      <Info label="Mã hợp đồng" value={profile.id} mono />
+      <Info label="Mã hợp đồng" value={getProfileDisplayId(profile)} mono />
       <Info label="Mã khách hàng" value={profile.customerCode} mono />
       <Info label="Họ tên khách hàng" value={profile.customerName} />
       <Info label="Số điện thoại" value={profile.phone} mono />
-      <Info label="Phòng/giường" value={profile.room} />
+      <Info label="Hình thức thuê" value={rental.typeLabel} />
+      <Info label="Phòng" value={rental.room} mono />
+      {rental.bed && <Info label="Giường" value={rental.bed} mono />}
       <Info label="Ngày nhận phòng" value={profile.createdAt} />
       <Info label="Ngày trả phòng" value={profile.returnedAt} />
       <Info
@@ -512,13 +497,12 @@ function DeductionTable({ rows }: { rows: DeductionRow[] }) {
       <table className="w-full text-left text-sm">
         <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
           <tr>
-            <th className="px-3 py-2">Mã khoản</th>
-            <th className="px-3 py-2">Loại khoản</th>
+            <th className="px-3 py-2">Mã hóa đơn</th>
+            <th className="px-3 py-2">Loại hóa đơn</th>
             <th className="px-3 py-2">Nội dung</th>
-            <th className="px-3 py-2">Ngày phát sinh</th>
+            <th className="px-3 py-2">Ngày lập</th>
             <th className="px-3 py-2 text-right">Số tiền</th>
-            <th className="px-3 py-2">Trạng thái</th>
-            <th className="px-3 py-2">Ghi chú</th>
+            <th className="px-3 py-2">Trạng thái hóa đơn</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100 bg-white">
@@ -534,7 +518,6 @@ function DeductionTable({ rows }: { rows: DeductionRow[] }) {
               <td className="px-3 py-3">
                 <Badge className="bg-orange-100 text-orange-700">{row.status}</Badge>
               </td>
-              <td className="px-3 py-3 text-gray-500">{row.note}</td>
             </tr>
           ))}
         </tbody>
@@ -706,7 +689,47 @@ function getRefundRate(profile: ReconciliationProfile, policy: DepositPolicyVers
 }
 
 function getProfileTypeLabel(profile: ReconciliationProfile) {
-  return profile.kind === "contract" ? "Hợp đồng chờ thanh lý" : "Phiếu cọc đã hủy";
+  return profile.kind === "contract" ? "" : "Phiếu cọc đã hủy";
+}
+
+function getProfileDisplayId(profile: ReconciliationProfile) {
+  return profile.kind === "contract" ? profile.id.replace("-PC", "-") : profile.id;
+}
+
+function getRoomBedSummary(profile: ReconciliationProfile) {
+  const rental = getRentalDisplay(profile);
+  return rental.bed ? `${rental.room} · ${rental.bed}` : `${rental.room} · Nguyên phòng`;
+}
+
+function getRentalDisplay(profile: ReconciliationProfile): {
+  typeLabel: "Ở ghép" | "Nguyên phòng";
+  room: string;
+  bed?: string;
+} {
+  if (profile.kind === "cancelled_deposit") {
+    const isShared = profile.deposit.rentalType === "shared";
+    return {
+      typeLabel: isShared ? "Ở ghép" : "Nguyên phòng",
+      room: profile.room,
+      bed: isShared ? getBedDisplayCode(profile.deposit.selectedBedIds[0]) : undefined,
+    };
+  }
+
+  const bedByContract: Record<string, string> = {
+    "HD-PC015": "G02",
+  };
+  const bed = bedByContract[profile.id];
+  return {
+    typeLabel: bed ? "Ở ghép" : "Nguyên phòng",
+    room: profile.room,
+    bed,
+  };
+}
+
+function getBedDisplayCode(bedId: string | undefined) {
+  if (!bedId) return undefined;
+  const bedNumber = bedId.split("-").at(-1);
+  return bedNumber ? `G${bedNumber.padStart(2, "0")}` : undefined;
 }
 
 function getStayDuration(start: string, end: string) {
