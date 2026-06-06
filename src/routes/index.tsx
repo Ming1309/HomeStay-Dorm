@@ -90,10 +90,10 @@ function LoginScreen() {
 
   return (
     <div className="h-screen w-full flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-gray-100 p-8 space-y-8">
+      <div className="w-full max-w-md bg-white rounded-lg border border-gray-100 p-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col items-center text-center space-y-2">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-inner mb-2">
+          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center shadow-inner mb-2">
             <Building2 className="text-white size-6" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
@@ -146,7 +146,7 @@ function LoginScreen() {
 
           <Button
             type="submit"
-            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-sm"
+            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-base font-semibold"
           >
             Đăng nhập
           </Button>

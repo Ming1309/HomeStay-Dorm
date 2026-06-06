@@ -90,7 +90,7 @@ export function ResidenceForm({ deposit }: Props) {
     return (
       <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
         <div className="flex max-w-xs flex-col items-center gap-3 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white">
+          <div className="flex size-14 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white">
             <FileText className="size-6 text-gray-400" />
           </div>
           <p className="text-sm text-gray-500">
@@ -393,7 +393,7 @@ export function ResidenceForm({ deposit }: Props) {
             <Button
               size="sm"
               onClick={() => handleSave(false)}
-              className="h-9 gap-1.5 bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+              className="h-9 gap-1.5 bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
             >
               <Save className="size-3.5" />
               Lưu hồ sơ
@@ -412,11 +412,7 @@ const inputCls =
 /* ── Sub-components ─────────────────────────────────────────────────────── */
 
 function FormCard({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-      {children}
-    </div>
-  );
+  return <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-5">{children}</div>;
 }
 
 function SectionHeader({

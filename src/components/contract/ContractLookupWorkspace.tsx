@@ -297,7 +297,10 @@ export function ContractLookupWorkspace() {
   const onSearch = () => {
     const next = contracts.filter((contract) => {
       const statusMatched = statusInput === "all" ? true : contract.status === statusInput;
-      const textMatched = queryInput.trim().length === 0 ? true : buildSearchText(contract).includes(queryInput.trim().toLowerCase());
+      const textMatched =
+        queryInput.trim().length === 0
+          ? true
+          : buildSearchText(contract).includes(queryInput.trim().toLowerCase());
       return statusMatched && textMatched;
     });
     setAppliedQuery(queryInput);
@@ -389,7 +392,7 @@ export function ContractLookupWorkspace() {
             👈 Chọn một hợp đồng từ danh sách bên trái để xem toàn bộ thông tin chi tiết.
           </div>
         ) : (
-          <Card className="mx-auto w-full max-w-5xl border-gray-200 bg-white shadow-sm">
+          <Card className="mx-auto w-full max-w-5xl border-gray-200 bg-white">
             <CardHeader className="border-b border-gray-100 py-3">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-base font-bold text-gray-900">

@@ -117,7 +117,7 @@ export function PaymentProofForm({
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
-      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white px-5 py-3 shadow-sm">
+      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white px-5 py-3">
         <div className="flex items-center gap-2">
           <h1 className="font-mono text-sm font-bold text-gray-900">{deposit.code}</h1>
           <Badge className={statusBadgeClass[deposit.status] ?? ""}>

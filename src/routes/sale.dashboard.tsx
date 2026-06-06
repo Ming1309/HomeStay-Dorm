@@ -149,31 +149,28 @@ const recentAppointments = [
 function SaleDashboardPortalPage() {
   return (
     <SaleShell currentPath="/sale/dashboard" showWorkspaceNav={false}>
-      <div className="h-full overflow-y-auto bg-gray-50/70">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-6">
-          <header className="flex flex-wrap items-end justify-between gap-4">
+      <div className="h-full overflow-y-auto bg-gray-50">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4">
+          <header className="flex flex-wrap items-end justify-between gap-3 border-b border-gray-200 pb-3">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+              <h1 className="text-xl font-bold tracking-tight text-gray-900">
                 Bảng điều khiển Sale
               </h1>
               <p className="mt-1 text-sm text-gray-500">
                 Theo dõi lịch hẹn, phiếu cọc và hợp đồng cần xử lý
               </p>
             </div>
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-500 shadow-sm">
+            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-500">
               <Clock className="size-4 text-blue-600" />
               Cập nhật lúc 08:30 hôm nay
             </div>
           </header>
 
-          <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
             {kpis.map((item) => {
               const Icon = item.icon;
               return (
-                <div
-                  key={item.label}
-                  className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
-                >
+                <div key={item.label} className="rounded-lg border border-gray-200 bg-white p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div
                       className={cn(
@@ -198,16 +195,16 @@ function SaleDashboardPortalPage() {
             })}
           </section>
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <section className="rounded-lg border border-gray-200 bg-white p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-base font-bold text-gray-900">Việc cần xử lý</h2>
                   <p className="mt-1 text-sm text-gray-500">
                     Các đầu việc ảnh hưởng trực tiếp đến đặt cọc và nhận phòng
                   </p>
                 </div>
-                <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                <span className="rounded border border-orange-200 bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-700">
                   7 việc
                 </span>
               </div>
@@ -245,8 +242,8 @@ function SaleDashboardPortalPage() {
               </div>
             </section>
 
-            <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <div className="mb-4 flex items-center justify-between">
+            <section className="rounded-lg border border-gray-200 bg-white p-4">
+              <div className="mb-3 flex items-center justify-between">
                 <div>
                   <h2 className="text-base font-bold text-gray-900">Lịch hẹn gần nhất</h2>
                   <p className="mt-1 text-sm text-gray-500">Theo dõi khách sắp xem phòng</p>
@@ -279,7 +276,7 @@ function SaleDashboardPortalPage() {
                         <td className="px-3 py-3">
                           <span
                             className={cn(
-                              "inline-flex rounded-full px-2 py-1 text-xs font-semibold",
+                              "inline-flex rounded px-2 py-1 text-xs font-semibold",
                               toneClass[item.tone].badge,
                             )}
                           >
@@ -294,8 +291,8 @@ function SaleDashboardPortalPage() {
             </section>
           </div>
 
-          <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between gap-3">
+          <section className="rounded-lg border border-gray-200 bg-white p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-base font-bold text-gray-900">Thao tác nhanh</h2>
                 <p className="mt-1 text-sm text-gray-500">

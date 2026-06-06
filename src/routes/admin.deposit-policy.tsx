@@ -217,7 +217,7 @@ function AdminDepositPolicyPage() {
 
         <main className="flex-1 overflow-y-auto p-6">
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-            <Card className="border-gray-200 shadow-sm">
+            <Card className="border-gray-200">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Cấu hình chính sách hoàn cọc</CardTitle>
                 <p className="text-sm text-gray-500">
@@ -490,7 +490,7 @@ function AdminDepositPolicyPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-gray-200 shadow-sm">
+            <Card className="border-gray-200">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Lịch sử phiên bản chính sách hoàn cọc</CardTitle>
               </CardHeader>
@@ -532,7 +532,7 @@ function AdminDepositPolicyPage() {
                             </TableCell>
                             <TableCell>
                               <span
-                                className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${status.className}`}
+                                className={`inline-flex rounded px-2 py-1 text-xs font-medium ${status.className}`}
                               >
                                 {status.label}
                               </span>

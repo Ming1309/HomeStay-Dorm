@@ -204,7 +204,7 @@ function ManagerAssetRecoveryPage() {
 
         {!selected ? (
           <section className="flex flex-1 items-center justify-center bg-gray-50/60 p-6">
-            <div className="max-w-xl rounded-2xl border border-dashed border-gray-200 bg-white px-8 py-10 text-center text-sm text-gray-500 shadow-sm">
+            <div className="max-w-xl rounded-lg border border-dashed border-gray-200 bg-white px-8 py-10 text-center text-sm text-gray-500">
               <p className="mb-2 text-base font-semibold text-gray-900">
                 Chọn hợp đồng để lập biên bản thu hồi tài sản
               </p>

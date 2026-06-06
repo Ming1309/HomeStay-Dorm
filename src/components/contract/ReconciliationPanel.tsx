@@ -54,7 +54,7 @@ export function ReconciliationPanel({
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
-      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-3 shadow-sm">
+      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-3">
         <h1 className="font-mono text-sm font-bold text-gray-900">{deposit.code}</h1>
         <p className="mt-0.5 text-xs text-gray-500">
           {deposit.customerName} • {deposit.room}

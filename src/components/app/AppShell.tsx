@@ -57,12 +57,12 @@ export function AppShell({
   };
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-gray-50 p-4">
-      <div className="flex h-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="fixed inset-0 overflow-hidden bg-gray-100">
+      <div className="flex h-full overflow-hidden border border-gray-200 bg-white">
         <aside
           className={cn(
-            "flex h-full shrink-0 flex-col border-r border-gray-200 bg-white transition-[width] duration-200",
-            expanded ? "w-[244px]" : "w-[56px]",
+            "flex h-full shrink-0 flex-col border-r border-gray-200 bg-gray-50 transition-[width] duration-200",
+            expanded ? "w-[236px]" : "w-[52px]",
           )}
         >
           <SidebarHeader expanded={expanded} home={meta.home} onExpandedChange={updateExpanded} />
@@ -71,7 +71,7 @@ export function AppShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
+          <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4">
             <Breadcrumb
               roleLabel={meta.label}
               currentItem={currentItem}
@@ -81,7 +81,7 @@ export function AppShell({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="relative flex size-9 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100"
+                className="relative flex size-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100"
                 aria-label="Thông báo"
               >
                 <Bell className="size-4" />
@@ -89,14 +89,14 @@ export function AppShell({
                   1
                 </span>
               </button>
-              <span className="inline-flex h-7 items-center rounded-full border border-blue-100 bg-blue-50 px-3 text-xs font-semibold text-blue-700">
+              <span className="inline-flex h-6 items-center rounded px-2 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-200">
                 {meta.badgeLabel}
               </span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-gray-700 transition-colors hover:bg-gray-50"
                     aria-label="Tài khoản"
                   >
                     <div className="flex size-8 items-center justify-center rounded-full bg-purple-600 text-xs font-semibold text-white">
@@ -128,7 +128,7 @@ export function AppShell({
               </DropdownMenu>
             </div>
           </header>
-          <main className="min-h-0 flex-1 overflow-hidden bg-gray-50/70">{children}</main>
+          <main className="min-h-0 flex-1 overflow-hidden bg-gray-50">{children}</main>
         </div>
       </div>
     </div>
@@ -145,7 +145,7 @@ function SidebarHeader({
   onExpandedChange: (expanded: boolean) => void;
 }) {
   return (
-    <div className={cn("flex h-14 items-center", expanded ? "gap-3 px-4" : "justify-center px-2")}>
+    <div className={cn("flex h-14 items-center", expanded ? "gap-3 px-3" : "justify-center px-1")}>
       {expanded ? (
         <>
           <Link to={home} className="min-w-0 flex-1 text-left">
@@ -156,7 +156,7 @@ function SidebarHeader({
           <button
             type="button"
             onClick={() => onExpandedChange(false)}
-            className="flex size-9 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
+            className="flex size-8 shrink-0 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-white hover:text-gray-900"
             aria-label="Thu gọn menu"
           >
             <PanelLeftClose className="size-5" />
@@ -166,13 +166,13 @@ function SidebarHeader({
         <button
           type="button"
           onClick={() => onExpandedChange(true)}
-          className="group flex size-9 items-center justify-center rounded-xl transition-colors hover:bg-gray-50"
+          className="group flex size-8 items-center justify-center rounded-md transition-colors hover:bg-white"
           aria-label="Mở rộng menu"
         >
           <img
             src="/homestay-logo.svg"
             alt=""
-            className="size-8 object-contain group-hover:hidden"
+            className="size-7 object-contain group-hover:hidden"
           />
           <PanelLeftOpen className="hidden size-5 text-gray-500 group-hover:block" />
         </button>
@@ -191,11 +191,11 @@ function SidebarNav({
   expanded: boolean;
 }) {
   return (
-    <nav className={cn("flex-1 overflow-y-auto", expanded ? "px-3 py-2" : "px-2 py-1")}>
+    <nav className={cn("flex-1 overflow-y-auto", expanded ? "px-2 py-2" : "px-1.5 py-1")}>
       {expanded ? (
         navGroups.map((group) => (
-          <div key={group.title} className="mb-4">
-            <div className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+          <div key={group.title} className="mb-3">
+            <div className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
               {group.title}
             </div>
             <div className="space-y-1">
@@ -207,8 +207,8 @@ function SidebarNav({
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      "flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-700",
-                      active && "bg-blue-50 text-blue-700 shadow-[inset_3px_0_0_#2563eb]",
+                      "flex h-9 items-center gap-2.5 rounded-md border-l-2 border-transparent px-2 text-sm font-medium text-gray-600 transition-colors hover:bg-white hover:text-blue-700",
+                      active && "border-blue-600 bg-white text-blue-700",
                     )}
                   >
                     <Icon className="size-4 shrink-0" />
@@ -227,8 +227,8 @@ function SidebarNav({
               const active = group.items.some((item) => isItemActive(item, currentPath));
               const [primaryItem] = group.items;
               const triggerClassName = cn(
-                "flex h-10 w-full items-center justify-center rounded-xl text-gray-600 transition-colors hover:bg-gray-50 hover:text-blue-700",
-                active && "bg-blue-50 text-blue-700",
+                "flex h-9 w-full items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-white hover:text-blue-700",
+                active && "bg-white text-blue-700 ring-1 ring-inset ring-blue-200",
               );
 
               if (group.items.length === 1 && primaryItem) {
@@ -260,7 +260,7 @@ function SidebarNav({
                     side="right"
                     align="start"
                     sideOffset={10}
-                    className="w-56 rounded-xl border-gray-200 p-2"
+                    className="w-56 rounded-lg border-gray-200 p-1.5"
                   >
                     <DropdownMenuLabel className="px-2 py-1.5 text-sm text-gray-900">
                       {group.title}
@@ -272,7 +272,7 @@ function SidebarNav({
                         <DropdownMenuItem key={item.to} asChild>
                           <Link
                             to={item.to}
-                            className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-700"
+                            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700"
                           >
                             <ItemIcon className="size-4" />
                             {item.label}
@@ -326,7 +326,7 @@ function CollapsedTooltip({ children }: { children: ReactNode }) {
       side="right"
       align="center"
       sideOffset={10}
-      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-md"
+      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-sm"
     >
       {children}
     </TooltipContent>

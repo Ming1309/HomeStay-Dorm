@@ -60,10 +60,7 @@ const normalizeAmountInput = (value: string) => value.replace(/\D/g, "");
 
 const formSchema = z
   .object({
-    amount: z
-      .string()
-      .min(1, "Vui lòng nhập số tiền")
-      .regex(/^\d+$/, "Chỉ nhập chữ số"),
+    amount: z.string().min(1, "Vui lòng nhập số tiền").regex(/^\d+$/, "Chỉ nhập chữ số"),
     method: z.enum(["cash", "bank-transfer"]),
     bankAccount: z.string().optional(),
     bankName: z.string().optional(),
@@ -73,8 +70,7 @@ const formSchema = z
   })
   .refine(
     (data) =>
-      data.method !== "bank-transfer" ||
-      (data.bankAccount && data.bankAccount.trim().length >= 6),
+      data.method !== "bank-transfer" || (data.bankAccount && data.bankAccount.trim().length >= 6),
     {
       path: ["bankAccount"],
       message: "Bắt buộc nhập số tài khoản khi hoàn bằng chuyển khoản",
@@ -166,7 +162,11 @@ export function RefundVoucherPanel({ contract }: { contract: ContractItem }) {
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
         <Form {...form}>
-          <form id="refund-voucher-form" onSubmit={form.handleSubmit(handleConfirm)} className="space-y-4">
+          <form
+            id="refund-voucher-form"
+            onSubmit={form.handleSubmit(handleConfirm)}
+            className="space-y-4"
+          >
             <div className="rounded-lg border border-gray-200 bg-white p-4">
               <h3 className="mb-3 text-xs font-semibold text-gray-700">Thông tin khách hàng</h3>
               <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
@@ -250,11 +250,7 @@ export function RefundVoucherPanel({ contract }: { contract: ContractItem }) {
                         <FormItem>
                           <FormLabel className="text-xs">Ngân hàng</FormLabel>
                           <FormControl>
-                            <Input
-                              className="h-9"
-                              placeholder="VD: Vietcombank"
-                              {...field}
-                            />
+                            <Input className="h-9" placeholder="VD: Vietcombank" {...field} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -436,10 +432,7 @@ function VoucherPreviewDialog({
           <Info label="Hợp đồng" value={voucher.contractId} mono />
           <Info label="Khách hàng" value={voucher.customerName} />
           <Info label="Số tiền hoàn" value={formatCurrency(voucher.amount)} mono />
-          <Info
-            label="Hình thức"
-            value={voucher.method === "cash" ? "Tiền mặt" : "Chuyển khoản"}
-          />
+          <Info label="Hình thức" value={voucher.method === "cash" ? "Tiền mặt" : "Chuyển khoản"} />
           {voucher.method === "bank-transfer" && voucher.bankAccount && (
             <Info label="Số tài khoản" value={voucher.bankAccount} mono />
           )}

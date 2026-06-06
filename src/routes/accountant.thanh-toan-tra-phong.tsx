@@ -162,7 +162,7 @@ function SettlementWorkspace({
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
-        <Card className="rounded-lg border-gray-200 shadow-sm">
+        <Card className="rounded-lg border-gray-200">
           <CardContent className="p-0">
             <Table>
               <TableHeader>

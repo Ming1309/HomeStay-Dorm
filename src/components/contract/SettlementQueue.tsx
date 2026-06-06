@@ -134,10 +134,7 @@ export function SettlementQueue({
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-mono text-xs font-bold text-blue-600">{item.id}</span>
                       <Badge
-                        className={cn(
-                          "h-5 text-[10px] font-semibold",
-                          variantBadgeClass[filter],
-                        )}
+                        className={cn("h-5 text-[10px] font-semibold", variantBadgeClass[filter])}
                       >
                         {item.status === "liquidated" ? "Đã thanh lý" : "Chờ quyết toán"}
                       </Badge>

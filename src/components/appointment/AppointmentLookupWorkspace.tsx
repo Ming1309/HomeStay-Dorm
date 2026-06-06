@@ -60,7 +60,7 @@ export function AppointmentLookupWorkspace() {
   }, [appointments, appliedSearch, appliedDate, appliedTime]);
 
   const selectedAppointment = selectedId
-    ? filteredAppointments.find((item) => item.id === selectedId) ?? null
+    ? (filteredAppointments.find((item) => item.id === selectedId) ?? null)
     : null;
 
   useEffect(() => {
@@ -127,7 +127,7 @@ export function AppointmentLookupWorkspace() {
               Xóa
             </button>
           </div>
-          <div className="mt-3 rounded-2xl border border-gray-200 bg-slate-50 p-3 text-xs text-gray-600">
+          <div className="mt-3 rounded-lg border border-gray-200 bg-slate-50 p-3 text-xs text-gray-600">
             {filteredAppointments.length === 0 ? (
               appliedSearch ? (
                 <>Không tìm thấy lịch hẹn phù hợp với từ khóa.</>
@@ -152,8 +152,8 @@ export function AppointmentLookupWorkspace() {
                     onClick={() => setSelectedId(appointment.id)}
                     className={
                       active
-                        ? "w-full rounded-2xl border border-blue-600 bg-blue-50 px-4 py-3 text-left"
-                        : "w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left hover:border-blue-300 hover:bg-gray-50"
+                        ? "w-full rounded-lg border border-blue-600 bg-blue-50 px-4 py-3 text-left"
+                        : "w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-left hover:border-blue-300 hover:bg-gray-50"
                     }
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -165,7 +165,7 @@ export function AppointmentLookupWorkspace() {
                           {appointment.branch} • {appointment.date} • {appointment.time}
                         </p>
                       </div>
-                      <Badge className="h-6 rounded-full bg-slate-100 px-2 text-[11px] text-slate-700">
+                      <Badge className="h-6 rounded bg-slate-100 px-2 text-[11px] text-slate-700">
                         {getTypeLabel(appointment.appointmentType)}
                       </Badge>
                     </div>
@@ -186,21 +186,25 @@ export function AppointmentLookupWorkspace() {
             <CardContent className="space-y-6">
               {selectedAppointment ? (
                 <div className="space-y-4">
-                  <div className="rounded-2xl border border-gray-200 bg-slate-50 p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Mã / khách hàng</p>
+                  <div className="rounded-lg border border-gray-200 bg-slate-50 p-4">
+                    <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
+                      Mã / khách hàng
+                    </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
                       {selectedAppointment.referenceLabel}
                     </p>
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-gray-200 bg-slate-50 p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Loại lịch hẹn</p>
+                    <div className="rounded-lg border border-gray-200 bg-slate-50 p-4">
+                      <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
+                        Loại lịch hẹn
+                      </p>
                       <p className="mt-2 text-sm font-semibold text-gray-900">
                         {getTypeLabel(selectedAppointment.appointmentType)}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-gray-200 bg-slate-50 p-4">
+                    <div className="rounded-lg border border-gray-200 bg-slate-50 p-4">
                       <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Trạng thái</p>
                       <p className="mt-2 text-sm font-semibold text-gray-900">
                         {selectedAppointment.status}
@@ -209,24 +213,34 @@ export function AppointmentLookupWorkspace() {
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                    <div className="rounded-lg border border-gray-200 bg-white p-4">
                       <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Chi nhánh</p>
-                      <p className="mt-2 text-sm font-semibold text-gray-900">{selectedAppointment.branch}</p>
+                      <p className="mt-2 text-sm font-semibold text-gray-900">
+                        {selectedAppointment.branch}
+                      </p>
                     </div>
-                    <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                    <div className="rounded-lg border border-gray-200 bg-white p-4">
                       <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Ngày</p>
-                      <p className="mt-2 text-sm font-semibold text-gray-900">{selectedAppointment.date}</p>
+                      <p className="mt-2 text-sm font-semibold text-gray-900">
+                        {selectedAppointment.date}
+                      </p>
                     </div>
-                    <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                    <div className="rounded-lg border border-gray-200 bg-white p-4">
                       <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Giờ</p>
-                      <p className="mt-2 text-sm font-semibold text-gray-900">{selectedAppointment.time}</p>
+                      <p className="mt-2 text-sm font-semibold text-gray-900">
+                        {selectedAppointment.time}
+                      </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-gray-200 bg-slate-50 p-8 text-center text-sm text-gray-600">
-                  <p className="text-base font-semibold text-gray-900">Chọn một lịch hẹn để xem chi tiết</p>
-                  <p className="mt-2">Danh sách lịch hẹn sẽ được tải từ dữ liệu đã lưu trên trình duyệt.</p>
+                <div className="rounded-lg border border-dashed border-gray-200 bg-slate-50 p-8 text-center text-sm text-gray-600">
+                  <p className="text-base font-semibold text-gray-900">
+                    Chọn một lịch hẹn để xem chi tiết
+                  </p>
+                  <p className="mt-2">
+                    Danh sách lịch hẹn sẽ được tải từ dữ liệu đã lưu trên trình duyệt.
+                  </p>
                 </div>
               )}
             </CardContent>

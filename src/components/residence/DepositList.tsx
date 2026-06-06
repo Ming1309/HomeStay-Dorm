@@ -58,8 +58,7 @@ export function DepositList({ selectedId, onSelect }: Props) {
                   onClick={() => onSelect(d)}
                   className={cn(
                     "group relative flex w-full flex-col gap-2 rounded-lg border border-transparent border-l-2 px-4 py-3 text-left transition-colors hover:bg-gray-50",
-                    active &&
-                      "border-blue-200 border-l-blue-600 bg-blue-50/70 shadow-sm hover:bg-blue-50/70",
+                    active && "border-blue-200 border-l-blue-600 bg-blue-50/70 hover:bg-blue-50/70",
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">

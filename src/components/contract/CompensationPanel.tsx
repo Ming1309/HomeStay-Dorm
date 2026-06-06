@@ -79,10 +79,7 @@ const itemSchema = z.object({
     .min(1, "Nhập số lượng")
     .regex(/^\d+$/, "Chỉ nhập chữ số")
     .refine((v) => Number(v) > 0, "Số lượng phải > 0"),
-  unitPrice: z
-    .string()
-    .min(1, "Nhập đơn giá")
-    .regex(/^\d+$/, "Chỉ nhập chữ số"),
+  unitPrice: z.string().min(1, "Nhập đơn giá").regex(/^\d+$/, "Chỉ nhập chữ số"),
 });
 
 const formSchema = z.object({
@@ -103,13 +100,12 @@ export function CompensationPanel({ contract }: { contract: ContractItem }) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      items:
-        recovery?.items.map((i) => ({
-          assetName: i.assetName,
-          violation: i.violation,
-          quantity: String(i.quantity),
-          unitPrice: String(i.unitPrice),
-        })) ?? [{ assetName: "", violation: "damaged", quantity: "1", unitPrice: "0" }],
+      items: recovery?.items.map((i) => ({
+        assetName: i.assetName,
+        violation: i.violation,
+        quantity: String(i.quantity),
+        unitPrice: String(i.unitPrice),
+      })) ?? [{ assetName: "", violation: "damaged", quantity: "1", unitPrice: "0" }],
       note: "",
     },
     mode: "onChange",
@@ -122,7 +118,10 @@ export function CompensationPanel({ contract }: { contract: ContractItem }) {
   }, [form]);
 
   const items = form.watch("items");
-  const total = items.reduce((sum, i) => sum + Number(i.quantity || 0) * Number(i.unitPrice || 0), 0);
+  const total = items.reduce(
+    (sum, i) => sum + Number(i.quantity || 0) * Number(i.unitPrice || 0),
+    0,
+  );
 
   const onAssetChange = (index: number, name: string) => {
     form.setValue(`items.${index}.assetName`, name, { shouldDirty: true });
@@ -177,7 +176,11 @@ export function CompensationPanel({ contract }: { contract: ContractItem }) {
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
         <Form {...form}>
-          <form id="compensation-form" onSubmit={form.handleSubmit(handleIssue)} className="space-y-4">
+          <form
+            id="compensation-form"
+            onSubmit={form.handleSubmit(handleIssue)}
+            className="space-y-4"
+          >
             <div className="rounded-lg border border-gray-200 bg-white p-4">
               <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
                 <Info label="Mã hợp đồng" value={contract.id} mono />
@@ -235,7 +238,10 @@ export function CompensationPanel({ contract }: { contract: ContractItem }) {
                             render={({ field: f }) => (
                               <FormItem>
                                 <FormControl>
-                                  <Select value={f.value} onValueChange={(v) => onAssetChange(index, v)}>
+                                  <Select
+                                    value={f.value}
+                                    onValueChange={(v) => onAssetChange(index, v)}
+                                  >
                                     <SelectTrigger className="h-8 text-xs">
                                       <SelectValue placeholder="Chọn tài sản" />
                                     </SelectTrigger>
@@ -380,12 +386,7 @@ export function CompensationPanel({ contract }: { contract: ContractItem }) {
           : Xuất hóa đơn
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-8 text-xs"
-            onClick={handleSaveDraft}
-          >
+          <Button type="button" variant="outline" className="h-8 text-xs" onClick={handleSaveDraft}>
             <Save className="size-3.5" />
             Lưu nháp
           </Button>

@@ -33,7 +33,7 @@ export function ReconciliationSummary({
         : "border-slate-200 bg-slate-50/60";
 
   return (
-    <Card className={cn("rounded-lg border shadow-sm", accent, className)}>
+    <Card className={cn("rounded-lg border", accent, className)}>
       <CardContent className="space-y-3 p-4">
         <div className="flex items-center gap-2">
           <Coins className="size-4 text-gray-600" />
