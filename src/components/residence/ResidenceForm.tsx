@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import {
   BedDouble,
-  Building2Icon,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   DoorClosed,
+  Download,
   FileText,
   Lock,
-  Plus,
   Save,
   UserRound,
   Users,
@@ -38,6 +39,10 @@ export function ResidenceForm({ deposit }: Props) {
   const [addrQuan, setAddrQuan] = useState("");
   const [addrPhuong, setAddrPhuong] = useState("");
   const [addrOverseas, setAddrOverseas] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [docType, setDocType] = useState("");
+  const [docNumber, setDocNumber] = useState("");
   const isVietnamese = (deposit?.nationality ?? "Việt Nam").trim().toLowerCase() === "việt nam";
 
   // Reset form when deposit changes
@@ -48,7 +53,11 @@ export function ResidenceForm({ deposit }: Props) {
     setAddrQuan("");
     setAddrPhuong("");
     setAddrOverseas("");
-  }, [deposit?.id]);
+    setBirthDate(deposit?.birthDate ?? "");
+    setNationality(deposit?.nationality ?? "");
+    setDocType(deposit?.docType ?? "");
+    setDocNumber(deposit?.docNumber ?? "");
+  }, [deposit?.birthDate, deposit?.docNumber, deposit?.docType, deposit?.id, deposit?.nationality]);
 
   // Ctrl/Cmd + S → save
   useEffect(() => {
@@ -81,7 +90,7 @@ export function ResidenceForm({ deposit }: Props) {
     return (
       <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
         <div className="flex max-w-xs flex-col items-center gap-3 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white">
+          <div className="flex size-14 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white">
             <FileText className="size-6 text-gray-400" />
           </div>
           <p className="text-sm text-gray-500">
@@ -94,15 +103,15 @@ export function ResidenceForm({ deposit }: Props) {
 
   /* ── Main form ───────────────────────────────────────────────────────── */
   return (
-    <section className="relative flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
+    <section className="relative flex h-full flex-1 flex-col overflow-hidden bg-white">
       {/* ── Sticky header ─────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 shrink-0 border-b border-gray-200 bg-white px-6 py-3 shadow-sm">
+      <header className="sticky top-0 z-20 shrink-0 border-b border-gray-200 bg-white px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Left: breadcrumb + badges */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-mono text-sm font-bold text-blue-600">#{deposit.code}</span>
-              <h1 className="text-sm font-semibold text-gray-800 leading-tight">
+              <h1 className="text-base font-bold leading-tight text-gray-900">
                 {deposit.customerName}
               </h1>
               <Badge className="h-5 border-transparent bg-emerald-100 px-2 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">
@@ -125,22 +134,19 @@ export function ResidenceForm({ deposit }: Props) {
             </div>
           </div>
 
-          {/* Right: meta */}
-          <div className="shrink-0 text-right text-xs text-gray-400">
-            <div>
-              Phòng: <span className="font-mono font-semibold text-gray-700">{deposit.room}</span>
-            </div>
-            <div>
-              Giờ hẹn:{" "}
-              <span className="font-semibold text-gray-700 tabular-nums">{deposit.time}</span>
-            </div>
+          <div className="hidden shrink-0 items-center gap-4 text-xs text-gray-500 lg:flex">
+            <span className="flex items-center gap-1.5">
+              <DoorClosed className="size-3.5" />
+              <span className="font-mono font-semibold text-gray-700">{deposit.room}</span>
+            </span>
+            <span className="tabular-nums">{deposit.time}</span>
           </div>
         </div>
       </header>
 
       {/* ── Scrollable body ───────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-6 py-5 pb-24">
-        <div className="mx-auto max-w-5xl space-y-6">
+      <div className="flex-1 overflow-y-auto bg-white px-6 py-5 pb-24">
+        <div className="mx-auto max-w-4xl space-y-5">
           {/* ════════════════════════════════════════════════════════════
               SECTION 1 — MAIN GUEST INFORMATION
           ════════════════════════════════════════════════════════════ */}
@@ -151,9 +157,8 @@ export function ResidenceForm({ deposit }: Props) {
             />
 
             {/* Block A: Read-only from deposit */}
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <div className="rounded-lg border border-gray-100 bg-gray-50/70 p-4">
               <div className="mb-3 flex items-center gap-1.5">
-                <Lock className="size-3.5 text-gray-400" />
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
                   Thông tin từ phiếu cọc
                 </span>
@@ -163,23 +168,60 @@ export function ResidenceForm({ deposit }: Props) {
                 <LockedField label="Số điện thoại" value={deposit.phone} mono />
                 <LockedField label="Địa chỉ email" value={deposit.email} />
                 <LockedField label="Giới tính" value={deposit.gender === "male" ? "Nam" : "Nữ"} />
-                <LockedField label="Ngày sinh" value={deposit.birthDate || "—"} />
-                <LockedField label="Quốc tịch" value={deposit.nationality || "—"} />
-                <LockedField label="Loại giấy tờ" value={deposit.docType || "—"} />
-                <LockedField label="Số giấy tờ" value={deposit.docNumber || "—"} mono />
               </div>
             </div>
 
             {/* Divider */}
             <div className="flex items-center gap-4 pt-2">
               <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
-                Thông tin cư trú <span className="text-red-500">*</span>
+                Thông tin cư trú
               </span>
               <div className="h-px flex-1 bg-gray-200" />
             </div>
 
             {/* Block B: Editable residence fields */}
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
+              <FormField label="Ngày sinh" required>
+                <Input
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  placeholder="DD/MM/YYYY"
+                  className={inputCls}
+                />
+              </FormField>
+              <FormField label="Quốc tịch" required>
+                <Select value={nationality} onValueChange={setNationality}>
+                  <SelectTrigger className={inputCls}>
+                    <SelectValue placeholder="Chọn quốc tịch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Việt Nam">Việt Nam</SelectItem>
+                    <SelectItem value="Singapore">Singapore</SelectItem>
+                    <SelectItem value="Hàn Quốc">Hàn Quốc</SelectItem>
+                    <SelectItem value="Nhật Bản">Nhật Bản</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+              <FormField label="Loại giấy tờ" required>
+                <Select value={docType} onValueChange={setDocType}>
+                  <SelectTrigger className={inputCls}>
+                    <SelectValue placeholder="Chọn loại giấy tờ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CCCD">CCCD</SelectItem>
+                    <SelectItem value="Hộ chiếu">Hộ chiếu</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+              <FormField label="Số giấy tờ" required>
+                <Input
+                  value={docNumber}
+                  onChange={(e) => setDocNumber(e.target.value)}
+                  placeholder="Nhập số giấy tờ"
+                  className={inputCls}
+                />
+              </FormField>
+
               <div className="col-span-2 space-y-2">
                 <div className="flex items-baseline gap-1">
                   <span className="text-xs font-medium text-gray-600">
@@ -188,15 +230,15 @@ export function ResidenceForm({ deposit }: Props) {
                   <span className="text-red-500 text-xs">*</span>
                 </div>
                 {isVietnamese ? (
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                    <FormField label="Số nhà, Tên đường" required>
+                  <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+                    <div className="col-span-3">
                       <Input
                         value={addrStreet}
                         onChange={(e) => setAddrStreet(e.target.value)}
-                        placeholder="VD: 123 Nguyễn Huệ"
+                        placeholder="Nhập số nhà, tên đường, phường/xã"
                         className={inputCls}
                       />
-                    </FormField>
+                    </div>
 
                     <FormField label="Tỉnh / TP" required>
                       <Select value={addrTinh} onValueChange={setAddrTinh}>
@@ -315,17 +357,19 @@ export function ResidenceForm({ deposit }: Props) {
       </div>
 
       {/* ── Sticky footer ─────────────────────────────────────────────── */}
-      <footer className="absolute bottom-0 left-0 right-0 z-20 border-t border-gray-200 bg-white px-6 py-3 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          {/* Keyboard hint */}
-          <div className="flex items-center gap-1.5 text-xs text-gray-400">
-            <Kbd>⌘</Kbd>
-            <span>+</span>
-            <Kbd>S</Kbd>
-            <span className="ml-1">để lưu</span>
-            <span className="mx-2 text-gray-300">·</span>
-            <Kbd>Tab</Kbd>
-            <span className="ml-1">ô tiếp theo</span>
+      <footer className="absolute bottom-0 left-0 right-0 z-20 border-t border-gray-200 bg-white px-6 py-3 shadow-[0_-1px_4px_rgba(0,0,0,0.04)]">
+        <div className="mx-auto flex max-w-4xl items-center justify-between">
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <Button variant="ghost" size="icon" className="size-8 text-gray-500">
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span className="font-medium text-gray-800">1</span>
+            <Button variant="ghost" size="icon" className="size-8 text-gray-500">
+              <ChevronRight className="size-4" />
+            </Button>
+            <span>đầu</span>
+            <span>Tới</span>
+            <span>5/5 theo</span>
           </div>
 
           {/* Action buttons */}
@@ -333,15 +377,23 @@ export function ResidenceForm({ deposit }: Props) {
             <Button
               variant="outline"
               size="sm"
+              className="h-9 gap-1.5 border-gray-200 px-4 text-sm text-gray-700"
+            >
+              <Download className="size-4" />
+              Xuất
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => handleSave(true)}
-              className="h-8 border-gray-300 px-4 text-sm text-gray-600 hover:border-gray-400 hover:text-gray-800"
+              className="h-9 border-gray-200 px-4 text-sm text-gray-700 hover:border-gray-300 hover:text-gray-900"
             >
               Lưu nháp
             </Button>
             <Button
               size="sm"
               onClick={() => handleSave(false)}
-              className="h-8 gap-1.5 bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+              className="h-9 gap-1.5 bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
             >
               <Save className="size-3.5" />
               Lưu hồ sơ
@@ -355,16 +407,12 @@ export function ResidenceForm({ deposit }: Props) {
 
 /* ── Shared style token ─────────────────────────────────────────────────── */
 const inputCls =
-  "h-9 border-gray-200 text-sm shadow-none focus-visible:ring-1 focus-visible:ring-blue-500 focus-visible:border-blue-500";
+  "h-10 rounded-lg border-gray-200 bg-white text-sm shadow-none focus-visible:border-blue-500 focus-visible:ring-1 focus-visible:ring-blue-500";
 
 /* ── Sub-components ─────────────────────────────────────────────────────── */
 
 function FormCard({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
-      {children}
-    </div>
-  );
+  return <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-5">{children}</div>;
 }
 
 function SectionHeader({
@@ -377,10 +425,10 @@ function SectionHeader({
   badge?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-2.5 pb-1 border-b border-gray-100">
-      <div className="flex size-7 items-center justify-center rounded-md bg-blue-50">{icon}</div>
+    <div className="flex items-center gap-2.5 pb-2">
+      <div className="flex size-8 items-center justify-center rounded-lg bg-blue-50">{icon}</div>
       <div className="flex items-baseline gap-2">
-        <h2 className="text-sm font-bold text-gray-800">{title}</h2>
+        <h2 className="text-base font-bold text-gray-900">{title}</h2>
         {badge}
       </div>
     </div>
@@ -398,7 +446,7 @@ function FormField({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-gray-600">
+      <Label className="text-xs font-semibold text-gray-600">
         {label}
         {required && <span className="ml-0.5 text-red-500"> *</span>}
       </Label>
@@ -410,26 +458,18 @@ function FormField({
 function LockedField({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-gray-500">{label}</Label>
+      <Label className="text-xs font-semibold text-gray-600">{label}</Label>
       <div className="relative">
         <Input
           value={value}
           readOnly
           className={cn(
-            "h-9 border-gray-200 bg-white pr-8 text-sm text-gray-700 shadow-none",
+            "h-10 rounded-lg border-gray-200 bg-white pr-8 text-sm text-gray-700 shadow-none",
             mono && "font-mono",
           )}
         />
         <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-300" />
       </div>
     </div>
-  );
-}
-
-function Kbd({ children }: { children: React.ReactNode }) {
-  return (
-    <kbd className="rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-gray-500 shadow-sm">
-      {children}
-    </kbd>
   );
 }

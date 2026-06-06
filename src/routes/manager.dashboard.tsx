@@ -1,10 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import type { ComponentType } from "react";
-import { Bed, Home, ScrollText, Search, ShieldCheck, ShieldHalf, ClipboardCheck } from "lucide-react";
+import {
+  Bed,
+  Home,
+  ScrollText,
+  Search,
+  ShieldCheck,
+  ShieldHalf,
+  ClipboardCheck,
+} from "lucide-react";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
-import { Card, CardContent } from "@/components/ui/card";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 
 export const Route = createFileRoute("/manager/dashboard")({
   component: ManagerDashboardPage,
@@ -74,25 +82,38 @@ export function ManagerDashboardScreen({ currentPath }: { currentPath: string })
 
   return (
     <RoleShell role="manager" currentPath={currentPath}>
-      <main className="flex h-full items-center justify-center overflow-y-auto px-6 py-10">
-        <div className="w-full max-w-6xl">
-          <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Bảng điều khiển Quản lý</h1>
-            <p className="mt-2 text-sm text-gray-500">Chọn nghiệp vụ bạn muốn thực hiện</p>
-          </div>
+      <main className="h-full overflow-y-auto bg-gray-50">
+        <div className="mx-auto w-full max-w-6xl px-4 py-4">
+          <header className="mb-4 flex items-end justify-between gap-4 border-b border-gray-200 pb-3">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Bảng điều khiển Quản lý</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Duyệt hồ sơ, bàn giao, trả phòng và tra cứu vận hành.
+              </p>
+            </div>
+            <span className="rounded border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-600">
+              {launchpadItems.length} chức năng
+            </span>
+          </header>
 
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            {launchpadItems.map((item) => (
-              <LaunchpadCard key={item.to} {...item} />
-            ))}
-          </div>
+          <section className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <div className="grid grid-cols-[minmax(0,1fr)_96px] border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <span>Nghiệp vụ</span>
+              <span className="text-right">Thao tác</span>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {launchpadItems.map((item) => (
+                <LaunchpadRow key={item.to} {...item} />
+              ))}
+            </div>
+          </section>
         </div>
       </main>
     </RoleShell>
   );
 }
 
-function LaunchpadCard({
+function LaunchpadRow({
   to,
   title,
   description,
@@ -104,16 +125,20 @@ function LaunchpadCard({
   icon: ComponentType<{ className?: string }>;
 }) {
   return (
-    <Link to={to} className="group block h-full">
-      <Card className="h-full rounded-lg border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
-        <CardContent className="flex h-full flex-col p-6">
-          <div className="flex size-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
-            <Icon className="size-5" />
-          </div>
-          <h2 className="mt-5 text-base font-bold text-gray-900">{title}</h2>
-          <p className="mt-2 flex-1 text-sm leading-6 text-gray-500">{description}</p>
-        </CardContent>
-      </Card>
+    <Link
+      to={to}
+      className="grid grid-cols-[minmax(0,1fr)_96px] items-center gap-3 px-3 py-3 transition-colors hover:bg-gray-50"
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-600">
+          <Icon className="size-4" />
+        </div>
+        <div className="min-w-0">
+          <div className="truncate text-sm font-semibold text-gray-900">{title}</div>
+          <div className="mt-0.5 truncate text-xs text-gray-500">{description}</div>
+        </div>
+      </div>
+      <span className="text-right text-xs font-semibold text-blue-700">Mở</span>
     </Link>
   );
 }

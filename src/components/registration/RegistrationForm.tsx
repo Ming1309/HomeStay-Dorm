@@ -1,40 +1,50 @@
-import { useForm, Controller, type SubmitHandler } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
-import { X } from 'lucide-react';
+import { useForm, Controller, type SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { X } from "lucide-react";
 
 // Zod validation schema
 const registrationSchema = z.object({
   // Thông tin cá nhân
-  customerName: z.string().min(1, 'Tên khách hàng là bắt buộc').min(3, 'Tên phải ít nhất 3 ký tự'),
-  phone: z.string().min(1, 'Số điện thoại là bắt buộc').regex(/^[0-9]{10,11}$/, 'Số điện thoại không hợp lệ'),
-  email: z.string().min(1, 'Email là bắt buộc').email('Email không hợp lệ'),
-  address: z.string().min(1, 'Địa chỉ là bắt buộc'),
-  gender: z.enum(['male', 'female', 'other'], {
-    errorMap: () => ({ message: 'Giới tính là bắt buộc' }),
+  customerName: z.string().min(1, "Tên khách hàng là bắt buộc").min(3, "Tên phải ít nhất 3 ký tự"),
+  phone: z
+    .string()
+    .min(1, "Số điện thoại là bắt buộc")
+    .regex(/^[0-9]{10,11}$/, "Số điện thoại không hợp lệ"),
+  email: z.string().min(1, "Email là bắt buộc").email("Email không hợp lệ"),
+  address: z.string().min(1, "Địa chỉ là bắt buộc"),
+  gender: z.enum(["male", "female", "other"], {
+    errorMap: () => ({ message: "Giới tính là bắt buộc" }),
   }),
-  idType: z.enum(['cccd', 'passport', 'other'], {
-    errorMap: () => ({ message: 'Loại giấy tờ là bắt buộc' }),
+  idType: z.enum(["cccd", "passport", "other"], {
+    errorMap: () => ({ message: "Loại giấy tờ là bắt buộc" }),
   }),
-  idNumber: z.string().min(1, 'Số giấy tờ là bắt buộc').min(8, 'Số giấy tờ không hợp lệ'),
-  
+  idNumber: z.string().min(1, "Số giấy tờ là bắt buộc").min(8, "Số giấy tờ không hợp lệ"),
+
   // Thông tin lưu trú
-  numberOfPeople: z.string().min(1, 'Số người ở là bắt buộc'),
-  roomType: z.enum(['whole-room', 'shared-room'], {
-    errorMap: () => ({ message: 'Loại phòng là bắt buộc' }),
+  numberOfPeople: z.string().min(1, "Số người ở là bắt buộc"),
+  roomType: z.enum(["whole-room", "shared-room"], {
+    errorMap: () => ({ message: "Loại phòng là bắt buộc" }),
   }),
-  rentalType: z.string().min(1, 'Loại hình thuê là bắt buộc'),
-  rentalDuration: z.string().min(1, 'Thời hạn thuê là bắt buộc'),
-  desiredArea: z.string().min(1, 'Khu vực mong muốn là bắt buộc'),
-  priceRange: z.string().min(1, 'Mức giá là bắt buộc'),
-  moveInDate: z.string().min(1, 'Ngày dự kiến vào ở là bắt buộc'),
-  
+  rentalType: z.string().min(1, "Loại hình thuê là bắt buộc"),
+  rentalDuration: z.string().min(1, "Thời hạn thuê là bắt buộc"),
+  desiredArea: z.string().min(1, "Khu vực mong muốn là bắt buộc"),
+  priceRange: z.string().min(1, "Mức giá là bắt buộc"),
+  moveInDate: z.string().min(1, "Ngày dự kiến vào ở là bắt buộc"),
+
   // Tiêu chí
   parkingRequired: z.boolean().default(false),
   acRequired: z.boolean().default(false),
@@ -59,66 +69,53 @@ interface RegistrationFormProps {
 }
 
 const GENDERS = [
-  { value: 'male', label: 'Nam' },
-  { value: 'female', label: 'Nữ' },
-  { value: 'other', label: 'Khác / Không xác định' },
+  { value: "male", label: "Nam" },
+  { value: "female", label: "Nữ" },
+  { value: "other", label: "Khác / Không xác định" },
 ];
 
 const ID_TYPES = [
-  { value: 'cccd', label: 'Căn cước công dân' },
-  { value: 'passport', label: 'Hộ chiếu' },
-  { value: 'other', label: 'Giấy tờ khác' },
+  { value: "cccd", label: "Căn cước công dân" },
+  { value: "passport", label: "Hộ chiếu" },
+  { value: "other", label: "Giấy tờ khác" },
 ];
 
 const ROOM_TYPES = [
-  { value: 'whole-room', label: 'Thuê nguyên phòng' },
-  { value: 'shared-room', label: 'Thuê giường ở ghép' },
+  { value: "whole-room", label: "Thuê nguyên phòng" },
+  { value: "shared-room", label: "Thuê giường ở ghép" },
 ];
 
 const RENTAL_TYPES = [
-  { value: 'short-term', label: 'Thuê ngắn hạn' },
-  { value: 'long-term', label: 'Thuê dài hạn' },
-  { value: 'semester', label: 'Thuê theo học kỳ' },
-  { value: 'yearly', label: 'Thuê theo năm' },
+  { value: "short-term", label: "Thuê ngắn hạn" },
+  { value: "long-term", label: "Thuê dài hạn" },
+  { value: "semester", label: "Thuê theo học kỳ" },
+  { value: "yearly", label: "Thuê theo năm" },
 ];
 
 const RENTAL_DURATIONS = [
-  { value: '1-month', label: '1 tháng' },
-  { value: '3-months', label: '3 tháng' },
-  { value: '6-months', label: '6 tháng' },
-  { value: '12-months', label: '12 tháng' },
-  { value: 'flexible', label: 'Linh hoạt' },
+  { value: "1-month", label: "1 tháng" },
+  { value: "3-months", label: "3 tháng" },
+  { value: "6-months", label: "6 tháng" },
+  { value: "12-months", label: "12 tháng" },
+  { value: "flexible", label: "Linh hoạt" },
 ];
 
 const AREAS = [
-  { value: 'area-a', label: 'Khu vực A' },
-  { value: 'area-b', label: 'Khu vực B' },
-  { value: 'area-c', label: 'Khu vực C' },
-  { value: 'area-d', label: 'Khu vực D' },
+  { value: "area-a", label: "Khu vực A" },
+  { value: "area-b", label: "Khu vực B" },
+  { value: "area-c", label: "Khu vực C" },
+  { value: "area-d", label: "Khu vực D" },
 ];
 
 const PRICE_RANGES = [
-  { value: '1-3m', label: '1 - 3 triệu VNĐ' },
-  { value: '3-5m', label: '3 - 5 triệu VNĐ' },
-  { value: '5-7m', label: '5 - 7 triệu VNĐ' },
-  { value: '7-10m', label: '7 - 10 triệu VNĐ' },
-  { value: '10m+', label: '> 10 triệu VNĐ' },
+  { value: "1-3m", label: "1 - 3 triệu VNĐ" },
+  { value: "3-5m", label: "3 - 5 triệu VNĐ" },
+  { value: "5-7m", label: "5 - 7 triệu VNĐ" },
+  { value: "7-10m", label: "7 - 10 triệu VNĐ" },
+  { value: "10m+", label: "> 10 triệu VNĐ" },
 ];
 
 export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps) {
-  const zodFormResolver = (async (values: any) => {
-    const result = registrationSchema.safeParse(values);
-
-    if (result.success) {
-      return { values: result.data, errors: {} };
-    }
-
-    return {
-      values: {},
-      errors: result.error.formErrors.fieldErrors as any,
-    };
-  }) as any;
-
   const {
     control,
     handleSubmit,
@@ -126,17 +123,17 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
     watch,
     reset,
     getValues,
-  } = useForm<RegistrationFormData, any, RegistrationFormData>({
-    resolver: zodFormResolver,
-    mode: 'onBlur',
+  } = useForm<RegistrationFormData>({
+    resolver: zodResolver(registrationSchema),
+    mode: "onBlur",
     defaultValues: {
-      gender: 'male',
-      idType: 'cccd',
-      roomType: 'whole-room',
-      rentalType: 'short-term',
-      rentalDuration: '1-month',
-      desiredArea: 'area-a',
-      priceRange: '1-3m',
+      gender: "male",
+      idType: "cccd",
+      roomType: "whole-room",
+      rentalType: "short-term",
+      rentalDuration: "1-month",
+      desiredArea: "area-a",
+      priceRange: "1-3m",
       parkingRequired: false,
       acRequired: false,
       wifiRequired: false,
@@ -147,28 +144,28 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
       quietHours: false,
       petFriendly: false,
       smokingAllowed: false,
-      notes: '',
+      notes: "",
     },
   });
 
-  const watchQuietHours = watch('quietHours');
+  const watchQuietHours = watch("quietHours");
 
   const onSubmit: SubmitHandler<RegistrationFormData> = async (data) => {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
-      
-      toast.success('Phiếu đăng ký được tạo thành công!', {
+
+      toast.success("Phiếu đăng ký được tạo thành công!", {
         description: `Mã đăng ký: REG-${Date.now()}`,
       });
-      
+
       if (onSuccess) {
         onSuccess(data as RegistrationFormData);
       }
       reset();
     } catch (error) {
-      toast.error('Lỗi khi tạo phiếu đăng ký', {
-        description: 'Vui lòng thử lại sau',
+      toast.error("Lỗi khi tạo phiếu đăng ký", {
+        description: "Vui lòng thử lại sau",
       });
     }
   };
@@ -192,396 +189,398 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
             <Card className="h-fit">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg">Thông tin cá nhân khách hàng</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* Tên khách hàng */}
-                <div className="space-y-2">
-                  <Label htmlFor="customerName" className="text-sm font-medium">
-                    Tên khách hàng <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="customerName"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="customerName"
-                        placeholder="Nhập tên khách hàng"
-                        className={errors.customerName ? 'border-red-500' : ''}
-                      />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {/* Tên khách hàng */}
+                  <div className="space-y-2">
+                    <Label htmlFor="customerName" className="text-sm font-medium">
+                      Tên khách hàng <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="customerName"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="customerName"
+                          placeholder="Nhập tên khách hàng"
+                          className={errors.customerName ? "border-red-500" : ""}
+                        />
+                      )}
+                    />
+                    {errors.customerName && (
+                      <p className="text-sm text-red-500">{errors.customerName.message}</p>
                     )}
-                  />
-                  {errors.customerName && (
-                    <p className="text-sm text-red-500">{errors.customerName.message}</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Giới tính */}
-                <div className="space-y-2">
-                  <Label htmlFor="gender" className="text-sm font-medium">
-                    Giới tính <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="gender"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id="gender"
-                          className={errors.gender ? 'border-red-500' : ''}
-                        >
-                          <SelectValue placeholder="Chọn giới tính" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {GENDERS.map((gender) => (
-                            <SelectItem key={gender.value} value={gender.value}>
-                              {gender.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Giới tính */}
+                  <div className="space-y-2">
+                    <Label htmlFor="gender" className="text-sm font-medium">
+                      Giới tính <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="gender"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger
+                            id="gender"
+                            className={errors.gender ? "border-red-500" : ""}
+                          >
+                            <SelectValue placeholder="Chọn giới tính" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GENDERS.map((gender) => (
+                              <SelectItem key={gender.value} value={gender.value}>
+                                {gender.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.gender && (
+                      <p className="text-sm text-red-500">{errors.gender.message}</p>
                     )}
-                  />
-                  {errors.gender && (
-                    <p className="text-sm text-red-500">{errors.gender.message}</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Số điện thoại */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium">
-                    Số điện thoại <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="phone"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="phone"
-                        placeholder="0987654321"
-                        className={errors.phone ? 'border-red-500' : ''}
-                      />
-                    )}
-                  />
-                  {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
-                </div>
+                  {/* Số điện thoại */}
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium">
+                      Số điện thoại <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="phone"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="phone"
+                          placeholder="0987654321"
+                          className={errors.phone ? "border-red-500" : ""}
+                        />
+                      )}
+                    />
+                    {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+                  </div>
 
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    Email <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="email"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="email"
-                        type="email"
-                        placeholder="khach@example.com"
-                        className={errors.email ? 'border-red-500' : ''}
-                      />
-                    )}
-                  />
-                  {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-                </div>
+                  {/* Email */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium">
+                      Email <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="email"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="email"
+                          type="email"
+                          placeholder="khach@example.com"
+                          className={errors.email ? "border-red-500" : ""}
+                        />
+                      )}
+                    />
+                    {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+                  </div>
 
-                {/* Địa chỉ */}
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address" className="text-sm font-medium">
-                    Địa chỉ <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="address"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="address"
-                        placeholder="Nhập địa chỉ hiện tại"
-                        className={errors.address ? 'border-red-500' : ''}
-                      />
+                  {/* Địa chỉ */}
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="address" className="text-sm font-medium">
+                      Địa chỉ <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="address"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="address"
+                          placeholder="Nhập địa chỉ hiện tại"
+                          className={errors.address ? "border-red-500" : ""}
+                        />
+                      )}
+                    />
+                    {errors.address && (
+                      <p className="text-sm text-red-500">{errors.address.message}</p>
                     )}
-                  />
-                  {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
-                </div>
+                  </div>
 
-                {/* Loại giấy tờ */}
-                <div className="space-y-2">
-                  <Label htmlFor="idType" className="text-sm font-medium">
-                    Loại giấy tờ tùy thân <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="idType"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id="idType"
-                          className={errors.idType ? 'border-red-500' : ''}
-                        >
-                          <SelectValue placeholder="Chọn loại giấy tờ" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ID_TYPES.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              {type.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Loại giấy tờ */}
+                  <div className="space-y-2">
+                    <Label htmlFor="idType" className="text-sm font-medium">
+                      Loại giấy tờ tùy thân <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="idType"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger
+                            id="idType"
+                            className={errors.idType ? "border-red-500" : ""}
+                          >
+                            <SelectValue placeholder="Chọn loại giấy tờ" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ID_TYPES.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.idType && (
+                      <p className="text-sm text-red-500">{errors.idType.message}</p>
                     )}
-                  />
-                  {errors.idType && (
-                    <p className="text-sm text-red-500">{errors.idType.message}</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Số giấy tờ */}
-                <div className="space-y-2">
-                  <Label htmlFor="idNumber" className="text-sm font-medium">
-                    Số giấy tờ <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="idNumber"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="idNumber"
-                        placeholder="Nhập số giấy tờ"
-                        className={errors.idNumber ? 'border-red-500' : ''}
-                      />
+                  {/* Số giấy tờ */}
+                  <div className="space-y-2">
+                    <Label htmlFor="idNumber" className="text-sm font-medium">
+                      Số giấy tờ <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="idNumber"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="idNumber"
+                          placeholder="Nhập số giấy tờ"
+                          className={errors.idNumber ? "border-red-500" : ""}
+                        />
+                      )}
+                    />
+                    {errors.idNumber && (
+                      <p className="text-sm text-red-500">{errors.idNumber.message}</p>
                     )}
-                  />
-                  {errors.idNumber && (
-                    <p className="text-sm text-red-500">{errors.idNumber.message}</p>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Section 2: Thông tin lưu trú */}
-          <Card className="h-fit">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Thông tin lưu trú</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* Số người ở */}
-                <div className="space-y-2">
-                  <Label htmlFor="numberOfPeople" className="text-sm font-medium">
-                    Số người ở <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="numberOfPeople"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id="numberOfPeople"
-                          className={errors.numberOfPeople ? 'border-red-500' : ''}
-                        >
-                          <SelectValue placeholder="Chọn số người" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                            <SelectItem key={num} value={num.toString()}>
-                              {num} người
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+            {/* Section 2: Thông tin lưu trú */}
+            <Card className="h-fit">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Thông tin lưu trú</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {/* Số người ở */}
+                  <div className="space-y-2">
+                    <Label htmlFor="numberOfPeople" className="text-sm font-medium">
+                      Số người ở <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="numberOfPeople"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger
+                            id="numberOfPeople"
+                            className={errors.numberOfPeople ? "border-red-500" : ""}
+                          >
+                            <SelectValue placeholder="Chọn số người" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} người
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.numberOfPeople && (
+                      <p className="text-sm text-red-500">{errors.numberOfPeople.message}</p>
                     )}
-                  />
-                  {errors.numberOfPeople && (
-                    <p className="text-sm text-red-500">{errors.numberOfPeople.message}</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Loại phòng */}
-                <div className="space-y-2">
-                  <Label htmlFor="roomType" className="text-sm font-medium">
-                    Loại phòng <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="roomType"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id="roomType"
-                          className={errors.roomType ? 'border-red-500' : ''}
-                        >
-                          <SelectValue placeholder="Chọn loại phòng" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ROOM_TYPES.map((room) => (
-                            <SelectItem key={room.value} value={room.value}>
-                              {room.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Loại phòng */}
+                  <div className="space-y-2">
+                    <Label htmlFor="roomType" className="text-sm font-medium">
+                      Loại phòng <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="roomType"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger
+                            id="roomType"
+                            className={errors.roomType ? "border-red-500" : ""}
+                          >
+                            <SelectValue placeholder="Chọn loại phòng" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROOM_TYPES.map((room) => (
+                              <SelectItem key={room.value} value={room.value}>
+                                {room.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.roomType && (
+                      <p className="text-sm text-red-500">{errors.roomType.message}</p>
                     )}
-                  />
-                  {errors.roomType && (
-                    <p className="text-sm text-red-500">{errors.roomType.message}</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Loại hình thuê */}
-                <div className="space-y-2">
-                  <Label htmlFor="rentalType" className="text-sm font-medium">
-                    Loại hình thuê <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="rentalType"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id="rentalType"
-                          className={errors.rentalType ? 'border-red-500' : ''}
-                        >
-                          <SelectValue placeholder="Chọn loại hình thuê" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {RENTAL_TYPES.map((type) => (
-                            <SelectItem key={type.value} value={type.value}>
-                              {type.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Loại hình thuê */}
+                  <div className="space-y-2">
+                    <Label htmlFor="rentalType" className="text-sm font-medium">
+                      Loại hình thuê <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="rentalType"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger
+                            id="rentalType"
+                            className={errors.rentalType ? "border-red-500" : ""}
+                          >
+                            <SelectValue placeholder="Chọn loại hình thuê" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {RENTAL_TYPES.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.rentalType && (
+                      <p className="text-sm text-red-500">{errors.rentalType.message}</p>
                     )}
-                  />
-                  {errors.rentalType && (
-                    <p className="text-sm text-red-500">{errors.rentalType.message}</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Thời hạn thuê */}
-                <div className="space-y-2">
-                  <Label htmlFor="rentalDuration" className="text-sm font-medium">
-                    Thời hạn thuê <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="rentalDuration"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id="rentalDuration"
-                          className={errors.rentalDuration ? 'border-red-500' : ''}
-                        >
-                          <SelectValue placeholder="Chọn thời hạn" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {RENTAL_DURATIONS.map((duration) => (
-                            <SelectItem key={duration.value} value={duration.value}>
-                              {duration.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Thời hạn thuê */}
+                  <div className="space-y-2">
+                    <Label htmlFor="rentalDuration" className="text-sm font-medium">
+                      Thời hạn thuê <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="rentalDuration"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger
+                            id="rentalDuration"
+                            className={errors.rentalDuration ? "border-red-500" : ""}
+                          >
+                            <SelectValue placeholder="Chọn thời hạn" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {RENTAL_DURATIONS.map((duration) => (
+                              <SelectItem key={duration.value} value={duration.value}>
+                                {duration.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.rentalDuration && (
+                      <p className="text-sm text-red-500">{errors.rentalDuration.message}</p>
                     )}
-                  />
-                  {errors.rentalDuration && (
-                    <p className="text-sm text-red-500">{errors.rentalDuration.message}</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Khu vực mong muốn */}
-                <div className="space-y-2">
-                  <Label htmlFor="desiredArea" className="text-sm font-medium">
-                    Khu vực mong muốn <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="desiredArea"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id="desiredArea"
-                          className={errors.desiredArea ? 'border-red-500' : ''}
-                        >
-                          <SelectValue placeholder="Chọn khu vực" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {AREAS.map((area) => (
-                            <SelectItem key={area.value} value={area.value}>
-                              {area.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Khu vực mong muốn */}
+                  <div className="space-y-2">
+                    <Label htmlFor="desiredArea" className="text-sm font-medium">
+                      Khu vực mong muốn <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="desiredArea"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger
+                            id="desiredArea"
+                            className={errors.desiredArea ? "border-red-500" : ""}
+                          >
+                            <SelectValue placeholder="Chọn khu vực" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {AREAS.map((area) => (
+                              <SelectItem key={area.value} value={area.value}>
+                                {area.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.desiredArea && (
+                      <p className="text-sm text-red-500">{errors.desiredArea.message}</p>
                     )}
-                  />
-                  {errors.desiredArea && (
-                    <p className="text-sm text-red-500">{errors.desiredArea.message}</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Mức giá */}
-                <div className="space-y-2">
-                  <Label htmlFor="priceRange" className="text-sm font-medium">
-                    Mức giá mong muốn <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="priceRange"
-                    control={control}
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger
-                          id="priceRange"
-                          className={errors.priceRange ? 'border-red-500' : ''}
-                        >
-                          <SelectValue placeholder="Chọn mức giá" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PRICE_RANGES.map((range) => (
-                            <SelectItem key={range.value} value={range.value}>
-                              {range.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Mức giá */}
+                  <div className="space-y-2">
+                    <Label htmlFor="priceRange" className="text-sm font-medium">
+                      Mức giá mong muốn <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="priceRange"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger
+                            id="priceRange"
+                            className={errors.priceRange ? "border-red-500" : ""}
+                          >
+                            <SelectValue placeholder="Chọn mức giá" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PRICE_RANGES.map((range) => (
+                              <SelectItem key={range.value} value={range.value}>
+                                {range.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.priceRange && (
+                      <p className="text-sm text-red-500">{errors.priceRange.message}</p>
                     )}
-                  />
-                  {errors.priceRange && (
-                    <p className="text-sm text-red-500">{errors.priceRange.message}</p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Ngày dự kiến vào ở */}
-                <div className="space-y-2">
-                  <Label htmlFor="moveInDate" className="text-sm font-medium">
-                    Ngày dự kiến vào ở <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="moveInDate"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="moveInDate"
-                        type="date"
-                        className={errors.moveInDate ? 'border-red-500' : ''}
-                      />
+                  {/* Ngày dự kiến vào ở */}
+                  <div className="space-y-2">
+                    <Label htmlFor="moveInDate" className="text-sm font-medium">
+                      Ngày dự kiến vào ở <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="moveInDate"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="moveInDate"
+                          type="date"
+                          className={errors.moveInDate ? "border-red-500" : ""}
+                        />
+                      )}
+                    />
+                    {errors.moveInDate && (
+                      <p className="text-sm text-red-500">{errors.moveInDate.message}</p>
                     )}
-                  />
-                  {errors.moveInDate && (
-                    <p className="text-sm text-red-500">{errors.moveInDate.message}</p>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Section 3: Tiêu chí và yêu cầu khách hàng */}
@@ -618,11 +617,7 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
                       name="acRequired"
                       control={control}
                       render={({ field }) => (
-                        <Checkbox
-                          id="ac"
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Checkbox id="ac" checked={field.value} onCheckedChange={field.onChange} />
                       )}
                     />
                     <Label htmlFor="ac" className="text-sm cursor-pointer font-normal">
@@ -672,11 +667,7 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
                       name="gymRequired"
                       control={control}
                       render={({ field }) => (
-                        <Checkbox
-                          id="gym"
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Checkbox id="gym" checked={field.value} onCheckedChange={field.onChange} />
                       )}
                     />
                     <Label htmlFor="gym" className="text-sm cursor-pointer font-normal">
@@ -770,12 +761,7 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
                         name="quietHoursStart"
                         control={control}
                         render={({ field }) => (
-                          <Input
-                            {...field}
-                            id="quietHoursStart"
-                            type="time"
-                            placeholder="22:00"
-                          />
+                          <Input {...field} id="quietHoursStart" type="time" placeholder="22:00" />
                         )}
                       />
                     </div>
@@ -787,12 +773,7 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
                         name="quietHoursEnd"
                         control={control}
                         render={({ field }) => (
-                          <Input
-                            {...field}
-                            id="quietHoursEnd"
-                            type="time"
-                            placeholder="08:00"
-                          />
+                          <Input {...field} id="quietHoursEnd" type="time" placeholder="08:00" />
                         )}
                       />
                     </div>
@@ -869,7 +850,7 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
                 className="bg-blue-600 hover:bg-blue-700"
                 title="Tạo phiếu (Ctrl+Enter)"
               >
-                {isSubmitting ? 'Đang tạo...' : 'Tạo phiếu đăng ký'}
+                {isSubmitting ? "Đang tạo..." : "Tạo phiếu đăng ký"}
               </Button>
             </div>
           </div>

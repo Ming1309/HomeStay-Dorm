@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import { SettlementQueue } from "@/components/contract/SettlementQueue";
 import { TerminationPanel } from "@/components/contract/TerminationPanel";
 import { useWorkflowStore } from "@/lib/workflow-store";
@@ -16,10 +17,7 @@ function ManagerTerminationPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const items = useMemo(
-    () =>
-      contracts.filter(
-        (c) => c.status === "pending_settlement" || c.status === "liquidated",
-      ),
+    () => contracts.filter((c) => c.status === "pending_settlement" || c.status === "liquidated"),
     [contracts],
   );
 

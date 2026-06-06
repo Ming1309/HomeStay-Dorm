@@ -187,7 +187,11 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
         <Form {...form}>
-          <form id="termination-form" onSubmit={form.handleSubmit(handleConfirm)} className="space-y-4">
+          <form
+            id="termination-form"
+            onSubmit={form.handleSubmit(handleConfirm)}
+            className="space-y-4"
+          >
             <div className="rounded-lg border border-gray-200 bg-white p-4">
               <h3 className="mb-3 text-xs font-semibold text-gray-700">Thông tin hợp đồng</h3>
               <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
@@ -250,7 +254,9 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
             </div>
 
             <div className="rounded-lg border border-slate-200 bg-slate-50/40 p-4">
-              <h3 className="mb-2 text-xs font-semibold text-slate-700">Checkbox xác nhận thanh lý</h3>
+              <h3 className="mb-2 text-xs font-semibold text-slate-700">
+                Checkbox xác nhận thanh lý
+              </h3>
               <p className="mb-3 text-[11px] text-slate-500">
                 Cần tick đủ 4 mục dưới đây trước khi xác nhận thanh lý.
               </p>
@@ -334,10 +340,7 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
             <Printer className="size-3.5" />
             In biên bản
           </Button>
-          <CancelButton
-            disabled={isLiquidated}
-            onConfirmed={() => form.reset()}
-          />
+          <CancelButton disabled={isLiquidated} onConfirmed={() => form.reset()} />
           <Button
             type="submit"
             form="termination-form"
@@ -378,13 +381,7 @@ function createPreview(
   };
 }
 
-function CancelButton({
-  disabled,
-  onConfirmed,
-}: {
-  disabled?: boolean;
-  onConfirmed: () => void;
-}) {
+function CancelButton({ disabled, onConfirmed }: { disabled?: boolean; onConfirmed: () => void }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -449,7 +446,9 @@ function RecordPreviewDialog({
             <ul className="space-y-0.5">
               <li>{record.confirmations.customerReturned ? "✓" : "✗"} Khách đã trả phòng</li>
               <li>{record.confirmations.keysRecovered ? "✓" : "✗"} Đã thu hồi chìa khóa/thẻ từ</li>
-              <li>{record.confirmations.financialSettled ? "✓" : "✗"} Đã hoàn tất nghĩa vụ tài chính</li>
+              <li>
+                {record.confirmations.financialSettled ? "✓" : "✗"} Đã hoàn tất nghĩa vụ tài chính
+              </li>
               <li>{record.confirmations.roomUpdated ? "✓" : "✗"} Đã cập nhật trạng thái phòng</li>
             </ul>
           </div>

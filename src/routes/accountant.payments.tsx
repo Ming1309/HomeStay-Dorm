@@ -6,7 +6,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -214,7 +215,7 @@ function PaymentsWorkspace({
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
         {phase === 1 ? (
-          <Card className="rounded-lg border-gray-200 shadow-sm">
+          <Card className="rounded-lg border-gray-200">
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
@@ -370,7 +371,7 @@ function ReceiptForm({
           onDone(Number(data.actualAmount), data.paymentMethod as "bank-transfer" | "cash"),
         )}
       >
-        <Card className="rounded-lg border-gray-200 shadow-sm">
+        <Card className="rounded-lg border-gray-200">
           <CardContent className="space-y-4 p-4">
             <div className="flex items-center gap-2">
               <FileCheck2 className="size-4 text-emerald-600" />

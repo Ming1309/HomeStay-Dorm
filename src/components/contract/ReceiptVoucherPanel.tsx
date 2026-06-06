@@ -59,10 +59,7 @@ const formatAmountInput = (value: string) =>
 const normalizeAmountInput = (value: string) => value.replace(/\D/g, "");
 
 const formSchema = z.object({
-  amount: z
-    .string()
-    .min(1, "Vui lòng nhập số tiền")
-    .regex(/^\d+$/, "Chỉ nhập chữ số"),
+  amount: z.string().min(1, "Vui lòng nhập số tiền").regex(/^\d+$/, "Chỉ nhập chữ số"),
   paymentMethod: z.enum(["cash", "bank-transfer"]),
   collector: z.string().min(1, "Vui lòng nhập người thu"),
   date: z.string().min(1, "Vui lòng chọn ngày thu"),
@@ -116,9 +113,12 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
       note: data.note,
     });
     setIssued(voucher);
-    toast.success(`Đã xác nhận thu ${formatCurrency(Number(data.amount))} từ ${contract.customerName}.`, {
-      icon: <CheckCircle2 className="size-4 text-emerald-600" />,
-    });
+    toast.success(
+      `Đã xác nhận thu ${formatCurrency(Number(data.amount))} từ ${contract.customerName}.`,
+      {
+        icon: <CheckCircle2 className="size-4 text-emerald-600" />,
+      },
+    );
   };
 
   if (!reconciliation) {
@@ -147,7 +147,11 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
         <Form {...form}>
-          <form id="receipt-voucher-form" onSubmit={form.handleSubmit(handleConfirm)} className="space-y-4">
+          <form
+            id="receipt-voucher-form"
+            onSubmit={form.handleSubmit(handleConfirm)}
+            className="space-y-4"
+          >
             <div className="rounded-lg border border-gray-200 bg-white p-4">
               <h3 className="mb-3 text-xs font-semibold text-gray-700">Thông tin khách hàng</h3>
               <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
@@ -268,7 +272,9 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
             type="button"
             variant="outline"
             className="h-8 text-xs"
-            onClick={() => setIssued(createPreviewVoucher(contract.id, contract.customerName, amount, method))}
+            onClick={() =>
+              setIssued(createPreviewVoucher(contract.id, contract.customerName, amount, method))
+            }
             disabled={!form.formState.isValid}
           >
             <Printer className="size-3.5" />

@@ -6,7 +6,8 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import {
   AlertDialog,
   AlertDialogAction,

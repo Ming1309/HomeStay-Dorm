@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { toast } from 'sonner';
+import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
-type RegistrationStatus = 'draft' | 'pending' | 'approved' | 'rejected';
+type RegistrationStatus = "draft" | "pending" | "approved" | "rejected";
 
 type RegistrationLookupItem = {
   id: string;
@@ -15,7 +15,7 @@ type RegistrationLookupItem = {
   customerName: string;
   phone: string;
   email: string;
-  idType: 'CCCD' | 'Hộ chiếu' | 'Giấy tờ khác';
+  idType: "CCCD" | "Hộ chiếu" | "Giấy tờ khác";
   idNumber: string;
   desiredArea: string;
   priceRange: string;
@@ -30,66 +30,66 @@ type RegistrationLookupItem = {
 
 const MOCK_REGISTRATIONS: RegistrationLookupItem[] = [
   {
-    id: '1',
-    registrationNumber: 'REG-20260601-10001',
-    customerName: 'Nguyễn Văn A',
-    phone: '0912345678',
-    email: 'nguyenvana@example.com',
-    idType: 'CCCD',
-    idNumber: '079200123456',
-    desiredArea: 'Khu vực A',
-    priceRange: '3-5m',
-    moveInDate: '15/06/2026',
-    rentalDuration: '6 tháng',
-    roomType: 'Thuê nguyên phòng',
+    id: "1",
+    registrationNumber: "REG-20260601-10001",
+    customerName: "Nguyễn Văn A",
+    phone: "0912345678",
+    email: "nguyenvana@example.com",
+    idType: "CCCD",
+    idNumber: "079200123456",
+    desiredArea: "Khu vực A",
+    priceRange: "3-5m",
+    moveInDate: "15/06/2026",
+    rentalDuration: "6 tháng",
+    roomType: "Thuê nguyên phòng",
     people: 2,
-    submittedAt: '01/06/2026',
-    status: 'pending',
-    notes: 'Ưu tiên phòng có ban công, có chỗ để xe máy.',
+    submittedAt: "01/06/2026",
+    status: "pending",
+    notes: "Ưu tiên phòng có ban công, có chỗ để xe máy.",
   },
   {
-    id: '2',
-    registrationNumber: 'REG-20260529-10002',
-    customerName: 'Trần Thị B',
-    phone: '0987654321',
-    email: 'tranthib@gmail.com',
-    idType: 'CCCD',
-    idNumber: '079201234567',
-    desiredArea: 'Khu vực B',
-    priceRange: '5-7m',
-    moveInDate: '05/07/2026',
-    rentalDuration: '12 tháng',
-    roomType: 'Thuê giường ở ghép',
+    id: "2",
+    registrationNumber: "REG-20260529-10002",
+    customerName: "Trần Thị B",
+    phone: "0987654321",
+    email: "tranthib@gmail.com",
+    idType: "CCCD",
+    idNumber: "079201234567",
+    desiredArea: "Khu vực B",
+    priceRange: "5-7m",
+    moveInDate: "05/07/2026",
+    rentalDuration: "12 tháng",
+    roomType: "Thuê giường ở ghép",
     people: 1,
-    submittedAt: '29/05/2026',
-    status: 'approved',
-    notes: 'Muốn ở gần khu vực bếp chung và phòng tập gym.',
+    submittedAt: "29/05/2026",
+    status: "approved",
+    notes: "Muốn ở gần khu vực bếp chung và phòng tập gym.",
   },
   {
-    id: '3',
-    registrationNumber: 'REG-20260528-10003',
-    customerName: 'Phạm Hoàng C',
-    phone: '0968887777',
-    email: 'phamhoangc@company.vn',
-    idType: 'Hộ chiếu',
-    idNumber: 'E123456789',
-    desiredArea: 'Khu vực C',
-    priceRange: '1-3m',
-    moveInDate: '20/06/2026',
-    rentalDuration: '3 tháng',
-    roomType: 'Thuê nguyên phòng',
+    id: "3",
+    registrationNumber: "REG-20260528-10003",
+    customerName: "Phạm Hoàng C",
+    phone: "0968887777",
+    email: "phamhoangc@company.vn",
+    idType: "Hộ chiếu",
+    idNumber: "E123456789",
+    desiredArea: "Khu vực C",
+    priceRange: "1-3m",
+    moveInDate: "20/06/2026",
+    rentalDuration: "3 tháng",
+    roomType: "Thuê nguyên phòng",
     people: 3,
-    submittedAt: '28/05/2026',
-    status: 'draft',
-    notes: 'Khách hàng cần có hồ sơ tạm trú để được hỗ trợ thủ tục.',
+    submittedAt: "28/05/2026",
+    status: "draft",
+    notes: "Khách hàng cần có hồ sơ tạm trú để được hỗ trợ thủ tục.",
   },
 ];
 
 const statusStyles: Record<RegistrationStatus, { label: string; className: string }> = {
-  draft: { label: 'Nháp', className: 'bg-gray-100 text-gray-800' },
-  pending: { label: 'Chờ duyệt', className: 'bg-amber-100 text-amber-800' },
-  approved: { label: 'Đã duyệt', className: 'bg-emerald-100 text-emerald-700' },
-  rejected: { label: 'Từ chối', className: 'bg-red-100 text-red-700' },
+  draft: { label: "Nháp", className: "bg-gray-100 text-gray-800" },
+  pending: { label: "Chờ duyệt", className: "bg-amber-100 text-amber-800" },
+  approved: { label: "Đã duyệt", className: "bg-emerald-100 text-emerald-700" },
+  rejected: { label: "Từ chối", className: "bg-red-100 text-red-700" },
 };
 
 const getStatusBadge = (status: RegistrationStatus) => {
@@ -98,12 +98,12 @@ const getStatusBadge = (status: RegistrationStatus) => {
 };
 
 export function RegistrationLookupWorkspace() {
-  const [phone, setPhone] = useState('');
-  const [idNumber, setIdNumber] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState("");
+  const [idNumber, setIdNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [searchKey, setSearchKey] = useState('');
+  const [searchKey, setSearchKey] = useState("");
 
   const results = useMemo(() => {
     if (!hasSearched) return [];
@@ -120,7 +120,9 @@ export function RegistrationLookupWorkspace() {
     });
   }, [hasSearched, phone, idNumber, email]);
 
-  const selectedRegistration = selectedId ? results.find((item) => item.id === selectedId) ?? null : null;
+  const selectedRegistration = selectedId
+    ? (results.find((item) => item.id === selectedId) ?? null)
+    : null;
 
   useEffect(() => {
     if (selectedId && !results.some((item) => item.id === selectedId)) {
@@ -130,7 +132,7 @@ export function RegistrationLookupWorkspace() {
 
   const handleSearch = () => {
     if (!phone.trim() && !idNumber.trim() && !email.trim()) {
-      toast.error('Vui lòng nhập ít nhất một tiêu chí tìm kiếm');
+      toast.error("Vui lòng nhập ít nhất một tiêu chí tìm kiếm");
       return;
     }
 
@@ -144,7 +146,7 @@ export function RegistrationLookupWorkspace() {
       return matchPhone || matchId || matchEmail;
     });
 
-    setSearchKey([phone.trim(), idNumber.trim(), email.trim()].filter(Boolean).join(' • '));
+    setSearchKey([phone.trim(), idNumber.trim(), email.trim()].filter(Boolean).join(" • "));
     setHasSearched(true);
     if (selectedId && !nextResults.some((item) => item.id === selectedId)) {
       setSelectedId(null);
@@ -213,10 +215,11 @@ export function RegistrationLookupWorkspace() {
               <div className="rounded-lg border border-gray-200 bg-slate-50 p-3 text-xs text-gray-600">
                 {hasSearched ? (
                   <>
-                    Kết quả tìm kiếm cho: <span className="font-medium text-gray-900">{searchKey}</span>
+                    Kết quả tìm kiếm cho:{" "}
+                    <span className="font-medium text-gray-900">{searchKey}</span>
                   </>
                 ) : (
-                  'Nhập ít nhất một tiêu chí và nhấn Tìm kiếm để xem kết quả.'
+                  "Nhập ít nhất một tiêu chí và nhấn Tìm kiếm để xem kết quả."
                 )}
               </div>
 
@@ -233,10 +236,10 @@ export function RegistrationLookupWorkspace() {
                       key={item.id}
                       type="button"
                       onClick={() => setSelectedId(item.id)}
-                      className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${
+                      className={`w-full rounded-lg border px-4 py-3 text-left transition-all ${
                         selectedId === item.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 bg-white hover:border-gray-300"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -252,9 +255,9 @@ export function RegistrationLookupWorkspace() {
                         <div className="flex-shrink-0">{getStatusBadge(item.status)}</div>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-gray-500">
-                        <span className="rounded-full bg-slate-100 px-2 py-1">{item.idType}</span>
-                        <span className="rounded-full bg-slate-100 px-2 py-1">{item.idNumber}</span>
-                        <span className="rounded-full bg-slate-100 px-2 py-1">{item.desiredArea}</span>
+                        <span className="rounded bg-slate-100 px-2 py-1">{item.idType}</span>
+                        <span className="rounded bg-slate-100 px-2 py-1">{item.idNumber}</span>
+                        <span className="rounded bg-slate-100 px-2 py-1">{item.desiredArea}</span>
                       </div>
                     </button>
                   ))}
@@ -265,7 +268,7 @@ export function RegistrationLookupWorkspace() {
         </div>
 
         <div className="border-t border-gray-200 bg-white px-4 py-3 text-xs text-gray-500">
-          {hasSearched ? `${results.length} phiếu đăng ký` : 'Chưa tìm kiếm'}
+          {hasSearched ? `${results.length} phiếu đăng ký` : "Chưa tìm kiếm"}
         </div>
       </aside>
 
@@ -275,7 +278,9 @@ export function RegistrationLookupWorkspace() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Thông tin phiếu</p>
-                <h2 className="text-xl font-bold text-gray-900">{selectedRegistration.customerName}</h2>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {selectedRegistration.customerName}
+                </h2>
                 <p className="mt-1 text-sm text-gray-500">
                   {selectedRegistration.registrationNumber} • {selectedRegistration.submittedAt}
                 </p>
@@ -283,7 +288,9 @@ export function RegistrationLookupWorkspace() {
               {getStatusBadge(selectedRegistration.status)}
             </div>
           ) : (
-            <div className="text-sm text-gray-500">👈 Chọn một phiếu đăng ký bên trái để xem chi tiết.</div>
+            <div className="text-sm text-gray-500">
+              👈 Chọn một phiếu đăng ký bên trái để xem chi tiết.
+            </div>
           )}
         </div>
 
@@ -293,12 +300,16 @@ export function RegistrationLookupWorkspace() {
               <div className="grid gap-4 lg:grid-cols-3">
                 <Card className="border-gray-200 bg-white">
                   <CardHeader>
-                    <CardTitle className="text-sm font-semibold text-gray-900">Thông tin khách hàng</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-gray-900">
+                      Thông tin khách hàng
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm text-gray-700">
                     <div>
                       <p className="text-xs text-gray-500">Tên</p>
-                      <p className="font-medium text-gray-900">{selectedRegistration.customerName}</p>
+                      <p className="font-medium text-gray-900">
+                        {selectedRegistration.customerName}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Số điện thoại</p>
@@ -310,19 +321,25 @@ export function RegistrationLookupWorkspace() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Giấy tờ</p>
-                      <p className="font-medium text-gray-900">{selectedRegistration.idType} • {selectedRegistration.idNumber}</p>
+                      <p className="font-medium text-gray-900">
+                        {selectedRegistration.idType} • {selectedRegistration.idNumber}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="border-gray-200 bg-white">
                   <CardHeader>
-                    <CardTitle className="text-sm font-semibold text-gray-900">Yêu cầu lưu trú</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-gray-900">
+                      Yêu cầu lưu trú
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm text-gray-700">
                     <div>
                       <p className="text-xs text-gray-500">Khu vực mong muốn</p>
-                      <p className="font-medium text-gray-900">{selectedRegistration.desiredArea}</p>
+                      <p className="font-medium text-gray-900">
+                        {selectedRegistration.desiredArea}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Mức giá</p>
@@ -334,14 +351,18 @@ export function RegistrationLookupWorkspace() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Thời hạn thuê</p>
-                      <p className="font-medium text-gray-900">{selectedRegistration.rentalDuration}</p>
+                      <p className="font-medium text-gray-900">
+                        {selectedRegistration.rentalDuration}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="border-gray-200 bg-white">
                   <CardHeader>
-                    <CardTitle className="text-sm font-semibold text-gray-900">Chi tiết thêm</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-gray-900">
+                      Chi tiết thêm
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm text-gray-700">
                     <div>
@@ -350,11 +371,15 @@ export function RegistrationLookupWorkspace() {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Số người ở</p>
-                      <p className="font-medium text-gray-900">{selectedRegistration.people} người</p>
+                      <p className="font-medium text-gray-900">
+                        {selectedRegistration.people} người
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Ngày nộp</p>
-                      <p className="font-medium text-gray-900">{selectedRegistration.submittedAt}</p>
+                      <p className="font-medium text-gray-900">
+                        {selectedRegistration.submittedAt}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -362,7 +387,9 @@ export function RegistrationLookupWorkspace() {
 
               <Card className="border-gray-200 bg-white">
                 <CardHeader>
-                  <CardTitle className="text-sm font-semibold text-gray-900">Ghi chú đăng ký</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-gray-900">
+                    Ghi chú đăng ký
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm leading-6 text-gray-700">
                   {selectedRegistration.notes}
@@ -370,7 +397,7 @@ export function RegistrationLookupWorkspace() {
               </Card>
             </div>
           ) : (
-            <div className="flex h-full min-h-[320px] items-center justify-center rounded-3xl border border-dashed border-gray-300 bg-white text-sm text-gray-500">
+            <div className="flex h-full min-h-[320px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white text-sm text-gray-500">
               Chưa có phiếu nào được chọn. Vui lòng tìm và chọn một phiếu bên trái.
             </div>
           )}
@@ -380,8 +407,8 @@ export function RegistrationLookupWorkspace() {
           <div className="text-xs text-gray-500">
             <span className="rounded border bg-slate-100 px-1.5 py-0.5 font-semibold">Ctrl</span>
             <span className="mx-1">+</span>
-            <span className="rounded border bg-slate-100 px-1.5 py-0.5 font-semibold">F</span>
-            : Tìm kiếm nhanh
+            <span className="rounded border bg-slate-100 px-1.5 py-0.5 font-semibold">F</span>: Tìm
+            kiếm nhanh
           </div>
           <div className="flex flex-wrap gap-2 text-xs text-gray-600">
             <Button variant="outline" size="sm">

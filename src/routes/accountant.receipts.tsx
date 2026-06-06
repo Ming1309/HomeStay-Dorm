@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import { SettlementQueue } from "@/components/contract/SettlementQueue";
 import { ReceiptVoucherPanel } from "@/components/contract/ReceiptVoucherPanel";
 import { useWorkflowStore } from "@/lib/workflow-store";

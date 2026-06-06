@@ -133,7 +133,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
     return (
       <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
         <div className="flex max-w-xs flex-col items-center gap-3 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white">
+          <div className="flex size-14 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white">
             <FilePenLine className="size-6 text-gray-400" />
           </div>
           <p className="text-sm text-gray-500">
@@ -159,7 +159,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
   const renderPhase1 = () => (
     <Form {...form}>
       <form id="contract-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
+        <div className="rounded-lg border border-gray-200 bg-white p-5 space-y-4">
           <SectionHeader
             icon={<FileText className="size-4 text-blue-500" />}
             title="Nhập thông tin Hợp đồng"
@@ -373,7 +373,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
 
     return (
       <div className="mx-auto max-w-2xl">
-        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm print:shadow-none space-y-8">
+        <div className="rounded-lg border border-gray-200 bg-white p-8 print:shadow-none space-y-8">
           {/* Header of document */}
           <div className="text-center space-y-2 border-b border-gray-200 pb-6">
             <h2 className="text-lg font-bold uppercase text-gray-800">Hợp đồng Thuê Phòng</h2>
@@ -460,7 +460,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
   return (
     <section className="relative flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
       {/* ── STICKY HEADER ──────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 shrink-0 border-b border-gray-200 bg-white px-6 py-3 shadow-sm">
+      <header className="sticky top-0 z-20 shrink-0 border-b border-gray-200 bg-white px-6 py-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2 flex-wrap">
@@ -534,7 +534,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                 type="submit"
                 form="contract-form"
                 size="sm"
-                className="h-8 gap-1.5 bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+                className="h-8 gap-1.5 bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
               >
                 <FilePenLine className="size-3.5" />
                 Lưu & Xem trước Hợp đồng
@@ -588,7 +588,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                     });
                     onConfirmSigned(deposit.id);
                   }}
-                  className="h-8 gap-1.5 bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1"
+                  className="h-8 gap-1.5 bg-emerald-600 px-5 text-sm font-semibold text-white hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1"
                 >
                   <CheckCircle2 className="size-3.5" />
                   Xác nhận khách đã ký

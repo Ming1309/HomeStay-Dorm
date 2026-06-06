@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import { CheckCircle2, Eye, Search, Users } from "lucide-react";
 import { toast } from "sonner";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

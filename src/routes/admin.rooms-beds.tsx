@@ -294,83 +294,83 @@ function AdminRoomsBedsPage() {
             </div>
 
             <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Quản lý phòng / giường</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Quản lý danh mục phòng, giường, sức chứa và trạng thái vận hành trong hệ thống.
-              </p>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Quản lý phòng / giường</h1>
+                <p className="mt-1 text-sm text-gray-500">
+                  Quản lý danh mục phòng, giường, sức chứa và trạng thái vận hành trong hệ thống.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditRoom(null);
+                    roomForm.reset({
+                      roomNo: "",
+                      building: "Toà A",
+                      branch: "Chi nhánh 1",
+                      roomType: "Phòng 4 người",
+                      gender: "Tất cả",
+                    });
+                    setRoomOpen(true);
+                  }}
+                >
+                  + Thêm phòng mới
+                </Button>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => {
+                    setEditBed(null);
+                    bedForm.reset({ bedNo: "", roomNo: rooms[0]?.roomNo ?? "", status: "Trống" });
+                    setBedOpen(true);
+                  }}
+                >
+                  + Thêm giường mới
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditRoom(null);
-                  roomForm.reset({
-                    roomNo: "",
-                    building: "Toà A",
-                    branch: "Chi nhánh 1",
-                    roomType: "Phòng 4 người",
-                    gender: "Tất cả",
-                  });
-                  setRoomOpen(true);
-                }}
-              >
-                + Thêm phòng mới
-              </Button>
-              <Button
-                className="bg-blue-600 hover:bg-blue-700"
-                onClick={() => {
-                  setEditBed(null);
-                  bedForm.reset({ bedNo: "", roomNo: rooms[0]?.roomNo ?? "", status: "Trống" });
-                  setBedOpen(true);
-                }}
-              >
-                + Thêm giường mới
-              </Button>
+            <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-end">
+              <div className="w-full md:w-[460px]">
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Tìm phòng, tòa nhà, giường..."
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="w-full md:w-[220px]">
+                <p className="mb-1 text-xs font-medium text-gray-600">Tòa nhà</p>
+                <Select
+                  value={building}
+                  onValueChange={(v) => setBuilding(v as "all" | "Toà A" | "Toà B")}
+                >
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Tòa nhà" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả tòa nhà</SelectItem>
+                    <SelectItem value="Toà A">Toà A</SelectItem>
+                    <SelectItem value="Toà B">Toà B</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-full md:w-[220px]">
+                <p className="mb-1 text-xs font-medium text-gray-600">Chi nhánh</p>
+                <Select
+                  value={branch}
+                  onValueChange={(v) => setBranch(v as "all" | "Chi nhánh 1" | "Chi nhánh 2")}
+                >
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Chi nhánh" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả chi nhánh</SelectItem>
+                    <SelectItem value="Chi nhánh 1">Chi nhánh 1</SelectItem>
+                    <SelectItem value="Chi nhánh 2">Chi nhánh 2</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-          <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-end">
-            <div className="w-full md:w-[460px]">
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Tìm phòng, tòa nhà, giường..."
-                className="h-9 text-sm"
-              />
-            </div>
-            <div className="w-full md:w-[220px]">
-              <p className="mb-1 text-xs font-medium text-gray-600">Tòa nhà</p>
-              <Select
-                value={building}
-                onValueChange={(v) => setBuilding(v as "all" | "Toà A" | "Toà B")}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Tòa nhà" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả tòa nhà</SelectItem>
-                  <SelectItem value="Toà A">Toà A</SelectItem>
-                  <SelectItem value="Toà B">Toà B</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-full md:w-[220px]">
-              <p className="mb-1 text-xs font-medium text-gray-600">Chi nhánh</p>
-              <Select
-                value={branch}
-                onValueChange={(v) => setBranch(v as "all" | "Chi nhánh 1" | "Chi nhánh 2")}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Chi nhánh" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả chi nhánh</SelectItem>
-                  <SelectItem value="Chi nhánh 1">Chi nhánh 1</SelectItem>
-                  <SelectItem value="Chi nhánh 2">Chi nhánh 2</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
           </div>
         </header>
         <div className="flex-1 overflow-hidden p-6">

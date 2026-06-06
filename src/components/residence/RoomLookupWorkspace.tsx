@@ -99,7 +99,7 @@ export function RoomLookupWorkspace() {
   return (
     <TooltipProvider>
       <div className="flex h-full flex-col overflow-hidden bg-gray-50/60">
-        <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-4 shadow-sm">
+        <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-4">
           <div className="mb-3 max-w-[1240px] space-y-1.5">
             <div className="hidden grid-cols-[180px_180px_190px_190px_320px] gap-3 lg:grid">
               <Label className="text-xs text-gray-500">Tòa nhà</Label>
@@ -270,7 +270,7 @@ function RoomCard({ room }: { room: Room }) {
   const [showDetail, setShowDetail] = useState(false);
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md">
+    <div className="rounded-lg border border-gray-200 bg-white transition-all">
       <div className="border-b border-gray-100 px-4 py-3">
         <span className="font-mono text-sm font-bold text-blue-600">{room.code}</span>
         <p className="mt-0.5 text-xs text-gray-500">

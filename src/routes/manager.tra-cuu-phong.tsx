@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { RoleShell, useRoleGuard } from "@/components/app/RoleShell";
+import { RoleShell } from "@/components/app/RoleShell";
+import { useRoleGuard } from "@/components/app/useRoleGuard";
 import { RoomLookupWorkspace } from "@/components/residence/RoomLookupWorkspace";
 
 export const Route = createFileRoute("/manager/tra-cuu-phong")({

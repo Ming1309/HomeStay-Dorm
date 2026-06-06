@@ -51,7 +51,7 @@ export function DepositCalcPanel({ deposit }: { deposit: DepositRequest }) {
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
-      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-3 shadow-sm">
+      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-3">
         <div className="flex items-center gap-2">
           <h1 className="font-mono text-sm font-bold text-gray-900">{deposit.code}</h1>
           <Badge className="h-5 bg-gray-100 text-[10px] text-gray-600">Khởi tạo</Badge>

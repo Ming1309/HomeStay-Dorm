@@ -1,62 +1,58 @@
-import { useState } from 'react';
-import { RegistrationForm } from '@/components/registration/RegistrationForm';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Plus, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card } from '@/components/ui/card';
+import { useState } from "react";
+import { RegistrationForm } from "@/components/registration/RegistrationForm";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
 
 // Mock data for demo
 const MOCK_REGISTRATIONS = [
   {
-    id: '1',
-    number: 'REG-20260531-12345',
-    name: 'Nguyễn Văn A',
-    phone: '0912345678',
+    id: "1",
+    number: "REG-20260531-12345",
+    name: "Nguyễn Văn A",
+    phone: "0912345678",
     people: 2,
-    area: 'Khu vực A',
-    price: '3-5m',
-    status: 'pending',
-    date: '2026-05-31',
+    area: "Khu vực A",
+    price: "3-5m",
+    status: "pending",
+    date: "2026-05-31",
   },
   {
-    id: '2',
-    number: 'REG-20260530-54321',
-    name: 'Trần Thị B',
-    phone: '0987654321',
+    id: "2",
+    number: "REG-20260530-54321",
+    name: "Trần Thị B",
+    phone: "0987654321",
     people: 3,
-    area: 'Khu vực B',
-    price: '5-7m',
-    status: 'approved',
-    date: '2026-05-30',
+    area: "Khu vực B",
+    price: "5-7m",
+    status: "approved",
+    date: "2026-05-30",
   },
   {
-    id: '3',
-    number: 'REG-20260529-98765',
-    name: 'Phạm Hoàng C',
-    phone: '0988888888',
+    id: "3",
+    number: "REG-20260529-98765",
+    name: "Phạm Hoàng C",
+    phone: "0988888888",
     people: 1,
-    area: 'Khu vực C',
-    price: '1-3m',
-    status: 'draft',
-    date: '2026-05-29',
+    area: "Khu vực C",
+    price: "1-3m",
+    status: "draft",
+    date: "2026-05-29",
   },
 ];
 
 const getStatusBadge = (status: string) => {
   const variants: Record<string, { bg: string; text: string; label: string }> = {
-    pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Chờ duyệt' },
-    approved: { bg: 'bg-green-100', text: 'text-green-800', label: 'Đã duyệt' },
-    draft: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Nháp' },
-    rejected: { bg: 'bg-red-100', text: 'text-red-800', label: 'Từ chối' },
+    pending: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Chờ duyệt" },
+    approved: { bg: "bg-green-100", text: "text-green-800", label: "Đã duyệt" },
+    draft: { bg: "bg-gray-100", text: "text-gray-800", label: "Nháp" },
+    rejected: { bg: "bg-red-100", text: "text-red-800", label: "Từ chối" },
   };
   const variant = variants[status] || variants.pending;
-  return (
-    <Badge className={`${variant.bg} ${variant.text} border-0`}>
-      {variant.label}
-    </Badge>
-  );
+  return <Badge className={`${variant.bg} ${variant.text} border-0`}>{variant.label}</Badge>;
 };
 
 interface RegistrationWorkspaceProps {
@@ -66,13 +62,14 @@ interface RegistrationWorkspaceProps {
 export function RegistrationWorkspace({ onRegistrationCreated }: RegistrationWorkspaceProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [registrations, setRegistrations] = useState(MOCK_REGISTRATIONS);
 
-  const filteredRegistrations = registrations.filter((reg) =>
-    reg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    reg.phone.includes(searchQuery) ||
-    reg.number.includes(searchQuery)
+  const filteredRegistrations = registrations.filter(
+    (reg) =>
+      reg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      reg.phone.includes(searchQuery) ||
+      reg.number.includes(searchQuery),
   );
 
   const selectedRegistration = registrations.find((r) => r.id === selectedId);
@@ -87,10 +84,7 @@ export function RegistrationWorkspace({ onRegistrationCreated }: RegistrationWor
   if (isCreating) {
     return (
       <div className="h-screen w-full overflow-hidden">
-        <RegistrationForm
-          onSuccess={handleCreateSuccess}
-          onCancel={() => setIsCreating(false)}
-        />
+        <RegistrationForm onSuccess={handleCreateSuccess} onCancel={() => setIsCreating(false)} />
       </div>
     );
   }
@@ -132,28 +126,22 @@ export function RegistrationWorkspace({ onRegistrationCreated }: RegistrationWor
                   onClick={() => setSelectedId(reg.id)}
                   className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
                     selectedId === reg.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
-                        {reg.name}
-                      </p>
+                      <p className="text-sm font-semibold text-gray-900 truncate">{reg.name}</p>
                       <p className="text-xs text-gray-500">{reg.number}</p>
                       <p className="text-xs text-gray-400 mt-1">{reg.phone}</p>
                     </div>
-                    <div className="flex-shrink-0">
-                      {getStatusBadge(reg.status)}
-                    </div>
+                    <div className="flex-shrink-0">{getStatusBadge(reg.status)}</div>
                   </div>
                 </button>
               ))
             ) : (
-              <div className="p-4 text-center text-sm text-gray-500">
-                Không tìm thấy kết quả
-              </div>
+              <div className="p-4 text-center text-sm text-gray-500">Không tìm thấy kết quả</div>
             )}
           </div>
         </ScrollArea>
@@ -171,9 +159,7 @@ export function RegistrationWorkspace({ onRegistrationCreated }: RegistrationWor
           <div className="border-b bg-white px-6 py-4 sticky top-0">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  {selectedRegistration.name}
-                </h2>
+                <h2 className="text-xl font-bold text-gray-900">{selectedRegistration.name}</h2>
                 <p className="text-sm text-gray-500 mt-1">
                   {selectedRegistration.number} • {selectedRegistration.date}
                 </p>
@@ -193,48 +179,34 @@ export function RegistrationWorkspace({ onRegistrationCreated }: RegistrationWor
             <div className="px-6 py-6 space-y-6">
               {/* Thông tin cá nhân */}
               <Card className="p-4">
-                <h3 className="font-semibold text-sm mb-4 text-gray-900">
-                  Thông tin cá nhân
-                </h3>
+                <h3 className="font-semibold text-sm mb-4 text-gray-900">Thông tin cá nhân</h3>
                 <div className="grid grid-cols-1 gap-3 text-sm">
                   <div>
                     <p className="text-gray-500 text-xs">Tên khách hàng</p>
-                    <p className="text-gray-900 font-medium">
-                      {selectedRegistration.name}
-                    </p>
+                    <p className="text-gray-900 font-medium">{selectedRegistration.name}</p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs">Số điện thoại</p>
-                    <p className="text-gray-900 font-medium">
-                      {selectedRegistration.phone}
-                    </p>
+                    <p className="text-gray-900 font-medium">{selectedRegistration.phone}</p>
                   </div>
                 </div>
               </Card>
 
               {/* Thông tin lưu trú */}
               <Card className="p-4">
-                <h3 className="font-semibold text-sm mb-4 text-gray-900">
-                  Thông tin lưu trú
-                </h3>
+                <h3 className="font-semibold text-sm mb-4 text-gray-900">Thông tin lưu trú</h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <p className="text-gray-500 text-xs">Số người ở</p>
-                    <p className="text-gray-900 font-medium">
-                      {selectedRegistration.people} người
-                    </p>
+                    <p className="text-gray-900 font-medium">{selectedRegistration.people} người</p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs">Khu vực</p>
-                    <p className="text-gray-900 font-medium">
-                      {selectedRegistration.area}
-                    </p>
+                    <p className="text-gray-900 font-medium">{selectedRegistration.area}</p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs">Mức giá</p>
-                    <p className="text-gray-900 font-medium">
-                      {selectedRegistration.price}
-                    </p>
+                    <p className="text-gray-900 font-medium">{selectedRegistration.price}</p>
                   </div>
                 </div>
               </Card>
