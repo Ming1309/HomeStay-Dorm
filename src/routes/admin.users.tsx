@@ -489,7 +489,6 @@ function AdminUsersPage() {
                       <TableHead>Chi nhánh</TableHead>
                       <TableHead>Trạng thái</TableHead>
                       <TableHead>Lần đăng nhập cuối</TableHead>
-                      <TableHead className="text-center">Khóa</TableHead>
                       <TableHead className="text-right">Hành động</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -529,21 +528,6 @@ function AdminUsersPage() {
                             {staff.lastLoginAt
                               ? formatDateTime(staff.lastLoginAt)
                               : "Chưa đăng nhập"}
-                          </TableCell>
-                          <TableCell className="py-2 text-center">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span>
-                                  <Switch
-                                    checked={lockChecked}
-                                    disabled={!canLock}
-                                    onCheckedChange={() => handleLockToggle(staff)}
-                                    aria-label="Khóa/mở khóa tài khoản"
-                                  />
-                                </span>
-                              </TooltipTrigger>
-                              {!canLock && <TooltipContent>{blockedReason}</TooltipContent>}
-                            </Tooltip>
                           </TableCell>
                           <TableCell className="py-2 text-right">
                             <DropdownMenu>
