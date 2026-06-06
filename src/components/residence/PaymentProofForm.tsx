@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -52,6 +53,7 @@ export function PaymentProofForm({
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const handleFileSelect = (file: File | null) => {
     if (!file) {
@@ -194,61 +196,100 @@ export function PaymentProofForm({
               Chứng từ thanh toán
             </h3>
 
-            <div
-              className={cn(
-                "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors",
-                dragging
-                  ? "border-blue-400 bg-blue-50"
-                  : "border-gray-300 bg-gray-50 hover:border-gray-400",
-              )}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragging(true);
-              }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={handleDrop}
-              onClick={() => document.getElementById("proof-upload")?.click()}
-            >
-              <Upload className="mb-2 size-6 text-gray-400" />
-              <p className="text-sm text-gray-500">Kéo thả file hoặc nhấp để chọn</p>
-              <p className="mt-1 text-xs text-gray-400">Hỗ trợ JPG, PNG, PDF (tối đa 5MB)</p>
-              <input
-                id="proof-upload"
-                type="file"
-                accept=".jpg,.jpeg,.png,.pdf"
-                className="hidden"
-                onChange={(e) => handleFileSelect(e.target.files?.[0] ?? null)}
-                disabled={isLocked}
-              />
-            </div>
-
-            {proofPreview && (
-              <div className="mt-3">
-                <img
-                  src={proofPreview}
-                  alt="Proof preview"
-                  className="max-h-[200px] rounded-lg border border-gray-200 object-contain"
-                />
+            {/* When NO file is selected -> Show Drop Zone */}
+            {!proofFile && !proofPreview && (
+              <div
+                className={cn(
+                  "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-10 transition-colors",
+                  dragging
+                    ? "border-blue-400 bg-blue-50"
+                    : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100/60",
+                )}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={handleDrop}
+                onClick={() => document.getElementById("proof-upload")?.click()}
+              >
+                <Upload className="mb-2 size-6 text-gray-400" />
+                <p className="text-sm font-medium text-gray-500">Kéo thả file hoặc nhấp để chọn</p>
+                <p className="mt-1 text-xs text-gray-400">Hỗ trợ JPG, PNG, PDF (tối đa 5MB)</p>
               </div>
             )}
 
-            {proofFile && !proofPreview && (
-              <div className="mt-3 flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
-                <ImageIcon className="size-4 text-gray-400" />
-                <span className="flex-1 text-sm text-gray-700">{proofFile.name}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProofFile(null);
-                    setProofPreview(null);
-                  }}
-                  className="rounded p-1 text-gray-400 hover:bg-gray-200"
-                >
-                  <X className="size-3.5" />
-                </button>
+            <input
+              id="proof-upload"
+              type="file"
+              accept=".jpg,.jpeg,.png,.pdf"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e.target.files?.[0] ?? null)}
+              disabled={isLocked}
+            />
+
+            {/* When file IS selected -> Show the file card */}
+            {(proofFile || proofPreview) && (
+              <div className="flex flex-col gap-3 rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div className="flex items-center gap-4">
+                  {/* Thumbnail */}
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-gray-100 bg-gray-50">
+                    {proofPreview ? (
+                      <img src={proofPreview} alt="Thumbnail" className="h-full w-full object-cover" />
+                    ) : (
+                      <ImageIcon className="size-6 text-gray-400" />
+                    )}
+                  </div>
+                  {/* File Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-sm font-medium text-gray-800">
+                      {proofFile?.name || "Chứng từ thanh toán"}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {proofFile ? `${(proofFile.size / 1024 / 1024).toFixed(1)}MB` : "Đã tải lên"}
+                    </p>
+                  </div>
+                </div>
+                {/* Actions */}
+                <div className="mt-1 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-8 flex-1 text-xs"
+                    onClick={() => {
+                       if (proofPreview) {
+                          setPreviewOpen(true);
+                       } else {
+                          toast.info("Không thể xem trước tệp PDF ở đây.");
+                       }
+                    }}
+                  >
+                    Xem chứng từ
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-8 flex-1 text-xs"
+                    onClick={() => document.getElementById("proof-upload")?.click()}
+                  >
+                    Thay đổi
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-8 flex-1 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                    onClick={() => {
+                      setProofFile(null);
+                      setProofPreview(null);
+                    }}
+                  >
+                    Xóa
+                  </Button>
+                </div>
               </div>
             )}
           </div>
+
         </div>
       </div>
 
@@ -266,6 +307,19 @@ export function PaymentProofForm({
           Gửi
         </Button>
       </footer>
+
+      {/* Image Preview Modal */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl border-none bg-transparent p-0 shadow-none outline-none">
+          {proofPreview && (
+            <img
+              src={proofPreview}
+              alt="Chứng từ thanh toán"
+              className="mx-auto max-h-[85vh] rounded-lg object-contain shadow-2xl"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

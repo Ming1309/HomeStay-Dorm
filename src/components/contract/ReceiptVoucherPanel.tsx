@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  Banknote,
   CheckCircle2,
   FileUp,
+  Landmark,
   Printer,
   Receipt,
-  Save,
   UploadCloud,
-  X,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
@@ -34,13 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { useWorkflowStore, type ContractItem, type ReceiptVoucher } from "@/lib/workflow-store";
 
@@ -60,10 +54,6 @@ type ReceiptFormState = {
   paymentMethod: "cash" | "bank-transfer";
   evidenceFile: File | null;
   note: string;
-  transactionCode: string;
-  receivingBank: string;
-  receivedAt: string;
-  transferEvidenceFile: File | null;
 };
 
 const DEFAULT_COLLECTOR = "Nguyễn Thị Thu — Kế toán";
@@ -83,6 +73,7 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
   );
   const [form, setForm] = useState<ReceiptFormState>(() => createInitialForm(totals.outstanding));
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [partialOpen, setPartialOpen] = useState(false);
   const [issuedVoucher, setIssuedVoucher] = useState<ReceiptVoucher | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -90,6 +81,7 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
   useEffect(() => {
     setForm(createInitialForm(totals.outstanding));
     setFieldErrors({});
+    setConfirmOpen(false);
     setPartialOpen(false);
     setIssuedVoucher(null);
     setPreviewOpen(false);
@@ -108,22 +100,19 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
     });
   };
 
+  const isBankTransfer = form.paymentMethod === "bank-transfer";
+
   const validate = () => {
     const errors: Record<string, string> = {};
     if (!form.amount || Number(form.amount) <= 0) errors.amount = "Vui lòng nhập số tiền thực thu";
     if (!form.paymentMethod) errors.paymentMethod = "Vui lòng chọn phương thức thanh toán";
-    if (!form.evidenceFile) errors.evidenceFile = "Vui lòng tải lên chứng từ hợp lệ";
-    if (form.paymentMethod === "bank-transfer") {
-      if (!form.transactionCode.trim()) errors.transactionCode = "Vui lòng nhập mã giao dịch";
-      if (!form.receivingBank.trim()) errors.receivingBank = "Vui lòng nhập ngân hàng nhận";
-      if (!form.receivedAt) errors.receivedAt = "Vui lòng nhập thời gian nhận tiền";
-      if (!form.transferEvidenceFile) {
-        errors.transferEvidenceFile = "Vui lòng tải lên chứng từ chuyển khoản";
-      }
-    }
+    if (isBankTransfer && !form.evidenceFile) errors.evidenceFile = "Vui lòng tải lên minh chứng chuyển khoản";
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
-      toast.error("Vui lòng nhập đầy đủ thông tin và tải lên tệp hợp lệ (ảnh/pdf < 5MB).");
+      toast.error(isBankTransfer
+        ? "Vui lòng tải lên minh chứng chuyển khoản (ảnh/pdf < 5MB)."
+        : "Vui lòng nhập đầy đủ thông tin."
+      );
       return false;
     }
     return true;
@@ -135,7 +124,7 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
       setPartialOpen(true);
       return;
     }
-    confirmReceipt();
+    setConfirmOpen(true);
   };
 
   const confirmReceipt = () => {
@@ -151,6 +140,7 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
     recordPayment(contract.id, amount, form.paymentMethod);
     setIssuedVoucher(voucher);
     setPreviewOpen(true);
+    setConfirmOpen(false);
     setPartialOpen(false);
     toast.success("Lập phiếu thu thành công", {
       description: `Mã phiếu thu: ${voucher.code}`,
@@ -158,10 +148,7 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
     });
   };
 
-  const handleFile = (
-    key: "evidenceFile" | "transferEvidenceFile",
-    file: File | undefined,
-  ) => {
+  const handleFile = (key: "evidenceFile", file: File | undefined) => {
     if (!file || !isValidEvidenceFile(file)) {
       updateForm(key, null);
       setFieldErrors((current) => ({
@@ -272,85 +259,82 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Số tiền thực thu *" error={fieldErrors.amount}>
-                <Input
-                  value={formatAmountInput(form.amount)}
-                  onChange={(event) => updateForm("amount", normalizeAmountInput(event.target.value))}
-                  className={cn("h-10 text-right font-mono", fieldErrors.amount && errorClass)}
-                />
-              </Field>
-              <Field label="Phương thức thanh toán *" error={fieldErrors.paymentMethod}>
-                <Select
-                  value={form.paymentMethod}
-                  onValueChange={(value) =>
-                    updateForm("paymentMethod", value as ReceiptFormState["paymentMethod"])
-                  }
-                >
-                  <SelectTrigger className={cn("h-10", fieldErrors.paymentMethod && errorClass)}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Tiền mặt</SelectItem>
-                    <SelectItem value="bank-transfer">Chuyển khoản</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Ảnh hoặc file minh chứng *" error={fieldErrors.evidenceFile}>
-                <EvidenceInput
-                  id="receipt-evidence"
-                  file={form.evidenceFile}
-                  onFile={(file) => handleFile("evidenceFile", file)}
-                  invalid={Boolean(fieldErrors.evidenceFile)}
-                />
-              </Field>
-              <Field label="Ghi chú" className="col-span-2">
-                <Input
-                  value={form.note}
-                  onChange={(event) => updateForm("note", event.target.value)}
-                  placeholder="Ghi chú thêm về khoản thu..."
-                  className="h-10"
-                />
-              </Field>
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="grid gap-4">
+                <Field label="Số tiền thực thu *" error={fieldErrors.amount}>
+                  <Input
+                    value={formatAmountInput(form.amount)}
+                    onChange={(event) =>
+                      updateForm("amount", normalizeAmountInput(event.target.value))
+                    }
+                    className={cn("h-10 text-right font-mono", fieldErrors.amount && errorClass)}
+                  />
+                </Field>
 
-              {form.paymentMethod === "bank-transfer" && (
-                <div className="col-span-2 grid grid-cols-2 gap-4 rounded-lg border border-blue-100 bg-blue-50/40 p-4">
-                  <Field label="Mã giao dịch" error={fieldErrors.transactionCode}>
-                    <Input
-                      value={form.transactionCode}
-                      onChange={(event) => updateForm("transactionCode", event.target.value)}
-                      className={cn("h-10 font-mono", fieldErrors.transactionCode && errorClass)}
-                    />
-                  </Field>
-                  <Field label="Ngân hàng nhận" error={fieldErrors.receivingBank}>
-                    <Input
-                      value={form.receivingBank}
-                      onChange={(event) => updateForm("receivingBank", event.target.value)}
-                      placeholder="VD: Vietcombank"
-                      className={cn("h-10", fieldErrors.receivingBank && errorClass)}
-                    />
-                  </Field>
-                  <Field label="Thời gian nhận tiền" error={fieldErrors.receivedAt}>
-                    <Input
-                      type="datetime-local"
-                      value={form.receivedAt}
-                      onChange={(event) => updateForm("receivedAt", event.target.value)}
-                      className={cn("h-10", fieldErrors.receivedAt && errorClass)}
-                    />
-                  </Field>
-                  <Field
-                    label="File/ảnh chứng từ chuyển khoản"
-                    error={fieldErrors.transferEvidenceFile}
+                <Field label="Ghi chú">
+                  <Input
+                    value={form.note}
+                    onChange={(event) => updateForm("note", event.target.value)}
+                    placeholder="Ghi chú thêm về khoản thu..."
+                    className="h-10"
+                  />
+                </Field>
+              </div>
+
+              <div className="space-y-4">
+                <Field label="Phương thức thanh toán *" error={fieldErrors.paymentMethod}>
+                  <RadioGroup
+                    value={form.paymentMethod}
+                    onValueChange={(value) => {
+                      const next = value as ReceiptFormState["paymentMethod"];
+                      // Xóa file minh chứng khi chuyển về tiền mặt
+                      if (next === "cash" && form.evidenceFile) {
+                        setForm((current) => ({ ...current, paymentMethod: next, evidenceFile: null }));
+                        setFieldErrors((current) => {
+                          const next2 = { ...current };
+                          delete next2["paymentMethod"];
+                          delete next2["evidenceFile"];
+                          return next2;
+                        });
+                      } else {
+                        updateForm("paymentMethod", next);
+                      }
+                    }}
+                    className={cn(
+                      "grid gap-2",
+                      fieldErrors.paymentMethod && "rounded-lg ring-1 ring-red-300",
+                    )}
                   >
-                    <EvidenceInput
-                      id="transfer-evidence"
-                      file={form.transferEvidenceFile}
-                      onFile={(file) => handleFile("transferEvidenceFile", file)}
-                      invalid={Boolean(fieldErrors.transferEvidenceFile)}
+                    <PaymentMethodOption
+                      value="cash"
+                      label="Tiền mặt"
+                      icon={<Banknote className="size-4" />}
                     />
-                  </Field>
-                </div>
-              )}
+                    <PaymentMethodOption
+                      value="bank-transfer"
+                      label="Chuyển khoản"
+                      icon={<Landmark className="size-4" />}
+                    />
+                  </RadioGroup>
+                </Field>
+
+                <Field
+                  label={isBankTransfer ? "Minh chứng thanh toán *" : "Minh chứng thanh toán"}
+                  error={fieldErrors.evidenceFile}
+                >
+                  {!isBankTransfer && (
+                    <p className="mb-1.5 text-[11px] text-gray-400">
+                      Không bắt buộc khi thu tiền mặt
+                    </p>
+                  )}
+                  <EvidenceInput
+                    id="receipt-evidence"
+                    file={form.evidenceFile}
+                    onFile={(file) => handleFile("evidenceFile", file)}
+                    invalid={Boolean(fieldErrors.evidenceFile)}
+                  />
+                </Field>
+              </div>
             </div>
           </Card>
         </div>
@@ -365,30 +349,30 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" className="h-9" onClick={() => setForm(createInitialForm(totals.outstanding))}>
-            <X className="size-4" />
-            Hủy
-          </Button>
-          <Button type="button" variant="outline" className="h-9">
-            <Save className="size-4" />
-            Lưu nháp
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9"
-            disabled={!issuedVoucher}
-            onClick={() => setPreviewOpen(true)}
-          >
-            <Printer className="size-4" />
-            In phiếu thu
-          </Button>
           <Button type="button" className="h-9 bg-blue-600 hover:bg-blue-700" onClick={submit}>
             <CheckCircle2 className="size-4" />
             Xác nhận thu tiền
           </Button>
         </div>
       </footer>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận thu tiền?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hệ thống sẽ ghi nhận khoản thu {formatCurrency(amount)} cho hợp đồng {contract.id} và
+              lập phiếu thu tương ứng.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy bỏ</AlertDialogCancel>
+            <AlertDialogAction className="bg-blue-600 hover:bg-blue-700" onClick={confirmReceipt}>
+              Xác nhận
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={partialOpen} onOpenChange={setPartialOpen}>
         <AlertDialogContent>
@@ -418,18 +402,11 @@ export function ReceiptVoucherPanel({ contract }: { contract: ContractItem }) {
 }
 
 function createInitialForm(outstanding: number): ReceiptFormState {
-  const now = new Date();
-  const timezoneOffsetMs = now.getTimezoneOffset() * 60 * 1000;
-  const localIso = new Date(now.getTime() - timezoneOffsetMs).toISOString();
   return {
     amount: String(outstanding),
     paymentMethod: "cash",
     evidenceFile: null,
     note: "",
-    transactionCode: "",
-    receivingBank: "",
-    receivedAt: localIso.slice(0, 16),
-    transferEvidenceFile: null,
   };
 }
 
@@ -455,6 +432,27 @@ function buildInvoices(contract: ContractItem): InvoiceRow[] {
         remaining === 0 ? "Đã thanh toán" : paid > 0 ? "Thanh toán một phần" : "Chờ thanh toán",
     };
   });
+}
+
+function PaymentMethodOption({
+  value,
+  label,
+  icon,
+}: {
+  value: ReceiptFormState["paymentMethod"];
+  label: string;
+  icon: ReactNode;
+}) {
+  return (
+    <Label
+      htmlFor={`payment-method-${value}`}
+      className="flex h-10 cursor-pointer items-center gap-2 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50/40 has-[[data-state=checked]]:border-blue-500 has-[[data-state=checked]]:bg-blue-50 has-[[data-state=checked]]:text-blue-700"
+    >
+      <RadioGroupItem id={`payment-method-${value}`} value={value} />
+      <span className="text-current">{icon}</span>
+      <span>{label}</span>
+    </Label>
+  );
 }
 
 function EvidenceInput({

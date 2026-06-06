@@ -17,8 +17,8 @@ function ManagerTerminationPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const items = useMemo(
-    () => contracts.filter((c) => c.status === "pending_settlement" || c.status === "liquidated"),
-    [contracts],
+    () => contracts.filter((c) => c.status === "pending_settlement" && getReconciliation(c.id)),
+    [contracts, getReconciliation],
   );
 
   const reconciliations = useMemo(() => {

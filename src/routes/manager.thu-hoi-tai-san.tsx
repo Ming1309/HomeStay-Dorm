@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, CheckCircle2, ClipboardCheck, Search } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ClipboardCheck, Search, ImageIcon, Upload, X } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -96,6 +96,7 @@ const schema = z
             .number({ invalid_type_error: "Nhập số lượng thu hồi" })
             .min(0, "Số lượng phải lớn hơn hoặc bằng 0"),
           condition: z.string().min(1, "Chọn tình trạng"),
+          proofName: z.string().optional(),
           note: z.string().optional(),
         })
         .superRefine((asset, ctx) => {
@@ -254,6 +255,7 @@ function RecoveryForm({
         expectedQty: asset.expectedQty,
         recoveredQty: asset.expectedQty,
         condition: "Bình thường",
+        proofName: undefined,
         note: "",
       })),
     },
@@ -269,6 +271,7 @@ function RecoveryForm({
         expectedQty: asset.expectedQty,
         recoveredQty: asset.expectedQty,
         condition: "Bình thường",
+        proofName: undefined,
         note: "",
       })),
     });
@@ -303,6 +306,7 @@ function RecoveryForm({
                     <TableHead className="px-2 py-2 text-xs">Số lượng chuẩn</TableHead>
                     <TableHead className="px-2 py-2 text-xs">Số lượng thu hồi</TableHead>
                     <TableHead className="px-2 py-2 text-xs">Tình trạng</TableHead>
+                    <TableHead className="w-28 px-2 py-2 text-center text-xs">Minh chứng</TableHead>
                     <TableHead className="px-2 py-2 text-xs">Ghi chú</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -363,6 +367,66 @@ function RecoveryForm({
                       <TableCell className="p-2">
                         <FormField
                           control={form.control}
+                          name={`assets.${index}.proofName` as const}
+                          render={({ field: proofField }) => {
+                            const condition = form.watch(`assets.${index}.condition`);
+                            const needsProof = condition !== "Bình thường";
+                            return (
+                              <FormItem>
+                                <FormControl>
+                                  {proofField.value ? (
+                                    <div className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1">
+                                      <ImageIcon className="shrink-0 size-3.5 text-gray-400" />
+                                      <span className="flex-1 truncate text-[11px] text-gray-700 font-medium" title={proofField.value}>
+                                        {proofField.value}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => proofField.onChange(undefined)}
+                                        className="text-gray-400 hover:text-rose-600"
+                                      >
+                                        <X className="size-3.5" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="relative">
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="absolute inset-0 cursor-pointer w-full opacity-0"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            proofField.onChange(file.name);
+                                          }
+                                          e.target.value = "";
+                                        }}
+                                      />
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className={cn(
+                                          "h-8 w-full px-2 text-[11px] font-normal shadow-none pointer-events-none",
+                                          needsProof 
+                                            ? "border-amber-300 bg-amber-50 text-amber-700" 
+                                            : "text-gray-500 bg-white"
+                                        )}
+                                      >
+                                        <Upload className="mr-1.5 size-3" />
+                                        {needsProof ? "Cần ảnh" : "Tải lên"}
+                                      </Button>
+                                    </div>
+                                  )}
+                                </FormControl>
+                              </FormItem>
+                            );
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="p-2">
+                        <FormField
+                          control={form.control}
                           name={`assets.${index}.note` as const}
                           render={({ field: noteField }) => (
                             <FormItem>
@@ -398,37 +462,12 @@ function RecoveryForm({
           : Lưu biên bản thu hồi
         </div>
         <div className="flex items-center gap-2">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button type="button" variant="outline" className="border-red-300 text-red-700">
-                <AlertTriangle className="size-4" />
-                Hủy biên bản
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Xác nhận hủy biên bản?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Bạn có chắc muốn hủy biên bản thu hồi. Hợp đồng sẽ được giữ lại để xử lý sau.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Quay lại</AlertDialogCancel>
-                <AlertDialogAction
-                  className="bg-red-600 text-white hover:bg-red-700"
-                  onClick={onReject}
-                >
-                  Xác nhận hủy
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
           <Button
             type="submit"
             form="recovery-form"
             className="bg-emerald-600 hover:bg-emerald-700"
           >
-            <ClipboardCheck className="size-4" />
+            <ClipboardCheck className="mr-1.5 size-4" />
             Lưu biên bản thu hồi
           </Button>
         </div>
