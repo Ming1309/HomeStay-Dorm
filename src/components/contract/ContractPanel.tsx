@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { format, parse } from "date-fns";
 import {
   AlertCircle,
+  CalendarIcon,
   CheckCircle2,
   FilePenLine,
   FileSignature,
@@ -28,6 +30,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Form,
   FormControl,
@@ -175,13 +179,30 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                   <FormLabel className="text-xs font-medium text-gray-600">
                     Ngày bắt đầu <span className="text-red-500">*</span>
                   </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="DD/MM/YYYY"
-                      className="h-9 border-gray-200 text-sm focus-visible:ring-1 focus-visible:ring-blue-500"
-                      {...field}
-                    />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-9 border-gray-200 px-3 text-left font-normal focus-visible:ring-1 focus-visible:ring-blue-500 text-sm",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? field.value : <span>DD/MM/YYYY</span>}
+                          <CalendarIcon className="ml-auto size-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value ? parse(field.value, "dd/MM/yyyy", new Date()) : undefined}
+                        onSelect={(date) => field.onChange(date ? format(date, "dd/MM/yyyy") : "")}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage className="text-[11px]" />
                 </FormItem>
               )}
@@ -196,13 +217,30 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                   <FormLabel className="text-xs font-medium text-gray-600">
                     Ngày kết thúc <span className="text-red-500">*</span>
                   </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="DD/MM/YYYY"
-                      className="h-9 border-gray-200 text-sm focus-visible:ring-1 focus-visible:ring-blue-500"
-                      {...field}
-                    />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-9 border-gray-200 px-3 text-left font-normal focus-visible:ring-1 focus-visible:ring-blue-500 text-sm",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? field.value : <span>DD/MM/YYYY</span>}
+                          <CalendarIcon className="ml-auto size-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value ? parse(field.value, "dd/MM/yyyy", new Date()) : undefined}
+                        onSelect={(date) => field.onChange(date ? format(date, "dd/MM/yyyy") : "")}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage className="text-[11px]" />
                 </FormItem>
               )}

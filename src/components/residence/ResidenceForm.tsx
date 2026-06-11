@@ -313,30 +313,9 @@ export function ResidenceForm({ deposit }: Props) {
 
       {/* ── Sticky footer ─────────────────────────────────────────────── */}
       <footer className="absolute bottom-0 left-0 right-0 z-20 border-t border-gray-200 bg-white px-6 py-3 shadow-[0_-1px_4px_rgba(0,0,0,0.04)]">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            <Button variant="ghost" size="icon" className="size-8 text-gray-500">
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="font-medium text-gray-800">1</span>
-            <Button variant="ghost" size="icon" className="size-8 text-gray-500">
-              <ChevronRight className="size-4" />
-            </Button>
-            <span>đầu</span>
-            <span>Tới</span>
-            <span>5/5 theo</span>
-          </div>
-
+        <div className="mx-auto flex max-w-4xl items-center justify-end">
           {/* Action buttons */}
           <div className="flex items-center gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 gap-1.5 border-gray-200 px-4 text-sm text-gray-700"
-            >
-              <Download className="size-4" />
-              Xuất
-            </Button>
             <Button
               variant="outline"
               size="sm"
