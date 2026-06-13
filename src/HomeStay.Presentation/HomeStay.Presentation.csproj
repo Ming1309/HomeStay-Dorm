@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HomeStay.BusinessLogic\HomeStay.BusinessLogic.csproj" />
+    <ProjectReference Include="..\HomeStay.DataAccess\HomeStay.DataAccess.csproj" />
   </ItemGroup>
 
   <ItemGroup>
