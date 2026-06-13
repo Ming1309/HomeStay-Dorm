@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\HomeStay.BusinessLogic\HomeStay.BusinessLogic.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ClientApp/**" />
+    <Content Remove="ClientApp/**" />
+    <EmbeddedResource Remove="ClientApp/**" />
+    <None Remove="ClientApp/**" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DefaultItemExcludes>$(DefaultItemExcludes);ClientApp/**</DefaultItemExcludes>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+  </PropertyGroup>
+
+</Project>
