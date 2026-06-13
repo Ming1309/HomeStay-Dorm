@@ -16,6 +16,7 @@ function AccountantRefundsPage() {
   const { contracts, getReconciliation } = useWorkflowStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  // Only show contracts with a settled reconciliation that has a positive netRefund
   const items = useMemo(() => {
     return contracts.filter((c) => {
       if (c.status !== "pending_settlement") return false;
@@ -32,7 +33,8 @@ function AccountantRefundsPage() {
     return map;
   }, [items, getReconciliation]);
 
-  const selected = items.find((i) => i.id === selectedId) ?? null;
+  // Auto-select first item if nothing selected
+  const selected = items.find((i) => i.id === selectedId) ?? (items.length > 0 ? items[0] : null);
 
   if (!allowed) return null;
 
@@ -43,14 +45,19 @@ function AccountantRefundsPage() {
           items={items}
           reconciliations={reconciliations}
           filter="refund"
-          selectedId={selectedId}
+          selectedId={selected?.id ?? null}
           onSelect={(c) => setSelectedId(c.id)}
         />
         {!selected ? (
-          <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
-            <p className="text-sm text-gray-500">
-              Không có hợp đồng nào cần hoàn cọc (cọc được hoàn lớn hơn chi phí phát sinh).
-            </p>
+          <section className="flex h-full flex-1 items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-500">
+                Không có phiếu đối soát nào cần lập phiếu hoàn cọc.
+              </p>
+              <p className="mt-1 text-xs text-gray-400">
+                Phiếu hoàn cọc chỉ xuất hiện khi phiếu đối soát đã được chốt và còn dư cọc.
+              </p>
+            </div>
           </section>
         ) : (
           <RefundVoucherPanel contract={selected} />

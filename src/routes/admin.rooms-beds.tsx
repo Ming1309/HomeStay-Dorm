@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -315,7 +315,8 @@ function AdminRoomsBedsPage() {
                     setRoomOpen(true);
                   }}
                 >
-                  + Thêm phòng mới
+                  <Plus className="size-4" />
+                  Thêm phòng mới
                 </Button>
                 <Button
                   className="bg-blue-600 hover:bg-blue-700"
@@ -325,7 +326,8 @@ function AdminRoomsBedsPage() {
                     setBedOpen(true);
                   }}
                 >
-                  + Thêm giường mới
+                  <Plus className="size-4" />
+                  Thêm giường mới
                 </Button>
               </div>
             </div>
@@ -740,7 +742,7 @@ function AdminRoomsBedsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel>Quay lại</AlertDialogCancel>
             <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={confirmDelete}>
               Xóa
             </AlertDialogAction>

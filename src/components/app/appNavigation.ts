@@ -9,7 +9,6 @@ import {
   DoorOpen,
   FileText,
   FileWarning,
-  Gauge,
   Landmark,
   LayoutDashboard,
   Package,
@@ -117,8 +116,8 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
   manager: [
     {
       title: "Tổng quan",
-      icon: Gauge,
-      items: [{ to: "/manager", label: "Bảng điều khiển", icon: Gauge }],
+      icon: LayoutDashboard,
+      items: [{ to: "/manager", label: "Tổng quan", icon: LayoutDashboard }],
     },
     {
       title: "Xét duyệt",
@@ -150,32 +149,24 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
         { to: "/manager/tra-cuu-phong", label: "Tra cứu phòng / giường", icon: Bed },
       ],
     },
-    {
-      title: "Báo cáo",
-      icon: FileText,
-      items: [{ to: "/manager/reports", label: "Báo cáo", icon: FileText }],
-    },
   ],
   accountant: [
     {
       title: "Tổng quan",
-      icon: Gauge,
-      items: [{ to: "/accountant", label: "Bảng điều khiển", icon: Gauge }],
+      icon: LayoutDashboard,
+      items: [{ to: "/accountant", label: "Tổng quan", icon: LayoutDashboard }],
     },
     {
       title: "Thu tiền",
       icon: CreditCard,
-      items: [
-        { to: "/accountant/payments", label: "Thu tiền hợp đồng", icon: CreditCard },
-        { to: "/accountant/receipts", label: "Lập phiếu thu", icon: Receipt },
-      ],
+      items: [{ to: "/accountant/payments", label: "Thu tiền hợp đồng", icon: CreditCard }],
     },
     {
       title: "Cọc / đối soát",
       icon: Calculator,
       items: [
         { to: "/accountant/deposit-calc", label: "Tính tiền cọc", icon: Calculator },
-        { to: "/accountant/doi-soat", label: "Phiếu đối soát", icon: ClipboardCheck },
+        { to: "/accountant/doi-soat", label: "Lập phiếu đối soát", icon: ClipboardCheck },
         { to: "/accountant/refunds", label: "Lập phiếu hoàn cọc", icon: Undo2 },
       ],
     },
@@ -195,7 +186,6 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
       title: "Tra cứu",
       icon: Search,
       items: [
-        { to: "/accountant/transactions", label: "Lịch sử giao dịch", icon: FileText },
         { to: "/accountant/tra-cuu-hop-dong", label: "Tra cứu hợp đồng", icon: Search },
         { to: "/accountant/tra-cuu-phong", label: "Tra cứu phòng / giường", icon: Bed },
       ],
@@ -204,8 +194,8 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
   admin: [
     {
       title: "Tổng quan",
-      icon: Gauge,
-      items: [{ to: "/admin", label: "Dashboard admin", icon: Gauge }],
+      icon: LayoutDashboard,
+      items: [{ to: "/admin", label: "Tổng quan", icon: LayoutDashboard }],
     },
     {
       title: "Danh mục",

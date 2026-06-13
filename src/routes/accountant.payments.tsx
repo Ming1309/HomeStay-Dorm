@@ -1,10 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, CreditCard, FileCheck2, Search, UploadCloud } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { CheckCircle2, CreditCard, Search } from "lucide-react";
 import { toast } from "sonner";
-import * as z from "zod";
 
 import { RoleShell } from "@/components/app/RoleShell";
 import { useRoleGuard } from "@/components/app/useRoleGuard";
@@ -12,21 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -36,25 +26,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useWorkflowStore } from "@/lib/workflow-store";
+import {
+  ReceiptCollectionDialog,
+  type ReceiptCollectionInvoice,
+} from "@/components/contract/ReceiptCollectionDialog";
+import { useWorkflowStore, type ContractItem, type ReceiptVoucher } from "@/lib/workflow-store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/accountant/payments")({
   component: AccountantPaymentsPage,
 });
 
-const receiptSchema = z.object({
-  actualAmount: z.string().min(1).regex(/^\d+$/, "Chỉ nhập chữ số"),
-  paymentMethod: z.string().min(1),
-  proofName: z.string().min(1, "Vui lòng tải ảnh minh chứng"),
-});
-
-type ReceiptFormValues = z.infer<typeof receiptSchema>;
-
 const formatCurrency = (amount: number) => `${new Intl.NumberFormat("vi-VN").format(amount)} VNĐ`;
-const formatAmountInput = (value: string) =>
-  value ? new Intl.NumberFormat("vi-VN").format(Number(value)) : "";
-const normalizeAmountInput = (value: string) => value.replace(/\D/g, "");
 
 function AccountantPaymentsPage() {
   return <AccountantPaymentsScreen currentPath="/accountant/payments" />;
@@ -106,7 +89,7 @@ function QueuePanel({
   return (
     <aside className="flex h-full w-[350px] shrink-0 flex-col border-r border-gray-200 bg-white">
       <div className="border-b border-gray-200 px-4 py-3">
-        <h2 className="text-sm font-bold text-gray-800">Hàng đợi thu tiền</h2>
+        <h2 className="text-sm font-bold text-gray-800">Hợp đồng chờ thanh toán</h2>
         <p className="mt-0.5 text-xs text-gray-400">{filtered.length} hợp đồng cần xử lý</p>
       </div>
       <div className="sticky top-0 z-10 border-b border-gray-100 bg-white px-3 py-2">
@@ -135,7 +118,9 @@ function QueuePanel({
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-bold text-blue-600">{item.id}</span>
+                    <span className="font-mono text-xs font-bold text-blue-600">
+                      {item.id}
+                    </span>
                     {item.status === "partial_payment" ? (
                       <Badge className="h-5 bg-orange-100 text-[10px] font-semibold text-orange-700">
                         Thanh toán một phần
@@ -181,9 +166,10 @@ function PaymentsWorkspace({
 }: {
   contract: ReturnType<typeof useWorkflowStore>["contracts"][number] | null;
 }) {
-  const { recordPayment } = useWorkflowStore();
-  const [phase, setPhase] = useState<1 | 2>(1);
-  const [canSubmitReceipt, setCanSubmitReceipt] = useState(false);
+  const { collectReceiptForInvoices } = useWorkflowStore();
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [issuedVoucher, setIssuedVoucher] = useState<ReceiptVoucher | null>(null);
 
   if (!contract) {
     return (
@@ -194,6 +180,8 @@ function PaymentsWorkspace({
   }
 
   const remaining = Math.max(contract.invoiceTotal - contract.paidAmount, 0);
+  const invoices = buildReceiptInvoices(contract);
+  const statusLabel = contract.status === "partial_payment" ? "Thanh toán một phần" : "Chờ thanh toán";
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
@@ -201,89 +189,91 @@ function PaymentsWorkspace({
         <div className="flex items-center gap-2">
           <h1 className="font-mono text-sm font-bold text-gray-900">{contract.id}</h1>
           <Badge className="h-5 bg-amber-100 text-[10px] text-amber-700">
-            {contract.status === "partial_payment" ? "Thanh toán một phần" : "Chờ thanh toán"}
+            {statusLabel}
           </Badge>
           <span className="text-xs text-gray-500">
             {contract.customerName} • {contract.room}
           </span>
         </div>
         <div className="text-right">
-          <p className="text-[11px] uppercase text-gray-400">Tổng cần thanh toán</p>
-          <p className="font-mono text-sm font-bold text-gray-900">{formatCurrency(remaining)}</p>
+          <p className="text-[11px] uppercase text-gray-400">TỔNG CẦN THANH TOÁN</p>
+          <p className="font-mono text-lg font-bold text-gray-900">{formatCurrency(remaining)}</p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
-        {phase === 1 ? (
+        <div className="space-y-4">
           <Card className="rounded-lg border-gray-200">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="px-4 text-xs">Khoản thu</TableHead>
-                    <TableHead className="text-xs">Số lượng/Kỳ</TableHead>
-                    <TableHead className="px-4 text-right text-xs">Thành tiền</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {contract.lines.map((line) => (
-                    <TableRow key={line.id} className="hover:bg-transparent">
-                      <TableCell className="px-4 py-2 text-sm">{line.description}</TableCell>
-                      <TableCell className="py-2 text-sm text-gray-500">{line.cycle}</TableCell>
-                      <TableCell className="px-4 py-2 text-right font-mono text-sm">
-                        {formatCurrency(line.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-                <TableFooter className="bg-transparent">
-                  <TableRow className="hover:bg-transparent">
-                    <TableCell colSpan={2} className="px-4 py-2 text-right text-sm">
-                      Tổng cộng hóa đơn:
-                    </TableCell>
-                    <TableCell className="px-4 py-2 text-right font-mono text-sm">
-                      {formatCurrency(contract.invoiceTotal)}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className="hover:bg-transparent">
-                    <TableCell colSpan={2} className="px-4 py-2 text-right text-sm text-gray-500">
-                      Đã thanh toán trước:
-                    </TableCell>
-                    <TableCell className="px-4 py-2 text-right font-mono text-sm text-gray-500">
-                      {formatCurrency(contract.paidAmount)}
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className="border-t-2 border-blue-200 bg-blue-50/50 hover:bg-blue-50/50">
-                    <TableCell colSpan={2} className="px-4 py-3 text-right text-base font-bold">
-                      Tổng còn lại cần thu:
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-right font-mono text-lg font-bold text-blue-700">
-                      {formatCurrency(remaining)}
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
+            <CardContent className="p-4">
+              <h3 className="mb-3 text-xs font-semibold text-gray-700">Thông tin hợp đồng</h3>
+              <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+                <Info label="Mã hợp đồng" value={contract.id} mono />
+                <Info label="Khách hàng/Đại diện" value={contract.customerName} />
+                <Info label="Phòng/Giường" value={contract.room} mono />
+                <Info label="Số điện thoại" value={contract.phone} mono />
+                <Info label="Thời hạn thuê" value={contract.rentalPeriod} />
+                <Info label="Kỳ thanh toán" value="1 tháng/lần" />
+                <Info label="Giá thuê" value={`${formatCurrency(getBaseRent(contract))}/tháng`} mono />
+              </div>
             </CardContent>
           </Card>
-        ) : (
-          <ReceiptForm
-            contract={contract}
-            onFormStateChange={setCanSubmitReceipt}
-            onDone={(amount, method) => {
-              const result = recordPayment(contract.id, amount, method);
-              if (result.scenario === "full") {
-                toast.success("Đã thu đủ tiền. Hợp đồng chuyển sang Chờ bàn giao.", {
-                  icon: <CheckCircle2 className="size-4 text-emerald-600" />,
-                });
-              } else {
-                toast.success(
-                  "Ghi nhận thanh toán một phần thành công. Hợp đồng tiếp tục chờ thu nợ.",
-                );
-              }
-              setPhase(1);
-            }}
-          />
-        )}
+
+        <Card className="rounded-lg border-gray-200">
+          <CardContent className="p-0">
+            <div className="border-b border-gray-100 px-4 py-3">
+              <h3 className="text-xs font-semibold text-gray-700">Chi tiết khoản thu kỳ đầu</h3>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="px-4 text-xs">Khoản thu</TableHead>
+                  <TableHead className="text-xs">Số lượng/Kỳ</TableHead>
+                  <TableHead className="px-4 text-right text-xs">Thành tiền</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {contract.lines.map((line) => (
+                  <TableRow key={line.id} className="hover:bg-transparent">
+                    <TableCell className="px-4 py-2 text-sm">{line.description}</TableCell>
+                    <TableCell className="py-2 text-sm text-gray-500">
+                      {getFirstPaymentCycle(line.description, line.cycle)}
+                    </TableCell>
+                    <TableCell className="px-4 py-2 text-right font-mono text-sm">
+                      {formatCurrency(line.amount)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter className="bg-transparent">
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={2} className="px-4 py-2 text-right text-sm">
+                    Tổng khoản thu:
+                  </TableCell>
+                  <TableCell className="px-4 py-2 text-right font-mono text-sm">
+                    {formatCurrency(contract.invoiceTotal)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={2} className="px-4 py-2 text-right text-sm text-gray-500">
+                    Đã thu cho kỳ đầu:
+                  </TableCell>
+                  <TableCell className="px-4 py-2 text-right font-mono text-sm text-gray-500">
+                    {formatCurrency(contract.paidAmount)}
+                  </TableCell>
+                </TableRow>
+                <TableRow className="border-t-2 border-blue-200 bg-blue-50/50 hover:bg-blue-50/50">
+                  <TableCell colSpan={2} className="px-4 py-3 text-right text-base font-bold">
+                    Tổng cần thanh toán:
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-right font-mono text-lg font-bold text-blue-700">
+                    {formatCurrency(remaining)}
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </CardContent>
+        </Card>
+        </div>
       </div>
 
       <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5">
@@ -293,193 +283,132 @@ function PaymentsWorkspace({
           </kbd>{" "}
           +{" "}
           <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
-            {phase === 1 ? "S" : "Enter"}
+            S
           </kbd>{" "}
-          : {phase === 1 ? "Tiến hành thu tiền" : "Ghi nhận thanh toán"}
+          : Tiến hành thu tiền
         </div>
-        {phase === 1 ? (
-          <Button
-            type="button"
-            onClick={() => setPhase(2)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <CreditCard className="size-4" />
-            Tiến hành thu tiền
-          </Button>
-        ) : (
-          <div className="flex items-center gap-4">
-            <Button type="button" variant="outline" onClick={() => setPhase(1)}>
-              Hủy giao dịch
-            </Button>
-            <Button
-              type="submit"
-              form="receipt-form"
-              disabled={!canSubmitReceipt}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              <CheckCircle2 className="size-4" />
-              Xác nhận & Ghi nhận thanh toán
-            </Button>
-          </div>
-        )}
+        <Button type="button" onClick={() => setReceiptOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+          <CreditCard className="size-4" />
+          Tiến hành thu tiền
+        </Button>
       </footer>
+
+      <ReceiptCollectionDialog
+        open={receiptOpen}
+        onOpenChange={setReceiptOpen}
+        source="contract_payment"
+        contextLabel="Thu tiền hợp đồng"
+        customerName={contract.customerName}
+        room={contract.room}
+        contractCode={getContractDisplayCode(contract.id)}
+        invoices={invoices}
+        totalDebt={remaining}
+        onSubmit={(data) => {
+          const result = collectReceiptForInvoices({
+            source: "contract_payment",
+            contractId: contract.id,
+            customerName: contract.customerName,
+            amount: data.amount,
+            totalDebt: remaining,
+            paymentMethod: data.paymentMethod,
+            collector: data.collector,
+            date: data.collectedAt,
+            note: data.note,
+          });
+          setIssuedVoucher(result.voucher);
+          setReceiptOpen(false);
+          if (result.scenario === "full") {
+            setSuccessOpen(true);
+            toast.success("Thanh toán hợp đồng thành công", {
+              icon: <CheckCircle2 className="size-4 text-emerald-600" />,
+            });
+          } else {
+            toast.success("Lập phiếu thu thành công. Hợp đồng tiếp tục thanh toán một phần.");
+          }
+        }}
+      />
+      <SuccessDialog
+        open={successOpen}
+        onOpenChange={setSuccessOpen}
+        voucher={issuedVoucher}
+        contractId={contract.id}
+      />
     </section>
   );
 }
 
-function ReceiptForm({
-  contract,
-  onFormStateChange,
-  onDone,
-}: {
-  contract: ReturnType<typeof useWorkflowStore>["contracts"][number];
-  onFormStateChange: (canSubmit: boolean) => void;
-  onDone: (amount: number, method: "bank-transfer" | "cash") => void;
-}) {
-  const remainingBefore = Math.max(contract.invoiceTotal - contract.paidAmount, 0);
-  const form = useForm<ReceiptFormValues>({
-    resolver: zodResolver(receiptSchema),
-    defaultValues: {
-      actualAmount: String(remainingBefore),
-      paymentMethod: "bank-transfer",
-      proofName: "",
-    },
+function buildReceiptInvoices(contract: ContractItem): ReceiptCollectionInvoice[] {
+  let remainingPaid = contract.paidAmount;
+  return contract.lines.map((line, index) => {
+    const paid = Math.min(remainingPaid, line.amount);
+    remainingPaid = Math.max(remainingPaid - paid, 0);
+    const remaining = Math.max(line.amount - paid, 0);
+    return {
+      code: `HD-TH-${String(index + 1).padStart(3, "0")}`,
+      type: "Tiền thuê kỳ đầu",
+      description: line.description,
+      amount: line.amount,
+      paid,
+      remaining,
+    };
   });
+}
 
-  const actualAmount = form.watch("actualAmount");
-  const method = form.watch("paymentMethod") as "bank-transfer" | "cash";
-  const proofName = form.watch("proofName");
-  const paidThisTime = Number(actualAmount || 0);
-  const remainingAfter = Math.max(remainingBefore - paidThisTime, 0);
+function getContractDisplayCode(contractId: string): string {
+  return contractId;
+}
 
-  const uploadLabel = method === "cash" ? "Ảnh biên nhận tiền mặt *" : "Ảnh bill chuyển khoản *";
-  const uploadHint =
-    method === "cash"
-      ? "Bắt buộc tải ảnh chụp phiếu thu có chữ ký của khách hàng."
-      : "Bắt buộc tải ảnh chụp màn hình giao dịch thành công.";
+function getBaseRent(contract: ContractItem): number {
+  return contract.lines.find((line) => line.description.includes("Tiền thuê"))?.amount ?? 0;
+}
 
-  useEffect(() => {
-    onFormStateChange(Boolean(proofName));
-  }, [proofName, onFormStateChange]);
+function getFirstPaymentCycle(description: string, fallback: string): string {
+  if (description.includes("Phí dọn phòng")) return "1 lần";
+  if (description.includes("Phí gửi xe")) return "1 tháng";
+  return fallback;
+}
+
+function Info({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <p className="text-[11px] text-gray-500">{label}</p>
+      <p className={cn("text-sm text-gray-800", mono && "font-mono")}>{value}</p>
+    </div>
+  );
+}
+
+function SuccessDialog({
+  open,
+  onOpenChange,
+  voucher,
+  contractId,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  voucher: ReceiptVoucher | null;
+  contractId: string;
+}) {
+  if (!voucher) return null;
 
   return (
-    <Form {...form}>
-      <form
-        id="receipt-form"
-        className="space-y-4"
-        onSubmit={form.handleSubmit((data) =>
-          onDone(Number(data.actualAmount), data.paymentMethod as "bank-transfer" | "cash"),
-        )}
-      >
-        <Card className="rounded-lg border-gray-200">
-          <CardContent className="space-y-4 p-4">
-            <div className="flex items-center gap-2">
-              <FileCheck2 className="size-4 text-emerald-600" />
-              <h2 className="text-sm font-bold text-gray-800">Lập phiếu thu</h2>
-            </div>
-
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
-              <div className="grid grid-cols-2 gap-y-2">
-                <span className="text-gray-600">Tiền hợp đồng:</span>
-                <span className="text-right font-mono font-semibold">
-                  {formatCurrency(contract.invoiceTotal)}
-                </span>
-                <span className="text-gray-600">Đã thanh toán:</span>
-                <span className="text-right font-mono font-semibold">
-                  {formatCurrency(contract.paidAmount)}
-                </span>
-                <span className="text-gray-600">Thanh toán lần này:</span>
-                <span className="text-right font-mono font-semibold">
-                  {formatCurrency(paidThisTime)}
-                </span>
-                <span className="text-gray-600">Còn nợ sau thu:</span>
-                <span
-                  className={cn(
-                    "text-right font-mono font-semibold",
-                    remainingAfter > 0 ? "text-amber-700" : "text-emerald-700",
-                  )}
-                >
-                  {formatCurrency(remainingAfter)}
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="actualAmount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">Số tiền thực thu *</FormLabel>
-                    <FormControl>
-                      <Input
-                        name={field.name}
-                        ref={field.ref}
-                        onBlur={field.onBlur}
-                        value={formatAmountInput(field.value)}
-                        onChange={(event) =>
-                          field.onChange(normalizeAmountInput(event.target.value))
-                        }
-                        className="h-9 text-right font-mono"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-[11px]" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="paymentMethod"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs">Phương thức thanh toán *</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="bank-transfer">Chuyển khoản</SelectItem>
-                        <SelectItem value="cash">Tiền mặt</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="proofName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">{uploadLabel}</FormLabel>
-                  <p className="text-[11px] text-gray-500">{uploadHint}</p>
-                  <FormControl>
-                    <label className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-5 text-center">
-                      <UploadCloud className="size-7 text-gray-400" />
-                      <span className="mt-2 text-sm font-semibold text-gray-700">
-                        Tải ảnh minh chứng
-                      </span>
-                      {field.value && (
-                        <span className="mt-2 text-xs text-blue-600">{field.value}</span>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        className="sr-only"
-                        onChange={(event) => field.onChange(event.target.files?.[0]?.name ?? "")}
-                      />
-                    </label>
-                  </FormControl>
-                  <FormMessage className="text-[11px]" />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-      </form>
-    </Form>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md rounded-lg">
+        <DialogHeader>
+          <DialogTitle>Thanh toán hợp đồng thành công</DialogTitle>
+          <DialogDescription>
+            Hóa đơn kỳ đầu và Phiếu thu đã được tạo. Hợp đồng {contractId} đã được chuyển sang trạng
+            thái ‘Chờ bàn giao’.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="button" variant="outline" className="h-8 text-xs" onClick={() => onOpenChange(false)}>
+            Xem phiếu thu
+          </Button>
+          <Button type="button" className="h-8 bg-blue-600 text-xs hover:bg-blue-700" onClick={() => onOpenChange(false)}>
+            Hoàn tất
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -39,10 +39,6 @@ export function ResidenceForm({ deposit }: Props) {
   const [addrQuan, setAddrQuan] = useState("");
   const [addrPhuong, setAddrPhuong] = useState("");
   const [addrOverseas, setAddrOverseas] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [nationality, setNationality] = useState("");
-  const [docType, setDocType] = useState("");
-  const [docNumber, setDocNumber] = useState("");
   const isVietnamese = (deposit?.nationality ?? "Việt Nam").trim().toLowerCase() === "việt nam";
 
   // Reset form when deposit changes
@@ -53,11 +49,7 @@ export function ResidenceForm({ deposit }: Props) {
     setAddrQuan("");
     setAddrPhuong("");
     setAddrOverseas("");
-    setBirthDate(deposit?.birthDate ?? "");
-    setNationality(deposit?.nationality ?? "");
-    setDocType(deposit?.docType ?? "");
-    setDocNumber(deposit?.docNumber ?? "");
-  }, [deposit?.birthDate, deposit?.docNumber, deposit?.docType, deposit?.id, deposit?.nationality]);
+  }, [deposit?.id]);
 
   // Ctrl/Cmd + S → save
   useEffect(() => {
@@ -168,6 +160,10 @@ export function ResidenceForm({ deposit }: Props) {
                 <LockedField label="Số điện thoại" value={deposit.phone} mono />
                 <LockedField label="Địa chỉ email" value={deposit.email} />
                 <LockedField label="Giới tính" value={deposit.gender === "male" ? "Nam" : "Nữ"} />
+                <LockedField label="Ngày sinh" value={deposit.birthDate} />
+                <LockedField label="Quốc tịch" value={deposit.nationality} />
+                <LockedField label="Loại giấy tờ" value={deposit.docType} />
+                <LockedField label="Số giấy tờ" value={deposit.docNumber} mono />
               </div>
             </div>
 
@@ -181,47 +177,6 @@ export function ResidenceForm({ deposit }: Props) {
 
             {/* Block B: Editable residence fields */}
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
-              <FormField label="Ngày sinh" required>
-                <Input
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  placeholder="DD/MM/YYYY"
-                  className={inputCls}
-                />
-              </FormField>
-              <FormField label="Quốc tịch" required>
-                <Select value={nationality} onValueChange={setNationality}>
-                  <SelectTrigger className={inputCls}>
-                    <SelectValue placeholder="Chọn quốc tịch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Việt Nam">Việt Nam</SelectItem>
-                    <SelectItem value="Singapore">Singapore</SelectItem>
-                    <SelectItem value="Hàn Quốc">Hàn Quốc</SelectItem>
-                    <SelectItem value="Nhật Bản">Nhật Bản</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-              <FormField label="Loại giấy tờ" required>
-                <Select value={docType} onValueChange={setDocType}>
-                  <SelectTrigger className={inputCls}>
-                    <SelectValue placeholder="Chọn loại giấy tờ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CCCD">CCCD</SelectItem>
-                    <SelectItem value="Hộ chiếu">Hộ chiếu</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-              <FormField label="Số giấy tờ" required>
-                <Input
-                  value={docNumber}
-                  onChange={(e) => setDocNumber(e.target.value)}
-                  placeholder="Nhập số giấy tờ"
-                  className={inputCls}
-                />
-              </FormField>
-
               <div className="col-span-2 space-y-2">
                 <div className="flex items-baseline gap-1">
                   <span className="text-xs font-medium text-gray-600">
@@ -358,30 +313,9 @@ export function ResidenceForm({ deposit }: Props) {
 
       {/* ── Sticky footer ─────────────────────────────────────────────── */}
       <footer className="absolute bottom-0 left-0 right-0 z-20 border-t border-gray-200 bg-white px-6 py-3 shadow-[0_-1px_4px_rgba(0,0,0,0.04)]">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            <Button variant="ghost" size="icon" className="size-8 text-gray-500">
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="font-medium text-gray-800">1</span>
-            <Button variant="ghost" size="icon" className="size-8 text-gray-500">
-              <ChevronRight className="size-4" />
-            </Button>
-            <span>đầu</span>
-            <span>Tới</span>
-            <span>5/5 theo</span>
-          </div>
-
+        <div className="mx-auto flex max-w-4xl items-center justify-end">
           {/* Action buttons */}
           <div className="flex items-center gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 gap-1.5 border-gray-200 px-4 text-sm text-gray-700"
-            >
-              <Download className="size-4" />
-              Xuất
-            </Button>
             <Button
               variant="outline"
               size="sm"

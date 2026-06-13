@@ -24,7 +24,7 @@ const filterConfig: Record<
   },
   refund: {
     title: "Chờ lập phiếu hoàn cọc",
-    emptyHint: "Không có hợp đồng nào chờ hoàn cọc.",
+    emptyHint: "Không có phiếu đối soát nào cần lập phiếu hoàn cọc.",
     variant: "emerald",
   },
   termination: {
@@ -59,18 +59,27 @@ function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("vi-VN").format(amount) + " VNĐ";
 }
 
+function getTerminationResultLabel(recon: ReconciliationResult | null): string {
+  if (!recon) return "PĐS đã chốt";
+  if (recon.additionalDue > 0) return `Thu thêm: ${formatCurrency(recon.additionalDue)}`;
+  if (recon.netRefund > 0) return `Hoàn: ${formatCurrency(recon.netRefund)}`;
+  return "Hòa vốn";
+}
+
 export function SettlementQueue({
   items,
   reconciliations,
   filter,
   selectedId,
   onSelect,
+  assetRecoveries,
 }: {
   items: ContractItem[];
   reconciliations: Record<string, ReconciliationResult | null>;
   filter: SettlementQueueFilter;
   selectedId: string | null;
   onSelect: (item: ContractItem) => void;
+  assetRecoveries?: Array<{ id: string; contractId: string; items: unknown[] }>;
 }) {
   const [query, setQuery] = useState("");
   const config = filterConfig[filter];
@@ -90,7 +99,13 @@ export function SettlementQueue({
     <aside className="flex h-full w-[350px] shrink-0 flex-col border-r border-gray-200 bg-white">
       <div className="border-b border-gray-200 px-4 py-3">
         <h2 className="text-sm font-bold text-gray-800">{config.title}</h2>
-        <p className="mt-0.5 text-xs text-gray-400">{filtered.length} hợp đồng cần xử lý</p>
+        <p className="mt-0.5 text-xs text-gray-400">
+          {filter === "refund"
+            ? `${filtered.length} phiếu đối soát cần xử lý`
+            : filter === "compensation"
+              ? `${filtered.length} biên bản thu hồi cần xử lý`
+              : `${filtered.length} hợp đồng cần xử lý`}
+        </p>
       </div>
       <div className="sticky top-0 z-10 border-b border-gray-100 bg-white px-3 py-2">
         <div className="relative">
@@ -112,14 +127,21 @@ export function SettlementQueue({
           <ul className="divide-y divide-gray-100">
             {filtered.map((item) => {
               const recon = reconciliations[item.id];
+              const recovery = assetRecoveries?.find((a) => a.contractId === item.id);
+              const recoveryItemCount = recovery?.items?.length ?? 0;
+              const recoveryId = recovery?.id ?? item.id;
+              const bbthNum = recoveryId.replace(/\D/g, "").padStart(4, "0");
+              const bbthCode = `BBTH-${bbthNum}`;
               const highlight =
-                filter === "refund" && recon
-                  ? `Hoàn: ${formatCurrency(recon.netRefund)}`
-                  : filter === "receipt" && recon
-                    ? `Thu thêm: ${formatCurrency(recon.additionalDue)}`
-                    : filter === "termination" && recon
-                      ? `Hoàn: ${formatCurrency(recon.netRefund)}`
-                      : `Cọc: ${formatCurrency(item.invoiceTotal)}`;
+                filter === "compensation"
+                  ? `${recoveryItemCount} lỗi cần bồi thường`
+                  : filter === "refund" && recon
+                    ? `Hoàn: ${formatCurrency(recon.netRefund)}`
+                    : filter === "receipt" && recon
+                      ? `Thu thêm: ${formatCurrency(recon.additionalDue)}`
+                      : filter === "termination" && recon
+                        ? `Hoàn: ${formatCurrency(recon.netRefund)}`
+                        : `Cọc: ${formatCurrency(item.invoiceTotal)}`;
               return (
                 <li key={item.id}>
                   <button
@@ -132,28 +154,55 @@ export function SettlementQueue({
                     )}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-xs font-bold text-blue-600">{item.id}</span>
+                      <span className="font-mono text-xs font-bold text-blue-600">
+                        {filter === "compensation"
+                          ? bbthCode
+                          : filter === "refund"
+                            ? `PDS-${item.id.replace(/\D/g, "").slice(-4).padStart(4, "0")}`
+                            : item.id}
+                      </span>
                       <Badge
                         className={cn("h-5 text-[10px] font-semibold", variantBadgeClass[filter])}
                       >
-                        {item.status === "liquidated" ? "Đã thanh lý" : "Chờ quyết toán"}
+                        {filter === "compensation"
+                          ? "Chưa lập hóa đơn"
+                          : filter === "refund"
+                            ? "Đã chốt"
+                            : filter === "termination"
+                              ? "Đang hiệu lực"
+                              : item.status === "liquidated"
+                                ? "Đã thanh lý"
+                                : "Đang hiệu lực"}
                       </Badge>
                     </div>
                     <p className="truncate text-sm font-semibold text-gray-800">
                       {item.customerName}
                     </p>
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-mono text-gray-500">{item.room}</span>
-                      <span
-                        className={cn(
-                          "font-semibold",
-                          filter === "receipt" && recon && recon.additionalDue > 0
-                            ? "text-rose-700"
-                            : "text-gray-700",
+                      <span className="font-mono text-gray-500">
+                        {item.room}
+                        {filter === "compensation" && (
+                          <span className="ml-1 text-gray-400">· {item.id}</span>
                         )}
-                      >
-                        {highlight}
                       </span>
+                      {filter === "termination" ? (
+                        <span className="truncate font-semibold text-gray-700">
+                          PĐS đã chốt · {getTerminationResultLabel(recon)}
+                        </span>
+                      ) : (
+                        <span
+                          className={cn(
+                            "font-semibold",
+                            filter === "compensation"
+                              ? "text-rose-700"
+                              : filter === "receipt" && recon && recon.additionalDue > 0
+                                ? "text-rose-700"
+                                : "text-gray-700",
+                          )}
+                        >
+                          {highlight}
+                        </span>
+                      )}
                     </div>
                   </button>
                 </li>

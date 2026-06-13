@@ -13,14 +13,19 @@ export const Route = createFileRoute("/accountant/compensation")({
 
 function AccountantCompensationPage() {
   const allowed = useRoleGuard("accountant");
-  const { contracts, getReconciliation } = useWorkflowStore();
+  const { contracts, assetRecoveries, getReconciliation } = useWorkflowStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  // Only show contracts that have an asset recovery record
   const items = useMemo(
-    () => contracts.filter((c) => c.status === "pending_settlement"),
-    [contracts],
+    () =>
+      contracts.filter(
+        (c) =>
+          c.status === "pending_settlement" &&
+          assetRecoveries.some((a) => a.contractId === c.id),
+      ),
+    [contracts, assetRecoveries],
   );
-  const selected = items.find((i) => i.id === selectedId) ?? null;
 
   const reconciliations = useMemo(() => {
     const map: Record<string, ReturnType<typeof getReconciliation>> = {};
@@ -29,6 +34,9 @@ function AccountantCompensationPage() {
     });
     return map;
   }, [items, getReconciliation]);
+
+  // Auto-select first if none selected
+  const selected = items.find((i) => i.id === selectedId) ?? (items.length > 0 ? items[0] : null);
 
   if (!allowed) return null;
 
@@ -39,12 +47,20 @@ function AccountantCompensationPage() {
           items={items}
           reconciliations={reconciliations}
           filter="compensation"
-          selectedId={selectedId}
+          selectedId={selected?.id ?? null}
           onSelect={(c) => setSelectedId(c.id)}
+          assetRecoveries={assetRecoveries}
         />
         {!selected ? (
-          <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
-            <p className="text-sm text-gray-500">Chọn hợp đồng để lập hóa đơn bồi thường.</p>
+          <section className="flex h-full flex-1 items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-500">
+                Không có biên bản thu hồi nào cần lập hóa đơn.
+              </p>
+              <p className="mt-1 text-xs text-gray-400">
+                Hóa đơn bồi thường chỉ xuất hiện khi Quản lý đã gửi biên bản thu hồi tài sản.
+              </p>
+            </div>
           </section>
         ) : (
           <CompensationPanel contract={selected} />
