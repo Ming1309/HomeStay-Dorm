@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 
 import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { cn } from "@/shared/lib/utils";
-import { useWorkflowStore, type Appointment } from "@/app/providers/workflow-store";
+import type { Appointment } from "@/app/providers/workflow-store";
 
 export function AppointmentQueue({
   selectedId,
@@ -15,22 +15,52 @@ export function AppointmentQueue({
   excludedIds: string[];
   onSelect: (item: Appointment) => void;
 }) {
-  const { appointments } = useWorkflowStore();
   const [query, setQuery] = useState("");
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const url = query.trim() 
+          ? `/api/appointments/search?text=${encodeURIComponent(query)}`
+          : `/api/appointments/pending`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          // Map từ LichHenDTO sang Appointment
+          const mapped: Appointment[] = data.map((d: any) => ({
+            id: d.maLH,
+            code: d.maLH,
+            customerId: d.maKH,
+            customerName: d.tenKhachHang || "Khách hàng",
+            phone: d.sdt || "",
+            email: d.email || "",
+            gender: d.gioiTinh === "Nam" ? "male" : "female",
+            dob: d.ngaySinh ? d.ngaySinh.split("T")[0] : "",
+            nationality: d.quocTich,
+            docType: d.loaiGiayTo,
+            docNumber: d.soGiayTo,
+            type: "viewing",
+            status: "success",
+            createdAt: d.ngayHen || new Date().toISOString()
+          }));
+          setAppointments(mapped);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải lịch hẹn", error);
+      }
+    };
+
+    const delayDebounceFn = setTimeout(() => {
+      fetchAppointments();
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [query]);
 
   const items = useMemo(() => {
-    const relevant = appointments.filter(
-      (a) => a.type === "viewing" && a.status === "success" && !excludedIds.includes(a.id),
-    );
-    if (!query.trim()) return relevant;
-    const q = query.trim().toLowerCase();
-    return relevant.filter(
-      (a) =>
-        a.customerName.toLowerCase().includes(q) ||
-        a.code.toLowerCase().includes(q) ||
-        a.phone.toLowerCase().includes(q),
-    );
-  }, [appointments, excludedIds, query]);
+    return appointments.filter((a) => !excludedIds.includes(a.id));
+  }, [appointments, excludedIds]);
 
   return (
     <aside className="flex h-full w-[350px] shrink-0 flex-col border-r border-gray-200 bg-white">

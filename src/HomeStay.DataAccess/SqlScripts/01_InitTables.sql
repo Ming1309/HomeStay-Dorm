@@ -121,7 +121,7 @@ GO
 -- PhieuCoc
 CREATE TABLE PhieuCoc (
     MaPhieuCoc   VARCHAR(20)    NOT NULL,
-    HanThanhToan DATE           NULL,
+    HanThanhToan DATETIME       NULL,
     HinhThucThue NVARCHAR(20)   NOT NULL,
     SoGiuongThue INT            NOT NULL,
     TongTien     DECIMAL(18,2)  NOT NULL,
@@ -396,7 +396,7 @@ ALTER TABLE LoaiPhong ADD CONSTRAINT CK_LoaiPhong_GiaThue
 
 -- Phong
 ALTER TABLE Phong ADD CONSTRAINT CK_Phong_TrangThai
-    CHECK (TrangThai IN (N'Trong', N'GiuCho', N'DaCoc', N'DangSuDung', N'DangBaoTri', N'NgungSuDung'));
+    CHECK (TrangThai IN (N'Trong', N'ConGiuongTrong', N'GiuCho', N'DaCoc', N'DangSuDung', N'DangBaoTri', N'NgungSuDung'));
 
 -- Giuong
 ALTER TABLE Giuong ADD CONSTRAINT CK_Giuong_TrangThai

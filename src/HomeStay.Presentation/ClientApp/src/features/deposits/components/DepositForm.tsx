@@ -86,12 +86,12 @@ export function DepositForm({
     defaultValues: {
       fullName: appointment.customerName,
       phone: appointment.phone,
-      birthDate: "",
+      birthDate: appointment.dob || "",
       email: appointment.email,
       gender: appointment.gender,
-      nationality: "Việt Nam",
-      docType: "CCCD",
-      docNumber: "",
+      nationality: appointment.nationality || "Việt Nam",
+      docType: appointment.docType || "CCCD",
+      docNumber: appointment.docNumber || "",
     },
   });
 
@@ -99,12 +99,12 @@ export function DepositForm({
     form.reset({
       fullName: appointment.customerName,
       phone: appointment.phone,
-      birthDate: "",
+      birthDate: appointment.dob || "",
       email: appointment.email,
       gender: appointment.gender,
-      nationality: "Việt Nam",
-      docType: "CCCD",
-      docNumber: "",
+      nationality: appointment.nationality || "Việt Nam",
+      docType: appointment.docType || "CCCD",
+      docNumber: appointment.docNumber || "",
     });
     setIsEditingCustomer(false);
     setRentalType("shared");
@@ -148,40 +148,75 @@ export function DepositForm({
 
   const bedCountForDeposit =
     rentalType === "whole" ? (selectedRoom?.maxCapacity ?? 0) : selectedBeds.length;
-  const estimatedDeposit = (selectedRoom?.basePrice ?? 0) * 2 * bedCountForDeposit;
+  const [estimatedDeposit, setEstimatedDeposit] = useState(0);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (invalidPriceRange) {
       toast.error("Khoảng giá không hợp lệ.");
       return;
     }
 
-    const normalized = rooms.filter((room) => {
-      if (buildingFilter !== "all") {
-        const roomBuilding = room.code.endsWith("1") || room.code.endsWith("2") ? "Toà A" : "Toà B";
-        if (roomBuilding !== buildingFilter) return false;
+    try {
+      const typeParam = rentalType === "shared" ? "available-with-beds" : "available";
+      const params = new URLSearchParams();
+      if (rentalType === "shared") params.append("soLuong", quantity.toString());
+      if (buildingFilter !== "all") params.append("toaNha", buildingFilter);
+      if (roomTypeFilter !== "all") params.append("loaiPhong", roomTypeFilter);
+      if (priceFrom) params.append("giaMin", priceFrom);
+      if (priceTo) params.append("giaMax", priceTo);
+
+      const response = await fetch(`/api/rooms/${typeParam}?${params.toString()}`);
+      if (!response.ok) throw new Error("Lỗi khi tìm kiếm phòng");
+      
+      const data = await response.json();
+      
+      const result: Room[] = data.map((p: any) => ({
+        id: p.maPhong,
+        code: p.soPhong,
+        building: p.toaNha,
+        floor: 1,
+        type: p.tenLoaiPhong,
+        basePrice: p.giaThue,
+        maxCapacity: p.sucChua,
+        genderLimit: "none",
+        beds: p.giuongs?.map((g: any) => ({
+          id: g.maGiuong,
+          code: g.soGiuong,
+          status: g.trangThai === "Trong" ? "available" : "occupied"
+        })) || []
+      }));
+
+      setSearchResults(result);
+      setSearched(true);
+      setSelectedRoomId(null);
+      setSelectedBeds([]);
+      setEstimatedDeposit(0);
+    } catch (error) {
+      toast.error("Không thể tải danh sách phòng.");
+    }
+  };
+
+  const fetchDeposit = async (roomId: string, bCount: number) => {
+    const room = searchResults.find(r => r.id === roomId);
+    if (!room) return;
+    
+    try {
+      const hinhThuc = rentalType === "shared" ? "OGhep" : "NguyenCan";
+      const res = await fetch(`/api/rooms/calculate-deposit?maPhong=${room.id}&giaThue=${room.basePrice}&soLuong=${bCount}&hinhThuc=${hinhThuc}`);
+      if (res.ok) {
+        const data = await res.json();
+        setEstimatedDeposit(data.tienCoc);
       }
-      if (roomTypeFilter !== "all" && !room.type.includes(roomTypeFilter)) return false;
-      if (minPrice != null && room.basePrice < minPrice) return false;
-      if (maxPrice != null && room.basePrice > maxPrice) return false;
-      return true;
-    });
-
-    const result = normalized.filter((room) => {
-      const vacantBeds = room.beds.filter((bed) => bed.status === "available");
-      if (rentalType === "whole") return vacantBeds.length === room.maxCapacity;
-      return vacantBeds.length >= quantity;
-    });
-
-    setSearchResults(result);
-    setSearched(true);
-    setSelectedRoomId(null);
-    setSelectedBeds([]);
+    } catch (error) {
+      console.error("Lỗi tính cọc", error);
+    }
   };
 
   const handleChooseWholeRoom = (room: Room) => {
     setSelectedRoomId(room.id);
-    setSelectedBeds(room.beds.filter((bed) => bed.status === "available").map((bed) => bed.id));
+    const beds = room.beds.filter((bed) => bed.status === "available").map((bed) => bed.id);
+    setSelectedBeds(beds);
+    fetchDeposit(room.id, beds.length);
   };
 
   const handleToggleBed = (room: Room, bed: Bed) => {
@@ -189,14 +224,19 @@ export function DepositForm({
     if (selectedRoomId && selectedRoomId !== room.id) {
       setSelectedBeds([bed.id]);
       setSelectedRoomId(room.id);
+      fetchDeposit(room.id, 1);
       return;
     }
 
     setSelectedRoomId(room.id);
     setSelectedBeds((prev) => {
-      if (prev.includes(bed.id)) return prev.filter((id) => id !== bed.id);
-      if (prev.length >= quantity) return prev;
-      return [...prev, bed.id];
+      let nextBeds;
+      if (prev.includes(bed.id)) nextBeds = prev.filter((id) => id !== bed.id);
+      else if (prev.length >= quantity) nextBeds = prev;
+      else nextBeds = [...prev, bed.id];
+      
+      fetchDeposit(room.id, nextBeds.length);
+      return nextBeds;
     });
   };
 
@@ -216,28 +256,46 @@ export function DepositForm({
 
     const values = form.getValues();
 
-    createDepositRequest({
-      appointmentId: appointment.id,
-      customerName: values.fullName,
-      phone: values.phone,
-      email: values.email ?? "",
-      gender: values.gender,
-      roomId: selectedRoom.id,
-      room: selectedRoom.code,
-      rentalType,
-      selectedBedIds: selectedBeds,
-      basePrice: selectedRoom.basePrice,
-      groupId: null,
-    });
+    try {
+      const response = await fetch("/api/deposits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          MaLichHen: appointment.id,
+          KhachHang: {
+            MaKH: appointment.customerId,
+            HoTen: values.fullName,
+            SDT: values.phone,
+            NgaySinh: values.birthDate ? new Date(values.birthDate).toISOString() : null,
+            Email: values.email,
+            GioiTinh: values.gender === "male" ? "Nam" : "Nữ",
+            QuocTich: values.nationality,
+            LoaiGiayTo: values.docType,
+            SoGiayTo: values.docNumber,
+          },
+          MaPhong: selectedRoom.id,
+          DanhSachGiuong: selectedBeds,
+          HinhThucThue: rentalType === "shared" ? "OGhep" : "NguyenCan",
+          TongTien: estimatedDeposit,
+          MaNV: "NV03"
+        })
+      });
 
-    setHeldBeds((prev) => {
-      const next = new Set(prev);
-      selectedBeds.forEach((id) => next.add(id));
-      return next;
-    });
+      if (!response.ok) {
+        throw new Error("Tạo phiếu cọc thất bại");
+      }
 
-    toast.success("Yêu cầu đặt cọc đã được khởi tạo và chuyển sang bộ phận Kế toán.");
-    onDone(appointment.id);
+      setHeldBeds((prev) => {
+        const next = new Set(prev);
+        selectedBeds.forEach((id) => next.add(id));
+        return next;
+      });
+
+      toast.success("Yêu cầu đặt cọc đã được khởi tạo và chuyển sang bộ phận Kế toán.");
+      onDone(appointment.id);
+    } catch (error) {
+      toast.error("Lỗi: Không thể khởi tạo phiếu cọc.");
+    }
   };
 
   return (
@@ -626,7 +684,7 @@ export function DepositForm({
                               {room.code} • Phòng {room.type}
                             </p>
                             <p className="text-xs text-gray-500">
-                              Sức chứa {room.maxCapacity} • {formatCurrency(room.basePrice)}/tháng
+                              Sức chứa {room.maxCapacity} • {formatCurrency(room.basePrice)}/giường/tháng
                             </p>
                           </div>
                           {rentalType === "whole" && (
@@ -711,6 +769,11 @@ export function DepositForm({
               <p className="mt-3 text-lg font-bold text-emerald-600">
                 Tạm tính tiền cọc: {formatCurrency(estimatedDeposit)}
               </p>
+              {selectedRoom && bedCountForDeposit > 0 && (
+                <p className="mt-1 text-xs text-gray-500">
+                  {formatCurrency(selectedRoom.basePrice)} × {bedCountForDeposit} giường
+                </p>
+              )}
               <p className="mt-1 text-xs text-gray-500">
                 Khoản cọc chính thức sẽ được kế toán phê duyệt trước khi thu tiền.
               </p>
