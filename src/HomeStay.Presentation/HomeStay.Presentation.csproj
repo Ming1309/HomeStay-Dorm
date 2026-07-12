@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\HomeStay.BusinessLogic\HomeStay.BusinessLogic.csproj" />
-    <ProjectReference Include="..\HomeStay.DataAccess\HomeStay.DataAccess.csproj" />
+    <ProjectReference Include="..\HomeStay.Application\HomeStay.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

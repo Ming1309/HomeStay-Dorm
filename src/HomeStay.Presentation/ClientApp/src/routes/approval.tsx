@@ -1,27 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute } from '@tanstack/react-router'
 
-import { useWorkflowStore } from "@/app/providers/workflow-store";
+export const Route = createFileRoute('/approval')({
+  component: RouteComponent,
+})
 
-export const Route = createFileRoute("/approval")({
-  component: LegacyApprovalRedirect,
-});
-
-function LegacyApprovalRedirect() {
-  const navigate = useNavigate();
-  const { role } = useWorkflowStore();
-
-  useEffect(() => {
-    if (role === "manager") {
-      navigate({ to: "/manager/approval" });
-      return;
-    }
-    if (role === "accountant") {
-      navigate({ to: "/accountant" });
-      return;
-    }
-    navigate({ to: "/" });
-  }, [navigate, role]);
-
-  return null;
+function RouteComponent() {
+  return <div>Hello "/approval"!</div>
 }

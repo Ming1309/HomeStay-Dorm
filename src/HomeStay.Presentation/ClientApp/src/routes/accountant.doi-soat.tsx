@@ -1,5 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
 
-import { AccountantReconciliationPage } from "@/features/settlements/pages/AccountantReconciliationPage";
+export const Route = createFileRoute('/accountant/doi-soat')({
+  component: RouteComponent,
+})
 
-export const Route = createFileRoute("/accountant/doi-soat")({ component: AccountantReconciliationPage });
+function RouteComponent() {
+  return <div>Hello "/accountant/doi-soat"!</div>
+}

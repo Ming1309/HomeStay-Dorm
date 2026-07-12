@@ -1,0 +1,218 @@
+@startuml
+title SO DO LOP 3 TANG - LAP PHIEU COC
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHLapPhieuCoc {
+    - txtTimKiemKH: TextBox
+    - grvKhachChoCoc: GridView
+    - txtHoTen: TextBox
+    - txtSDT: TextBox
+    - dtpNgaySinh: DatePicker
+    - lstGioiTinh: ListBox
+    - lstLoaiGiayTo: ListBox
+    - txtQuocTich: TextBox
+    - txtEmail: TextBox
+    - txtSoGiayTo: TextBox
+    - rdoThueOGhep: RadioButton
+    - rdoThueNguyenPhong: RadioButton
+    - txtSoLuongGiuong: TextBox
+    - lstToaNha: ListBox
+    - lstLoaiPhong: ListBox
+    - txtGiaMin: TextBox
+    - txtGiaMax: TextBox
+    - grvDanhSachPhong: GridView
+    - grvDanhSachGiuong: GridView
+    - btnChinhSua: Button
+    - btnTimKiem: Button
+    - btnTaoYeuCauCoc: Button
+    --
+    + HienThi()
+    + btnChinhSua_Click()
+    + rdoHinhThucThue_CheckedChanged()
+    + btnTimKiem_Click()
+    + grvDanhSachPhong_CellClick()
+    + grvDanhSachGiuong_CellClick()
+    + btnTaoYeuCauCoc_Click()
+  }
+
+  class LichHenController {
+    + LayDanhSachKhachChoCoc()
+    + TimKiemKhachChoCoc(text)
+    + LayChiTietLichHen(id)
+  }
+
+  class PhongController {
+    + LayPhongOGhep(...)
+    + LayPhongNguyenCan(...)
+  }
+
+  class PhieuCocController {
+    + TaoPhieuCoc(request)
+  }
+}
+
+package "TANG NGHIEP VU" #FCF3CF {
+  class LapPhieuCoc {
+    + LayDanhSachKhachChoCoc(): IReadOnlyList<LichHen>
+    + TimKiemKhachChoCoc(text: String): IReadOnlyList<LichHen>
+    + LayChiTietLichHen(maLichHen: String): LichHen?
+    + LayPhongOGhep(...): IReadOnlyList<Phong>
+    + LayPhongNguyenCan(...): IReadOnlyList<Phong>
+    + TaoPhieuCoc(...): PhieuCoc
+  }
+
+  class KhachHang {
+    - MaKH: String
+    - HoTen: String
+    - NgaySinh: DateTime?
+    - GioiTinh: String?
+    - QuocTich: String?
+    - LoaiGiayTo: String?
+    - SoGiayTo: String?
+    - SDT: String?
+    - Email: String?
+    --
+    + CapNhatTu(thongTinMoi: KhachHang)
+    + CapNhat()
+  }
+
+  class LichHen {
+    - MaLH: String
+    - NgayHen: DateTime
+    - GioHen: TimeSpan
+    - LoaiLichHen: String
+    - TrangThai: String
+    - MaPhieuCoc: String?
+    --
+    {static} + LayDanhSachKhachChoCoc(text: String?): IReadOnlyList<LichHen>
+    {static} + DocChiTiet(maLichHen: String): LichHen?
+    + KiemTraCoTheLapPhieuCoc()
+    + GanPhieuCoc(maPhieuCoc: String)
+    + LuuPhieuCoc()
+  }
+
+  class Phong {
+    - MaPhong: String
+    - SoPhong: String
+    - ToaNha: String?
+    - Tang: String?
+    - TrangThai: String
+    - SoGiuongTrong: Integer
+    - GiuongsVuaGiu: IReadOnlyList<Giuong>
+    --
+    {static} + LayPhongOGhep(...): IReadOnlyList<Phong>
+    {static} + LayPhongNguyenCan(...): IReadOnlyList<Phong>
+    {static} + DocChiTiet(maPhong: String): Phong?
+    + GiuGiuong(maGiuongs): IReadOnlyList<Giuong>
+    + GiuNguyenPhong(): IReadOnlyList<Giuong>
+    + TinhTienCoc(soGiuong): Decimal
+    + PhuHopYeuCau(toaNha, loaiPhong, giaMin, giaMax): Boolean
+    + CapNhat()
+  }
+
+  class Giuong {
+    - MaGiuong: String
+    - SoGiuong: String
+    - TrangThai: String
+    - MaPhong: String
+    --
+    + GiuCho(maPhong: String)
+  }
+
+  class LoaiPhong {
+    - MaLP: String
+    - TenLoaiPhong: String
+    - SucChua: Integer
+    - GiaThue: Decimal
+  }
+
+  class PhieuCoc {
+    - MaPhieuCoc: String
+    - HanThanhToan: DateTime?
+    - HinhThucThue: String
+    - SoGiuongThue: Integer
+    - TongTien: Decimal
+    - TrangThai: String
+    --
+    {static} + TaoMoi(...): PhieuCoc
+    + Them()
+  }
+
+  class ThanhVienDangKy {
+    - MaPhieuCoc: String
+    - MaKH: String
+    - VaiTro: String
+    - TrangThaiDuyet: String
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class PhienDuLieu {
+    + BatDauGiaoDich()
+    + Commit()
+    + Rollback()
+    + Dispose()
+  }
+
+  class LichHenDB {
+    {static} + LayDanhSachKhachChoCoc(text): IReadOnlyList<LichHen>
+    {static} + DocChiTiet(maLichHen): LichHen?
+    {static} + GanPhieuCoc(lichHen)
+  }
+
+  class KhachHangDB {
+    {static} + CapNhat(khachHang)
+  }
+
+  class PhongDB {
+    {static} + LayPhongOGhep(...): IReadOnlyList<Phong>
+    {static} + LayPhongNguyenCan(...): IReadOnlyList<Phong>
+    {static} + DocChiTiet(maPhong): Phong?
+    {static} + CapNhat(phong)
+  }
+
+  class PhieuCocDB {
+    {static} + Them(phieu)
+  }
+}
+
+' Presentation phu thuoc BLL qua HTTP adapter.
+MHLapPhieuCoc "1" -- "0..1" LichHenController : HTTP GET
+MHLapPhieuCoc "1" -- "0..1" PhongController : HTTP GET
+MHLapPhieuCoc "1" -- "0..1" PhieuCocController : HTTP POST
+LichHenController "1" o-- "1" LapPhieuCoc
+PhongController "1" o-- "1" LapPhieuCoc
+PhieuCocController "1" o-- "1" LapPhieuCoc
+
+' Trong BLL: duong thang, khong huong.
+LapPhieuCoc "1" -- "0..*" LichHen : xu ly
+LapPhieuCoc "1" -- "0..*" KhachHang : cap nhat
+LapPhieuCoc "1" -- "0..*" Phong : xu ly
+LapPhieuCoc "1" -- "0..*" PhieuCoc : lap
+LichHen "0..*" -- "1" KhachHang : dat lich
+LichHen "1" -- "0..1" PhieuCoc : gan coc
+Phong "0..*" -- "1" LoaiPhong : thuoc
+Phong "1" -- "1..*" Giuong : chua
+PhieuCoc "0..*" -- "1" KhachHang : dai dien
+PhieuCoc "0..*" -- "1" Phong : dat
+PhieuCoc "0..*" -- "1..*" Giuong : chi tiet
+PhieuCoc "1" -- "1..*" ThanhVienDangKy : gom
+
+' Aggregation giua business va data access.
+LichHen "1" o-- "1" LichHenDB
+KhachHang "1" o-- "1" KhachHangDB
+Phong "1" o-- "1" PhongDB
+PhieuCoc "1" o-- "1" PhieuCocDB
+LapPhieuCoc "1" o-- "1" PhienDuLieu
+
+@enduml

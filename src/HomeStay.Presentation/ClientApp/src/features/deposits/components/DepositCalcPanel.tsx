@@ -70,7 +70,7 @@ export function DepositCalcPanel({ deposit }: { deposit: DepositRequest }) {
               <DetailRow label="Khách hàng" value={deposit.customerName} />
               <DetailRow label="Phòng" value={deposit.room} />
               <DetailRow label="Hình thức thuê" value={rentalTypeLabel} />
-              <DetailRow label="Đơn giá phòng" value={formatCurrency(deposit.basePrice)} />
+              <DetailRow label="Đơn giá mỗi giường" value={formatCurrency(deposit.basePrice)} />
               <DetailRow
                 label="Số giường thuê"
                 value={isShared ? `${bedCount} giường` : `${maxCapacity} giường (tối đa)`}

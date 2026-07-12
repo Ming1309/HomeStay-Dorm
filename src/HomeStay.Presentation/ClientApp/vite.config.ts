@@ -12,4 +12,21 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  vite: {
+    server: {
+      strictPort: false, // Tự động chọn port khác nếu bị trùng
+      host: true,        // Lắng nghe trên mọi IP
+      port: 5173,
+      watch: {
+        ignored: ['**/bin/**', '**/obj/**', '**/.git/**']
+      },
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false
+        }
+      }
+    }
+  }
 });

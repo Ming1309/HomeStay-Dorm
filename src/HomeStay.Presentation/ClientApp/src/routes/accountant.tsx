@@ -1,15 +1,9 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
 
-import { RoleShell } from "@/app/layouts/RoleShell";
+export const Route = createFileRoute('/accountant')({
+  component: RouteComponent,
+})
 
-export const Route = createFileRoute("/accountant")({
-  component: AccountantRouteIndex,
-});
-
-function AccountantRouteIndex() {
-  return (
-    <RoleShell role="accountant">
-      <Outlet />
-    </RoleShell>
-  );
+function RouteComponent() {
+  return <div>Hello "/accountant"!</div>
 }

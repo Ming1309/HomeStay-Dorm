@@ -1,38 +1,38 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { AppointmentQueue } from "@/features/appointments/components/AppointmentQueue";
-import { DepositForm } from "@/features/deposits/components/DepositForm";
+import { MHLapPhieuCoc } from "@/features/deposits/components/MHLapPhieuCoc";
 import type { Appointment } from "@/app/providers/workflow-store";
 
 export const Route = createFileRoute("/sale/lap-phieu-coc")({
-  component: SaleDepositWorkspacePage,
+  component: RouteComponent,
 });
 
-function SaleDepositWorkspacePage() {
-  const [selected, setSelected] = useState<Appointment | null>(null);
-  const [processedIds, setProcessedIds] = useState<string[]>([]);
+function RouteComponent() {
+  const [lichHenDaChon, setLichHenDaChon] = useState<Appointment | null>(null);
+  const [maLichHenDaXuLy, setMaLichHenDaXuLy] = useState<string[]>([]);
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <main className="flex h-full min-h-0 bg-gray-50">
       <AppointmentQueue
-        selectedId={selected?.id ?? null}
-        excludedIds={processedIds}
-        onSelect={setSelected}
+        selectedId={lichHenDaChon?.id ?? null}
+        excludedIds={maLichHenDaXuLy}
+        onSelect={setLichHenDaChon}
       />
-      {!selected ? (
-        <section className="flex flex-1 items-center justify-center bg-gray-50/60">
-          <p className="text-sm text-gray-500">Chọn khách hàng để lập phiếu cọc.</p>
-        </section>
-      ) : (
-        <DepositForm
-          appointment={selected}
-          onDone={(appointmentId) => {
-            setProcessedIds((prev) => [...prev, appointmentId]);
-            setSelected(null);
+      {lichHenDaChon ? (
+        <MHLapPhieuCoc
+          lichHen={lichHenDaChon}
+          khiHoanTat={(maLichHen) => {
+            setMaLichHenDaXuLy((hienTai) => [...hienTai, maLichHen]);
+            setLichHenDaChon(null);
           }}
         />
+      ) : (
+        <section className="flex flex-1 items-center justify-center text-sm text-gray-500">
+          Chọn một lịch hẹn để lập phiếu cọc.
+        </section>
       )}
-    </div>
+    </main>
   );
 }

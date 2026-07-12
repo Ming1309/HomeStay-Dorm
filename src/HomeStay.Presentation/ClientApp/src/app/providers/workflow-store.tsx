@@ -47,10 +47,12 @@ export type Room = {
 export type Appointment = {
   id: string;
   code: string;
+  customerId?: string;
   customerName: string;
   phone: string;
   email: string;
   gender: "male" | "female";
+  dob?: string;
   nationality?: string;
   docType?: "CCCD" | "Hộ chiếu";
   docNumber?: string;
