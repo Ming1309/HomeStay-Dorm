@@ -1,9 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import { AccountantSettlementPage } from "@/features/settlements/pages/CheckoutSettlementPage";
 
 export const Route = createFileRoute('/accountant/thanh-toan-tra-phong')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/accountant/thanh-toan-tra-phong"!</div>
-}
+  component: AccountantSettlementPage,
+});

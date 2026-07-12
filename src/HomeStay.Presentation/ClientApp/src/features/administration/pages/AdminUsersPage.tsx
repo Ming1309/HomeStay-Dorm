@@ -86,9 +86,23 @@ type Staff = {
   createdBy: string;
 };
 
+type ApiStaff = {
+  id: string; code: string; fullName: string; username: string; email: string; phone: string;
+  role: string; branch: string; department: string; status: string; lastLoginAt: string | null;
+  createdAt: string | null; createdBy: string;
+};
+
 type ActionType = "disable" | "archive" | "offboard";
 
-const CURRENT_USER_ID = "nv-001";
+function mapStaff(item: ApiStaff): Staff {
+  const roles: Record<string, UserRole> = { Sale: "Sale", KeToan: "Kế toán", QuanLy: "Quản lý", QuanTri: "Quản trị hệ thống" };
+  const statuses: Record<string, UserStatus> = { HoatDong: "Đang hoạt động", Khoa: "Đã khóa", VoHieuHoa: "Vô hiệu hoá", NgungLamViec: "Ngừng làm việc", LuuTru: "Lưu trữ" };
+  const branch = item.branch === "CN02" || item.branch.includes("Làng Đại Học") ? "Chi nhánh 2" : "Chi nhánh 1";
+  return { ...item, role: roles[item.role] ?? "Sale", branch, status: statuses[item.status] ?? "Lưu trữ", lastLoginAt: item.lastLoginAt ?? "", createdAt: item.createdAt ?? new Date().toISOString() };
+}
+
+function roleCode(role: UserRole) { return ({ Sale: "Sale", "Kế toán": "KeToan", "Quản lý": "QuanLy", "Quản trị hệ thống": "QuanTri" } as Record<UserRole, string>)[role]; }
+function branchCode(branch: Branch) { return branch === "Chi nhánh 2" ? "CN02" : "CN01"; }
 
 const staffSchema = z.object({
   fullName: z.string().min(1, "Vui lòng nhập họ tên"),
@@ -101,54 +115,6 @@ const staffSchema = z.object({
   department: z.string().min(1, "Vui lòng nhập phòng ban"),
 });
 
-const initialStaffs: Staff[] = [
-  {
-    id: "nv-001",
-    code: "NV001",
-    fullName: "Nguyễn Minh Anh",
-    username: "admin",
-    email: "admin@gmail.com",
-    phone: "0901234567",
-    role: "Quản trị hệ thống",
-    branch: "Chi nhánh 1",
-    department: "Vận hành hệ thống",
-    status: "Đang hoạt động",
-    lastLoginAt: "2026-05-30T08:15:00.000Z",
-    createdAt: "2026-01-05T09:00:00.000Z",
-    createdBy: "System",
-  },
-  {
-    id: "nv-002",
-    code: "NV002",
-    fullName: "Trần Hải Yến",
-    username: "sale01",
-    email: "sale01@homestay.vn",
-    phone: "0901000111",
-    role: "Sale",
-    branch: "Chi nhánh 1",
-    department: "Kinh doanh",
-    status: "Đang hoạt động",
-    lastLoginAt: "2026-05-29T16:40:00.000Z",
-    createdAt: "2026-02-18T10:20:00.000Z",
-    createdBy: "admin",
-  },
-  {
-    id: "nv-003",
-    code: "NV003",
-    fullName: "Phạm Quốc Bảo",
-    username: "ketoan01",
-    email: "ketoan01@homestay.vn",
-    phone: "0902000222",
-    role: "Kế toán",
-    branch: "Chi nhánh 2",
-    department: "Tài chính",
-    status: "Đã khóa",
-    lastLoginAt: "2026-05-20T04:10:00.000Z",
-    createdAt: "2026-03-01T07:30:00.000Z",
-    createdBy: "admin",
-  },
-];
-
 export function AdminUsersPage() {
   const navigate = useNavigate();
   const { role, isHydrated } = useWorkflowStore();
@@ -157,7 +123,7 @@ export function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState<"Tất cả" | UserRole>("Tất cả");
   const [statusFilter, setStatusFilter] = useState<"Tất cả" | UserStatus>("Tất cả");
   const [branchFilter, setBranchFilter] = useState<"Tất cả" | Branch>("Tất cả");
-  const [staffs, setStaffs] = useState<Staff[]>(initialStaffs);
+  const [staffs, setStaffs] = useState<Staff[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [statusTarget, setStatusTarget] = useState<{ id: string; type: ActionType } | null>(null);
@@ -183,8 +149,11 @@ export function AdminUsersPage() {
   }, [isHydrated, role, navigate]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 450);
-    return () => clearTimeout(timer);
+    fetch("/api/users")
+      .then(async (response) => { if (!response.ok) throw new Error("Không thể tải danh sách tài khoản."); return response.json(); })
+      .then((items: ApiStaff[]) => setStaffs(items.map(mapStaff)))
+      .catch((error) => toast.error(error instanceof Error ? error.message : "Không thể tải tài khoản."))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const activeAdminCount = useMemo(
@@ -241,71 +210,29 @@ export function AdminUsersPage() {
     setDialogOpen(true);
   };
 
-  const onSubmit = (values: z.infer<typeof staffSchema>) => {
+  const onSubmit = async (values: z.infer<typeof staffSchema>) => {
     if (!editingStaff && !values.tempPassword) {
       form.setError("tempPassword", { message: "Vui lòng nhập mật khẩu tạm" });
       return;
     }
 
-    const duplicate = staffs.some((staff) => {
-      if (editingStaff && staff.id === editingStaff.id) return false;
-      return (
-        staff.email.toLowerCase() === values.email.toLowerCase() ||
-        staff.username.toLowerCase() === values.username.toLowerCase()
-      );
-    });
-
-    if (duplicate) {
-      toast.error("Email / Tên đăng nhập đã tồn tại. Vui lòng nhập thông tin khác.");
-      return;
-    }
-
-    if (editingStaff) {
-      setStaffs((prev) =>
-        prev.map((staff) =>
-          staff.id === editingStaff.id
-            ? {
-                ...staff,
-                fullName: values.fullName,
-                phone: values.phone,
-                email: values.email,
-                username: values.username,
-                role: values.role,
-                branch: values.branch,
-                department: values.department,
-              }
-            : staff,
-        ),
-      );
-      toast.success("Cập nhật nhân viên thành công.");
-    } else {
-      const nextIndex = staffs.length + 1;
-      setStaffs((prev) => [
-        ...prev,
-        {
-          id: `nv-${Date.now()}`,
-          code: `NV${String(nextIndex).padStart(3, "0")}`,
-          fullName: values.fullName,
-          phone: values.phone,
-          email: values.email,
-          username: values.username,
-          role: values.role,
-          branch: values.branch,
-          department: values.department,
-          status: "Đang hoạt động",
-          lastLoginAt: "",
-          createdAt: new Date().toISOString(),
-          createdBy: "admin",
-        },
-      ]);
-      toast.success("Thêm nhân viên mới thành công.");
-    }
-
+    const body = editingStaff ? {
+      hoTen: values.fullName, sdt: values.phone, email: values.email, tenDangNhap: values.username,
+      vaiTro: roleCode(values.role), maCN: branchCode(values.branch), phongBan: values.department,
+    } : {
+      maNV: `NV${Date.now().toString().slice(-8)}`, hoTen: values.fullName, sdt: values.phone, email: values.email,
+      tenDangNhap: values.username, vaiTro: roleCode(values.role), maCN: branchCode(values.branch), phongBan: values.department, matKhauTam: values.tempPassword,
+    };
+    const response = await fetch(editingStaff ? `/api/users/${editingStaff.id}` : "/api/users", { method: editingStaff ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!response.ok) { toast.error((await response.json()).message ?? "Không thể lưu tài khoản."); return; }
+    const saved = mapStaff(await response.json());
+    setStaffs((prev) => editingStaff ? prev.map((staff) => staff.id === saved.id ? saved : staff) : [...prev, saved]);
+    toast.success(editingStaff ? "Cập nhật nhân viên thành công." : "Thêm nhân viên mới thành công.");
     setDialogOpen(false);
   };
 
   const getActionBlockReason = (staff: Staff) => {
-    if (staff.id === CURRENT_USER_ID)
+    if (staff.username === "admin")
       return "Bạn không thể tự thao tác trên tài khoản của chính mình.";
     if (staff.role === "Quản trị hệ thống" && activeAdminCount <= 1) {
       return "Không thể thao tác vì đây là quản trị viên hoạt động cuối cùng.";
@@ -322,23 +249,18 @@ export function AdminUsersPage() {
     setLockTargetId(staff.id);
   };
 
-  const confirmLockToggle = () => {
+  const confirmLockToggle = async () => {
     if (!lockTargetId) return;
-    setStaffs((prev) =>
-      prev.map((staff) =>
-        staff.id === lockTargetId
-          ? {
-              ...staff,
-              status: staff.status === "Đã khóa" ? "Đang hoạt động" : "Đã khóa",
-            }
-          : staff,
-      ),
-    );
+    const staff = staffs.find((item) => item.id === lockTargetId);
+    if (!staff) return;
+    const response = await fetch(`/api/users/${lockTargetId}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ trangThai: staff.status === "Đã khóa" ? "HoatDong" : "Khoa" }) });
+    if (!response.ok) { toast.error((await response.json()).message ?? "Không thể cập nhật trạng thái."); return; }
+    setStaffs((prev) => prev.map((item) => item.id === lockTargetId ? { ...item, status: staff.status === "Đã khóa" ? "Đang hoạt động" : "Đã khóa" } : item));
     setLockTargetId(null);
     toast.success("Cập nhật trạng thái khóa tài khoản thành công.");
   };
 
-  const confirmStatusChange = () => {
+  const confirmStatusChange = async () => {
     if (!statusTarget) return;
     const mappedStatus: Record<ActionType, UserStatus> = {
       disable: "Vô hiệu hoá",
@@ -346,16 +268,9 @@ export function AdminUsersPage() {
       archive: "Lưu trữ",
     };
 
-    setStaffs((prev) =>
-      prev.map((staff) =>
-        staff.id === statusTarget.id
-          ? {
-              ...staff,
-              status: mappedStatus[statusTarget.type],
-            }
-          : staff,
-      ),
-    );
+    const response = await fetch(`/api/users/${statusTarget.id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ trangThai: { disable: "VoHieuHoa", offboard: "NgungLamViec", archive: "LuuTru" }[statusTarget.type] }) });
+    if (!response.ok) { toast.error((await response.json()).message ?? "Không thể cập nhật trạng thái."); return; }
+    setStaffs((prev) => prev.map((staff) => staff.id === statusTarget.id ? { ...staff, status: mappedStatus[statusTarget.type] } : staff));
 
     setStatusTarget(null);
     toast.success("Đã cập nhật trạng thái tài khoản.");
@@ -544,9 +459,7 @@ export function AdminUsersPage() {
                                   Chỉnh sửa
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() =>
-                                    toast.success("Đã gửi yêu cầu đặt lại mật khẩu tạm thời.")
-                                  }
+                                  onClick={async () => { const response = await fetch(`/api/users/${staff.id}/reset-password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ matKhauTam: "HomeStay@123" }) }); response.ok ? toast.success("Đã đặt lại mật khẩu tạm thời.") : toast.error((await response.json()).message ?? "Không thể đặt lại mật khẩu."); }}
                                 >
                                   <KeyRound className="mr-2 size-4" />
                                   Đặt lại mật khẩu
