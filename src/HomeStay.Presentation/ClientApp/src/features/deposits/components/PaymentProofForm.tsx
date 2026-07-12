@@ -1,268 +1,273 @@
-import { useState } from "react";
-import { CheckCircle2, ImageIcon, Upload, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle2, FileText, ImageIcon, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
-import { useWorkflowStore, type DepositRequest } from "@/app/providers/workflow-store";
+import {
+  submitDepositPayment,
+  type DepositPaymentDetail,
+  type DepositPaymentMethod,
+} from "@/features/deposits/services/deposit-payment-service";
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
+const MAX_SIZE = 5 * 1024 * 1024;
+const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"];
+const MISSING_PROOF_MESSAGE = "Vui lòng tải lên chứng từ thanh toán để tiếp tục.";
+const INVALID_PROOF_MESSAGE =
+  "Định dạng tệp không hỗ trợ hoặc dung lượng quá lớn. Vui lòng tải lên file ảnh hoặc PDF dưới 5MB.";
+
+const paymentSchema = z.object({
+  paymentMethod: z.enum(["ChuyenKhoan", "TienMat"], {
+    errorMap: () => ({ message: "Vui lòng chọn phương thức thanh toán." }),
+  }),
+  proofFile: z.custom<File>(
+    (value) => typeof File !== "undefined" && value instanceof File,
+    MISSING_PROOF_MESSAGE,
+  ),
+});
+
+type PaymentFormValues = z.infer<typeof paymentSchema>;
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
 }
 
-const statusLabels: Record<string, string> = {
-  pending_payment: "Chờ thanh toán",
-  supplement_required: "Cần bổ sung",
-};
-
-const statusBadgeClass: Record<string, string> = {
-  pending_payment: "bg-amber-100 text-amber-700",
-  supplement_required: "bg-rose-100 text-rose-700",
-};
-
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+function validFile(file: File) {
+  const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+  return file.size > 0 && file.size <= MAX_SIZE && ALLOWED_EXTENSIONS.includes(extension);
+}
 
 export function PaymentProofForm({
   deposit,
   onDone,
 }: {
-  deposit: DepositRequest;
+  deposit: DepositPaymentDetail;
   onDone: () => void;
 }) {
-  const { recordDepositPayment } = useWorkflowStore();
-
-  const [paymentMethod, setPaymentMethod] = useState<"bank-transfer" | "cash" | "">(
-    deposit.supplementReason ? "" : "bank-transfer",
-  );
-  const [proofFile, setProofFile] = useState<File | null>(null);
-  const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    setError,
+    clearErrors,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentSchema),
+    defaultValues: { paymentMethod: undefined, proofFile: undefined },
+  });
 
-  const handleFileSelect = (file: File | null) => {
+  const paymentMethod = watch("paymentMethod");
+  const proofFile = watch("proofFile");
+  const previewUrl = useMemo(
+    () => (proofFile ? URL.createObjectURL(proofFile) : null),
+    [proofFile],
+  );
+
+  useEffect(
+    () => () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    },
+    [previewUrl],
+  );
+
+  const chonTepChungTu = (file: File | null) => {
     if (!file) {
-      setProofFile(null);
-      setProofPreview(null);
+      setValue("proofFile", undefined as unknown as File);
       return;
     }
-
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Định dạng tệp không hỗ trợ. Vui lòng tải lên file ảnh hoặc PDF dưới 5MB.");
+    if (!validFile(file)) {
+      setValue("proofFile", undefined as unknown as File);
+      setError("proofFile", { type: "validate", message: INVALID_PROOF_MESSAGE });
+      toast.error(INVALID_PROOF_MESSAGE);
       return;
     }
-
-    if (file.size > MAX_SIZE) {
-      toast.error("Dung lượng quá lớn. Vui lòng tải lên file ảnh hoặc PDF dưới 5MB.");
-      return;
-    }
-
-    setProofFile(file);
-
-    if (file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (e) => setProofPreview(e.target?.result as string);
-      reader.readAsDataURL(file);
-    } else {
-      setProofPreview(null);
-    }
+    clearErrors("proofFile");
+    setValue("proofFile", file, { shouldValidate: true, shouldDirty: true });
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const file = e.dataTransfer.files[0];
-    handleFileSelect(file);
-  };
-
-  const handleSubmit = () => {
-    if (!paymentMethod) {
-      toast.error("Vui lòng chọn phương thức thanh toán.");
-      return;
-    }
-    if (!proofFile) {
-      toast.error("Vui lòng tải lên chứng từ thanh toán để tiếp tục.");
-      return;
-    }
-
-    setSubmitting(true);
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result as string;
-      recordDepositPayment(deposit.id, paymentMethod as "bank-transfer" | "cash", base64);
+  const guiChungTu = handleSubmit(async (values) => {
+    try {
+      await submitDepositPayment(deposit.maPhieuCoc, values.paymentMethod, values.proofFile);
       toast.success("Đã gửi chứng từ cho Quản lý đối chiếu thành công.");
-      setSubmitting(false);
-    };
-    reader.readAsDataURL(proofFile);
-  };
+      onDone();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể gửi chứng từ thanh toán.");
+    }
+  });
 
-  const isLocked =
-    deposit.status === "pending_reconciliation" ||
-    deposit.status === "paid" ||
-    deposit.status === "cancelled";
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === "Enter") {
+        event.preventDefault();
+        void guiChungTu();
+      }
+    };
+    document.addEventListener("keydown", handleShortcut);
+    return () => document.removeEventListener("keydown", handleShortcut);
+  }, [guiChungTu]);
+
+  const openPreview = () => {
+    if (!previewUrl || !proofFile) return;
+    if (proofFile.type === "application/pdf" || proofFile.name.toLowerCase().endsWith(".pdf")) {
+      window.open(previewUrl, "_blank", "noopener,noreferrer");
+    } else {
+      setPreviewOpen(true);
+    }
+  };
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
-      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white px-5 py-3">
+      <header className="sticky top-0 z-20 border-b border-gray-200 bg-white px-5 py-3">
         <div className="flex items-center gap-2">
-          <h1 className="font-mono text-sm font-bold text-gray-900">{deposit.code}</h1>
-          <Badge className={statusBadgeClass[deposit.status] ?? ""}>
-            {statusLabels[deposit.status] ?? deposit.status}
-          </Badge>
+          <h1 className="font-mono text-sm font-bold text-gray-900">{deposit.maPhieuCoc}</h1>
+          <Badge className="bg-amber-100 text-amber-700">Chờ thanh toán</Badge>
         </div>
         <p className="mt-0.5 text-xs text-gray-500">
-          {deposit.customerName} • {deposit.room}
+          {deposit.hoTenKhachHang} • P. {deposit.soPhong}
         </p>
-      </div>
+      </header>
 
       <div className="flex-1 overflow-y-auto px-5 py-4 pb-24">
-        {deposit.supplementReason && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
-            <h3 className="mb-1 text-xs font-semibold text-red-700">Yêu cầu bổ sung từ Quản lý</h3>
-            <p className="text-sm text-red-600">{deposit.supplementReason}</p>
-          </div>
-        )}
-
         <div className="space-y-4">
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <h3 className="mb-3 text-xs font-semibold text-gray-700">Thông tin phiếu cọc</h3>
+          <section className="rounded-lg border border-gray-200 bg-white p-4">
+            <h2 className="mb-3 text-xs font-semibold text-gray-700">Thông tin phiếu cọc</h2>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <InfoRow label="Mã phiếu" value={deposit.code} mono />
-              <InfoRow label="Khách hàng" value={deposit.customerName} />
-              <InfoRow label="Phòng" value={deposit.room} />
+              <InfoRow label="Mã phiếu" value={deposit.maPhieuCoc} mono />
+              <InfoRow label="Khách hàng" value={deposit.hoTenKhachHang} />
+              <InfoRow label="Số điện thoại" value={deposit.sdt || "—"} />
+              <InfoRow
+                label="Phòng"
+                value={`P. ${deposit.soPhong}${deposit.toaNha ? ` • ${deposit.toaNha}` : ""}`}
+              />
               <InfoRow
                 label="Hình thức thuê"
-                value={deposit.rentalType === "shared" ? "Ở ghép" : "Nguyên phòng"}
+                value={deposit.hinhThucThue === "OGhep" ? "Ở ghép" : "Nguyên phòng"}
               />
-              {deposit.depositAmount != null && (
-                <InfoRow
-                  label="Số tiền cần thanh toán"
-                  value={formatCurrency(deposit.depositAmount)}
-                />
-              )}
+              <InfoRow label="Số giường thuê" value={`${deposit.soGiuongThue} giường`} />
+              <InfoRow label="Số tiền cần thanh toán" value={formatCurrency(deposit.tongTien)} />
+              <InfoRow
+                label="Hạn thanh toán"
+                value={
+                  deposit.hanThanhToan
+                    ? new Date(deposit.hanThanhToan).toLocaleString("vi-VN")
+                    : "—"
+                }
+              />
             </div>
-          </div>
+          </section>
 
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <h3 className="mb-3 text-xs font-semibold text-gray-700">Phương thức thanh toán</h3>
-            <Select
-              value={paymentMethod}
-              onValueChange={(v) => setPaymentMethod(v as "bank-transfer" | "cash")}
-              disabled={isLocked}
-            >
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="Chọn phương thức" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="bank-transfer" className="text-xs">
-                  Chuyển khoản ngân hàng
-                </SelectItem>
-                <SelectItem value="cash" className="text-xs">
-                  Tiền mặt
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            {paymentMethod === "cash" && (
+          <section className="rounded-lg border border-gray-200 bg-white p-4">
+            <h2 className="mb-3 text-xs font-semibold text-gray-700">
+              Phương thức thanh toán <span className="text-red-500">*</span>
+            </h2>
+            <Controller
+              control={control}
+              name="paymentMethod"
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => field.onChange(value as DepositPaymentMethod)}
+                >
+                  <SelectTrigger
+                    className={cn("h-8 text-xs", errors.paymentMethod && "border-red-500")}
+                  >
+                    <SelectValue placeholder="Chọn phương thức" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ChuyenKhoan" className="text-xs">
+                      Chuyển khoản ngân hàng
+                    </SelectItem>
+                    <SelectItem value="TienMat" className="text-xs">
+                      Tiền mặt
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.paymentMethod && (
+              <p className="mt-1 text-xs text-red-600">{errors.paymentMethod.message}</p>
+            )}
+            {paymentMethod === "TienMat" && (
               <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50/50 p-3">
                 <p className="text-xs text-blue-700">
-                  Hướng dẫn: Nhận đủ tiền mặt từ khách hàng, lập Phiếu biên nhận viết tay và ký cùng
-                  khách hàng. Sau đó chụp ảnh Phiếu biên nhận đã ký và tải lên tại mục chứng từ bên
-                  dưới.
+                  Nhận đủ tiền mặt, lập Phiếu biên nhận viết tay và ký cùng khách hàng. Sau đó chụp
+                  ảnh Phiếu biên nhận đã ký và tải lên bên dưới.
                 </p>
               </div>
             )}
-          </div>
+          </section>
 
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <h3 className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+          <section className="rounded-lg border border-gray-200 bg-white p-4">
+            <h2 className="mb-3 flex items-center gap-1.5 text-xs font-semibold text-gray-700">
               <ImageIcon className="size-3.5" />
-              Chứng từ thanh toán
-            </h3>
-
-            {/* When NO file is selected -> Show Drop Zone */}
-            {!proofFile && !proofPreview && (
+              Chứng từ thanh toán <span className="text-red-500">*</span>
+            </h2>
+            {!proofFile ? (
               <div
+                role="button"
+                tabIndex={0}
                 className={cn(
                   "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-10 transition-colors",
-                  dragging
-                    ? "border-blue-400 bg-blue-50"
-                    : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100/60",
+                  errors.proofFile
+                    ? "border-red-500 bg-red-50"
+                    : dragging
+                      ? "border-blue-400 bg-blue-50"
+                      : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100/60",
                 )}
-                onDragOver={(e) => {
-                  e.preventDefault();
+                onDragOver={(event) => {
+                  event.preventDefault();
                   setDragging(true);
                 }}
                 onDragLeave={() => setDragging(false)}
-                onDrop={handleDrop}
-                onClick={() => document.getElementById("proof-upload")?.click()}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  setDragging(false);
+                  chonTepChungTu(event.dataTransfer.files[0] ?? null);
+                }}
+                onClick={() => document.getElementById("deposit-proof-upload")?.click()}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ")
+                    document.getElementById("deposit-proof-upload")?.click();
+                }}
               >
-                <Upload className="mb-2 size-6 text-gray-400" />
+                <Upload
+                  className={cn("mb-2 size-6", errors.proofFile ? "text-red-500" : "text-gray-400")}
+                />
                 <p className="text-sm font-medium text-gray-500">Kéo thả file hoặc nhấp để chọn</p>
                 <p className="mt-1 text-xs text-gray-400">Hỗ trợ JPG, PNG, PDF (tối đa 5MB)</p>
               </div>
-            )}
-
-            <input
-              id="proof-upload"
-              type="file"
-              accept=".jpg,.jpeg,.png,.pdf"
-              className="hidden"
-              onChange={(e) => handleFileSelect(e.target.files?.[0] ?? null)}
-              disabled={isLocked}
-            />
-
-            {/* When file IS selected -> Show the file card */}
-            {(proofFile || proofPreview) && (
-              <div className="flex flex-col gap-3 rounded-lg border border-gray-200 p-4 shadow-sm">
+            ) : (
+              <div className="rounded-lg border border-gray-200 p-4 shadow-sm">
                 <div className="flex items-center gap-4">
-                  {/* Thumbnail */}
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-gray-100 bg-gray-50">
-                    {proofPreview ? (
-                      <img src={proofPreview} alt="Thumbnail" className="h-full w-full object-cover" />
+                  <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-gray-50">
+                    {proofFile.type.startsWith("image/") && previewUrl ? (
+                      <img src={previewUrl} alt="Ảnh chứng từ" className="size-full object-cover" />
                     ) : (
-                      <ImageIcon className="size-6 text-gray-400" />
+                      <FileText className="size-6 text-red-500" />
                     )}
                   </div>
-                  {/* File Info */}
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium text-gray-800">
-                      {proofFile?.name || "Chứng từ thanh toán"}
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-gray-800">{proofFile.name}</p>
                     <p className="mt-1 text-xs text-gray-500">
-                      {proofFile ? `${(proofFile.size / 1024 / 1024).toFixed(1)}MB` : "Đã tải lên"}
+                      {(proofFile.size / 1024 / 1024).toFixed(1)} MB
                     </p>
                   </div>
                 </div>
-                {/* Actions */}
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-3 flex gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     className="h-8 flex-1 text-xs"
-                    onClick={() => {
-                       if (proofPreview) {
-                          setPreviewOpen(true);
-                       } else {
-                          toast.info("Không thể xem trước tệp PDF ở đây.");
-                       }
-                    }}
+                    onClick={openPreview}
                   >
                     Xem chứng từ
                   </Button>
@@ -270,50 +275,59 @@ export function PaymentProofForm({
                     type="button"
                     variant="outline"
                     className="h-8 flex-1 text-xs"
-                    onClick={() => document.getElementById("proof-upload")?.click()}
+                    onClick={() => document.getElementById("deposit-proof-upload")?.click()}
                   >
                     Thay đổi
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-8 flex-1 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                    onClick={() => {
-                      setProofFile(null);
-                      setProofPreview(null);
-                    }}
+                    className="h-8 flex-1 text-xs text-rose-600"
+                    onClick={() => chonTepChungTu(null)}
                   >
                     Xóa
                   </Button>
                 </div>
               </div>
             )}
-          </div>
-
+            <input
+              id="deposit-proof-upload"
+              type="file"
+              accept=".jpg,.jpeg,.png,.pdf"
+              className="hidden"
+              onChange={(event) => {
+                chonTepChungTu(event.target.files?.[0] ?? null);
+                event.target.value = "";
+              }}
+            />
+            {errors.proofFile && (
+              <p className="mt-1 text-xs text-red-600">{errors.proofFile.message}</p>
+            )}
+          </section>
         </div>
       </div>
 
       <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
         <span className="text-xs text-gray-400">
-          {submitting ? "Đang gửi..." : "Vui lòng kiểm tra thông tin trước khi gửi"}
+          <kbd className="rounded border bg-gray-50 px-1 py-0.5">Ctrl</kbd> +{" "}
+          <kbd className="rounded border bg-gray-50 px-1 py-0.5">Enter</kbd> : Gửi
         </span>
         <Button
           type="button"
           className="h-8 text-xs"
-          onClick={handleSubmit}
-          disabled={submitting || isLocked || !paymentMethod || !proofFile}
+          onClick={() => void guiChungTu()}
+          disabled={isSubmitting}
         >
           <CheckCircle2 className="mr-1 size-3.5" />
-          Gửi
+          {isSubmitting ? "Đang gửi..." : "Gửi"}
         </Button>
       </footer>
 
-      {/* Image Preview Modal */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-3xl border-none bg-transparent p-0 shadow-none outline-none">
-          {proofPreview && (
+        <DialogContent className="max-w-3xl border-none bg-transparent p-0 shadow-none">
+          {previewUrl && proofFile?.type.startsWith("image/") && (
             <img
-              src={proofPreview}
+              src={previewUrl}
               alt="Chứng từ thanh toán"
               className="mx-auto max-h-[85vh] rounded-lg object-contain shadow-2xl"
             />

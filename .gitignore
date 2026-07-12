@@ -33,6 +33,7 @@ dist-ssr
 # .NET
 **/bin/
 **/obj/
+src/HomeStay.Presentation/App_Data/
 *.user
 *.userosscache
 *.sln.docstates

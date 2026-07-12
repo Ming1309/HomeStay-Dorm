@@ -127,6 +127,16 @@ IF EXISTS (
     THROW 51009, 'Phieu thue nguyen can khong du suc chua.', 1;
 GO
 
+-- Phiếu thu tiền cọc chỉ tồn tại sau khi Quản lý xác nhận thanh toán.
+IF EXISTS (
+    SELECT 1
+    FROM PhieuThu pt
+    INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc = pt.MaPhieuCoc
+    WHERE pc.TrangThai = N'ChoDoiChieu'
+)
+    THROW 51010, 'Phieu coc cho doi chieu khong duoc co PhieuThu.', 1;
+GO
+
 -- Giường trong hợp đồng phải thuộc phòng của phiếu cọc tương ứng.
 IF EXISTS (
     SELECT 1
