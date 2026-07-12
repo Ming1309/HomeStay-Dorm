@@ -1,0 +1,165 @@
+@startuml
+title SO DO LOP 3 TANG - TAO LICH HEN
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #FFFACD
+    BorderColor #9B7B7B
+}
+
+package "TANG GIAO DIEN" #EAF2F8 {
+
+class MHTaoLichHen{
+
++cboLoaiLichHen : ComboBox
++txtTimKiem : TextBox
++grdChungTu : GridView
++cboChiNhanh : ComboBox
++dtpNgayHen : DateTimePicker
++dtpGioHen : DateTimePicker
++lblChungTuLienKet : Label
++lblTrangThai : Label
++btnLuu : Button
+
+--
+
++hienThiForm()
++chonLoaiLichHen()
++nhapTuKhoaTimKiem()
++chonChungTu()
++chonChiNhanh()
++nhapNgayGio()
++nhanLuu()
++hienThiDanhSachChungTu()
++hienThiThongBao()
++hienThiLoi()
+
+}
+
+}
+
+package "TANG NGHIEP VU" #FCF3CF {
+
+class LichHen{
+
++maLH : string
++ngayHen : Date
++gioHen : string
++loaiLichHen : LoaiLichHen
++trangThai : TrangThaiLH
++maPDK : string
++maPhieuCoc : string
++maHD : string
++maNV : string
++maCN : string
+
+--
+
++khoiTao(loai, chungTu, maCN, ngay, gio, maNV)
++ganChungTu(loai, maChungTu)
++ganTrangThaiMacDinh()
++kiemTraHopLe()
++kiemTraTrungLich()
++luu()
+
+}
+
+class TaoLichHenController{
+
++nvDangNhap : NhanVien
+
+--
+
++khoiTaoForm()
++taiDanhSachChungTu(loai, tuKhoa)
++kiemTraDuLieuDauVao(maCN, ngay, gio, chungTu)
++luuLichHen(loai, chungTu, maCN, ngay, gio)
+
+}
+
+class DichVuThongBao{
+
++guiEmail(email, noiDung)
++guiSMS(sdt, noiDung)
++guiThongBaoLichHen(lichHen, khachHang)
+
+}
+
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+
+class LichHenDAO{
+
++them(lichHen)
++kiemTraLichTrungCaNhanVien(maNV, ngay, gio)
+
+}
+
+class PhieuDangKyDAO{
+
++timKiemPhieuDuDieuKien(tuKhoa)
++kiemTraConHopLe(maPDK)
+
+}
+
+class PhieuCocDAO{
+
++timKiemPhieuDaDuyet(tuKhoa)
++kiemTraConHopLe(maPhieuCoc)
+
+}
+
+class HopDongDAO{
+
++timKiemHopDongHieuLuc(tuKhoa)
++kiemTraConHopLe(maHD)
+
+}
+
+class NhanVienDAO{
+
++layTheoMa(maNV)
+
+}
+
+class ChiNhanhDAO{
+
++layTatCa()
++layTheoMa(maCN)
+
+}
+
+}
+
+'==========================
+' Quan hệ giữa các lớp
+'==========================
+
+' Boundary điều khiển Use Case
+MHTaoLichHen o-- TaoLichHenController
+
+'--------------------------
+' Trong tầng nghiệp vụ
+'--------------------------
+
+TaoLichHenController "1" -- "0..*" LichHen : xu ly
+TaoLichHenController "1" -- "0..1" DichVuThongBao : gui
+
+'--------------------------
+' Aggregation Business -> DAO
+'--------------------------
+
+LichHen o-- LichHenDAO
+
+TaoLichHenController o-- PhieuDangKyDAO
+TaoLichHenController o-- PhieuCocDAO
+TaoLichHenController o-- HopDongDAO
+TaoLichHenController o-- NhanVienDAO
+TaoLichHenController o-- ChiNhanhDAO
+
+@enduml
