@@ -37,52 +37,41 @@ package "TANG GIAO DIEN" #EAF2F8 {
     - btnTaoYeuCauCoc: Button
     --
     + HienThi()
+    + txtTimKiemKH_TextChanged(text: String)
+    + grvKhachChoCoc_CellClick(maLichHen: String)
     + btnChinhSua_Click()
-    + rdoHinhThucThue_CheckedChanged()
+    + rdoHinhThucThue_CheckedChanged(hinhThucThue: String)
     + btnTimKiem_Click()
-    + grvDanhSachPhong_CellClick()
-    + grvDanhSachGiuong_CellClick()
+    + grvDanhSachPhong_CellClick(maPhong: String)
+    + grvDanhSachGiuong_CellClick(maPhong: String, maGiuong: String)
     + btnTaoYeuCauCoc_Click()
   }
 
-  class LichHenController {
-    + LayDanhSachKhachChoCoc()
-    + TimKiemKhachChoCoc(text)
-    + LayChiTietLichHen(id)
-  }
-
-  class PhongController {
-    + LayPhongOGhep(...)
-    + LayPhongNguyenCan(...)
-  }
-
-  class PhieuCocController {
-    + TaoPhieuCoc(request)
-  }
 }
 
 package "TANG NGHIEP VU" #FCF3CF {
   class LapPhieuCoc {
     + LayDanhSachKhachChoCoc(): IReadOnlyList<LichHen>
     + TimKiemKhachChoCoc(text: String): IReadOnlyList<LichHen>
-    + LayChiTietLichHen(maLichHen: String): LichHen?
-    + LayPhongOGhep(...): IReadOnlyList<Phong>
-    + LayPhongNguyenCan(...): IReadOnlyList<Phong>
-    + TaoPhieuCoc(...): PhieuCoc
+    + LayChiTietLichHen(maLichHen: String): LichHen
+    + LayPhongOGhep(soLuong: Integer, toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal): IReadOnlyList<Phong>
+    + LayPhongNguyenCan(toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal): IReadOnlyList<Phong>
+    + TaoPhieuCoc(maLichHen: String, thongTinKhachHang: KhachHang, maPhong: String, danhSachGiuong: IEnumerable<String>, hinhThucThue: String, maNhanVien: String): PhieuCoc
   }
 
   class KhachHang {
     - MaKH: String
     - HoTen: String
-    - NgaySinh: DateTime?
-    - GioiTinh: String?
-    - QuocTich: String?
-    - LoaiGiayTo: String?
-    - SoGiayTo: String?
-    - SDT: String?
-    - Email: String?
+    - NgaySinh: DateTime
+    - GioiTinh: String
+    - QuocTich: String
+    - LoaiGiayTo: String
+    - SoGiayTo: String
+    - DiaChiThuongTru: String
+    - SDT: String
+    - Email: String
     --
-    + CapNhatTu(thongTinMoi: KhachHang)
+    + CapNhatTu(thongTinMoi: KhachHang): Boolean
     + CapNhat()
   }
 
@@ -92,10 +81,13 @@ package "TANG NGHIEP VU" #FCF3CF {
     - GioHen: TimeSpan
     - LoaiLichHen: String
     - TrangThai: String
-    - MaPhieuCoc: String?
+    - MaPDK: String
+    - MaPhieuCoc: String
+    - KhachHang: KhachHang
     --
-    {static} + LayDanhSachKhachChoCoc(text: String?): IReadOnlyList<LichHen>
-    {static} + DocChiTiet(maLichHen: String): LichHen?
+    + LayDanhSachKhachChoCoc(): IReadOnlyList<LichHen>
+    + LayDanhSachKhachChoCoc(text: String): IReadOnlyList<LichHen>
+    + DocChiTiet(maLichHen: String): LichHen
     + KiemTraCoTheLapPhieuCoc()
     + GanPhieuCoc(maPhieuCoc: String)
     + LuuPhieuCoc()
@@ -104,19 +96,19 @@ package "TANG NGHIEP VU" #FCF3CF {
   class Phong {
     - MaPhong: String
     - SoPhong: String
-    - ToaNha: String?
-    - Tang: String?
+    - ToaNha: String
+    - Tang: String
     - TrangThai: String
     - SoGiuongTrong: Integer
     - GiuongsVuaGiu: IReadOnlyList<Giuong>
     --
-    {static} + LayPhongOGhep(...): IReadOnlyList<Phong>
-    {static} + LayPhongNguyenCan(...): IReadOnlyList<Phong>
-    {static} + DocChiTiet(maPhong: String): Phong?
-    + GiuGiuong(maGiuongs): IReadOnlyList<Giuong>
+    + LayPhongOGhep(soLuong: Integer, toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal): IReadOnlyList<Phong>
+    + LayPhongNguyenCan(toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal): IReadOnlyList<Phong>
+    + DocChiTiet(maPhong: String): Phong
+    + GiuGiuong(maGiuongs: IEnumerable<String>): IReadOnlyList<Giuong>
     + GiuNguyenPhong(): IReadOnlyList<Giuong>
-    + TinhTienCoc(soGiuong): Decimal
-    + PhuHopYeuCau(toaNha, loaiPhong, giaMin, giaMax): Boolean
+    + TinhTienCoc(soGiuong: Integer): Decimal
+    + PhuHopYeuCau(toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal): Boolean
     + CapNhat()
   }
 
@@ -138,13 +130,13 @@ package "TANG NGHIEP VU" #FCF3CF {
 
   class PhieuCoc {
     - MaPhieuCoc: String
-    - HanThanhToan: DateTime?
+    - HanThanhToan: DateTime
     - HinhThucThue: String
     - SoGiuongThue: Integer
     - TongTien: Decimal
     - TrangThai: String
     --
-    {static} + TaoMoi(...): PhieuCoc
+    + TaoMoi(hinhThucThue: String, khachHang: KhachHang, phong: Phong, giuongs: IReadOnlyList<Giuong>, maNhanVien: String, thoiDiem: DateTime): PhieuCoc
     + Them()
   }
 
@@ -157,42 +149,32 @@ package "TANG NGHIEP VU" #FCF3CF {
 }
 
 package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class PhienDuLieu {
-    + BatDauGiaoDich()
-    + Commit()
-    + Rollback()
-    + Dispose()
-  }
 
   class LichHenDB {
-    {static} + LayDanhSachKhachChoCoc(text): IReadOnlyList<LichHen>
-    {static} + DocChiTiet(maLichHen): LichHen?
-    {static} + GanPhieuCoc(lichHen)
+    + LayDanhSachKhachChoCoc(): IReadOnlyList<LichHen>
+    + LayDanhSachKhachChoCoc(text: String): IReadOnlyList<LichHen>
+    + DocChiTiet(maLichHen: String): LichHen
+    + GanPhieuCoc(lichHen: LichHen)
   }
 
   class KhachHangDB {
-    {static} + CapNhat(khachHang)
+    + CapNhat(khachHang: KhachHang)
   }
 
   class PhongDB {
-    {static} + LayPhongOGhep(...): IReadOnlyList<Phong>
-    {static} + LayPhongNguyenCan(...): IReadOnlyList<Phong>
-    {static} + DocChiTiet(maPhong): Phong?
-    {static} + CapNhat(phong)
+    + LayPhongOGhep(soLuong: Integer, toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal): IReadOnlyList<Phong>
+    + LayPhongNguyenCan(toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal): IReadOnlyList<Phong>
+    + DocChiTiet(maPhong: String): Phong
+    + CapNhat(phong: Phong)
   }
 
   class PhieuCocDB {
-    {static} + Them(phieu)
+    + Them(phieu: PhieuCoc)
   }
 }
 
-' Presentation phu thuoc BLL qua HTTP adapter.
-MHLapPhieuCoc "1" -- "0..1" LichHenController : HTTP GET
-MHLapPhieuCoc "1" -- "0..1" PhongController : HTTP GET
-MHLapPhieuCoc "1" -- "0..1" PhieuCocController : HTTP POST
-LichHenController "1" o-- "1" LapPhieuCoc
-PhongController "1" o-- "1" LapPhieuCoc
-PhieuCocController "1" o-- "1" LapPhieuCoc
+' Boundary dieu khien use case lap phieu coc.
+MHLapPhieuCoc  o--  LapPhieuCoc
 
 ' Trong BLL: duong thang, khong huong.
 LapPhieuCoc "1" -- "0..*" LichHen : xu ly
@@ -209,10 +191,9 @@ PhieuCoc "0..*" -- "1..*" Giuong : chi tiet
 PhieuCoc "1" -- "1..*" ThanhVienDangKy : gom
 
 ' Aggregation giua business va data access.
-LichHen "1" o-- "1" LichHenDB
-KhachHang "1" o-- "1" KhachHangDB
-Phong "1" o-- "1" PhongDB
-PhieuCoc "1" o-- "1" PhieuCocDB
-LapPhieuCoc "1" o-- "1" PhienDuLieu
+LichHen  o--  LichHenDB
+KhachHang  o--  KhachHangDB
+Phong  o--  PhongDB
+PhieuCoc  o-- PhieuCocDB
 
 @enduml

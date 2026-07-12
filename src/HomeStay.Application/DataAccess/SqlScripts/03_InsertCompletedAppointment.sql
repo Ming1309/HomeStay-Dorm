@@ -47,7 +47,7 @@ BEGIN
     VALUES (
         'LH_TEST_HT', 
         CAST(GETDATE() AS DATE), 
-        '14:30:00', 
+        '15:30:00', 
         N'XemPhong', 
         N'DaHoanThanh', 
         'PDK_TEST_01', 

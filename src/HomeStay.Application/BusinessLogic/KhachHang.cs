@@ -15,17 +15,28 @@ public sealed class KhachHang
     public string? SDT { get; set; }
     public string? Email { get; set; }
 
-    public void CapNhatTu(KhachHang thongTinMoi)
+    public bool CapNhatTu(KhachHang thongTinMoi)
     {
-        HoTen = thongTinMoi.HoTen.Trim();
+        var hoTen = thongTinMoi.HoTen.Trim();
+        var daThayDoi = HoTen != hoTen ||
+            NgaySinh != thongTinMoi.NgaySinh ||
+            GioiTinh != thongTinMoi.GioiTinh ||
+            QuocTich != thongTinMoi.QuocTich ||
+            LoaiGiayTo != thongTinMoi.LoaiGiayTo ||
+            SoGiayTo != thongTinMoi.SoGiayTo ||
+            SDT != thongTinMoi.SDT ||
+            Email != thongTinMoi.Email;
+        if (!daThayDoi) return false;
+
+        HoTen = hoTen;
         NgaySinh = thongTinMoi.NgaySinh;
         GioiTinh = thongTinMoi.GioiTinh;
         QuocTich = thongTinMoi.QuocTich;
         LoaiGiayTo = thongTinMoi.LoaiGiayTo;
         SoGiayTo = thongTinMoi.SoGiayTo;
-        DiaChiThuongTru = thongTinMoi.DiaChiThuongTru;
         SDT = thongTinMoi.SDT;
         Email = thongTinMoi.Email;
+        return true;
     }
 
     public Task CapNhat() => KhachHangDB.CapNhat(this);
