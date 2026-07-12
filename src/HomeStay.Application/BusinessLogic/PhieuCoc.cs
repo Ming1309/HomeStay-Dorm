@@ -15,6 +15,8 @@ public sealed class PhieuCoc
     public string MaKH { get; set; } = string.Empty;
     public string MaPhong { get; set; } = string.Empty;
     public string? MaNV { get; set; }
+    public KhachHang KhachHang { get; set; } = new();
+    public Phong Phong { get; set; } = new();
     public List<Giuong> Giuongs { get; set; } = [];
     public List<ThanhVienDangKy> ThanhViens { get; set; } = [];
 
@@ -27,18 +29,56 @@ public sealed class PhieuCoc
         return new PhieuCoc
         {
             MaPhieuCoc = maPhieu,
-            HanThanhToan = thoiDiem.AddHours(24),
+            HanThanhToan = null,
             HinhThucThue = hinhThucThue,
             SoGiuongThue = giuongs.Count,
-            TongTien = phong.TinhTienCoc(giuongs.Count),
+            TongTien = 0,
             ThoiDiemCoc = thoiDiem,
             MaKH = khachHang.MaKH,
             MaPhong = phong.MaPhong,
             MaNV = maNhanVien,
+            KhachHang = khachHang,
+            Phong = phong,
             Giuongs = giuongs.ToList(),
             ThanhViens = [new ThanhVienDangKy { MaPhieuCoc = maPhieu, MaKH = khachHang.MaKH }]
         };
     }
+
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null) =>
+        PhieuCocDB.LayDanhSachKhoiTao(text);
+
+    public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => PhieuCocDB.DocChiTiet(maPhieuCoc);
+
+    public int TinhTienDuKien()
+    {
+        KiemTraCoTheTinhTien();
+        SoGiuongThue = HinhThucThue == "NguyenCan" ? Phong.LoaiPhong.SucChua : Giuongs.Count;
+        TongTien = Phong.TinhTienCoc(SoGiuongThue);
+        return SoGiuongThue;
+    }
+
+    public void XacNhanTinhTien(DateTime thoiDiemXacNhan)
+    {
+        if (TrangThai != "KhoiTao")
+            throw new InvalidOperationException("Phiếu cọc không còn ở trạng thái khởi tạo.");
+        TinhTienDuKien();
+        HanThanhToan = thoiDiemXacNhan.AddHours(24);
+        TrangThai = "ChoThanhToan";
+    }
+
+    private void KiemTraCoTheTinhTien()
+    {
+        if (HinhThucThue is not ("NguyenCan" or "OGhep"))
+            throw new InvalidOperationException("Hình thức thuê không hợp lệ.");
+        if (Phong.LoaiPhong.GiaThue <= 0)
+            throw new InvalidOperationException("Phòng chưa có đơn giá hợp lệ.");
+        if (HinhThucThue == "NguyenCan" && Phong.LoaiPhong.SucChua <= 0)
+            throw new InvalidOperationException("Phòng chưa có sức chứa hợp lệ.");
+        if (HinhThucThue == "OGhep" && Giuongs.Count == 0)
+            throw new InvalidOperationException("Phiếu cọc chưa có giường thuê.");
+    }
+
+    public Task CapNhatTinhTien() => PhieuCocDB.CapNhatTinhTien(this);
 
     public Task Them() => PhieuCocDB.Them(this);
 }

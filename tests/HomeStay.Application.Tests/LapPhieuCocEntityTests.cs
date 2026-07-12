@@ -60,15 +60,45 @@ public sealed class LapPhieuCocEntityTests
     }
 
     [Fact]
-    public void PhieuCoc_TinhLaiTienVaHanThanhToanTuEntity()
+    public void PhieuCoc_MoiChiKhoiTaoChuaTinhTien()
     {
         var phong = TaoPhong();
         var giuongs = phong.GiuGiuong(["G1", "G2"]);
         var now = new DateTime(2026, 6, 15, 10, 0, 0);
         var phieu = PhieuCoc.TaoMoi("OGhep", new KhachHang { MaKH = "KH1" }, phong, giuongs, "NV1", now);
-        Assert.Equal(2_000_000m, phieu.TongTien);
-        Assert.Equal(now.AddHours(24), phieu.HanThanhToan);
+        Assert.Equal(0m, phieu.TongTien);
+        Assert.Null(phieu.HanThanhToan);
         Assert.Equal("ChoDuyet", Assert.Single(phieu.ThanhViens).TrangThaiDuyet);
+    }
+
+    [Fact]
+    public void PhieuCoc_OGhepTinhHaiThangVaXacNhan()
+    {
+        var phong = TaoPhong();
+        var giuongs = phong.GiuGiuong(["G1", "G2"]);
+        var phieu = PhieuCoc.TaoMoi("OGhep", new KhachHang { MaKH = "KH1" }, phong, giuongs, "NV1", new DateTime(2026, 6, 15));
+
+        phieu.TinhTienDuKien();
+        phieu.XacNhanTinhTien(new DateTime(2026, 6, 16, 10, 0, 0));
+
+        Assert.Equal(4_000_000m, phieu.TongTien);
+        Assert.Equal(2, phieu.SoGiuongThue);
+        Assert.Equal("ChoThanhToan", phieu.TrangThai);
+        Assert.Equal(new DateTime(2026, 6, 17, 10, 0, 0), phieu.HanThanhToan);
+    }
+
+    [Fact]
+    public void PhieuCoc_NguyenCanDungSucChuaToiDa()
+    {
+        var phong = TaoPhong();
+        phong.LoaiPhong.SucChua = 4;
+        var giuongs = phong.GiuNguyenPhong();
+        var phieu = PhieuCoc.TaoMoi("NguyenCan", new KhachHang { MaKH = "KH1" }, phong, giuongs, "NV1", new DateTime(2026, 6, 15));
+
+        phieu.TinhTienDuKien();
+
+        Assert.Equal(4, phieu.SoGiuongThue);
+        Assert.Equal(8_000_000m, phieu.TongTien);
     }
 
 
@@ -113,7 +143,7 @@ public sealed class LapPhieuCocEntityTests
     {
         MaPhong = "P1",
         TrangThai = "Trong",
-        LoaiPhong = new LoaiPhong { MaLP = "LP1", GiaThue = 1_000_000m },
+        LoaiPhong = new LoaiPhong { MaLP = "LP1", GiaThue = 1_000_000m, SucChua = 2 },
         Giuongs =
         [
             new Giuong { MaGiuong = "G1", MaPhong = "P1", TrangThai = "Trong" },
