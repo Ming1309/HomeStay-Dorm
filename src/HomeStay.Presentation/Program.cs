@@ -39,6 +39,7 @@ builder.Services.AddScoped<QuanLyNguoiDung>();
 builder.Services.AddScoped<TaoLichHen>();
 builder.Services.AddScoped<TraCuuLichHen>();
 builder.Services.AddScoped<SuaLichHen>();
+builder.Services.AddScoped<LapPhieuDangKy>();
 
 var app = builder.Build();
 
