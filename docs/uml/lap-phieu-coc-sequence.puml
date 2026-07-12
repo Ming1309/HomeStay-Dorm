@@ -6,55 +6,121 @@ autonumber 1 1
 skinparam shadowing false
 
 actor "Nhan vien kinh doanh" as NV
-participant ": MHLapPhieuCoc" as MH
-participant ": PhieuCocController" as API
-participant ": LapPhieuCoc" as LPC
-participant ": PhienDuLieu" as PDL
-participant ": LichHen" as LH
-participant ": LichHenDB" as LHDB
-participant ": khachHang" as KH
-participant ": KhachHangDB" as KHDB
-participant ": Phong" as P
-participant ": PhongDB" as PDB
-participant ": PhieuCoc" as PC
-participant ": PhieuCocDB" as PCDB
+boundary ": MHLapPhieuCoc" as MH
+control ": LapPhieuCoc" as LPC
+control ": LichHen" as LH
+entity ": LichHenDB" as LHDB
+control ": khachHang" as KH
+entity ": KhachHangDB" as KHDB
+control ": Phong" as P
+entity ": PhongDB" as PDB
+control ": PhieuCoc" as PC
+entity ": PhieuCocDB" as PCDB
+
+NV -> MH : HienThi()
+activate MH
+MH -> LPC : LayDanhSachKhachChoCoc()
+activate LPC
+LPC -> LH : LayDanhSachKhachChoCoc()
+activate LH
+LH -> LHDB : LayDanhSachKhachChoCoc()
+activate LHDB
+deactivate LHDB
+deactivate LH
+deactivate LPC
+
+NV -> MH : txtTimKiemKH_TextChanged(text)
+MH -> LPC : TimKiemKhachChoCoc(text)
+activate LPC
+LPC -> LH : LayDanhSachKhachChoCoc(text)
+activate LH
+LH -> LHDB : LayDanhSachKhachChoCoc(text)
+activate LHDB
+deactivate LHDB
+deactivate LH
+deactivate LPC
+
+NV -> MH : grvKhachChoCoc_CellClick(maLichHen)
+MH -> LPC : LayChiTietLichHen(maLichHen)
+activate LPC
+LPC -> LH : DocChiTiet(maLichHen)
+activate LH
+LH -> LHDB : DocChiTiet(maLichHen)
+activate LHDB
+deactivate LHDB
+note right of LHDB
+  JOIN LichHen -> PhieuDangKy -> KhachHang
+  Gan khachHang vao LH.KhachHang
+end note
+deactivate LH
+deactivate LPC
+
+NV -> MH : btnChinhSua_Click()
+MH -> MH : mo hoac khoa thong tin khach hang
+
+NV -> MH : rdoHinhThucThue_CheckedChanged(hinhThucThue)
+MH -> MH : xoa lua chon phong va giuong cu
+
+NV -> MH : btnTimKiem_Click()
+alt HinhThucThue = NguyenCan
+  MH -> LPC : LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax)
+  activate LPC
+  LPC -> P : LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax)
+  activate P
+  P -> PDB : LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  deactivate LPC
+else HinhThucThue = OGhep
+  MH -> LPC : LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax)
+  activate LPC
+  LPC -> P : LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax)
+  activate P
+  P -> PDB : LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  deactivate LPC
+end
+
+opt HinhThucThue = NguyenCan
+  NV -> MH : grvDanhSachPhong_CellClick(maPhong)
+  MH -> MH : chon phong va toan bo giuong
+end
+opt HinhThucThue = OGhep
+  NV -> MH : grvDanhSachGiuong_CellClick(maPhong, maGiuong)
+  MH -> MH : chon hoac bo chon giuong
+end
 
 NV -> MH : btnTaoYeuCauCoc_Click()
-activate MH
-MH -> API : POST /api/deposits
-activate API
-API -> LPC : TaoPhieuCoc(...)
+MH -> LPC : TaoPhieuCoc(maLichHen, thongTinKhachHang, maPhong, danhSachGiuong, hinhThucThue, maNhanVien)
 activate LPC
-
-LPC -> PDL : BatDauGiaoDich()
-activate PDL
-PDL --> LPC
-deactivate PDL
 
 LPC -> LH : DocChiTiet(maLichHen)
 activate LH
 LH -> LHDB : DocChiTiet(maLichHen)
 activate LHDB
-LHDB --> LH : lichHen
 deactivate LHDB
 LH -> LH : KiemTraCoTheLapPhieuCoc()
-LH --> LPC : lichHen
 deactivate LH
 
 LPC -> KH : CapNhatTu(thongTinKhachHang)
 activate KH
-KH -> KHDB : CapNhat(khachHang)
-activate KHDB
-KHDB --> KH
-deactivate KHDB
-KH --> LPC
 deactivate KH
+opt Thong tin khach hang thay doi
+  LPC -> KH : CapNhat()
+  activate KH
+  KH -> KHDB : CapNhat(khachHang)
+  activate KHDB
+  deactivate KHDB
+  deactivate KH
+end
 
 LPC -> P : DocChiTiet(maPhong)
 activate P
 P -> PDB : DocChiTiet(maPhong)
 activate PDB
-PDB --> P : phong
 deactivate PDB
 
 alt HinhThucThue = NguyenCan
@@ -62,55 +128,37 @@ alt HinhThucThue = NguyenCan
 else HinhThucThue = OGhep
   P -> P : GiuGiuong(danhSachGiuong)
 end
-P --> LPC : giuongs
 deactivate P
 
-LPC -> PC : TaoMoi(...)
+LPC -> PC : TaoMoi(hinhThucThue, khachHang, phong, giuongs, maNhanVien, thoiDiemCoc)
+activate PC
+deactivate PC
+LPC -> LH : GanPhieuCoc(maPhieuCoc)
+activate LH
+LH -> LH : gan gia tri MaPhieuCoc
+deactivate LH
+
+LPC -> PC : Them()
 activate PC
 PC -> PCDB : Them(phieuCoc)
 activate PCDB
-PCDB --> PC
 deactivate PCDB
-PC --> LPC : phieuCoc
 deactivate PC
 
 LPC -> P : CapNhat()
 activate P
 P -> PDB : CapNhat(phong)
 activate PDB
-PDB --> P
 deactivate PDB
-P --> LPC
 deactivate P
 
-LPC -> LH : GanPhieuCoc(maPhieuCoc)
+LPC -> LH : LuuPhieuCoc()
 activate LH
 LH -> LHDB : GanPhieuCoc(lichHen)
 activate LHDB
-LHDB --> LH
 deactivate LHDB
-LH --> LPC
 deactivate LH
 
-alt Thanh cong
-  LPC -> PDL : Commit()
-  activate PDL
-  PDL --> LPC
-  deactivate PDL
-  LPC --> API : phieuCoc
-  API --> MH : HTTP 200
-  MH --> NV : Hien thi tao phieu thanh cong
-else Loi
-  LPC -> PDL : Rollback()
-  activate PDL
-  PDL --> LPC
-  deactivate PDL
-  LPC --> API : InvalidOperationException
-  API --> MH : HTTP 409
-  MH --> NV : Hien thi loi
-end
-
 deactivate LPC
-deactivate API
 deactivate MH
 @enduml

@@ -14,6 +14,7 @@ import {
 import { useEffect, useMemo, type ComponentType } from "react";
 
 import { cn } from "@/shared/lib/utils";
+import { useRoleGuard } from "@/app/router/useRoleGuard";
 import { useWorkflowStore } from "@/app/providers/workflow-store";
 
 

@@ -57,8 +57,8 @@ public sealed class LapPhieuCoc
             lichHen.KiemTraCoTheLapPhieuCoc();
 
             var khachHang = lichHen.KhachHang!;
-            khachHang.CapNhatTu(thongTinKhachHang);
-            await khachHang.CapNhat();
+            if (khachHang.CapNhatTu(thongTinKhachHang))
+                await khachHang.CapNhat();
 
             var phong = await Phong.DocChiTiet(maPhong)
                 ?? throw new InvalidOperationException("Không tìm thấy phòng.");

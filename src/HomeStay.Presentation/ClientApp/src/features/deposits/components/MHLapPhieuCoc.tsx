@@ -74,7 +74,169 @@ type PhongApiResponse = {
   giuongs?: GiuongApiResponse[];
 };
 
-export function MHLapPhieuCoc({
+type LichHenApiResponse = {
+  maLH: string;
+  ngayHen?: string;
+  khachHang?: {
+    maKH?: string;
+    hoTen?: string;
+    sdt?: string;
+    email?: string;
+    gioiTinh?: string;
+    ngaySinh?: string;
+    quocTich?: string;
+    loaiGiayTo?: string;
+    soGiayTo?: string;
+  };
+};
+
+function chuyenLichHen(api: LichHenApiResponse): Appointment {
+  return {
+    id: api.maLH,
+    code: api.maLH,
+    customerId: api.khachHang?.maKH,
+    customerName: api.khachHang?.hoTen || "Khách hàng",
+    phone: api.khachHang?.sdt || "",
+    email: api.khachHang?.email || "",
+    gender: api.khachHang?.gioiTinh === "Nam" ? "male" : "female",
+    dob: api.khachHang?.ngaySinh ? api.khachHang.ngaySinh.split("T")[0] : "",
+    nationality: api.khachHang?.quocTich,
+    docType: api.khachHang?.loaiGiayTo === "Hộ chiếu"
+      ? "Hộ chiếu"
+      : api.khachHang?.loaiGiayTo === "CCCD"
+        ? "CCCD"
+        : undefined,
+    docNumber: api.khachHang?.soGiayTo,
+    type: "viewing",
+    status: "success",
+    createdAt: api.ngayHen || new Date().toISOString(),
+  };
+}
+
+export function MHLapPhieuCoc() {
+  const [tuKhoa, setTuKhoa] = useState("");
+  const [danhSachLichHen, setDanhSachLichHen] = useState<Appointment[]>([]);
+  const [lichHenDaChon, setLichHenDaChon] = useState<Appointment | null>(null);
+  const [maLichHenDaXuLy, setMaLichHenDaXuLy] = useState<string[]>([]);
+
+  useEffect(() => {
+    const taiDanhSachLichHen = async () => {
+      try {
+        const endpoint = tuKhoa.trim()
+          ? `/api/appointments/search?text=${encodeURIComponent(tuKhoa)}`
+          : "/api/appointments/pending";
+        const phanHoi = await fetch(endpoint);
+        if (!phanHoi.ok) return;
+        const duLieu = (await phanHoi.json()) as LichHenApiResponse[];
+        setDanhSachLichHen(duLieu.map(chuyenLichHen));
+      } catch (error) {
+        console.error("Lỗi khi tải lịch hẹn", error);
+      }
+    };
+
+    const boDem = setTimeout(() => void taiDanhSachLichHen(), 300);
+    return () => clearTimeout(boDem);
+  }, [tuKhoa]);
+
+  const danhSachHienThi = useMemo(
+    () => danhSachLichHen.filter((lichHen) => !maLichHenDaXuLy.includes(lichHen.id)),
+    [danhSachLichHen, maLichHenDaXuLy],
+  );
+
+  const grvKhachChoCoc_CellClick = async (lichHen: Appointment) => {
+    try {
+      const phanHoi = await fetch(`/api/appointments/${encodeURIComponent(lichHen.id)}`);
+      if (!phanHoi.ok) {
+        setLichHenDaChon(lichHen);
+        return;
+      }
+      const duLieu = (await phanHoi.json()) as LichHenApiResponse;
+      setLichHenDaChon(chuyenLichHen(duLieu));
+    } catch {
+      setLichHenDaChon(lichHen);
+    }
+  };
+
+  return (
+    <main className="flex h-full min-h-0 bg-gray-50">
+      <aside className="flex h-full w-[350px] shrink-0 flex-col border-r border-gray-200 bg-white">
+        <div className="border-b border-gray-200 px-4 py-3">
+          <h2 className="text-sm font-bold text-gray-800">Khách hàng chờ cọc</h2>
+          <p className="mt-0.5 text-xs text-gray-400">{danhSachHienThi.length} lịch hẹn xem phòng thành công</p>
+        </div>
+        <div className="sticky top-0 z-10 border-b border-gray-100 bg-white px-3 py-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+            <Input
+              value={tuKhoa}
+              onChange={(event) => setTuKhoa(event.target.value)}
+              placeholder="Tìm lịch hẹn, khách hàng..."
+              className="h-8 pl-8 text-xs"
+            />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {danhSachHienThi.length === 0 ? (
+            <div className="flex items-center justify-center p-6 text-center text-sm text-gray-400">
+              Không có lịch hẹn phù hợp.
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {danhSachHienThi.map((item) => {
+                const appointmentDate = new Date(item.createdAt);
+                return (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => void grvKhachChoCoc_CellClick(item)}
+                      className={cn(
+                        "flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left hover:bg-emerald-50/60",
+                        lichHenDaChon?.id === item.id && "border-l-emerald-500 bg-emerald-50",
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-blue-600">{item.code}</span>
+                        <Badge className="h-5 bg-emerald-100 text-[10px] text-emerald-700">
+                          Xem phòng thành công
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800">{item.customerName}</p>
+                      <p className="text-xs text-gray-500">SĐT: {item.phone}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Intl.DateTimeFormat("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }).format(appointmentDate)}
+                      </p>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </aside>
+      {lichHenDaChon ? (
+        <FormLapPhieuCoc
+          lichHen={lichHenDaChon}
+          khiHoanTat={(maLichHen) => {
+            setMaLichHenDaXuLy((hienTai) => [...hienTai, maLichHen]);
+            setLichHenDaChon(null);
+          }}
+        />
+      ) : (
+        <section className="flex flex-1 items-center justify-center text-sm text-gray-500">
+          Chọn một lịch hẹn để lập phiếu cọc.
+        </section>
+      )}
+    </main>
+  );
+}
+
+function FormLapPhieuCoc({
   lichHen,
   khiHoanTat,
 }: {
@@ -187,21 +349,32 @@ export function MHLapPhieuCoc({
       
       const duLieuPhong = (await phanHoi.json()) as PhongApiResponse[];
       
-      const ketQuaTimKiem: Room[] = duLieuPhong.map((phong) => ({
-        id: phong.maPhong,
-        code: phong.soPhong,
-        building: phong.toaNha,
-        floor: 1,
-        type: phong.loaiPhong.tenLoaiPhong,
-        basePrice: phong.loaiPhong.giaThue,
-        maxCapacity: phong.loaiPhong.sucChua,
-        genderLimit: "none",
-        beds: phong.giuongs?.map((giuong) => ({
+      const ketQuaTimKiem: Room[] = duLieuPhong.map((phong) => {
+        const beds: Bed[] = phong.giuongs?.map((giuong) => ({
           id: giuong.maGiuong,
           code: giuong.soGiuong,
-          status: giuong.trangThai === "Trong" ? "available" : "occupied"
-        })) || []
-      }));
+          status: giuong.trangThai === "Trong" ? "available" : "occupied",
+        })) || [];
+        const soGiuongTrong = beds.filter((giuong) => giuong.status === "available").length;
+        const status = beds.length === 0
+          ? "maintenance"
+          : soGiuongTrong === beds.length
+            ? "available"
+            : soGiuongTrong > 0
+              ? "partially_available"
+              : "full";
+        return {
+          id: phong.maPhong,
+          code: phong.soPhong,
+          area: phong.toaNha,
+          type: phong.loaiPhong.tenLoaiPhong,
+          basePrice: phong.loaiPhong.giaThue,
+          maxCapacity: phong.loaiPhong.sucChua,
+          beds,
+          assets: [],
+          status,
+        };
+      });
 
       setDanhSachPhong(ketQuaTimKiem);
       setDaTimKiem(true);

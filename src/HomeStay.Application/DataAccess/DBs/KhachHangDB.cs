@@ -28,7 +28,7 @@ public static class KhachHangDB
         const string sql = """
             UPDATE KhachHang SET HoTen=@HoTen, NgaySinh=@NgaySinh, GioiTinh=@GioiTinh,
                 QuocTich=@QuocTich, LoaiGiayTo=@LoaiGiayTo, SoGiayTo=@SoGiayTo,
-                DiaChiThuongTru=@DiaChiThuongTru, SDT=@SDT, Email=@Email
+                SDT=@SDT, Email=@Email
             WHERE MaKH=@MaKH
             """;
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, khachHang, PhienDuLieu.Session.Transaction) != 1)

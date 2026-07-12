@@ -1,5 +1,7 @@
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Application.DataAccess.DbConnections;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
+builder.Services.AddSingleton<AuthDatabaseInitializer>();
 builder.Services.AddScoped<Func<PhienDuLieu>>(provider =>
     () => new PhienDuLieu(new SqlSession(provider.GetRequiredService<ISqlConnectionFactory>())));
 

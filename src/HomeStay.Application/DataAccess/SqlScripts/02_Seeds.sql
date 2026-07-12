@@ -61,7 +61,15 @@ VALUES
 ('G005', N'Giường A', N'Trong', 'P002'),
 ('G006', N'Giường B', N'Trong', 'P002'),
 ('G007', N'Giường C', N'Trong', 'P002'),
-('G008', N'Giường D', N'Trong', 'P002');
+('G008', N'Giường D', N'Trong', 'P002'),
+
+-- Dành cho phòng 201 (6 giường, khớp LP02)
+('G009', N'Giường A', N'Trong', 'P003'),
+('G010', N'Giường B', N'Trong', 'P003'),
+('G011', N'Giường C', N'Trong', 'P003'),
+('G012', N'Giường D', N'Trong', 'P003'),
+('G013', N'Giường E', N'Trong', 'P003'),
+('G014', N'Giường F', N'Trong', 'P003');
 GO
 
 -- 6. Dịch Vụ

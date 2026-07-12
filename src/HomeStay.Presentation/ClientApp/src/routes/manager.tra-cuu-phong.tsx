@@ -1,9 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import { RoomLookupWorkspace } from "@/features/rooms/components/RoomLookupWorkspace";
 
 export const Route = createFileRoute('/manager/tra-cuu-phong')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/manager/tra-cuu-phong"!</div>
-}
+  component: RoomLookupWorkspace,
+});

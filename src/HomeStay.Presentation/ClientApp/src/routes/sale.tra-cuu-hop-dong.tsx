@@ -1,9 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import { ContractLookupWorkspace } from "@/features/contracts/components/ContractLookupWorkspace";
 
 export const Route = createFileRoute('/sale/tra-cuu-hop-dong')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/sale/tra-cuu-hop-dong"!</div>
-}
+  component: ContractLookupWorkspace,
+});

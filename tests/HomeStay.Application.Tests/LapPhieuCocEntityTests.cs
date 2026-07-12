@@ -71,6 +71,44 @@ public sealed class LapPhieuCocEntityTests
         Assert.Equal("ChoDuyet", Assert.Single(phieu.ThanhViens).TrangThaiDuyet);
     }
 
+
+    [Fact]
+    public void KhachHang_ChiDanhDauCapNhatKhiThongTinThayDoi()
+    {
+        var khachHang = new KhachHang
+        {
+            MaKH = "KH1",
+            HoTen = "Nguyen Van A",
+            NgaySinh = new DateTime(2000, 1, 1),
+            GioiTinh = "Nam",
+            QuocTich = "Viet Nam",
+            LoaiGiayTo = "CCCD",
+            SoGiayTo = "001",
+            DiaChiThuongTru = "Quan 1",
+            SDT = "0900000000",
+            Email = "a@example.com"
+        };
+        var thongTinKhongDoi = new KhachHang
+        {
+            HoTen = "Nguyen Van A",
+            NgaySinh = new DateTime(2000, 1, 1),
+            GioiTinh = "Nam",
+            QuocTich = "Viet Nam",
+            LoaiGiayTo = "CCCD",
+            SoGiayTo = "001",
+            DiaChiThuongTru = "Quan 1",
+            SDT = "0900000000",
+            Email = "a@example.com"
+        };
+
+        Assert.False(khachHang.CapNhatTu(thongTinKhongDoi));
+
+        thongTinKhongDoi.Email = "moi@example.com";
+        Assert.True(khachHang.CapNhatTu(thongTinKhongDoi));
+        Assert.Equal("moi@example.com", khachHang.Email);
+        Assert.Equal("Quan 1", khachHang.DiaChiThuongTru);
+    }
+
     private static Phong TaoPhong() => new()
     {
         MaPhong = "P1",
