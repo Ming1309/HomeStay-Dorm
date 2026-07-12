@@ -51,7 +51,7 @@ public sealed class Phong
     }
 
     public decimal TinhTienCoc(int soGiuong) =>
-        soGiuong > 0 ? LoaiPhong.GiaThue * soGiuong : throw new InvalidOperationException("Số giường thuê không hợp lệ.");
+        soGiuong > 0 ? LoaiPhong.GiaThue * 2 * soGiuong : throw new InvalidOperationException("Số giường thuê không hợp lệ.");
 
     public bool PhuHopYeuCau(string? toaNha, string? loaiPhong, decimal giaMin, decimal giaMax) =>
         (string.IsNullOrWhiteSpace(toaNha) || ToaNha == toaNha) &&

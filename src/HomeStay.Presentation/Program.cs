@@ -25,6 +25,7 @@ builder.Services.AddScoped<Func<PhienDuLieu>>(provider =>
 // Register Business Logic dependencies
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<LapPhieuCoc>();
+builder.Services.AddScoped<TinhTienCoc>();
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();
