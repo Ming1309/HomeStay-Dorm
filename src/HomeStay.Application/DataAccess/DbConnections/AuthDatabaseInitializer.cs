@@ -61,7 +61,7 @@ public sealed class AuthDatabaseInitializer(ISqlConnectionFactory factory)
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Không thể tự khởi tạo schema xác thực: {ex.Message}. Hãy chạy 04_Auth.sql trước khi đăng nhập.");
+            Console.Error.WriteLine($"Không thể tự khởi tạo schema xác thực: {ex.Message}. Hãy chạy 03_Auth.sql trước khi đăng nhập.");
         }
     }
 }
