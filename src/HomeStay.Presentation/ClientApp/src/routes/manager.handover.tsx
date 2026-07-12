@@ -1,9 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import { ManagerHandoverPage } from "@/features/handovers/pages/ManagerHandoverPage";
 
 export const Route = createFileRoute('/manager/handover')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/manager/handover"!</div>
-}
+  component: ManagerHandoverPage,
+});

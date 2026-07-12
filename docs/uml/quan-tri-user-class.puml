@@ -1,0 +1,110 @@
+@startuml
+title SO DO LOP 3 TANG - QUAN TRI NGUOI DUNG
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHQuanLyNguoiDung {
+    - txtTimKiem: TextBox
+    - grvDanhSachTaiKhoan: GridView
+    - txtHoTen: TextBox
+    - txtSDT: TextBox
+    - txtEmail: TextBox
+    - txtTenDangNhap: TextBox
+    - txtMatKhauTam: TextBox
+    - lstVaiTro: ListBox
+    - lstChiNhanh: ListBox
+    - lstTrangThai: ListBox
+    - btnThem: Button
+    - btnSua: Button
+    - btnKhoa: Button
+    - btnDatLaiMatKhau: Button
+    --
+    + HienThi()
+    + btnThem_Click()
+    + btnSua_Click()
+    + btnKhoa_Click()
+    + btnDatLaiMatKhau_Click()
+  }
+
+}
+
+package "TANG NGHIEP VU" #FCF3CF {
+  class QuanLyNguoiDung {
+    + LayDanhSach(): IReadOnlyList<TaiKhoan>
+    + Tao(taiKhoan: TaiKhoan, nhanVien: NhanVien, matKhauTam: String): TaiKhoan
+    + CapNhat(taiKhoan: TaiKhoan, nhanVien: NhanVien)
+    + DoiTrangThai(maTK: String, trangThai: String, maTKThucHien: String)
+    + DatLaiMatKhau(maTK: String, matKhauTam: String)
+  }
+
+  class TaiKhoan {
+    - MaTK: String
+    - TenDangNhap: String
+    - MatKhauHash: String
+    - TrangThai: String
+    - Email: String
+    - PhongBan: String
+    - MaNV: String
+    --
+    + DangHoatDong(): Boolean
+    + LaQuanTri(): Boolean
+    + Khoa()
+    + MoKhoa()
+    + VoHieuHoa()
+    + DoiMatKhau(hash: String)
+    + LayDanhSach(): IReadOnlyList<TaiKhoan>
+    + Them()
+    + CapNhat()
+    + CapNhatTrangThai()
+    + DatMatKhau()
+  }
+
+  class NhanVien {
+    - MaNV: String
+    - HoTen: String
+    - SDT: String
+    - VaiTro: String
+    - MaCN: String
+    --
+    + Them()
+    + CapNhat()
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class TaiKhoanDB {
+    + Doc(maTK: String): TaiKhoan
+    + LayDanhSach(): IReadOnlyList<TaiKhoan>
+    + Them(taiKhoan: TaiKhoan)
+    + CapNhat(taiKhoan: TaiKhoan)
+    + CapNhatTrangThai(maTK: String, trangThai: String)
+    + DatMatKhau(taiKhoan: TaiKhoan)
+  }
+
+  class NhanVienDB {
+    + Them(nhanVien: NhanVien)
+    + CapNhat(nhanVien: NhanVien)
+  }
+}
+
+' Giao dien su dung use case.
+MHQuanLyNguoiDung o-- QuanLyNguoiDung
+
+' Lop dieu phoi tap hop cac lop nghiep vu lien quan.
+QuanLyNguoiDung o-- TaiKhoan : quan ly
+QuanLyNguoiDung o-- NhanVien : quan ly
+TaiKhoan "0..*" -- "1" NhanVien : thuoc
+
+' Aggregation giua business va data access.
+TaiKhoan o-- TaiKhoanDB
+NhanVien o-- NhanVienDB
+@enduml

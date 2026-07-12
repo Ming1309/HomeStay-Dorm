@@ -2,37 +2,61 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 export type UserRole = "accountant" | "manager" | "sale" | "admin";
 
-type AuthState = {
-  role: UserRole | null;
-  isHydrated: boolean;
-  setRole: (role: UserRole | null) => void;
+export type CurrentUser = {
+  maTK: string;
+  tenDangNhap: string;
+  maNV: string;
+  vaiTro: string;
+  role: UserRole;
 };
 
-const ROLE_KEY = "homestay-current-role-v1";
+type AuthState = {
+  user: CurrentUser | null;
+  role: UserRole | null;
+  isHydrated: boolean;
+  setUser: (user: CurrentUser | null) => void;
+  setRole: (role: UserRole | null) => void;
+  logout: () => Promise<void>;
+};
+
 const AuthContext = createContext<AuthState | null>(null);
 
+function mapRole(vaiTro: string): UserRole | null {
+  return ({ Sale: "sale", KeToan: "accountant", QuanLy: "manager", QuanTri: "admin" } as const)[vaiTro as "Sale" | "KeToan" | "QuanLy" | "QuanTri"] ?? null;
+}
+
+function mapUser(value: Omit<CurrentUser, "role"> & { vaiTro: string }): CurrentUser | null {
+  const role = mapRole(value.vaiTro);
+  return role ? { ...value, role } : null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [role, setRoleState] = useState<UserRole | null>(null);
+  const [user, setUserState] = useState<CurrentUser | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    const savedRole = localStorage.getItem(ROLE_KEY) as UserRole | null;
-    if (savedRole) setRoleState(savedRole);
-    setIsHydrated(true);
+    fetch("/api/auth/me")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((value) => setUserState(value ? mapUser(value) : null))
+      .catch(() => setUserState(null))
+      .finally(() => setIsHydrated(true));
   }, []);
 
-  const value = useMemo<AuthState>(
-    () => ({
-      role,
-      isHydrated,
-      setRole(nextRole) {
-        setRoleState(nextRole);
-        if (nextRole) localStorage.setItem(ROLE_KEY, nextRole);
-        else localStorage.removeItem(ROLE_KEY);
-      },
-    }),
-    [role, isHydrated],
-  );
+  const value = useMemo<AuthState>(() => ({
+    user,
+    role: user?.role ?? null,
+    isHydrated,
+    setUser: setUserState,
+    setRole(nextRole) {
+      if (!nextRole) {
+        void fetch("/api/auth/logout", { method: "POST" }).finally(() => setUserState(null));
+      }
+    },
+    async logout() {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUserState(null);
+    },
+  }), [user, isHydrated]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -1,9 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import { RegistrationLookupWorkspace } from "@/features/registrations/components/RegistrationLookupWorkspace";
 
 export const Route = createFileRoute('/sale/tra-cuu-phieu-dang-ky')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/sale/tra-cuu-phieu-dang-ky"!</div>
-}
+  component: RegistrationLookupWorkspace,
+});

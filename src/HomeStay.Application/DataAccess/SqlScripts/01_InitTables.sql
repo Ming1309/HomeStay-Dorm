@@ -53,6 +53,18 @@ CREATE TABLE NhanVien (
 );
 GO
 
+CREATE TABLE TaiKhoan (
+    MaTK                 VARCHAR(20)    NOT NULL,
+    TenDangNhap          VARCHAR(100)   NOT NULL,
+    MatKhauHash          NVARCHAR(500)  NOT NULL,
+    TrangThai            NVARCHAR(20)   NOT NULL,
+    LanDangNhapCuoi      DATETIME       NULL,
+    Email                VARCHAR(100)   NULL,
+    PhongBan             NVARCHAR(100)  NULL,
+    MaNV                 VARCHAR(20)    NOT NULL
+);
+GO
+
 CREATE TABLE LoaiPhong (
     MaLP         VARCHAR(20)    NOT NULL,
     TenLoaiPhong NVARCHAR(200)  NOT NULL,
@@ -317,6 +329,7 @@ GO
 ALTER TABLE KhachHang        ADD CONSTRAINT PK_KhachHang        PRIMARY KEY (MaKH);
 ALTER TABLE ChiNhanh         ADD CONSTRAINT PK_ChiNhanh         PRIMARY KEY (MaCN);
 ALTER TABLE NhanVien         ADD CONSTRAINT PK_NhanVien         PRIMARY KEY (MaNV);
+ALTER TABLE TaiKhoan         ADD CONSTRAINT PK_TaiKhoan         PRIMARY KEY (MaTK);
 ALTER TABLE LoaiPhong        ADD CONSTRAINT PK_LoaiPhong        PRIMARY KEY (MaLP);
 ALTER TABLE Phong            ADD CONSTRAINT PK_Phong            PRIMARY KEY (MaPhong);
 ALTER TABLE Giuong           ADD CONSTRAINT PK_Giuong           PRIMARY KEY (MaGiuong);
@@ -352,6 +365,8 @@ ALTER TABLE Phong        ADD CONSTRAINT UQ_Phong_SoPhong        UNIQUE (MaCN, So
 ALTER TABLE Giuong       ADD CONSTRAINT UQ_Giuong_SoGiuong      UNIQUE (MaPhong, SoGiuong);
 ALTER TABLE KhachHang    ADD CONSTRAINT UQ_KhachHang_SoGiayTo   UNIQUE (SoGiayTo);
 ALTER TABLE HopDong      ADD CONSTRAINT UQ_HopDong_PhieuCoc     UNIQUE (MaPhieuCoc);
+ALTER TABLE TaiKhoan     ADD CONSTRAINT UQ_TaiKhoan_TenDangNhap UNIQUE (TenDangNhap);
+ALTER TABLE TaiKhoan     ADD CONSTRAINT UQ_TaiKhoan_MaNV        UNIQUE (MaNV);
 GO
 
 
@@ -386,7 +401,7 @@ GO
 
 -- NhanVien
 ALTER TABLE NhanVien ADD CONSTRAINT CK_NhanVien_VaiTro
-    CHECK (VaiTro IN (N'Sale', N'KeToan', N'QuanLy'));
+    CHECK (VaiTro IN (N'Sale', N'KeToan', N'QuanLy', N'QuanTri'));
 
 -- LoaiPhong
 ALTER TABLE LoaiPhong ADD CONSTRAINT CK_LoaiPhong_SucChua
@@ -527,6 +542,9 @@ GO
 -- NhanVien
 ALTER TABLE NhanVien ADD CONSTRAINT FK_NhanVien_ChiNhanh
     FOREIGN KEY (MaCN) REFERENCES ChiNhanh(MaCN);
+
+ALTER TABLE TaiKhoan ADD CONSTRAINT FK_TaiKhoan_NhanVien
+    FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
 
 -- Phong
 ALTER TABLE Phong ADD CONSTRAINT FK_Phong_LoaiPhong
