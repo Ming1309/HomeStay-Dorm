@@ -12,12 +12,12 @@ control ": PhieuCoc" as PC
 control ": Phong" as P
 entity ": PhieuCocDB" as PCDB
 
-KT -> MH : loadItems(text)
+KT -> MH : taiDanhSach(text)
 MH -> TTC : LayDanhSachKhoiTao(text)
 TTC -> PC : LayDanhSachKhoiTao(text)
 PC -> PCDB : LayDanhSachKhoiTao(text)
 
-KT -> MH : selectItem(maPhieuCoc)
+KT -> MH : chonPhieuCoc(maPhieuCoc)
 MH -> TTC : LayChiTietVaTinhTien(maPhieuCoc)
 TTC -> PC : DocChiTiet(maPhieuCoc)
 PC -> PCDB : DocChiTiet(maPhieuCoc)
@@ -29,7 +29,7 @@ end
 PC -> P : TinhTienCoc(soGiuong)
 MH --> KT : hien thi cong thuc va TongTien
 
-KT -> MH : confirm()
+KT -> MH : xacNhan()
 MH -> TTC : XacNhanTinhTien(maPhieuCoc)
 TTC -> PC : DocChiTiet(maPhieuCoc)
 PC -> PCDB : DocChiTiet(maPhieuCoc)

@@ -13,9 +13,22 @@ skinparam class {
 
 package "TANG GIAO DIEN" #EAF2F8 {
   class MHTinhTienCoc {
-    + loadItems(text: String)
-    + selectItem(maPhieuCoc: String)
-    + confirm()
+    - txtTimKiemPhieu: TextBox
+    - grvPhieuCocKhoiTao: GridView
+    - lblMaPhieuCoc: Label
+    - lblHoTenKhachHang: Label
+    - lblPhong: Label
+    - lblHinhThucThue: Label
+    - lblGiaThue: Label
+    - lblSoGiuongTinhTien: Label
+    - lblCongThucTinhTien: Label
+    - lblTongTien: Label
+    - grvGiuongDaChon: GridView
+    - btnXacNhan: Button
+    --
+    + taiDanhSach(text: String)
+    + chonPhieuCoc(maPhieuCoc: String)
+    + xacNhan()
   }
 }
 

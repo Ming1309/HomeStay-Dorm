@@ -26,16 +26,16 @@ async function readResponse<T>(response: Response): Promise<T> {
   throw new Error(body?.message ?? body?.Message ?? "Không thể xử lý phiếu cọc.");
 }
 
-export async function listInitialDeposits(text = "") {
+export async function layDanhSachKhoiTao(text = "") {
   const query = text.trim() ? `?text=${encodeURIComponent(text.trim())}` : "";
   return readResponse<DepositInitialSummary[]>(await fetch(`/api/deposits/initial${query}`));
 }
 
-export async function getDepositCalculation(id: string) {
+export async function layChiTietTinhTien(id: string) {
   return readResponse<DepositCalculation>(await fetch(`/api/deposits/${encodeURIComponent(id)}`));
 }
 
-export async function confirmDepositCalculation(id: string) {
+export async function xacNhanTinhTien(id: string) {
   return readResponse<DepositCalculation>(
     await fetch(`/api/deposits/${encodeURIComponent(id)}/xac-nhan-tinh-tien`, { method: "POST" }),
   );
