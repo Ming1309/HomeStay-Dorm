@@ -4,6 +4,8 @@ using HomeStay.Application.DataAccess.DbConnections;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<Func<PhienDuLieu>>(provider =>
@@ -12,8 +14,15 @@ builder.Services.AddScoped<Func<PhienDuLieu>>(provider =>
 // Register Business Logic dependencies
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<LapPhieuCoc>();
+builder.Services.AddScoped<LapPhieuDangKy>();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.MapControllers();
 

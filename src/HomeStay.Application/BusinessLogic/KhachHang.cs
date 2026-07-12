@@ -15,6 +15,23 @@ public sealed class KhachHang
     public string? SDT { get; set; }
     public string? Email { get; set; }
 
+    public static KhachHang TaoMoi(string hoTen, string? gioiTinh, string? sdt, string? email,
+        string? diaChiThuongTru, string? loaiGiayTo, string? soGiayTo, DateTime thoiDiem) =>
+        new()
+        {
+            MaKH = $"KH{thoiDiem:yyyyMMddHHmmssfff}",
+            HoTen = hoTen.Trim(),
+            GioiTinh = gioiTinh,
+            SDT = sdt,
+            Email = email,
+            DiaChiThuongTru = diaChiThuongTru,
+            LoaiGiayTo = loaiGiayTo,
+            SoGiayTo = soGiayTo
+        };
+
+    public static Task<KhachHang?> KiemTraTonTai(string soGiayTo) =>
+        KhachHangDB.TimTheoSoGiayTo(soGiayTo);
+
     public void CapNhatTu(KhachHang thongTinMoi)
     {
         HoTen = thongTinMoi.HoTen.Trim();
@@ -29,4 +46,5 @@ public sealed class KhachHang
     }
 
     public Task CapNhat() => KhachHangDB.CapNhat(this);
+    public Task Them() => KhachHangDB.Them(this);
 }
