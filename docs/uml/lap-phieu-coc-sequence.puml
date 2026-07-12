@@ -1,0 +1,116 @@
+@startuml
+title SO DO TUAN TU - LAP PHIEU COC
+
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+
+actor "Nhan vien kinh doanh" as NV
+participant ": MHLapPhieuCoc" as MH
+participant ": PhieuCocController" as API
+participant ": LapPhieuCoc" as LPC
+participant ": PhienDuLieu" as PDL
+participant ": LichHen" as LH
+participant ": LichHenDB" as LHDB
+participant ": khachHang" as KH
+participant ": KhachHangDB" as KHDB
+participant ": Phong" as P
+participant ": PhongDB" as PDB
+participant ": PhieuCoc" as PC
+participant ": PhieuCocDB" as PCDB
+
+NV -> MH : btnTaoYeuCauCoc_Click()
+activate MH
+MH -> API : POST /api/deposits
+activate API
+API -> LPC : TaoPhieuCoc(...)
+activate LPC
+
+LPC -> PDL : BatDauGiaoDich()
+activate PDL
+PDL --> LPC
+deactivate PDL
+
+LPC -> LH : DocChiTiet(maLichHen)
+activate LH
+LH -> LHDB : DocChiTiet(maLichHen)
+activate LHDB
+LHDB --> LH : lichHen
+deactivate LHDB
+LH -> LH : KiemTraCoTheLapPhieuCoc()
+LH --> LPC : lichHen
+deactivate LH
+
+LPC -> KH : CapNhatTu(thongTinKhachHang)
+activate KH
+KH -> KHDB : CapNhat(khachHang)
+activate KHDB
+KHDB --> KH
+deactivate KHDB
+KH --> LPC
+deactivate KH
+
+LPC -> P : DocChiTiet(maPhong)
+activate P
+P -> PDB : DocChiTiet(maPhong)
+activate PDB
+PDB --> P : phong
+deactivate PDB
+
+alt HinhThucThue = NguyenCan
+  P -> P : GiuNguyenPhong()
+else HinhThucThue = OGhep
+  P -> P : GiuGiuong(danhSachGiuong)
+end
+P --> LPC : giuongs
+deactivate P
+
+LPC -> PC : TaoMoi(...)
+activate PC
+PC -> PCDB : Them(phieuCoc)
+activate PCDB
+PCDB --> PC
+deactivate PCDB
+PC --> LPC : phieuCoc
+deactivate PC
+
+LPC -> P : CapNhat()
+activate P
+P -> PDB : CapNhat(phong)
+activate PDB
+PDB --> P
+deactivate PDB
+P --> LPC
+deactivate P
+
+LPC -> LH : GanPhieuCoc(maPhieuCoc)
+activate LH
+LH -> LHDB : GanPhieuCoc(lichHen)
+activate LHDB
+LHDB --> LH
+deactivate LHDB
+LH --> LPC
+deactivate LH
+
+alt Thanh cong
+  LPC -> PDL : Commit()
+  activate PDL
+  PDL --> LPC
+  deactivate PDL
+  LPC --> API : phieuCoc
+  API --> MH : HTTP 200
+  MH --> NV : Hien thi tao phieu thanh cong
+else Loi
+  LPC -> PDL : Rollback()
+  activate PDL
+  PDL --> LPC
+  deactivate PDL
+  LPC --> API : InvalidOperationException
+  API --> MH : HTTP 409
+  MH --> NV : Hien thi loi
+end
+
+deactivate LPC
+deactivate API
+deactivate MH
+@enduml

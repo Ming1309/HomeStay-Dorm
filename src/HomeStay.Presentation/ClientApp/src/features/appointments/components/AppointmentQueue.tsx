@@ -27,19 +27,18 @@ export function AppointmentQueue({
         const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
-          // Map từ LichHenDTO sang Appointment
           const mapped: Appointment[] = data.map((d: any) => ({
             id: d.maLH,
             code: d.maLH,
-            customerId: d.maKH,
-            customerName: d.tenKhachHang || "Khách hàng",
-            phone: d.sdt || "",
-            email: d.email || "",
-            gender: d.gioiTinh === "Nam" ? "male" : "female",
-            dob: d.ngaySinh ? d.ngaySinh.split("T")[0] : "",
-            nationality: d.quocTich,
-            docType: d.loaiGiayTo,
-            docNumber: d.soGiayTo,
+            customerId: d.khachHang?.maKH,
+            customerName: d.khachHang?.hoTen || "Khách hàng",
+            phone: d.khachHang?.sdt || "",
+            email: d.khachHang?.email || "",
+            gender: d.khachHang?.gioiTinh === "Nam" ? "male" : "female",
+            dob: d.khachHang?.ngaySinh ? d.khachHang.ngaySinh.split("T")[0] : "",
+            nationality: d.khachHang?.quocTich,
+            docType: d.khachHang?.loaiGiayTo,
+            docNumber: d.khachHang?.soGiayTo,
             type: "viewing",
             status: "success",
             createdAt: d.ngayHen || new Date().toISOString()

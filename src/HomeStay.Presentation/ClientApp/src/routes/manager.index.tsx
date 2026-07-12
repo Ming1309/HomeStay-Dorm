@@ -1,10 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ManagerDashboardScreen } from "@/app/pages/ManagerDashboardPage";
+import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute("/manager/")({
-  component: ManagerIndexDashboardPage,
-});
+export const Route = createFileRoute('/manager/')({
+  component: RouteComponent,
+})
 
-function ManagerIndexDashboardPage() {
-  return <ManagerDashboardScreen currentPath="/manager" />;
+function RouteComponent() {
+  return <div>Hello "/manager/"!</div>
 }

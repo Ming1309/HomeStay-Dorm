@@ -1,5 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
 
-import { AdminRegulationsPage } from "@/features/administration/pages/AdminRegulationsPage";
+export const Route = createFileRoute('/admin/regulations')({
+  component: RouteComponent,
+})
 
-export const Route = createFileRoute("/admin/regulations")({ component: AdminRegulationsPage });
+function RouteComponent() {
+  return <div>Hello "/admin/regulations"!</div>
+}

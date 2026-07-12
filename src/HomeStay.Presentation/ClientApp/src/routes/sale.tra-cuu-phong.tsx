@@ -1,11 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
 
-import { RoomLookupWorkspace } from "@/features/rooms/components/RoomLookupWorkspace";
+export const Route = createFileRoute('/sale/tra-cuu-phong')({
+  component: RouteComponent,
+})
 
-export const Route = createFileRoute("/sale/tra-cuu-phong")({
-  component: SaleRoomLookupPage,
-});
-
-function SaleRoomLookupPage() {
-  return <RoomLookupWorkspace />;
+function RouteComponent() {
+  return <div>Hello "/sale/tra-cuu-phong"!</div>
 }

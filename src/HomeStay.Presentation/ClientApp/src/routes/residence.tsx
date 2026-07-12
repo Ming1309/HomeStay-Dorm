@@ -1,20 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ResidenceCheckInPage } from "@/features/handovers/components/ResidenceCheckInPage";
+import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute("/residence")({
-  head: () => ({
-    meta: [
-      { title: "Nhập hồ sơ lưu trú — Quản lý lưu trú" },
-      {
-        name: "description",
-        content:
-          "Màn hình nghiệp vụ cho nhân viên sale nhập hồ sơ lưu trú từ phiếu cọc đã thanh toán.",
-      },
-    ],
-  }),
-  component: Index,
-});
+export const Route = createFileRoute('/residence')({
+  component: RouteComponent,
+})
 
-function Index() {
-  return <ResidenceCheckInPage />;
+function RouteComponent() {
+  return <div>Hello "/residence"!</div>
 }

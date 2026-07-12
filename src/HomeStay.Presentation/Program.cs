@@ -1,23 +1,17 @@
-using HomeStay.DataAccess.DbConnections;
-using HomeStay.DataAccess.DBs;
-using HomeStay.BusinessLogic.Services;
+using HomeStay.Application.BusinessLogic;
+using HomeStay.Application.DataAccess.DbConnections;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Register Data Access dependencies
-builder.Services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>(); // Giữ ISqlConnectionFactory vì nó là pattern chuẩn cho factory
-builder.Services.AddScoped<KhachHangDB>();
-builder.Services.AddScoped<PhieuCocDB>();
-builder.Services.AddScoped<PhongDB>();
-builder.Services.AddScoped<LichHenDB>();
+builder.Services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
+builder.Services.AddScoped<Func<PhienDuLieu>>(provider =>
+    () => new PhienDuLieu(new SqlSession(provider.GetRequiredService<ISqlConnectionFactory>())));
 
 // Register Business Logic dependencies
-builder.Services.AddScoped<KhachHang>();
-builder.Services.AddScoped<PhieuCoc>();
-builder.Services.AddScoped<Phong>();
-builder.Services.AddScoped<LichHen>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<LapPhieuCoc>();
 
 var app = builder.Build();
 
