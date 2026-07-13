@@ -1,0 +1,60 @@
+@startuml
+title SO DO LOP 3 TANG - HUY PHIEU COC
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class { BackgroundColor #FFFACD BorderColor #9B7B7B }
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHHuyPhieuCoc {
+    - txtTimKiem: TextBox
+    - grvPhieuCoTheHuy: GridView
+    - btnHuyDatCoc: Button
+    + HienThi()
+    + txtTimKiem_TextChanged(text: String)
+    + grvPhieuCoTheHuy_CellClick(maPhieuCoc: String)
+    + btnHuyDatCoc_Click()
+    + btnXacNhanHuy_Click()
+  }
+}
+package "TANG NGHIEP VU" #FCF3CF {
+  class TraCuuPhieuCoc {
+    + LayDanhSachCoTheHuy(text: String): IReadOnlyList<PhieuCoc>
+    + LayChiTiet(maPhieuCoc: String): PhieuCoc
+  }
+  class HuyPhieuCoc { + Huy(maPhieuCoc: String, maNhanVien: String): PhieuCoc }
+  class HopDong { + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean }
+  class PhieuCoc {
+    - TrangThai: String
+    - ThoiDiemHuy: DateTime
+    - MaNVHuy: String
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + Huy(maNhanVien: String, thoiDiem: DateTime)
+    + CapNhatHuy()
+  }
+  class Phong {
+    - TrangThai: String
+    - GiuongsVuaGiaiPhong: IReadOnlyList<Giuong>
+    + DocChiTiet(maPhong: String): Phong
+    + GiaiPhongDatCoc(maGiuongs: IEnumerable<String>)
+    + CapNhatGiaiPhongDatCoc()
+  }
+  class Giuong { + GiaiPhong(maPhong: String) }
+}
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class HopDongDB { + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean }
+  class PhieuCocDB { + DocChiTiet(maPhieuCoc: String): PhieuCoc + CapNhatHuy(phieu: PhieuCoc) }
+  class PhongDB { + DocChiTiet(maPhong: String): Phong + CapNhatGiaiPhongDatCoc(phong: Phong) }
+}
+MHHuyPhieuCoc o-- TraCuuPhieuCoc
+MHHuyPhieuCoc o-- HuyPhieuCoc
+TraCuuPhieuCoc o-- PhieuCoc
+HuyPhieuCoc o-- HopDong
+HuyPhieuCoc o-- PhieuCoc
+HuyPhieuCoc o-- Phong
+Phong "1" -- "1..*" Giuong
+HopDong o-- HopDongDB
+PhieuCoc o-- PhieuCocDB
+Phong o-- PhongDB
+@enduml

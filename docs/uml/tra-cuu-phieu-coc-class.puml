@@ -1,0 +1,49 @@
+@startuml
+title SO DO LOP 3 TANG - TRA CUU PHIEU COC
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class { BackgroundColor #FFFACD BorderColor #9B7B7B }
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHTraCuuPhieuCoc {
+    - txtMaPhieuCoc: TextBox
+    - txtSDT: TextBox
+    - txtEmail: TextBox
+    - txtSoGiayTo: TextBox
+    - grvKetQua: GridView
+    + btnTimKiem_Click()
+    + grvKetQua_CellClick(maPhieuCoc: String)
+  }
+}
+package "TANG NGHIEP VU" #FCF3CF {
+  class TraCuuPhieuCoc {
+    + TimKiem(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
+    + LayChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachCoTheHuy(text: String): IReadOnlyList<PhieuCoc>
+    + LayDanhSachDaHuyChoDoiSoat(): IReadOnlyList<PhieuCoc>
+  }
+  class PhieuCoc {
+    - MaPhieuCoc: String
+    - TrangThai: String
+    - TongTien: Decimal
+    - DaDongTien: Boolean
+    + TraCuu(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachCoTheHuy(text: String): IReadOnlyList<PhieuCoc>
+    + LayDanhSachDaHuyChoDoiSoat(): IReadOnlyList<PhieuCoc>
+  }
+}
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class PhieuCocDB {
+    + TraCuu(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachCoTheHuy(text: String): IReadOnlyList<PhieuCoc>
+    + LayDanhSachDaHuyChoDoiSoat(): IReadOnlyList<PhieuCoc>
+  }
+}
+MHTraCuuPhieuCoc o-- TraCuuPhieuCoc
+TraCuuPhieuCoc o-- PhieuCoc
+PhieuCoc o-- PhieuCocDB
+@enduml

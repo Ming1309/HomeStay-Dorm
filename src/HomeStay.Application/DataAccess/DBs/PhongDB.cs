@@ -62,6 +62,25 @@ public static class PhongDB
             throw new InvalidOperationException("Không thể cập nhật trạng thái phòng sau khi xác nhận cọc.");
     }
 
+    public static async Task CapNhatGiaiPhongDatCoc(Phong phong)
+    {
+        const string updateBed = "UPDATE Giuong SET TrangThai=N'Trong' WHERE MaGiuong=@MaGiuong AND MaPhong=@MaPhong AND TrangThai IN (N'GiuCho',N'DaCoc')";
+        foreach (var giuong in phong.GiuongsVuaGiaiPhong)
+            if (await PhienDuLieu.Session.Connection.ExecuteAsync(updateBed, giuong, PhienDuLieu.Session.Transaction) != 1)
+                throw new InvalidOperationException($"Giường {giuong.MaGiuong} đã được xử lý bởi người khác hoặc không còn thuộc phiếu cọc.");
+
+        const string updateRoom = """
+            UPDATE Phong
+            SET TrangThai = CASE
+                WHEN NOT EXISTS (SELECT 1 FROM Giuong WHERE MaPhong=@MaPhong AND TrangThai<>N'Trong') THEN N'Trong'
+                ELSE N'ConGiuongTrong'
+            END
+            WHERE MaPhong=@MaPhong
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(updateRoom, phong, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Không thể cập nhật trạng thái phòng sau khi hủy phiếu cọc.");
+    }
+
     private static IEnumerable<Phong> LocTheoYeuCauChung(IEnumerable<Phong> phongs, string? toaNha,
         string? loaiPhong, decimal giaMin, decimal giaMax) =>
         phongs.Where(p => p.PhuHopYeuCau(toaNha, loaiPhong, giaMin, giaMax));

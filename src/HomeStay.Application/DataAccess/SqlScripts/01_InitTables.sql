@@ -141,6 +141,8 @@ CREATE TABLE PhieuCoc (
     AnhMinhChung NVARCHAR(500)  NULL,
     PhuongThucThanhToan NVARCHAR(20) NULL,
     LyDoYeuCauBoSung NVARCHAR(500) NULL,
+    ThoiDiemHuy  DATETIME       NULL,
+    MaNVHuy      VARCHAR(20)    NULL,
     TrangThai    NVARCHAR(20)   NOT NULL,
     MaKH         VARCHAR(20)    NOT NULL,
     MaPhong      VARCHAR(20)    NOT NULL,
@@ -579,6 +581,8 @@ ALTER TABLE PhieuCoc ADD CONSTRAINT FK_PhieuCoc_Phong
     FOREIGN KEY (MaPhong) REFERENCES Phong(MaPhong);
 ALTER TABLE PhieuCoc ADD CONSTRAINT FK_PhieuCoc_NhanVien
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
+ALTER TABLE PhieuCoc ADD CONSTRAINT FK_PhieuCoc_NhanVienHuy
+    FOREIGN KEY (MaNVHuy) REFERENCES NhanVien(MaNV);
 
 -- ThanhVienDangKy
 ALTER TABLE ThanhVienDangKy ADD CONSTRAINT FK_ThanhVienDangKy_PhieuCoc

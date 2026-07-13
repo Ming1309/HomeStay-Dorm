@@ -1,0 +1,72 @@
+using HomeStay.Application.BusinessLogic;
+using Xunit;
+
+namespace HomeStay.Application.Tests;
+
+public sealed class HuyPhieuCocEntityTests
+{
+    [Fact]
+    public void PhieuCoc_Huy_ChuyenTrangThaiVaLuuVet()
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC001", TrangThai = "ChoThanhToan" };
+        var thoiDiem = new DateTime(2026, 7, 13, 11, 40, 0);
+
+        phieu.Huy("NV03", thoiDiem);
+
+        Assert.Equal("DaHuy", phieu.TrangThai);
+        Assert.Equal("NV03", phieu.MaNVHuy);
+        Assert.Equal(thoiDiem, phieu.ThoiDiemHuy);
+    }
+
+    [Fact]
+    public void PhieuCoc_TuChoiHuyLai()
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC001", TrangThai = "DaHuy" };
+
+        Assert.Throws<InvalidOperationException>(() => phieu.Huy("NV03", DateTime.Now));
+    }
+
+    [Fact]
+    public void Phong_GiaiPhongMotGiuong_CapNhatPhongConGiuongTrong()
+    {
+        var phong = TaoPhong();
+
+        phong.GiaiPhongDatCoc(["G1"]);
+
+        Assert.Equal("Trong", phong.Giuongs[0].TrangThai);
+        Assert.Equal("DaCoc", phong.Giuongs[1].TrangThai);
+        Assert.Equal("ConGiuongTrong", phong.TrangThai);
+        Assert.Equal("G1", Assert.Single(phong.GiuongsVuaGiaiPhong).MaGiuong);
+    }
+
+    [Fact]
+    public void Phong_GiaiPhongToanBoGiuong_ChuyenPhongSangTrong()
+    {
+        var phong = TaoPhong();
+
+        phong.GiaiPhongDatCoc(["G1", "G2"]);
+
+        Assert.All(phong.Giuongs, giuong => Assert.Equal("Trong", giuong.TrangThai));
+        Assert.Equal("Trong", phong.TrangThai);
+    }
+
+    [Fact]
+    public void Phong_TuChoiGiaiPhongGiuongKhongConDuocGiu()
+    {
+        var phong = TaoPhong();
+        phong.Giuongs[0].TrangThai = "Trong";
+
+        Assert.Throws<InvalidOperationException>(() => phong.GiaiPhongDatCoc(["G1"]));
+    }
+
+    private static Phong TaoPhong() => new()
+    {
+        MaPhong = "P1",
+        TrangThai = "DaCoc",
+        Giuongs =
+        [
+            new Giuong { MaGiuong = "G1", MaPhong = "P1", TrangThai = "GiuCho" },
+            new Giuong { MaGiuong = "G2", MaPhong = "P1", TrangThai = "DaCoc" },
+        ],
+    };
+}
