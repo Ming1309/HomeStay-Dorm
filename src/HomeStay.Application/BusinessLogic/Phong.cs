@@ -61,6 +61,21 @@ public sealed class Phong
         return Giuongs;
     }
 
+    public void KiemTraSucChua(int soLuongNguoi)
+    {
+        if (LoaiPhong.SucChua <= 0)
+            throw new InvalidOperationException("Phòng chưa có sức chứa hợp lệ.");
+        if (soLuongNguoi > LoaiPhong.SucChua)
+            throw new InvalidOperationException(
+                $"Số người ({soLuongNguoi}) vượt quá sức chứa phòng ({LoaiPhong.SucChua}).");
+    }
+
+    public void KiemTraTrangThaiPhong()
+    {
+        if (TrangThai is not ("Trong" or "ConGiuongTrong" or "DaCoc" or "DangSuDung"))
+            throw new InvalidOperationException("Phòng không ở trạng thái khả dụng.");
+    }
+
     public decimal TinhTienCoc(int soGiuong) =>
         soGiuong > 0 ? LoaiPhong.GiaThue * 2 * soGiuong : throw new InvalidOperationException("Số giường thuê không hợp lệ.");
 

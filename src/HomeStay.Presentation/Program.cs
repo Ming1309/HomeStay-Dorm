@@ -31,6 +31,7 @@ builder.Services.AddSingleton<IChungTuCocStorage>(new ChungTuCocFileStorage(
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
+builder.Services.AddScoped<NhapHoSoLuuTru>();
 builder.Services.AddScoped<GhiNhanThanhToanCoc>();
 builder.Services.AddScoped<XacNhanKhoanTienCoc>();
 builder.Services.AddScoped<TraCuuPhieuCoc>();

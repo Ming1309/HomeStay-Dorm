@@ -124,11 +124,11 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
       setAddrQuan("");
       setAddrTinh("");
     } else {
-      const parts = m.diaChiThuongTru.split(", ");
-      setAddrStreet(parts[0] || "");
-      setAddrPhuong(parts[1] || "");
-      setAddrQuan(parts[2] || "");
-      setAddrTinh(parts[3] || "");
+      const parts = m.diaChiThuongTru.split("|");
+      setAddrStreet(parts[0]?.trim() ?? "");
+      setAddrPhuong(parts[1]?.trim() ?? "");
+      setAddrQuan(parts[2]?.trim() ?? "");
+      setAddrTinh(parts[3]?.trim() ?? "");
       setAddrOverseas("");
     }
     setEditingId(m.id);
@@ -140,7 +140,7 @@ export function MembersTable({ members, onChange, canAddMember = true, maxMember
     if (usesOverseasAddress(formData)) {
       fullAddress = addrOverseas;
     } else {
-      fullAddress = [addrStreet, addrPhuong, addrQuan, addrTinh].filter(Boolean).join(", ");
+      fullAddress = [addrStreet, addrPhuong, addrQuan, addrTinh].join("|");
     }
 
     const finalMember = { ...formData, diaChiThuongTru: fullAddress };
