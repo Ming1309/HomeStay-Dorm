@@ -353,6 +353,8 @@ export function ManagerApprovalPage() {
                     <span>Duyệt theo thành viên</span>
                   </div>
                 )}
+              </div>
+              <div className="flex items-center gap-3">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button type="button" variant="outline" className="h-8 border-red-300 text-xs text-red-700 hover:bg-red-50">
@@ -385,83 +387,84 @@ export function ManagerApprovalPage() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-              </div>
-              {allMembersApproved || canCompleteApproval ? (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button type="button" className="bg-emerald-600 hover:bg-emerald-700">
-                      Hoàn tất xét duyệt hồ sơ
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Hoàn tất xét duyệt hồ sơ?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Hồ sơ {detail.maPhieuCoc} sẽ được duyệt và chuyển sang bước tiếp theo.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Hủy</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                        onClick={async () => {
-                          try {
-                            if (!hasRejectedMembers) {
-                              await approveAll(detail.maPhieuCoc);
-                            } else {
-                              await approveRemaining(detail.maPhieuCoc);
+
+                {allMembersApproved || canCompleteApproval ? (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button type="button" className="bg-emerald-600 hover:bg-emerald-700">
+                        Hoàn tất xét duyệt hồ sơ
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Hoàn tất xét duyệt hồ sơ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Hồ sơ {detail.maPhieuCoc} sẽ được duyệt và chuyển sang bước tiếp theo.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                          onClick={async () => {
+                            try {
+                              if (!hasRejectedMembers) {
+                                await approveAll(detail.maPhieuCoc);
+                              } else {
+                                await approveRemaining(detail.maPhieuCoc);
+                              }
+                              toast.success("Hoàn tất xét duyệt hồ sơ.", {
+                                icon: <CheckCircle2 className="size-4 text-emerald-100" />,
+                              });
+                              completeAction();
+                            } catch (error) {
+                              toast.error(error instanceof Error ? error.message : "Không thể duyệt hồ sơ.");
                             }
-                            toast.success("Hoàn tất xét duyệt hồ sơ.", {
-                              icon: <CheckCircle2 className="size-4 text-emerald-100" />,
-                            });
-                            completeAction();
-                          } catch (error) {
-                            toast.error(error instanceof Error ? error.message : "Không thể duyệt hồ sơ.");
-                          }
-                        }}
-                      >
-                        Xác nhận
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              ) : hasPendingValidMembers ? (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button type="button" className="bg-emerald-600 hover:bg-emerald-700">
-                      Duyệt các thành viên còn lại
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Duyệt các thành viên còn lại?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {pendingMembers.length} thành viên hợp lệ còn lại trong hồ sơ {detail.maPhieuCoc}{" "}
-                        sẽ được chuyển sang trạng thái đã duyệt.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Hủy</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                        onClick={async () => {
-                          try {
-                            await approveRemaining(detail.maPhieuCoc);
-                            toast.success("Đã duyệt các thành viên còn lại.", {
-                              icon: <CheckCircle2 className="size-4 text-emerald-100" />,
-                            });
-                            completeAction();
-                          } catch (error) {
-                            toast.error(error instanceof Error ? error.message : "Không thể duyệt thành viên.");
-                          }
-                        }}
-                      >
-                        Xác nhận
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              ) : null}
+                          }}
+                        >
+                          Xác nhận
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : hasPendingValidMembers ? (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button type="button" className="bg-emerald-600 hover:bg-emerald-700">
+                        Duyệt các thành viên còn lại
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Duyệt các thành viên còn lại?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {pendingMembers.length} thành viên hợp lệ còn lại trong hồ sơ {detail.maPhieuCoc}{" "}
+                          sẽ được chuyển sang trạng thái đã duyệt.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                          onClick={async () => {
+                            try {
+                              await approveRemaining(detail.maPhieuCoc);
+                              toast.success("Đã duyệt các thành viên còn lại.", {
+                                icon: <CheckCircle2 className="size-4 text-emerald-100" />,
+                              });
+                              completeAction();
+                            } catch (error) {
+                              toast.error(error instanceof Error ? error.message : "Không thể duyệt thành viên.");
+                            }
+                          }}
+                        >
+                          Xác nhận
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : null}
+              </div>
             </footer>
           </section>
         )}
