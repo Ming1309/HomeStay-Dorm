@@ -92,6 +92,21 @@ public sealed class Phong
         CapNhatTrangThaiSauDatCoc();
     }
 
+    public bool KiemTraSucChua(int soLuongThanhVien, int soGiuongThue, int sucChuaPhong, string hinhThucThue)
+    {
+        if (soLuongThanhVien > soGiuongThue) return false;
+        if (hinhThucThue == "NguyenCan" && soLuongThanhVien > sucChuaPhong) return false;
+        return true;
+    }
+
+    public bool KiemTraGioiTinhChoPhep(IReadOnlyList<KhachHang> dsKhach)
+    {
+        if (string.IsNullOrWhiteSpace(GioiTinhChoPhep)) return true;
+        if (GioiTinhChoPhep == "Nam" && dsKhach.Any(k => k.GioiTinh != "Nam")) return false;
+        if (GioiTinhChoPhep == "Nu" && dsKhach.Any(k => k.GioiTinh != "Nu")) return false;
+        return true;
+    }
+
     public void GiaiPhongDatCoc(IEnumerable<string> maGiuongs)
     {
         var ids = maGiuongs.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();

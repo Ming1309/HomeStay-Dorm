@@ -1,5 +1,7 @@
 namespace HomeStay.Application.BusinessLogic;
 
+using HomeStay.Application.DataAccess.DBs;
+
 public sealed class Giuong
 {
     public string MaGiuong { get; set; } = string.Empty;
@@ -20,6 +22,12 @@ public sealed class Giuong
             throw new InvalidOperationException($"Giường {MaGiuong} không còn ở trạng thái giữ chỗ.");
         TrangThai = "DaCoc";
     }
+
+    public static Task CapNhatDanhSachDaCoc(IReadOnlyList<string> dsMaGiuong) =>
+        GiuongDB.UpdateTrangThaiBatch(dsMaGiuong, "DaCoc");
+
+    public static Task CapNhatDanhSachTrong(IReadOnlyList<string> dsMaGiuong) =>
+        GiuongDB.UpdateTrangThaiBatch(dsMaGiuong, "Trong");
 
     public void GiaiPhong(string maPhong)
     {
