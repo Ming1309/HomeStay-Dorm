@@ -31,11 +31,22 @@ builder.Services.AddSingleton<IChungTuCocStorage>(new ChungTuCocFileStorage(
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
+
+// ==========================================================
+// Services from feat/lap-phieu-doi-soat branch
+// ==========================================================
+builder.Services.AddScoped<DichVuThongBao>();
+builder.Services.AddScoped<LapPhieuDoiSoat>();
+
+// ==========================================================
+// Services from develop branch
+// ==========================================================
 builder.Services.AddScoped<NhapHoSoLuuTru>();
 builder.Services.AddScoped<GhiNhanThanhToanCoc>();
 builder.Services.AddScoped<XacNhanKhoanTienCoc>();
 builder.Services.AddScoped<TraCuuPhieuCoc>();
 builder.Services.AddScoped<HuyPhieuCoc>();
+
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();

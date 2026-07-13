@@ -1,0 +1,224 @@
+@startuml LapPhieuDoiSoat_3Lop
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam classHeaderBackgroundColor #AED6F1
+skinparam classBorderColor #2980B9
+skinparam classBackgroundColor #EBF5FB
+skinparam ArrowColor #2C3E50
+skinparam ArrowThickness 1.5
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam linetype ortho
+
+
+'=====================
+' LỚP GIAO DIỆN
+'=====================
+
+package "Lớp giao diện" #EBF5FB {
+
+class MHLapPhieuDoiSoat {
+
++txtTimKiem : TextBox
++grvDSHoSoChoDoiSoat : DataGridView
++lblThongTinHoSo : Label
++lblChinhSachHoanCoc : Label
++grvKhoanKhauTru : DataGridView
++lblKetQuaDoiSoat : Label
++btnTaoPhieuDoiSoat : Button
+
+'---
++hienThiForm()
++nhapTuKhoaTimKiem()
++hienThiDanhSachHoSo()
++chonHoSo()
++hienThiChiTietTinhToan()
++btnTaoPhieuDoiSoat_Click()
++hienThiThongBaoThanhCong()
+
+}
+
+}
+
+
+'=====================
+' LỚP NGHIỆP VỤ
+'=====================
+
+package "Lớp nghiệp vụ" #FEF9E7 {
+
+class DieuKhienLapPhieuDoiSoat {
+
++maNVDangNhap : String
+
+'---
++khoiTaoForm()
++timKiemHoSoChoDoiSoat()
++layChiTietVaTinhToan()
++taoPhieuDoiSoat()
+
+}
+
+
+class PhieuDoiSoat {
+
++maPDS : String
++ngayDoiSoat : DateTime
++tyLeHoanCoc : Decimal
++tongKhauTru : Decimal
++tienHoan : Decimal
++tienThuThem : Decimal
++trangThai : String
++maHD : String
++maPhieuCoc : String
++maNV : String
+
+'---
++tinhToanDoiSoat()
++apDungChinhSachHoanCoc()
++tinhTongKhauTru()
++chotKetQua()
++luuPhieu()
+
+}
+
+
+class ChinhSachHoanCoc {
+
++maChinhSach : String
++tiLeChuaKy : Decimal
++tiLeTruocHanNganHan : Decimal
++tiLeTruocHanDaiHan : Decimal
++tiLeDungHan : Decimal
++mocLuuTru : int
+
+'---
++layChinhSachDangApDung()
++xacDinhTyLeHoan()
+
+}
+
+
+class HopDong {
+
++maHD : String
++trangThai : String
++ngayBatDau : DateTime
++ngayKetThuc : DateTime
++maPhieuCoc : String
+
+'---
++layDanhSachChoDoiSoat()
++layThongTinLuuTru()
+
+}
+
+
+class PhieuCoc {
+
++maPhieuCoc : String
++tongTien : Decimal
++trangThai : String
++anhMinhChung : String
+
+'---
++layDanhSachDaHuyDaThanhToan()
++laySoTienCoc()
+
+}
+
+
+class HoaDon {
+
++maHoaDon : String
++tongTien : Decimal
++trangThai : String
++loaiHoaDon : String
++maHD : String
+
+'---
++layDanhSachChuaThanhToan()
+
+}
+
+
+class DichVuThongBao {
+
+'---
++guiThongBaoQuanLy()
+
+}
+
+}
+
+
+'=====================
+' LỚP TRUY XUẤT DỮ LIỆU
+'=====================
+
+package "Lớp truy xuất dữ liệu" #FDF2F8 {
+
+class PhieuDoiSoatDB {
+
++insertPhieuDoiSoat()
++insertChiTietDoiSoat()
+
+}
+
+class ChinhSachHoanCocDB {
+
++getChinhSachDangApDung()
+
+}
+
+class HopDongDB {
+
++getDanhSachChoDoiSoat()
++getThongTinLuuTru()
+
+}
+
+class PhieuCocDB {
+
++getDanhSachDaHuyDaThanhToan()
++getSoTienCoc()
+
+}
+
+class HoaDonDB {
+
++getDanhSachChuaThanhToanTheoHD()
+
+}
+
+class NhanVienDB {
+
++getNhanVien()
+
+}
+
+}
+
+
+'=====================
+' QUAN HỆ
+'=====================
+
+MHLapPhieuDoiSoat o-- DieuKhienLapPhieuDoiSoat
+
+DieuKhienLapPhieuDoiSoat o-- PhieuDoiSoat
+DieuKhienLapPhieuDoiSoat o-- ChinhSachHoanCoc
+DieuKhienLapPhieuDoiSoat o-- HopDong
+DieuKhienLapPhieuDoiSoat o-- PhieuCoc
+DieuKhienLapPhieuDoiSoat o-- HoaDon
+DieuKhienLapPhieuDoiSoat o-- DichVuThongBao
+DieuKhienLapPhieuDoiSoat o-- NhanVienDB
+
+PhieuDoiSoat o-- PhieuDoiSoatDB
+ChinhSachHoanCoc o-- ChinhSachHoanCocDB
+HopDong o-- HopDongDB
+PhieuCoc o-- PhieuCocDB
+HoaDon o-- HoaDonDB
+
+@enduml

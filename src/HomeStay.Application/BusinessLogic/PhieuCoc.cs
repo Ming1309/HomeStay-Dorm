@@ -52,6 +52,18 @@ public sealed class PhieuCoc
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null) =>
         PhieuCocDB.LayDanhSachKhoiTao(text);
 
+    // ==========================================================
+    // Methods from feat/lap-phieu-doi-soat branch
+    // ==========================================================
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyDaThanhToan() =>
+        PhieuCocDB.LayDanhSachDaHuyDaThanhToan();
+
+    public static Task<decimal> LaySoTienCoc(string maPhieuCoc) =>
+        PhieuCocDB.LaySoTienCoc(maPhieuCoc);
+
+    // ==========================================================
+    // Methods from develop branch
+    // ==========================================================
     public static Task<IReadOnlyList<PhieuCoc>> LayPhieuCocDaThanhToanNhanPhongHomNay(string? text = null) =>
         PhieuCocDB.LayPhieuCocDaThanhToanNhanPhongHomNay(text);
 
