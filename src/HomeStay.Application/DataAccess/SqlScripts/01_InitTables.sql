@@ -18,6 +18,11 @@ GO
 USE HomeStay;
 GO
 
+-- Cần bật để tạo computed column / filtered index (ChiTietHoaDon.ThanhTien, UX_PhieuThu_MaPhieuCoc)
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
+
 -- ============================================================
 -- PHẦN 1: TẠO BẢNG (chỉ cột + kiểu dữ liệu + NULL/NOT NULL)
 -- ============================================================
@@ -325,6 +330,26 @@ CREATE TABLE PhieuHoanCoc (
 );
 GO
 
+CREATE TABLE ThongBao (
+    MaTB         VARCHAR(20)    NOT NULL,
+    TieuDe       NVARCHAR(200)  NOT NULL,
+    NoiDung      NVARCHAR(500)  NOT NULL,
+    VaiTroNhan   NVARCHAR(20)   NOT NULL,
+    LienKet      NVARCHAR(200)  NULL,
+    Tone         NVARCHAR(20)   NOT NULL,
+    ThoiGianTao  DATETIME       NOT NULL,
+    MaNVGui      VARCHAR(20)    NULL,
+    MaThamChieu  VARCHAR(50)    NULL
+);
+GO
+
+CREATE TABLE ThongBao_NguoiDoc (
+    MaTB      VARCHAR(20)  NOT NULL,
+    MaNV      VARCHAR(20)  NOT NULL,
+    ThoiGianDoc DATETIME   NOT NULL
+);
+GO
+
 
 -- ============================================================
 -- PHẦN 2: PRIMARY KEY
@@ -359,6 +384,8 @@ ALTER TABLE PhieuDoiSoat     ADD CONSTRAINT PK_PhieuDoiSoat     PRIMARY KEY (MaP
 ALTER TABLE ChiTietDoiSoat   ADD CONSTRAINT PK_ChiTietDoiSoat   PRIMARY KEY (MaPDS, MaHoaDon);
 ALTER TABLE PhieuThu         ADD CONSTRAINT PK_PhieuThu         PRIMARY KEY (MaPT);
 ALTER TABLE PhieuHoanCoc     ADD CONSTRAINT PK_PhieuHoanCoc     PRIMARY KEY (MaPHC);
+ALTER TABLE ThongBao         ADD CONSTRAINT PK_ThongBao         PRIMARY KEY (MaTB);
+ALTER TABLE ThongBao_NguoiDoc ADD CONSTRAINT PK_ThongBao_NguoiDoc PRIMARY KEY (MaTB, MaNV);
 GO
 
 -- ============================================================
@@ -700,6 +727,20 @@ ALTER TABLE PhieuThu ADD CONSTRAINT FK_PhieuThu_NhanVien
 ALTER TABLE PhieuHoanCoc ADD CONSTRAINT FK_PhieuHoanCoc_PhieuDoiSoat
     FOREIGN KEY (MaPDS) REFERENCES PhieuDoiSoat(MaPDS);
 ALTER TABLE PhieuHoanCoc ADD CONSTRAINT FK_PhieuHoanCoc_NhanVien
+    FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
+
+-- ThongBao
+ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_VaiTroNhan
+    CHECK (VaiTroNhan IN (N'Sale', N'KeToan', N'QuanLy', N'QuanTri'));
+ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_Tone
+    CHECK (Tone IN (N'blue', N'green', N'orange'));
+ALTER TABLE ThongBao ADD CONSTRAINT FK_ThongBao_NhanVienGui
+    FOREIGN KEY (MaNVGui) REFERENCES NhanVien(MaNV);
+
+-- ThongBao_NguoiDoc
+ALTER TABLE ThongBao_NguoiDoc ADD CONSTRAINT FK_ThongBao_NguoiDoc_ThongBao
+    FOREIGN KEY (MaTB) REFERENCES ThongBao(MaTB);
+ALTER TABLE ThongBao_NguoiDoc ADD CONSTRAINT FK_ThongBao_NguoiDoc_NhanVien
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
 GO
 

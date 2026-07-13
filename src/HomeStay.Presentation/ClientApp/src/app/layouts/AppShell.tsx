@@ -2,7 +2,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
   CheckCircle2,
-  Clock,
   CreditCard,
   FileText,
   LogOut,
@@ -10,7 +9,8 @@ import {
   PanelLeftOpen,
   Settings,
 } from "lucide-react";
-import { useEffect, useState, type ComponentType, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ComponentType, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import {
   findNavItem,
@@ -18,6 +18,14 @@ import {
   roleMeta,
   type AppNavGroup,
 } from "@/app/navigation/appNavigation";
+import {
+  formatRelativeTime,
+  loadNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  type AppNotificationDto,
+  type AppNotificationTone,
+} from "@/features/notifications/services/notification-service";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,8 +58,22 @@ export function AppShell({
   const meta = roleMeta[role];
   const navGroups = navGroupsByRole[role];
   const currentItem = findNavItem(role, currentPath);
-  const notifications = getRoleNotifications(role);
-  const unreadCount = notifications.filter((item) => !item.read).length;
+  const [notifications, setNotifications] = useState<AppNotificationDto[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const unreadCount = notifications.filter((item) => !item.daDoc).length;
+
+  const refreshNotifications = useCallback(async (signal?: AbortSignal) => {
+    setLoadingNotifications(true);
+    try {
+      const items = await loadNotifications(signal);
+      setNotifications(items);
+    } catch (error) {
+      if ((error as Error).name === "AbortError") return;
+      setNotifications([]);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem(SIDEBAR_STORAGE_KEY);
@@ -61,6 +83,34 @@ export function AppShell({
       setExpanded(nextExpanded);
     }
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void refreshNotifications(controller.signal);
+    return () => controller.abort();
+  }, [role, refreshNotifications]);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllNotificationsRead();
+      setNotifications((current) => current.map((item) => ({ ...item, daDoc: true })));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể đánh dấu đã đọc");
+    }
+  };
+
+  const handleOpenNotification = async (item: AppNotificationDto) => {
+    if (!item.daDoc) {
+      try {
+        await markNotificationRead(item.maTB);
+        setNotifications((current) =>
+          current.map((n) => (n.maTB === item.maTB ? { ...n, daDoc: true } : n)),
+        );
+      } catch {
+        // Không chặn điều hướng nếu mark-read thất bại
+      }
+    }
+  };
 
   const updateExpanded = (nextExpanded: boolean) => {
     appSidebarExpandedState = nextExpanded;
@@ -121,50 +171,74 @@ export function AppShell({
                     </span>
                   </div>
                   <div className="max-h-[360px] overflow-y-auto p-2">
-                    {notifications.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <DropdownMenuItem
-                          key={item.id}
-                          asChild
-                          className="cursor-pointer rounded-lg p-0 focus:bg-blue-50"
-                        >
-                          <Link to={item.to} className="flex items-start gap-3 px-3 py-3">
-                            <div
-                              className={cn(
-                                "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg",
-                                notificationTone[item.tone].iconBg,
-                              )}
+                    {loadingNotifications ? (
+                      <p className="px-3 py-6 text-center text-xs text-gray-500">
+                        Đang tải thông báo...
+                      </p>
+                    ) : notifications.length === 0 ? (
+                      <p className="px-3 py-6 text-center text-xs text-gray-500">
+                        Chưa có thông báo nào.
+                      </p>
+                    ) : (
+                      notifications.map((item) => {
+                        const tone = (item.tone in notificationTone
+                          ? item.tone
+                          : "blue") as AppNotificationTone;
+                        const Icon = notificationIconByTone[tone];
+                        const href = item.lienKet || "#";
+                        return (
+                          <DropdownMenuItem
+                            key={item.maTB}
+                            asChild
+                            className="cursor-pointer rounded-lg p-0 focus:bg-blue-50"
+                          >
+                            <Link
+                              to={href}
+                              className="flex items-start gap-3 px-3 py-3"
+                              onClick={() => {
+                                void handleOpenNotification(item);
+                              }}
                             >
-                              <Icon
-                                className={cn("size-4", notificationTone[item.tone].iconText)}
-                              />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-start justify-between gap-2">
-                                <p className="text-sm font-semibold leading-5 text-gray-900">
-                                  {item.title}
-                                </p>
-                                {!item.read && (
-                                  <span className="mt-1 size-2 shrink-0 rounded-full bg-blue-600" />
+                              <div
+                                className={cn(
+                                  "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg",
+                                  notificationTone[tone].iconBg,
                                 )}
+                              >
+                                <Icon
+                                  className={cn("size-4", notificationTone[tone].iconText)}
+                                />
                               </div>
-                              <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-gray-500">
-                                {item.description}
-                              </p>
-                              <p className="mt-1 text-[11px] font-medium text-gray-400">
-                                {item.time}
-                              </p>
-                            </div>
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-2">
+                                  <p className="text-sm font-semibold leading-5 text-gray-900">
+                                    {item.tieuDe}
+                                  </p>
+                                  {!item.daDoc && (
+                                    <span className="mt-1 size-2 shrink-0 rounded-full bg-blue-600" />
+                                  )}
+                                </div>
+                                <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-gray-500">
+                                  {item.noiDung}
+                                </p>
+                                <p className="mt-1 text-[11px] font-medium text-gray-400">
+                                  {formatRelativeTime(item.thoiGianTao)}
+                                </p>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })
+                    )}
                   </div>
                   <div className="border-t border-gray-100 px-3 py-2">
                     <button
                       type="button"
-                      className="flex h-8 w-full items-center justify-center rounded-md text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                      onClick={() => {
+                        void handleMarkAllRead();
+                      }}
+                      disabled={unreadCount === 0}
+                      className="flex h-8 w-full items-center justify-center rounded-md text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:text-gray-400"
                     >
                       Đánh dấu tất cả đã đọc
                     </button>
@@ -217,127 +291,6 @@ export function AppShell({
   );
 }
 
-type AppNotification = {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  to: string;
-  read: boolean;
-  tone: keyof typeof notificationTone;
-  icon: ComponentType<{ className?: string }>;
-};
-
-function getRoleNotifications(role: UserRole): AppNotification[] {
-  if (role === "accountant") {
-    return [
-      {
-        id: "accountant-payment",
-        title: "Có hợp đồng chờ thu tiền",
-        description: "Kiểm tra công nợ và ghi nhận thanh toán cho hợp đồng mới.",
-        time: "5 phút trước",
-        to: "/accountant/payments",
-        read: false,
-        tone: "orange",
-        icon: CreditCard,
-      },
-      {
-        id: "accountant-refund",
-        title: "Phiếu đối soát cần xử lý",
-        description: "Một hồ sơ trả phòng đã có dữ liệu khấu trừ và chờ lập phiếu.",
-        time: "20 phút trước",
-        to: "/accountant/doi-soat",
-        read: false,
-        tone: "blue",
-        icon: FileText,
-      },
-    ];
-  }
-
-  if (role === "manager") {
-    return [
-      {
-        id: "manager-deposit",
-        title: "Chứng từ cọc chờ xác nhận",
-        description: "Khách đã gửi chứng từ thanh toán, cần đối chiếu trước khi giữ phòng.",
-        time: "3 phút trước",
-        to: "/manager/confirm-deposit",
-        read: false,
-        tone: "orange",
-        icon: CreditCard,
-      },
-      {
-        id: "manager-approval",
-        title: "Hồ sơ lưu trú cần xét duyệt",
-        description: "Kiểm tra thông tin thành viên và điều kiện lưu trú trước khi duyệt.",
-        time: "15 phút trước",
-        to: "/manager/approval",
-        read: false,
-        tone: "blue",
-        icon: FileText,
-      },
-      {
-        id: "manager-handover",
-        title: "Phòng chờ bàn giao",
-        description: "Hợp đồng đã thanh toán đủ và sẵn sàng lập biên bản bàn giao.",
-        time: "Hôm nay",
-        to: "/manager/handover",
-        read: true,
-        tone: "green",
-        icon: CheckCircle2,
-      },
-    ];
-  }
-
-  if (role === "admin") {
-    return [
-      {
-        id: "admin-maintenance",
-        title: "Có giường/phòng đang bảo trì",
-        description: "Kiểm tra danh mục phòng/giường để cập nhật trạng thái vận hành.",
-        time: "10 phút trước",
-        to: "/admin/rooms-beds",
-        read: false,
-        tone: "orange",
-        icon: Clock,
-      },
-      {
-        id: "admin-policy",
-        title: "Chính sách hoàn cọc đang áp dụng",
-        description: "Rà soát phiên bản chính sách hiệu lực trước khi kế toán đối soát.",
-        time: "Hôm nay",
-        to: "/admin/deposit-policy",
-        read: true,
-        tone: "blue",
-        icon: FileText,
-      },
-    ];
-  }
-
-  return [
-    {
-      id: "sale-deposit",
-      title: "Phiếu cọc cần theo dõi",
-      description: "Khách đã xác nhận nhu cầu thuê, cần tiếp tục ghi nhận cọc.",
-      time: "8 phút trước",
-      to: "/sale/ghi-nhan-coc",
-      read: false,
-      tone: "orange",
-      icon: CreditCard,
-    },
-    {
-      id: "sale-appointment",
-      title: "Lịch hẹn sắp diễn ra",
-      description: "Chuẩn bị thông tin phòng và xác nhận lại với khách trước giờ hẹn.",
-      time: "Hôm nay",
-      to: "/sale/tra-cuu-lich-hen",
-      read: true,
-      tone: "blue",
-      icon: Clock,
-    },
-  ];
-}
-
 const notificationTone = {
   blue: {
     iconBg: "bg-blue-50",
@@ -352,6 +305,15 @@ const notificationTone = {
     iconText: "text-orange-600",
   },
 } as const;
+
+const notificationIconByTone: Record<
+  AppNotificationTone,
+  ComponentType<{ className?: string }>
+> = {
+  blue: FileText,
+  green: CheckCircle2,
+  orange: CreditCard,
+};
 
 function SidebarHeader({
   expanded,
