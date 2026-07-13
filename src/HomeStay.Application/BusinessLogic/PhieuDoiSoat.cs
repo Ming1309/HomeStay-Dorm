@@ -67,4 +67,19 @@ public sealed class PhieuDoiSoat
     }
 
     public Task LuuPhieu() => PhieuDoiSoatDB.LuuPhieu(this);
+
+    public static Task<IReadOnlyList<PhieuDoiSoat>> LayDSPhieuDoiSoatDaChot()
+        => PhieuDoiSoatDB.GetDSPhieuDoiSoatDaChot();
+
+    public static Task<PhieuDoiSoat?> LayChiTietPhieuDoiSoat(string maPDS)
+        => PhieuDoiSoatDB.GetPhieuDoiSoatTheoMaPDS(maPDS);
+
+    public static async Task<decimal> TinhToanKetQua(string maPDS)
+    {
+        var pds = await LayChiTietPhieuDoiSoat(maPDS);
+        return pds?.TienThuThem ?? 0;
+    }
+
+    public static Task<bool> CapNhatTrangThai(string maPDS, string trangThai)
+        => PhieuDoiSoatDB.UpdateTrangThai(maPDS, trangThai);
 }

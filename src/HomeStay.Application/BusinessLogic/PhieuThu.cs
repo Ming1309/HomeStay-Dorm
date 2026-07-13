@@ -1,0 +1,37 @@
+using System;
+using System.Threading.Tasks;
+using HomeStay.Application.DataAccess.DBs;
+
+namespace HomeStay.Application.BusinessLogic;
+
+public sealed class PhieuThu
+{
+    public string MaPT { get; set; } = string.Empty;
+    public decimal SoTienThu { get; set; }
+    public DateTime ThoiGian { get; set; }
+    public string? PhuongThucThanhToan { get; set; }
+    public string? AnhMinhChung { get; set; }
+    public string? MaHoaDon { get; set; }
+    public string? MaPhieuCoc { get; set; }
+    public string? MaPDS { get; set; }
+    public string? MaNV { get; set; }
+
+    public static PhieuThu TaoPhieuThu(string maPDS, decimal soTien, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
+    {
+        if (soTien <= 0)
+            throw new ArgumentException("Số tiền thu phải lớn hơn 0.");
+
+        return new PhieuThu
+        {
+            MaPT = $"PT{thoiDiem:yyyyMMddHHmmssfff}",
+            SoTienThu = soTien,
+            ThoiGian = thoiDiem,
+            PhuongThucThanhToan = phuongThuc,
+            AnhMinhChung = anhMinhChung,
+            MaPDS = maPDS,
+            MaNV = maNV
+        };
+    }
+
+    public Task LuuPhieu() => PhieuThuDB.InsertPhieuThu(this);
+}
