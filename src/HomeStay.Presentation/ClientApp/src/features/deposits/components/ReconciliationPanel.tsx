@@ -204,8 +204,7 @@ export function ReconciliationPanel({
         </div>
       </div>
 
-      <footer className="sticky bottom-0 flex min-h-14 items-center justify-between gap-4 border-t border-gray-200 bg-white px-5 py-2 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
-        <span className="text-xs text-gray-400">Ctrl+Enter: xác nhận • Ctrl+Shift+R: bổ sung</span>
+      <footer className="sticky bottom-0 flex min-h-14 items-center justify-end gap-4 border-t border-gray-200 bg-white px-5 py-2 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
         <div className="flex items-center gap-2">
           <Button
             type="button"

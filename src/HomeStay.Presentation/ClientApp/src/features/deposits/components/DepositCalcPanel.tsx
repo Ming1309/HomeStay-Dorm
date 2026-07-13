@@ -102,11 +102,7 @@ export function DepositCalcPanel({
         </div>
       </div>
 
-      <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5">
-        <span className="text-xs text-gray-400">
-          <kbd className="rounded border bg-gray-50 px-1">Ctrl</kbd> +{" "}
-          <kbd className="rounded border bg-gray-50 px-1">Enter</kbd> xác nhận
-        </span>
+      <footer className="sticky bottom-0 flex h-14 items-center justify-end border-t border-gray-200 bg-white px-5">
         <Button
           type="button"
           className="h-8 bg-emerald-600 text-xs hover:bg-emerald-700"

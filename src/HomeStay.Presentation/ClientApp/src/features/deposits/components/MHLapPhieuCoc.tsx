@@ -951,17 +951,7 @@ function FormLapPhieuCoc({
         </div>
       </div>
 
-      <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5">
-        <span className="text-xs text-gray-400">
-          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
-            Ctrl
-          </kbd>{" "}
-          +{" "}
-          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
-            S
-          </kbd>{" "}
-          : Tạo yêu cầu cọc
-        </span>
+      <footer className="sticky bottom-0 flex h-14 items-center justify-end border-t border-gray-200 bg-white px-5">
         <Button
           type="button"
           className="bg-emerald-600 hover:bg-emerald-700"

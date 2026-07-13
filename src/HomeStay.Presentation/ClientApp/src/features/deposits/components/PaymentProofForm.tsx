@@ -325,11 +325,7 @@ export function PaymentProofForm({
         </div>
       </div>
 
-      <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
-        <span className="text-xs text-gray-400">
-          <kbd className="rounded border bg-gray-50 px-1 py-0.5">Ctrl</kbd> +{" "}
-          <kbd className="rounded border bg-gray-50 px-1 py-0.5">Enter</kbd> : Gửi
-        </span>
+      <footer className="sticky bottom-0 flex h-14 items-center justify-end border-t border-gray-200 bg-white px-5 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
         <Button
           type="button"
           className="h-8 text-xs"

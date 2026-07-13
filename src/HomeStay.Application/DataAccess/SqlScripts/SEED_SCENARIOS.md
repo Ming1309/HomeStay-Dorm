@@ -11,9 +11,8 @@ Trên database mới, chạy lần lượt:
 5. `05_ValidateDemoData.sql`
 
 Bộ seed này cố định ngày giờ để kết quả kiểm thử không thay đổi theo ngày chạy. Không chạy lặp trên database đã có dữ liệu vì các script seed nghiệp vụ không có mục đích migration.
-
-Với database đã tồn tại, chạy migration idempotent `06_GhiNhanThanhToanCoc.sql` rồi
-`07_XacNhanKhoanTienCoc.sql`; không chạy lại các script seed.
+Schema trong `01_InitTables.sql` là nguồn cấu trúc database duy nhất. Khi cấu trúc thay đổi,
+tạo lại database và chạy đầy đủ các script theo thứ tự trên; không chạy lại seed trên database đã có dữ liệu.
 
 ## Quy ước mã
 
