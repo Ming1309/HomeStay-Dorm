@@ -62,7 +62,7 @@ Mã nghiệp vụ chỉ là số thứ tự, không mã hóa trạng thái hay u
 | Phiếu đối soát | `PDS0001` - `PDS0002` |
 | Phiếu thu | `PT0001` - `PT0003` |
 | Phiếu hoàn cọc | `PHC0001` - `PHC0002` |
-| Biên bản giao nhận | `BBGN0001` - `BBGN0003` |
+| Biên bản giao nhận | `BBGN0001` - `BBGN0003`, `BBTH0001` (UC 1.4.20) |
 | Thông báo | `TB...` (sinh runtime) |
 
 ## Phạm vi kiểm thử
@@ -77,6 +77,7 @@ Mã nghiệp vụ chỉ là số thứ tự, không mã hóa trạng thái hay u
 - `HDON0001` - `HDON0004` phủ hóa đơn chưa thanh toán, thanh toán một phần, đã thanh toán và bồi thường.
 - `PDS0001` - `PDS0002`, `PT0001` - `PT0003` và `PHC0001` - `PHC0002` phục vụ đối soát, thu tiền và hoàn cọc.
 - `BBGN0001` - `BBGN0003` phục vụ bàn giao và thu hồi tài sản.
+- `BBTH0001` là biên bản thu hồi `HD0004` có tài sản `Hư hỏng`/`Mất mát`, **chưa** có hóa đơn bồi thường — phục vụ UC 1.4.20.
 - Bảng `ThongBao` / `ThongBao_NguoiDoc` phục vụ chuông thông báo theo vai trò (header Bell).
 
 `03_Auth.sql` tạo các tài khoản phát triển `admin`, `sale`, `ketoan`, `quanly` để kiểm thử phân quyền.

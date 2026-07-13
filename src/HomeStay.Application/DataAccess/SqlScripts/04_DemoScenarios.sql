@@ -221,7 +221,9 @@ INSERT INTO BienBanGiaoNhan (MaBienBan, NgayBanGiao, LoaiBienBan, MaHD, MaNV)
 VALUES
 ('BBGN0001', '2026-08-01', N'BanGiao', 'HD0003', 'NV01'),
 ('BBGN0002', '2026-08-01', N'BanGiao', 'HD0004', 'NV01'),
-('BBGN0003', '2026-07-31', N'ThuHoi', 'HD0005', 'NV01');
+('BBGN0003', '2026-07-31', N'ThuHoi', 'HD0005', 'NV01'),
+-- UC 1.4.20: biên bản thu hồi chưa lập hóa đơn bồi thường (HD0004)
+('BBTH0001', CAST(GETDATE() AS DATE), N'ThuHoi', 'HD0004', 'NV01');
 GO
 
 INSERT INTO ChiTietGiaoNhan (MaBienBan, MaTS, TinhTrang, SoLuong, GhiChu, MinhChung)
@@ -231,7 +233,10 @@ VALUES
 ('BBGN0002', 'TS01', N'Tốt', 1, N'Bàn giao nguyên trạng', NULL),
 ('BBGN0002', 'TS06', N'Tốt', 1, N'Máy giặt hoạt động', NULL),
 ('BBGN0003', 'TS01', N'Trầy nhẹ', 1, N'Cần khấu trừ khi đối soát', N'/files/bbgn0003-ts01.png'),
-('BBGN0003', 'TS03', N'Đủ', 2, N'Đã thu hồi', NULL);
+('BBGN0003', 'TS03', N'Đủ', 2, N'Đã thu hồi', NULL),
+-- UC 1.4.20 demo: tài sản hư hỏng/mất chưa có HoaDon BoiThuong
+('BBTH0001', 'TS01', N'Hư hỏng', 1, N'Máy lạnh không lạnh, cần bồi thường', NULL),
+('BBTH0001', 'TS03', N'Mất mát', 1, N'Mất 1 giường tầng sắt', NULL);
 GO
 
 INSERT INTO HoaDon (MaHoaDon, NgayLap, HanThanhToan, LoaiHoaDon, TongTien, TrangThai, GhiChu, MaHD, MaNV)
