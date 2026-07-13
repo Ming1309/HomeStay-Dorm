@@ -57,6 +57,17 @@ public sealed class PhieuCoc
 
     public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => PhieuCocDB.DocChiTiet(maPhieuCoc);
 
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDuyet(string? text = null) =>
+        PhieuCocDB.LayDanhSachChoDuyet(text);
+
+    public static Task<PhieuCoc?> LayChiTietChoDuyet(string maPhieuCoc) =>
+        PhieuCocDB.LayChiTietChoDuyet(maPhieuCoc);
+
+    public bool KiemTraTrangThaiChoDuyet() => TrangThai == "ChoDuyet";
+
+    public bool KiemTraCoThanhVienHopLe() =>
+        ThanhViens.Any(tv => tv.TrangThaiDuyet == "HopLe");
+
     public int TinhTienDuKien()
     {
         KiemTraCoTheTinhTien();
@@ -131,6 +142,29 @@ public sealed class PhieuCoc
         TrangThai = "ChoThanhToan";
     }
 
+    public void KiemTraCoTheXetDuyet()
+    {
+        if (TrangThai != "ChoDuyet")
+            throw new InvalidOperationException("Phiếu cọc không còn ở trạng thái chờ duyệt.");
+        if (string.IsNullOrWhiteSpace(MaPhong))
+            throw new InvalidOperationException("Phiếu cọc chưa có thông tin phòng.");
+        if (Giuongs.Count == 0)
+            throw new InvalidOperationException("Phiếu cọc chưa có giường.");
+    }
+
+    public void CapNhatTrangThaiDaDuyet()
+    {
+        KiemTraCoTheXetDuyet();
+        TrangThai = "DaDuyet";
+    }
+
+    public void CapNhatTrangThaiDaHuy()
+    {
+        if (TrangThai == "DaHuy")
+            throw new InvalidOperationException("Phiếu cọc đã được hủy trước đó.");
+        TrangThai = "DaHuy";
+    }
+
     private void KiemTraCoTheTinhTien()
     {
         if (HinhThucThue is not ("NguyenCan" or "OGhep"))
@@ -150,6 +184,12 @@ public sealed class PhieuCoc
     public Task CapNhatXacNhanThanhToan() => PhieuCocDB.CapNhatXacNhanThanhToan(this);
 
     public Task CapNhatYeuCauBoSung() => PhieuCocDB.CapNhatYeuCauBoSung(this);
+
+    public Task CapNhatTrangThaiDaDuyetDB() => PhieuCocDB.CapNhatDaDuyet(this);
+
+    public Task CapNhatTrangThaiDaHuyDB() => PhieuCocDB.CapNhatDaHuy(this);
+
+    public Task<bool> CapNhatTrangThai(string trangThai) => PhieuCocDB.CapNhatTrangThai(MaPhieuCoc, trangThai);
 
     public Task Them() => PhieuCocDB.Them(this);
 }
