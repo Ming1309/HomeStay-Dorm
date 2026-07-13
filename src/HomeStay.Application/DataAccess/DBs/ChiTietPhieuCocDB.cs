@@ -21,4 +21,11 @@ public static class ChiTietPhieuCocDB
             new { MaPhieuCoc = maPhieuCoc },
             PhienDuLieu.Session.Transaction);
     }
+
+    public static async Task<int> DemSoGiuongDaCoc(string maPhieuCoc)
+    {
+        const string sql = "SELECT COUNT(*) FROM ChiTietPhieuCoc WHERE MaPhieuCoc=@MaPhieuCoc";
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(sql,
+            new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction);
+    }
 }

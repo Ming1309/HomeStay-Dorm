@@ -2,12 +2,8 @@ import { useEffect, useState } from "react";
 import {
   BedDouble,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   DoorClosed,
-  Download,
   FileText,
-  Lock,
   Save,
   UserRound,
   Users,
@@ -26,62 +22,122 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
-import type { Deposit } from "@/features/deposits/model/mock-deposits";
 import {
   MembersTable,
   newMember,
   type Member,
 } from "@/features/contracts/components/MembersTable";
+import {
+  nhapHoSo,
+  type PhieuCocDetail,
+} from "@/features/residence/services/residence-service";
 
-type Props = { deposit: Deposit | null };
+type Props = { deposit: PhieuCocDetail | null; onSaved: () => void };
 
-export function ResidenceForm({ deposit }: Props) {
+export function ResidenceForm({ deposit, onSaved }: Props) {
   const [members, setMembers] = useState<Member[]>([]);
-  // Address sub-fields — concatenated on save
+  const [hoTen, setHoTen] = useState("");
+  const [sdt, setSdt] = useState("");
+  const [email, setEmail] = useState("");
+  const [gioiTinh, setGioiTinh] = useState("");
+  const [ngaySinh, setNgaySinh] = useState("");
+  const [quocTich, setQuocTich] = useState("");
+  const [loaiGiayTo, setLoaiGiayTo] = useState("");
+  const [soGiayTo, setSoGiayTo] = useState("");
   const [addrStreet, setAddrStreet] = useState("");
   const [addrTinh, setAddrTinh] = useState("");
   const [addrQuan, setAddrQuan] = useState("");
   const [addrPhuong, setAddrPhuong] = useState("");
   const [addrOverseas, setAddrOverseas] = useState("");
-  const isVietnamese = (deposit?.nationality ?? "Việt Nam").trim().toLowerCase() === "việt nam";
+  const [saving, setSaving] = useState(false);
+  const isVietnamese = quocTich.trim().toLowerCase() === "việt nam";
 
-  // Reset form when deposit changes
   useEffect(() => {
+    if (!deposit) return;
     setMembers([]);
+    setHoTen(deposit.hoTenKhachHang);
+    setSdt(deposit.sdt ?? "");
+    setEmail(deposit.email ?? "");
+    setGioiTinh(deposit.gioiTinh ?? "");
+    setNgaySinh(deposit.ngaySinh ?? "");
+    setQuocTich(deposit.quocTich ?? "");
+    setLoaiGiayTo(deposit.loaiGiayTo ?? "");
+    setSoGiayTo(deposit.soGiayTo ?? "");
     setAddrStreet("");
     setAddrTinh("");
     setAddrQuan("");
     setAddrPhuong("");
     setAddrOverseas("");
-  }, [deposit?.id]);
+  }, [deposit?.maPhieuCoc]);
 
-  // Ctrl/Cmd + S → save
   useEffect(() => {
     if (!deposit) return;
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        handleSave(false);
+        void handleSave();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [deposit]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [deposit, members, hoTen, sdt, email, gioiTinh, ngaySinh, quocTich, loaiGiayTo, soGiayTo, addrStreet, addrTinh, addrQuan, addrPhuong, addrOverseas]);
 
-  const handleSave = (draft = false) => {
-    if (!deposit) return;
-    toast.success(draft ? "Đã lưu nháp" : "Lưu hồ sơ thành công", {
-      description: draft
-        ? `Phiếu #${deposit.code} đã được lưu tạm.`
-        : `Phiếu #${deposit.code} chuyển sang trạng thái "Chờ duyệt".`,
-      icon: <CheckCircle2 className="size-4 text-emerald-500" />,
-    });
+  const buildDiaChi = () => {
+    if (!isVietnamese) return addrOverseas;
+    return [addrStreet, addrPhuong, addrQuan, addrTinh].filter(Boolean).join(", ");
   };
 
-  const canAddMember = deposit ? 1 + members.length < deposit.bedsRented : false;
-  const isWholeRoom = deposit?.rentalType === "whole";
+  const handleSave = async () => {
+    if (!deposit) return;
+    setSaving(true);
+    try {
+      const diaChi = buildDiaChi();
+      await nhapHoSo(deposit.maPhieuCoc, {
+        nguoiDaiDien: {
+          hoTen,
+          ngaySinh: ngaySinh || null,
+          gioiTinh: gioiTinh || null,
+          quocTich: quocTich || null,
+          loaiGiayTo: loaiGiayTo || null,
+          soGiayTo: soGiayTo || null,
+          diaChiThuongTru: diaChi || null,
+          sdt: sdt || null,
+          email: email || null,
+        },
+        hinhThucThue: deposit.soGiuongThue > 1 ? "TheoNhom" : "CaNhan",
+        danhSachThanhVien:
+          members.length > 0
+            ? members.map((m) => ({
+                hoTen: m.fullName,
+                ngaySinh: m.dob ? new Date(m.dob.split("/").reverse().join("-")).toISOString() : null,
+                gioiTinh: m.gender === "male" ? "Nam" : m.gender === "female" ? "Nữ" : null,
+                quocTich: m.nationality,
+                loaiGiayTo: m.docType === "cccd" ? "CCCD" : "Hộ chiếu",
+                soGiayTo: m.docId,
+                diaChiThuongTru: m.diaChiThuongTru || null,
+                sdt: m.phone || null,
+                email: null,
+              }))
+            : null,
+      });
+      toast.success("Lưu hồ sơ thành công", {
+        description: `Phiếu #${deposit.maPhieuCoc} chuyển sang trạng thái "Chờ duyệt".`,
+        icon: <CheckCircle2 className="size-4 text-emerald-500" />,
+      });
+      onSaved();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể lưu hồ sơ.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  /* ── Empty state ─────────────────────────────────────────────────────── */
+  const canAddMember = deposit ? 1 + members.length < deposit.soGiuongThue : false;
+  const isWholeRoom = deposit?.hinhThucThue === "NguyenCan";
+  const soGiuongLabel = isWholeRoom
+    ? `${deposit?.soGiuongThue ?? 0} giường (sức chứa tối đa)`
+    : `${deposit?.soGiuongThue ?? 0} giường`;
+
   if (!deposit) {
     return (
       <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
@@ -97,18 +153,15 @@ export function ResidenceForm({ deposit }: Props) {
     );
   }
 
-  /* ── Main form ───────────────────────────────────────────────────────── */
   return (
     <section className="relative flex h-full flex-1 flex-col overflow-hidden bg-white">
-      {/* ── Sticky header ─────────────────────────────────────────────── */}
       <header className="sticky top-0 z-20 shrink-0 border-b border-gray-200 bg-white px-6 py-4">
         <div className="flex items-center justify-between gap-4">
-          {/* Left: breadcrumb + badges */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-sm font-bold text-blue-600">#{deposit.code}</span>
+              <span className="font-mono text-sm font-bold text-blue-600">#{deposit.maPhieuCoc}</span>
               <h1 className="text-base font-bold leading-tight text-gray-900">
-                {deposit.customerName}
+                {deposit.hoTenKhachHang}
               </h1>
               <Badge className="h-5 border-transparent bg-emerald-100 px-2 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">
                 Đã thanh toán
@@ -118,7 +171,7 @@ export function ResidenceForm({ deposit }: Props) {
                 className="h-5 gap-1 border-blue-200 bg-blue-50 px-1.5 text-[10px] font-medium text-blue-600"
               >
                 <BedDouble className="size-3" />
-                {deposit.bedsRented} giường
+                {soGiuongLabel}
               </Badge>
               <Badge
                 variant="outline"
@@ -129,57 +182,77 @@ export function ResidenceForm({ deposit }: Props) {
               </Badge>
             </div>
           </div>
-
           <div className="hidden shrink-0 items-center gap-4 text-xs text-gray-500 lg:flex">
-            <span className="flex items-center gap-1.5">
-              <DoorClosed className="size-3.5" />
-              <span className="font-mono font-semibold text-gray-700">{deposit.room}</span>
-            </span>
-            <span className="tabular-nums">{deposit.time}</span>
+            <span className="font-mono font-semibold text-gray-700">{deposit.soPhong}</span>
           </div>
         </div>
       </header>
 
-      {/* ── Scrollable body ───────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto bg-white px-6 py-5 pb-24">
         <div className="mx-auto max-w-4xl space-y-5">
-          {/* ════════════════════════════════════════════════════════════
-              SECTION 1 — MAIN GUEST INFORMATION
-          ════════════════════════════════════════════════════════════ */}
           <FormCard>
             <SectionHeader
               icon={<UserRound className="size-4 text-blue-500" />}
               title="Thông tin khách lưu trú"
             />
 
-            {/* Block A: Read-only from deposit */}
             <div className="rounded-lg border border-gray-100 bg-gray-50/70 p-4">
               <div className="mb-3 flex items-center gap-1.5">
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
-                  Thông tin từ phiếu cọc
+                  Thông tin khách hàng
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-x-5 gap-y-4">
-                <LockedField label="Họ và tên" value={deposit.customerName} />
-                <LockedField label="Số điện thoại" value={deposit.phone} mono />
-                <LockedField label="Địa chỉ email" value={deposit.email} />
-                <LockedField label="Giới tính" value={deposit.gender === "male" ? "Nam" : "Nữ"} />
-                <LockedField label="Ngày sinh" value={deposit.birthDate} />
-                <LockedField label="Quốc tịch" value={deposit.nationality} />
-                <LockedField label="Loại giấy tờ" value={deposit.docType} />
-                <LockedField label="Số giấy tờ" value={deposit.docNumber} mono />
+                <FormField label="Họ và tên">
+                  <Input value={hoTen} onChange={(e) => setHoTen(e.target.value)} className={inputCls} />
+                </FormField>
+                <FormField label="Số điện thoại">
+                  <Input value={sdt} onChange={(e) => setSdt(e.target.value)} className={cn(inputCls, "font-mono")} />
+                </FormField>
+                <FormField label="Địa chỉ email">
+                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
+                </FormField>
+                <FormField label="Giới tính">
+                  <Select value={gioiTinh} onValueChange={setGioiTinh}>
+                    <SelectTrigger className={inputCls}>
+                      <SelectValue placeholder="Chọn giới tính" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Nam">Nam</SelectItem>
+                      <SelectItem value="Nữ">Nữ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="Ngày sinh">
+                  <Input type="date" value={ngaySinh} onChange={(e) => setNgaySinh(e.target.value)} className={inputCls} />
+                </FormField>
+                <FormField label="Quốc tịch">
+                  <Input value={quocTich} onChange={(e) => setQuocTich(e.target.value)} className={inputCls} />
+                </FormField>
+                <FormField label="Loại giấy tờ">
+                  <Select value={loaiGiayTo} onValueChange={setLoaiGiayTo}>
+                    <SelectTrigger className={inputCls}>
+                      <SelectValue placeholder="Chọn loại giấy tờ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CCCD">CCCD</SelectItem>
+                      <SelectItem value="Hộ chiếu">Hộ chiếu</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField label="Số giấy tờ">
+                  <Input value={soGiayTo} onChange={(e) => setSoGiayTo(e.target.value)} className={cn(inputCls, "font-mono")} />
+                </FormField>
               </div>
             </div>
 
-            {/* Divider */}
             <div className="flex items-center gap-4 pt-2">
               <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
-                Thông tin cư trú
+                Địa chỉ thường trú
               </span>
               <div className="h-px flex-1 bg-gray-200" />
             </div>
 
-            {/* Block B: Editable residence fields */}
             <div className="grid grid-cols-2 gap-x-5 gap-y-4">
               <div className="col-span-2 space-y-2">
                 <div className="flex items-baseline gap-1">
@@ -271,10 +344,7 @@ export function ResidenceForm({ deposit }: Props) {
             </div>
           </FormCard>
 
-          {/* ════════════════════════════════════════════════════════════
-              SECTION 2 — ACCOMPANYING MEMBERS
-          ════════════════════════════════════════════════════════════ */}
-          {deposit.bedsRented > 1 && (
+          {deposit.soGiuongThue > 1 && (
             <FormCard>
               <SectionHeader
                 icon={<Users className="size-4 text-blue-500" />}
@@ -288,15 +358,14 @@ export function ResidenceForm({ deposit }: Props) {
                 }
               />
 
-              {/* Capacity bar */}
               {members.length > 0 && (
                 <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500">
                   <span>
                     Đại diện (1) + Thành viên ({members.length}) ={" "}
                     <strong className="text-gray-700">{1 + members.length}</strong> /{" "}
-                    {deposit.bedsRented} giường đã đăng ký
+                    {deposit.soGiuongThue} giường đã đăng ký
                   </span>
-                  {1 + members.length === deposit.bedsRented && (
+                  {1 + members.length === deposit.soGiuongThue && (
                     <span className="flex items-center gap-1 font-semibold text-emerald-600">
                       <CheckCircle2 className="size-3.5" /> Đủ số lượng
                     </span>
@@ -308,33 +377,24 @@ export function ResidenceForm({ deposit }: Props) {
                 members={members}
                 onChange={setMembers}
                 canAddMember={canAddMember}
-                maxMembers={deposit.bedsRented - 1}
+                maxMembers={deposit.soGiuongThue - 1}
               />
             </FormCard>
           )}
         </div>
       </div>
 
-      {/* ── Sticky footer ─────────────────────────────────────────────── */}
       <footer className="absolute bottom-0 left-0 right-0 z-20 border-t border-gray-200 bg-white px-6 py-3 shadow-[0_-1px_4px_rgba(0,0,0,0.04)]">
         <div className="mx-auto flex max-w-4xl items-center justify-end">
-          {/* Action buttons */}
           <div className="flex items-center gap-2.5">
             <Button
-              variant="outline"
               size="sm"
-              onClick={() => handleSave(true)}
-              className="h-9 border-gray-200 px-4 text-sm text-gray-700 hover:border-gray-300 hover:text-gray-900"
-            >
-              Lưu nháp
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => handleSave(false)}
+              disabled={saving}
+              onClick={() => void handleSave()}
               className="h-9 gap-1.5 bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
             >
               <Save className="size-3.5" />
-              Lưu hồ sơ
+              {saving ? "Đang lưu..." : "Lưu hồ sơ"}
             </Button>
           </div>
         </div>
@@ -343,11 +403,8 @@ export function ResidenceForm({ deposit }: Props) {
   );
 }
 
-/* ── Shared style token ─────────────────────────────────────────────────── */
 const inputCls =
   "h-10 rounded-lg border-gray-200 bg-white text-sm shadow-none focus-visible:border-blue-500 focus-visible:ring-1 focus-visible:ring-blue-500";
-
-/* ── Sub-components ─────────────────────────────────────────────────────── */
 
 function FormCard({ children }: { children: React.ReactNode }) {
   return <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-5">{children}</div>;
@@ -393,21 +450,4 @@ function FormField({
   );
 }
 
-function LockedField({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-semibold text-gray-600">{label}</Label>
-      <div className="relative">
-        <Input
-          value={value}
-          readOnly
-          className={cn(
-            "h-10 rounded-lg border-gray-200 bg-white pr-8 text-sm text-gray-700 shadow-none",
-            mono && "font-mono",
-          )}
-        />
-        <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-300" />
-      </div>
-    </div>
-  );
-}
+

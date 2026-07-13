@@ -45,4 +45,38 @@ public sealed class ThanhVienDangKy
 
     public static Task<bool> HoanTac(string maPhieuCoc, string maKH) =>
         ThanhVienDangKyDB.UpdateTrangThaiDuyet(maPhieuCoc, maKH, "ChoDuyet");
+
+    public void KiemTraVaiTroHopLe()
+    {
+        if (VaiTro is not ("DaiDien" or "ThanhVien"))
+            throw new InvalidOperationException($"Vai trò '{VaiTro}' không hợp lệ.");
+    }
+
+    public static async Task KiemTraChuaCoDaiDien(string maPhieuCoc)
+    {
+        var danhSach = await ThanhVienDangKyDB.LayTheoMaPhieuCoc(maPhieuCoc);
+        foreach (var tv in danhSach)
+            if (tv.VaiTro == "DaiDien")
+                throw new InvalidOperationException("Phiếu cọc đã có người đại diện.");
+    }
+
+    public static ThanhVienDangKy TaoDaiDien(string maPhieuCoc, string maKH) => new()
+    {
+        MaPhieuCoc = maPhieuCoc,
+        MaKH = maKH,
+        VaiTro = "DaiDien",
+        TrangThaiDuyet = "ChoDuyet",
+    };
+
+    public static ThanhVienDangKy TaoThanhVien(string maPhieuCoc, string maKH) => new()
+    {
+        MaPhieuCoc = maPhieuCoc,
+        MaKH = maKH,
+        VaiTro = "ThanhVien",
+        TrangThaiDuyet = "ChoDuyet",
+    };
+
+    public static Task XoaTheoPhieuCoc(string maPhieuCoc) => ThanhVienDangKyDB.XoaTheoPhieuCoc(maPhieuCoc);
+
+    public static Task ThemHangLoat(List<ThanhVienDangKy> danhSach) => ThanhVienDangKyDB.ThemHangLoat(danhSach);
 }

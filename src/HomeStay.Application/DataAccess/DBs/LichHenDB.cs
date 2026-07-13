@@ -71,6 +71,33 @@ public static class LichHenDB
         return rows.SingleOrDefault();
     }
 
+    public static async Task<IReadOnlyList<LichHen>> GetLichNhanPhongHomNay()
+    {
+        const string sql = """
+            SELECT lh.*, kh.*
+            FROM LichHen lh
+            LEFT JOIN PhieuDangKy pdk ON lh.MaPDK=pdk.MaPDK
+            LEFT JOIN KhachHang kh ON pdk.MaKH=kh.MaKH
+            WHERE lh.LoaiLichHen=N'NhanPhong'
+              AND CAST(lh.NgayHen AS DATE)=CAST(GETDATE() AS DATE)
+              AND lh.MaPhieuCoc IS NOT NULL
+            ORDER BY lh.GioHen
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<LichHen, KhachHang, LichHen>(sql, (lich, khach) =>
+        {
+            lich.KhachHang = string.IsNullOrWhiteSpace(khach?.MaKH) ? null : khach;
+            return lich;
+        }, null, PhienDuLieu.Session.Transaction, splitOn: "MaKH");
+        return rows.ToList();
+    }
+
+    public static async Task<LichHen?> DocTheoMaPhieuCoc(string maPhieuCoc)
+    {
+        const string sql = "SELECT * FROM LichHen WHERE MaPhieuCoc=@MaPhieuCoc";
+        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<LichHen>(sql,
+            new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction);
+    }
+
     public static async Task GanPhieuCoc(LichHen lichHen)
     {
         const string sql = """

@@ -5,11 +5,8 @@ import { ResidenceForm } from "./ResidenceForm";
 import type { Deposit } from "@/features/deposits/model/mock-deposits";
 
 export function ResidenceCheckInPage() {
-  const [selected, setSelected] = useState<Deposit | null>(null);
-
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-background text-foreground">
-      {/* Topbar */}
       <header className="flex h-12 shrink-0 items-center justify-between border-b bg-card px-4">
         <div className="flex items-center gap-2">
           <Building2 className="size-5 text-primary" />
@@ -30,10 +27,8 @@ export function ResidenceCheckInPage() {
         </div>
       </header>
 
-      {/* Split view */}
       <div className="flex flex-1 overflow-hidden">
-        <DepositList selectedId={selected?.id ?? null} onSelect={setSelected} />
-        <ResidenceForm deposit={selected} />
+        <ResidenceForm deposit={null} onSaved={() => {}} />
       </div>
     </div>
   );
