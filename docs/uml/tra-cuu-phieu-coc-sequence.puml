@@ -8,13 +8,28 @@ boundary ": MHTraCuuPhieuCoc" as MH
 control ": TraCuuPhieuCoc" as TC
 control ": PhieuCoc" as PC
 entity ": PhieuCocDB" as PCDB
+
+ND -> MH : HienThi()
+
 ND -> MH : btnTimKiem_Click()
 MH -> TC : TimKiem(maPhieuCoc, sdt, email, soGiayTo)
-TC -> TC : kiem tra co it nhat mot tieu chi
-TC -> PC : TraCuu(maPhieuCoc, sdt, email, soGiayTo)
-PC -> PCDB : TraCuu(maPhieuCoc, sdt, email, soGiayTo)
-ND -> MH : grvKetQua_CellClick(maPhieuCoc)
-MH -> TC : LayChiTiet(maPhieuCoc)
-TC -> PC : DocChiTiet(maPhieuCoc)
-PC -> PCDB : DocChiTiet(maPhieuCoc)
+alt Khong co tieu chi tim kiem
+  note right of TC
+    TimKiem tu choi yeu cau va tra thong bao
+    "Vui long nhap it nhat mot tieu chi tim kiem"
+  end note
+else Co it nhat mot tieu chi
+  TC -> PC : TraCuu(maPhieuCoc, sdt, email, soGiayTo)
+  PC -> PCDB : TraCuu(maPhieuCoc, sdt, email, soGiayTo)
+  opt Co phieu coc trong ket qua
+    ND -> MH : grvKetQua_CellClick(maPhieuCoc)
+    MH -> TC : LayChiTiet(maPhieuCoc)
+    TC -> PC : DocChiTiet(maPhieuCoc)
+    PC -> PCDB : DocChiTiet(maPhieuCoc)
+    note right of PCDB
+      Doc thong tin PhieuCoc, KhachHang, Phong
+      va danh sach Giuong lien quan
+    end note
+  end
+end
 @enduml

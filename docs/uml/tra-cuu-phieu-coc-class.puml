@@ -5,7 +5,10 @@ skinparam shadowing false
 skinparam linetype ortho
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
-skinparam class { BackgroundColor #FFFACD BorderColor #9B7B7B }
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
 package "TANG GIAO DIEN" #EAF2F8 {
   class MHTraCuuPhieuCoc {
     - txtMaPhieuCoc: TextBox
@@ -13,6 +16,21 @@ package "TANG GIAO DIEN" #EAF2F8 {
     - txtEmail: TextBox
     - txtSoGiayTo: TextBox
     - grvKetQua: GridView
+    - lblMaPhieuCoc: Label
+    - lblTrangThai: Label
+    - lblHoTenKhachHang: Label
+    - lblSoDienThoai: Label
+    - lblEmail: Label
+    - lblSoGiayTo: Label
+    - lblPhong: Label
+    - lblHinhThucThue: Label
+    - lblThoiDiemCoc: Label
+    - lblTongTien: Label
+    - lblTrangThaiThanhToan: Label
+    - grvGiuongLienQuan: GridView
+    - btnTimKiem: Button
+    --
+    + HienThi()
     + btnTimKiem_Click()
     + grvKetQua_CellClick(maPhieuCoc: String)
   }
@@ -21,29 +39,55 @@ package "TANG NGHIEP VU" #FCF3CF {
   class TraCuuPhieuCoc {
     + TimKiem(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
     + LayChiTiet(maPhieuCoc: String): PhieuCoc
-    + LayDanhSachCoTheHuy(text: String): IReadOnlyList<PhieuCoc>
-    + LayDanhSachDaHuyChoDoiSoat(): IReadOnlyList<PhieuCoc>
   }
+
   class PhieuCoc {
     - MaPhieuCoc: String
-    - TrangThai: String
+    - HanThanhToan: DateTime
+    - HinhThucThue: String
+    - SoGiuongThue: Integer
     - TongTien: Decimal
+    - ThoiDiemCoc: DateTime
+    - TrangThai: String
     - DaDongTien: Boolean
+    --
     + TraCuu(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
-    + LayDanhSachCoTheHuy(text: String): IReadOnlyList<PhieuCoc>
-    + LayDanhSachDaHuyChoDoiSoat(): IReadOnlyList<PhieuCoc>
+  }
+
+  class KhachHang {
+    - MaKH: String
+    - HoTen: String
+    - SDT: String
+    - Email: String
+    - LoaiGiayTo: String
+    - SoGiayTo: String
+  }
+
+  class Phong {
+    - MaPhong: String
+    - SoPhong: String
+    - ToaNha: String
+  }
+
+  class Giuong {
+    - MaGiuong: String
+    - SoGiuong: String
+    - TrangThai: String
   }
 }
 package "TANG TRUY CAP DU LIEU" #FDEDEC {
   class PhieuCocDB {
     + TraCuu(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
-    + LayDanhSachCoTheHuy(text: String): IReadOnlyList<PhieuCoc>
-    + LayDanhSachDaHuyChoDoiSoat(): IReadOnlyList<PhieuCoc>
   }
 }
+
 MHTraCuuPhieuCoc o-- TraCuuPhieuCoc
 TraCuuPhieuCoc o-- PhieuCoc
 PhieuCoc o-- PhieuCocDB
+
+PhieuCoc "0..*" -- "1" KhachHang : cua
+PhieuCoc "0..*" -- "1" Phong : dat
+PhieuCoc "1" -- "1..*" Giuong : gom
 @enduml

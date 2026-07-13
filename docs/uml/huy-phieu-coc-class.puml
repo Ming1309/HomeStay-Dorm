@@ -5,16 +5,35 @@ skinparam shadowing false
 skinparam linetype ortho
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
-skinparam class { BackgroundColor #FFFACD BorderColor #9B7B7B }
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
 package "TANG GIAO DIEN" #EAF2F8 {
   class MHHuyPhieuCoc {
     - txtTimKiem: TextBox
     - grvPhieuCoTheHuy: GridView
+    - lblMaPhieuCoc: Label
+    - lblTrangThai: Label
+    - lblHoTenKhachHang: Label
+    - lblSoDienThoai: Label
+    - lblEmail: Label
+    - lblSoGiayTo: Label
+    - lblPhong: Label
+    - lblHinhThucThue: Label
+    - lblThoiDiemCoc: Label
+    - lblTongTien: Label
+    - lblTrangThaiThanhToan: Label
+    - grvGiuongLienQuan: GridView
     - btnHuyDatCoc: Button
+    - dlgXacNhanHuy: Dialog
+    - btnBoQua: Button
+    - btnXacNhanHuy: Button
     + HienThi()
     + txtTimKiem_TextChanged(text: String)
     + grvPhieuCoTheHuy_CellClick(maPhieuCoc: String)
     + btnHuyDatCoc_Click()
+    + btnBoQua_Click()
     + btnXacNhanHuy_Click()
   }
 }
@@ -23,8 +42,12 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayDanhSachCoTheHuy(text: String): IReadOnlyList<PhieuCoc>
     + LayChiTiet(maPhieuCoc: String): PhieuCoc
   }
-  class HuyPhieuCoc { + Huy(maPhieuCoc: String, maNhanVien: String): PhieuCoc }
-  class HopDong { + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean }
+  class HuyPhieuCoc {
+    + Huy(maPhieuCoc: String, maNhanVien: String): PhieuCoc
+  }
+  class HopDong {
+    + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean
+  }
   class PhieuCoc {
     - TrangThai: String
     - ThoiDiemHuy: DateTime
@@ -40,12 +63,22 @@ package "TANG NGHIEP VU" #FCF3CF {
     + GiaiPhongDatCoc(maGiuongs: IEnumerable<String>)
     + CapNhatGiaiPhongDatCoc()
   }
-  class Giuong { + GiaiPhong(maPhong: String) }
+  class Giuong {
+    + GiaiPhong(maPhong: String)
+  }
 }
 package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class HopDongDB { + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean }
-  class PhieuCocDB { + DocChiTiet(maPhieuCoc: String): PhieuCoc + CapNhatHuy(phieu: PhieuCoc) }
-  class PhongDB { + DocChiTiet(maPhong: String): Phong + CapNhatGiaiPhongDatCoc(phong: Phong) }
+  class HopDongDB {
+    + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean
+  }
+  class PhieuCocDB {
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + CapNhatHuy(phieu: PhieuCoc)
+  }
+  class PhongDB {
+    + DocChiTiet(maPhong: String): Phong
+    + CapNhatGiaiPhongDatCoc(phong: Phong)
+  }
 }
 MHHuyPhieuCoc o-- TraCuuPhieuCoc
 MHHuyPhieuCoc o-- HuyPhieuCoc
