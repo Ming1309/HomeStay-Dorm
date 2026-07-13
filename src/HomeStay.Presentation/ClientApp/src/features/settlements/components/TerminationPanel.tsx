@@ -1,6 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, Check, CheckCircle2, ClipboardCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  ClipboardCheck,
+  Coins,
+  Loader2,
+  Wallet,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -17,13 +25,17 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import { Form, FormControl, FormField, FormItem } from "@/shared/ui/form";
-import { ReconciliationSummary } from "@/features/settlements/components/ReconciliationSummary";
+import { Card, CardContent } from "@/shared/ui/card";
+import { cn } from "@/shared/lib/utils";
 import {
-  useWorkflowStore,
-  type ContractItem,
-  type ReconciliationResult,
-  type TerminationRecord,
-} from "@/app/providers/workflow-store";
+  formatCurrencyVnd,
+  formatDateVi,
+  formatPhong,
+  loadChiTietThanhLy,
+  thanhLyHopDong,
+  type ChiTietThanhLyHopDong,
+  type ThanhLyHopDongResult,
+} from "@/features/settlements/services/termination-service";
 
 const formSchema = z
   .object({
@@ -65,11 +77,18 @@ const CONFIRMATION_ITEMS: Array<{
   },
 ];
 
-export function TerminationPanel({ contract }: { contract: ContractItem }) {
-  const { assetRecoveries, getReconciliation, receiptVouchers, terminateContract } =
-    useWorkflowStore();
-  const reconciliation: ReconciliationResult | null = getReconciliation(contract.id);
-  const [issued, setIssued] = useState<TerminationRecord | null>(null);
+export function TerminationPanel({
+  maHD,
+  onTerminated,
+}: {
+  maHD: string | null;
+  onTerminated?: () => void;
+}) {
+  const [detail, setDetail] = useState<ChiTietThanhLyHopDong | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [issued, setIssued] = useState<ThanhLyHopDongResult | null>(null);
   const [pendingConfirm, setPendingConfirm] = useState<FormValues | null>(null);
 
   const form = useForm<FormValues>({
@@ -85,6 +104,22 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
   });
 
   useEffect(() => {
+    if (!maHD) {
+      setDetail(null);
+      setLoadError(null);
+      form.reset({
+        confirmations: {
+          customerAgreed: false,
+          liquidationSigned: false,
+          keysRecovered: false,
+        },
+      });
+      return;
+    }
+
+    const controller = new AbortController();
+    setLoading(true);
+    setLoadError(null);
     form.reset({
       confirmations: {
         customerAgreed: false,
@@ -92,76 +127,108 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
         keysRecovered: false,
       },
     });
-  }, [contract.id, form]);
+
+    void loadChiTietThanhLy(maHD, controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) setDetail(data);
+      })
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return;
+        setDetail(null);
+        setLoadError(err instanceof Error ? err.message : "Không thể tải chi tiết hợp đồng.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [maHD, form]);
 
   const allChecked = form.watch("confirmations");
   const checkedCount = Object.values(allChecked).filter(Boolean).length;
+  const systemReady = Boolean(detail?.coTheThanhLy);
+  const canSubmit = form.formState.isValid && systemReady && !submitting && !!detail;
+  const disabledReason = !detail
+    ? "Đang tải dữ liệu hợp đồng..."
+    : !systemReady
+      ? (detail.lyDoChan ??
+        "Vui lòng yêu cầu khách hàng thanh toán dứt điểm công nợ trước khi thanh lý")
+      : "Vui lòng hoàn tất các điều kiện xác nhận trước khi thanh lý hợp đồng.";
 
   const handleConfirm = (data: FormValues) => {
     setPendingConfirm(data);
   };
 
-  const finalizeTermination = () => {
-    if (!pendingConfirm) return;
-    const record = terminateContract({
-      contractId: contract.id,
-      customerName: contract.customerName,
-      executor: "Trần Văn Hùng — Quản lý",
-      note: "",
-      confirmations: {
-        customerReturned: true,
-        keysRecovered: pendingConfirm.confirmations.keysRecovered,
-        financialSettled: true,
-        roomUpdated: true,
-      },
-    });
-    setIssued(record);
-    setPendingConfirm(null);
-    toast.success(`Đã thanh lý hợp đồng ${contract.id}.`, {
-      icon: <CheckCircle2 className="size-4 text-emerald-600" />,
-    });
+  const finalizeTermination = async () => {
+    if (!pendingConfirm || !detail) return;
+    setSubmitting(true);
+    try {
+      const result = await thanhLyHopDong(detail.maHD, pendingConfirm.confirmations);
+      setIssued(result);
+      setPendingConfirm(null);
+      toast.success(`Đã thanh lý hợp đồng ${result.maHD}.`, {
+        icon: <CheckCircle2 className="size-4 text-emerald-600" />,
+      });
+      onTerminated?.();
+    } catch (err) {
+      toast.error("Không thể thanh lý hợp đồng", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  if (!reconciliation) {
+  if (!maHD) {
     return (
       <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
-        <p className="text-sm text-gray-500">Chưa có dữ liệu đối soát cho hợp đồng này.</p>
+        <p className="text-sm text-gray-500">Chọn hợp đồng để thanh lý.</p>
       </section>
     );
   }
 
-  const isLiquidated = contract.status === "liquidated";
-  const hasAssetRecovery = assetRecoveries.some((a) => a.contractId === contract.id);
-  const paidAdditionalAmount = receiptVouchers
-    .filter((v) => v.contractId === contract.id)
-    .reduce((sum, v) => sum + v.amount, 0);
-  const remainingDebt = Math.max(reconciliation.additionalDue - paidAdditionalAmount, 0);
-  const financialReady = remainingDebt === 0;
-  const systemReady = Boolean(reconciliation) && financialReady && hasAssetRecovery;
-  const canSubmit = form.formState.isValid && systemReady && !isLiquidated;
-  const disabledReason = "Vui lòng hoàn tất các điều kiện xác nhận trước khi thanh lý hợp đồng.";
+  if (loading) {
+    return (
+      <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
+        <Loader2 className="size-6 animate-spin text-slate-500" />
+      </section>
+    );
+  }
+
+  if (loadError || !detail) {
+    return (
+      <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
+        <p className="text-sm text-rose-600">{loadError ?? "Không có dữ liệu hợp đồng."}</p>
+      </section>
+    );
+  }
+
+  const phong = formatPhong(detail.toaNha, detail.soPhong);
+  const refundRatePct = Math.round(detail.tyLeHoanCoc * 100);
+  const baseRefund = detail.tienCoc * detail.tyLeHoanCoc;
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
       <div className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-gray-200 bg-white px-5">
         <div className="flex items-center gap-2">
-          <h1 className="font-mono text-sm font-bold text-gray-900">{contract.id}</h1>
+          <h1 className="font-mono text-sm font-bold text-gray-900">{detail.maHD}</h1>
           <Badge
-            className={`h-5 text-[10px] ${
-              isLiquidated ? "bg-slate-200 text-slate-700" : "bg-yellow-100 text-yellow-700"
-            }`}
+            className={cn(
+              "h-5 text-[10px]",
+              detail.coTheThanhLy
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-amber-100 text-amber-700",
+            )}
           >
-            {isLiquidated ? "Đã thanh lý" : "Chờ thanh lý"}
+            {detail.coTheThanhLy ? "Sẵn sàng thanh lý" : "Còn công nợ"}
           </Badge>
           <span className="text-xs text-gray-500">
-            {contract.customerName} • {contract.room}
+            {detail.tenKhachHang} • {phong}
           </span>
         </div>
         <div className="text-right">
           <p className="text-[11px] uppercase text-gray-400">TRẠNG THÁI HỢP ĐỒNG</p>
-          <p className="font-mono text-sm font-bold text-slate-700">
-            {isLiquidated ? "Đã thanh lý" : "Đang hiệu lực"}
-          </p>
+          <p className="font-mono text-sm font-bold text-slate-700">Đang hiệu lực</p>
         </div>
       </div>
 
@@ -175,20 +242,91 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
             <div className="rounded-lg border border-gray-200 bg-white p-4">
               <h3 className="mb-3 text-xs font-semibold text-gray-700">Thông tin hợp đồng</h3>
               <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
-                <Info label="Mã hợp đồng" value={contract.id} mono />
-                <Info label="Khách hàng" value={contract.customerName} />
-                <Info label="Phòng/Giường" value={contract.room} mono />
-                <Info label="Số điện thoại" value={contract.phone} mono />
-                <Info label="Ngày bắt đầu" value={contract.rentalPeriod.split(" - ")[0] ?? ""} />
-                <Info label="Ngày kết thúc" value={contract.rentalPeriod.split(" - ")[1] ?? ""} />
+                <Info label="Mã hợp đồng" value={detail.maHD} mono />
+                <Info label="Khách hàng" value={detail.tenKhachHang} />
+                <Info label="Phòng/Giường" value={phong} mono />
+                <Info label="Số điện thoại" value={detail.sdt ?? "—"} mono />
+                <Info label="Ngày bắt đầu" value={formatDateVi(detail.ngayBatDau)} />
+                <Info label="Ngày kết thúc" value={formatDateVi(detail.ngayKetThuc)} />
               </div>
+              {detail.giuongs.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {detail.giuongs.map((g) => (
+                    <Badge
+                      key={g.maGiuong}
+                      className="h-5 bg-gray-100 font-mono text-[10px] text-gray-700 hover:bg-gray-100"
+                    >
+                      {g.soGiuong} ({g.maGiuong})
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <ReconciliationSummary
-              reconciliation={reconciliation}
-              mode="terminate"
-              paidAmount={paidAdditionalAmount}
-            />
+            <Card className="rounded-lg border border-slate-200 bg-slate-50/60">
+              <CardContent className="space-y-3 p-4">
+                <div className="flex items-center gap-2">
+                  <Coins className="size-4 text-gray-600" />
+                  <h3 className="text-xs font-semibold text-gray-700">Kết quả đối soát đã chốt</h3>
+                  <span className="ml-auto font-mono text-[10px] font-medium text-gray-500">
+                    {detail.maPDS} • {refundRatePct}%
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Dữ liệu do Kế toán lập, Quản lý chỉ xem và xác nhận trước khi thanh lý.
+                </p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="rounded-md border border-gray-200 bg-white p-3">
+                    <h4 className="mb-3 text-[11px] font-semibold text-gray-700">Kết quả đối soát</h4>
+                    <div className="space-y-2 text-sm">
+                      <SummaryRow
+                        label="Tiền cọc ban đầu"
+                        value={formatCurrencyVnd(detail.tienCoc)}
+                        icon={<Wallet className="size-3" />}
+                      />
+                      <SummaryRow
+                        label="Tổng khấu trừ"
+                        value={formatCurrencyVnd(detail.tongKhauTru)}
+                        tone={detail.tongKhauTru > 0 ? "warn" : "muted"}
+                      />
+                      <SummaryRow
+                        label="Tiền hoàn cơ bản"
+                        value={formatCurrencyVnd(baseRefund)}
+                        hint={`${refundRatePct}% cọc`}
+                      />
+                      <SummaryRow
+                        label="Tiền hoàn thực tế"
+                        value={formatCurrencyVnd(detail.tienHoan)}
+                        tone={detail.tienHoan > 0 ? "ok" : "muted"}
+                      />
+                      <SummaryRow
+                        label="Tiền thu thêm"
+                        value={formatCurrencyVnd(detail.tienThuThem)}
+                        tone={detail.tienThuThem > 0 ? "warn" : "muted"}
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-md border border-gray-200 bg-white p-3">
+                    <h4 className="mb-3 text-[11px] font-semibold text-gray-700">Trạng thái công nợ</h4>
+                    <SystemState
+                      ok={detail.coTheThanhLy}
+                      label={
+                        detail.coTheThanhLy
+                          ? detail.tienHoan > 0
+                            ? "Khách được hoàn cọc — đủ điều kiện thanh lý"
+                            : "Hòa vốn / đã tất toán — đủ điều kiện thanh lý"
+                          : "Khách còn nợ tiền — chưa thể thanh lý"
+                      }
+                    />
+                    {!detail.coTheThanhLy && detail.lyDoChan && (
+                      <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800">
+                        {detail.lyDoChan}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="rounded-lg border border-slate-200 bg-slate-50/40 p-4">
               <h3 className="mb-2 text-xs font-semibold text-slate-700">Điều kiện xác nhận thanh lý</h3>
@@ -204,17 +342,19 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
                     render={({ field }) => (
                       <FormItem>
                         <label
-                          className={`flex cursor-pointer items-start gap-2 rounded-md border px-3 py-2 transition-colors ${
+                          className={cn(
+                            "flex cursor-pointer items-start gap-2 rounded-md border px-3 py-2 transition-colors",
                             field.value
                               ? "border-emerald-300 bg-emerald-50/60"
-                              : "border-gray-200 bg-white hover:border-gray-300"
-                          }`}
+                              : "border-gray-200 bg-white hover:border-gray-300",
+                          )}
                         >
                           <FormControl>
                             <Checkbox
                               checked={!!field.value}
                               onCheckedChange={(v) => field.onChange(v === true)}
                               className="mt-0.5"
+                              disabled={!systemReady}
                             />
                           </FormControl>
                           <div className="flex-1">
@@ -238,21 +378,13 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
             <div className="rounded-lg border border-gray-200 bg-white p-4">
               <h3 className="mb-3 text-xs font-semibold text-gray-700">Trạng thái hệ thống</h3>
               <div className="space-y-2 text-sm">
-                <SystemState ok label="Phiếu đối soát đã chốt" />
+                <SystemState ok label={`Phiếu đối soát ${detail.maPDS} đã chốt`} />
                 <SystemState
-                  ok={financialReady}
+                  ok={detail.coTheThanhLy}
                   label={
-                    financialReady
+                    detail.coTheThanhLy
                       ? "Nghĩa vụ tài chính đã hoàn tất"
                       : "Khách còn công nợ chưa thanh toán"
-                  }
-                />
-                <SystemState
-                  ok={hasAssetRecovery}
-                  label={
-                    hasAssetRecovery
-                      ? "Biên bản thu hồi tài sản đã được lập"
-                      : "Biên bản thu hồi tài sản chưa được lập"
                   }
                 />
               </div>
@@ -263,15 +395,7 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
 
       <footer className="sticky bottom-0 flex h-14 items-center justify-between border-t border-gray-200 bg-white px-5">
         <div className="text-xs text-gray-400">
-          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
-            Ctrl
-          </kbd>{" "}
-          +{" "}
-          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
-            Enter
-          </kbd>{" "}
-          : Xác nhận thanh lý
-          <span className="ml-3 font-mono text-[10px] text-gray-400">
+          <span className="font-mono text-[10px] text-gray-400">
             Đã xác nhận: {checkedCount}/3
           </span>
         </div>
@@ -283,38 +407,58 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
             disabled={!canSubmit}
             title={!canSubmit ? disabledReason : undefined}
           >
-            <ClipboardCheck className="size-3.5" />
-            Xác nhận thanh lý
+            {submitting ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <ClipboardCheck className="size-3.5" />
+            )}
+            Thanh lý hợp đồng
           </Button>
         </div>
-        {!canSubmit && !isLiquidated && (
-          <p className="absolute bottom-14 right-5 rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] text-amber-800 shadow-sm">
+        {!canSubmit && (
+          <p className="absolute bottom-14 right-5 max-w-sm rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] text-amber-800 shadow-sm">
             {disabledReason}
           </p>
         )}
       </footer>
 
-      <Dialog open={!!pendingConfirm} onOpenChange={(o) => !o && setPendingConfirm(null)}>
+      <Dialog open={!!pendingConfirm} onOpenChange={(o) => !o && !submitting && setPendingConfirm(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Xác nhận thanh lý hợp đồng?</DialogTitle>
             <DialogDescription>
-              Hệ thống sẽ cập nhật hợp đồng {contract.id} sang trạng thái ‘Đã thanh lý’, chuyển
-              giường/phòng về trạng thái trống và ghi nhận khách đã trả phòng.
+              Hệ thống sẽ cập nhật hợp đồng {detail.maHD} sang trạng thái ‘Đã thanh lý’, chuyển
+              giường về trạng thái trống và ghi nhận khách đã trả phòng.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="outline" className="h-8 text-xs" onClick={() => setPendingConfirm(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-8 text-xs"
+              disabled={submitting}
+              onClick={() => setPendingConfirm(null)}
+            >
               Quay lại
             </Button>
-            <Button type="button" className="h-8 bg-slate-700 text-xs hover:bg-slate-800" onClick={finalizeTermination}>
+            <Button
+              type="button"
+              className="h-8 bg-slate-700 text-xs hover:bg-slate-800"
+              disabled={submitting}
+              onClick={() => void finalizeTermination()}
+            >
+              {submitting ? <Loader2 className="size-3.5 animate-spin" /> : null}
               Xác nhận thanh lý
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <RecordPreviewDialog record={issued} onClose={() => setIssued(null)} />
+      <SuccessDialog
+        result={issued}
+        customerName={detail.tenKhachHang}
+        onClose={() => setIssued(null)}
+      />
     </section>
   );
 }
@@ -322,41 +466,77 @@ export function TerminationPanel({ contract }: { contract: ContractItem }) {
 function SystemState({ ok, label }: { ok: boolean; label: string }) {
   return (
     <div className={ok ? "flex items-center gap-2 text-emerald-700" : "flex items-center gap-2 text-amber-700"}>
-      {ok ? <Check className="size-4" /> : <AlertTriangle className="size-4" />}
+      {ok ? <Check className="size-4 shrink-0" /> : <AlertTriangle className="size-4 shrink-0" />}
       <span>{label}</span>
     </div>
   );
 }
 
-function RecordPreviewDialog({
-  record,
+function SummaryRow({
+  label,
+  value,
+  hint,
+  tone,
+  icon,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  tone?: "ok" | "warn" | "muted";
+  icon?: ReactNode;
+}) {
+  const toneClass =
+    tone === "ok"
+      ? "text-emerald-700"
+      : tone === "warn"
+        ? "text-amber-700"
+        : "text-gray-800";
+  return (
+    <div className="flex items-start justify-between gap-2">
+      <span className="flex items-center gap-1 text-xs text-gray-500">
+        {icon}
+        {label}
+      </span>
+      <div className="text-right">
+        <p className={cn("font-mono text-xs font-semibold", toneClass)}>{value}</p>
+        {hint ? <p className="text-[10px] text-gray-400">{hint}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function SuccessDialog({
+  result,
+  customerName,
   onClose,
 }: {
-  record: TerminationRecord | null;
+  result: ThanhLyHopDongResult | null;
+  customerName: string;
   onClose: () => void;
 }) {
-  if (!record) return null;
+  if (!result) return null;
 
   return (
-    <Dialog open={!!record} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={!!result} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Biên bản thanh lý {record.code}</DialogTitle>
-          <DialogDescription>Biên bản đã được ghi nhận.</DialogDescription>
+          <DialogTitle>Thanh lý hợp đồng thành công</DialogTitle>
+          <DialogDescription>Hợp đồng đã được đóng và giường đã giải phóng.</DialogDescription>
         </DialogHeader>
         <div className="space-y-2 text-sm">
-          <Info label="Hợp đồng" value={record.contractId} mono />
-          <Info label="Khách hàng" value={record.customerName} />
-          <Info label="Ngày thanh lý" value={new Date(record.date).toLocaleDateString("vi-VN")} />
-          <Info label="Người thực hiện" value={record.executor} />
-          <div className="rounded-md border border-slate-200 bg-slate-50 p-2 text-[11px] text-slate-700">
-            <p className="mb-1 font-semibold">Xác nhận:</p>
-            <ul className="space-y-0.5">
-              <li>✓ Khách hàng đã xem và đồng ý với kết quả đối soát</li>
-              <li>✓ Khách đã ký biên bản thanh lý giấy</li>
-              <li>{record.confirmations.keysRecovered ? "✓" : "✗"} Đã thu hồi chìa khóa/thẻ từ</li>
-            </ul>
-          </div>
+          <Info label="Hợp đồng" value={result.maHD} mono />
+          <Info label="Khách hàng" value={customerName} />
+          <Info label="Ngày thanh lý" value={formatDateVi(result.ngayThanhLy)} />
+          <Info label="Phiếu đối soát" value={result.maPDS} mono />
+          <Info
+            label={result.tienHoan > 0 ? "Số tiền hoàn" : "Số tiền thu thêm"}
+            value={formatCurrencyVnd(result.tienHoan > 0 ? result.tienHoan : result.tienThuThem)}
+          />
+          {result.tienHoan > 0 && (
+            <p className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[11px] text-emerald-800">
+              Đã gửi thông báo cho Kế toán để thực hiện hoàn cọc.
+            </p>
+          )}
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" className="h-8 text-xs" onClick={onClose}>
