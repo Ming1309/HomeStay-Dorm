@@ -32,8 +32,7 @@ public sealed record ChiTietNhapHoSoHttpResponse(
     int SucChua);
 
 public sealed record NhapHoSoLuuTruHttpRequest(
-    KhachHangRequest NguoiDaiDien,
-    string HinhThucThue,
+    string DiaChiThuongTru,
     List<KhachHangRequest>? DanhSachThanhVien);
 
 public sealed record KhachHangRequest(

@@ -30,21 +30,21 @@ package "TANG GIAO DIEN" #EAF2F8 {
     - badgeHinhThucThue: Badge
     - lblPhongDangChon: Label
     - lblHoTen: Label
-    - txtHoTen: TextBox
+    - txtHoTen: TextBox {readOnly}
     - lblSoDienThoai: Label
-    - txtSoDienThoai: TextBox
+    - txtSoDienThoai: TextBox {readOnly}
     - lblEmail: Label
-    - txtEmail: TextBox
+    - txtEmail: TextBox {readOnly}
     - lblGioiTinh: Label
-    - cboGioiTinh: ComboBox
+    - cboGioiTinh: ComboBox {readOnly}
     - lblNgaySinh: Label
-    - txtNgaySinh: TextBox
+    - txtNgaySinh: TextBox {readOnly}
     - lblQuocTich: Label
-    - txtQuocTich: TextBox
+    - txtQuocTich: TextBox {readOnly}
     - lblLoaiGiayTo: Label
-    - cboLoaiGiayTo: ComboBox
+    - cboLoaiGiayTo: ComboBox {readOnly}
     - lblSoGiayTo: Label
-    - txtSoGiayTo: TextBox
+    - txtSoGiayTo: TextBox {readOnly}
     - lblDiaChiThuongTru: Label
     - txtDiaChiThuongTru: TextBox
     - txtSoNhaTenDuong: TextBox
@@ -97,7 +97,7 @@ package "TANG NGHIEP VU" #FCF3CF {
   class NhapHoSoLuuTru {
     + LayDanhSachChoNhap(text: String): IReadOnlyList<PhieuCoc>
     + LayChiTiet(maPhieuCoc: String): PhieuCoc
-    + NhapHoSo(maPhieuCoc: String, nguoiDaiDien: KhachHang, hinhThucThue: String, cacThanhVien: List<KhachHang>): PhieuCoc
+    + NhapHoSo(maPhieuCoc: String, diaChiThuongTru: String, cacThanhVien: List<KhachHang>): PhieuCoc
   }
 
   class PhieuCoc {
@@ -160,15 +160,17 @@ package "TANG NGHIEP VU" #FCF3CF {
     - Email: String
     --
     + TimTheoSoGiayTo(soGiayTo: String): KhachHang
-    + TaoMaMoi(thoiDiem: DateTime): String
+    + TaoMaMoi(): String
+    + DinhDangMa(soThuTu: Long): String
     + KiemTraThongTinBatBuoc(kh: KhachHang)
     + KiemTraDinhDangEmail(email: String): Boolean
     + KiemTraSoGiayTo(soGiayTo: String, loaiGiayTo: String): Boolean
     + KiemTraNgaySinh(ngaySinh: DateTime): Boolean
     + KiemTraTrungSoGiayTo(nguoiDaiDien: KhachHang, cacThanhVien: List<KhachHang>)
-    + CapNhatTu(thongTinMoi: KhachHang): Boolean
-    + ThemMoi()
-    + CapNhat()
+    + ChuanHoaThongTinNhanDang()
+    + CapNhatDiaChiThuongTru(diaChiThuongTru: String)
+    + LuuDiaChiThuongTru()
+    + Them()
   }
 
   class ThanhVienDangKy {
@@ -227,9 +229,10 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
   }
 
   class KhachHangDB {
+    + LaySoThuTuMoi(): Long
     + TimTheoSoGiayTo(soGiayTo: String): KhachHang
     + Them(khachHang: KhachHang)
-    + CapNhat(khachHang: KhachHang)
+    + CapNhatDiaChiThuongTru(maKH: String, diaChiThuongTru: String)
   }
 
   class ThanhVienDangKyDB {

@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   DoorClosed,
   FileText,
+  Lock,
   Save,
   UserRound,
   Users,
@@ -14,73 +15,32 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
-import {
-  MembersTable,
-  newMember,
-  type Member,
-} from "@/features/contracts/components/MembersTable";
-import {
-  nhapHoSo,
-  type PhieuCocDetail,
-} from "@/features/residence/services/residence-service";
+import { MembersTable, type Member } from "@/features/contracts/components/MembersTable";
+import { nhapHoSo, type PhieuCocDetail } from "@/features/residence/services/residence-service";
 
 type Props = { deposit: PhieuCocDetail | null; onSaved: () => void };
 
 export function ResidenceForm({ deposit, onSaved }: Props) {
   const [members, setMembers] = useState<Member[]>([]);
-  const [hoTen, setHoTen] = useState("");
-  const [sdt, setSdt] = useState("");
-  const [email, setEmail] = useState("");
-  const [gioiTinh, setGioiTinh] = useState("");
-  const [ngaySinh, setNgaySinh] = useState("");
-  const [quocTich, setQuocTich] = useState("");
-  const [loaiGiayTo, setLoaiGiayTo] = useState("");
-  const [soGiayTo, setSoGiayTo] = useState("");
   const [addrStreet, setAddrStreet] = useState("");
   const [addrTinh, setAddrTinh] = useState("");
   const [addrQuan, setAddrQuan] = useState("");
   const [addrPhuong, setAddrPhuong] = useState("");
   const [addrOverseas, setAddrOverseas] = useState("");
   const [saving, setSaving] = useState(false);
-  const isVietnamese = quocTich.trim().toLowerCase() === "việt nam";
+  const isVietnamese = (deposit?.quocTich ?? "Việt Nam").trim().toLowerCase() === "việt nam";
 
   useEffect(() => {
     if (!deposit) return;
     setMembers([]);
-    setHoTen(deposit.hoTenKhachHang);
-    setSdt(deposit.sdt ?? "");
-    setEmail(deposit.email ?? "");
-    setGioiTinh(deposit.gioiTinh ?? "");
-    setNgaySinh(deposit.ngaySinh ?? "");
-    setQuocTich(deposit.quocTich ?? "");
-    setLoaiGiayTo(deposit.loaiGiayTo ?? "");
-    setSoGiayTo(deposit.soGiayTo ?? "");
     setAddrStreet("");
     setAddrTinh("");
     setAddrQuan("");
     setAddrPhuong("");
     setAddrOverseas("");
-  }, [deposit?.maPhieuCoc]);
-
-  useEffect(() => {
-    if (!deposit) return;
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        void handleSave();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [deposit, members, hoTen, sdt, email, gioiTinh, ngaySinh, quocTich, loaiGiayTo, soGiayTo, addrStreet, addrTinh, addrQuan, addrPhuong, addrOverseas]);
+  }, [deposit]);
 
   const buildDiaChi = () => {
     if (!isVietnamese) return addrOverseas;
@@ -89,27 +49,22 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
 
   const handleSave = async () => {
     if (!deposit) return;
+    const diaChi = buildDiaChi().trim();
+    if (!diaChi || (isVietnamese && (!addrStreet || !addrTinh || !addrQuan || !addrPhuong))) {
+      toast.error("Vui lòng nhập đầy đủ địa chỉ thường trú.");
+      return;
+    }
     setSaving(true);
     try {
-      const diaChi = buildDiaChi();
       await nhapHoSo(deposit.maPhieuCoc, {
-        nguoiDaiDien: {
-          hoTen,
-          ngaySinh: ngaySinh || null,
-          gioiTinh: gioiTinh || null,
-          quocTich: quocTich || null,
-          loaiGiayTo: loaiGiayTo || null,
-          soGiayTo: soGiayTo || null,
-          diaChiThuongTru: diaChi || null,
-          sdt: sdt || null,
-          email: email || null,
-        },
-        hinhThucThue: deposit.soGiuongThue > 1 ? "TheoNhom" : "CaNhan",
+        diaChiThuongTru: diaChi,
         danhSachThanhVien:
           members.length > 0
             ? members.map((m) => ({
                 hoTen: m.fullName,
-                ngaySinh: m.dob ? new Date(m.dob.split("/").reverse().join("-")).toISOString() : null,
+                ngaySinh: m.dob
+                  ? new Date(m.dob.split("/").reverse().join("-")).toISOString()
+                  : null,
                 gioiTinh: m.gender === "male" ? "Nam" : m.gender === "female" ? "Nữ" : null,
                 quocTich: m.nationality,
                 loaiGiayTo: m.docType === "cccd" ? "CCCD" : "Hộ chiếu",
@@ -132,7 +87,8 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
     }
   };
 
-  const canAddMember = deposit ? 1 + members.length < deposit.soGiuongThue : false;
+  const maxOccupants = deposit ? Math.min(deposit.soGiuongThue, deposit.sucChua) : 1;
+  const canAddMember = deposit ? 1 + members.length < maxOccupants : false;
   const isWholeRoom = deposit?.hinhThucThue === "NguyenCan";
   const soGiuongLabel = isWholeRoom
     ? `${deposit?.soGiuongThue ?? 0} giường (sức chứa tối đa)`
@@ -159,7 +115,9 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-sm font-bold text-blue-600">#{deposit.maPhieuCoc}</span>
+              <span className="font-mono text-sm font-bold text-blue-600">
+                #{deposit.maPhieuCoc}
+              </span>
               <h1 className="text-base font-bold leading-tight text-gray-900">
                 {deposit.hoTenKhachHang}
               </h1>
@@ -199,56 +157,24 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
             <div className="rounded-lg border border-gray-100 bg-gray-50/70 p-4">
               <div className="mb-3 flex items-center gap-1.5">
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
-                  Thông tin khách hàng
+                  Thông tin từ phiếu cọc
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-x-5 gap-y-4">
-                <FormField label="Họ và tên">
-                  <Input value={hoTen} onChange={(e) => setHoTen(e.target.value)} className={inputCls} />
-                </FormField>
-                <FormField label="Số điện thoại">
-                  <Input value={sdt} onChange={(e) => setSdt(e.target.value)} className={cn(inputCls, "font-mono")} />
-                </FormField>
-                <FormField label="Địa chỉ email">
-                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
-                </FormField>
-                <FormField label="Giới tính">
-                  <Select value={gioiTinh} onValueChange={setGioiTinh}>
-                    <SelectTrigger className={inputCls}>
-                      <SelectValue placeholder="Chọn giới tính" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Nam">Nam</SelectItem>
-                      <SelectItem value="Nữ">Nữ</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormField>
-                <FormField label="Ngày sinh">
-                  <Input type="date" value={ngaySinh} onChange={(e) => setNgaySinh(e.target.value)} className={inputCls} />
-                </FormField>
-                <FormField label="Quốc tịch">
-                  <Input value={quocTich} onChange={(e) => setQuocTich(e.target.value)} className={inputCls} />
-                </FormField>
-                <FormField label="Loại giấy tờ">
-                  <Select value={loaiGiayTo} onValueChange={setLoaiGiayTo}>
-                    <SelectTrigger className={inputCls}>
-                      <SelectValue placeholder="Chọn loại giấy tờ" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CCCD">CCCD</SelectItem>
-                      <SelectItem value="Hộ chiếu">Hộ chiếu</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormField>
-                <FormField label="Số giấy tờ">
-                  <Input value={soGiayTo} onChange={(e) => setSoGiayTo(e.target.value)} className={cn(inputCls, "font-mono")} />
-                </FormField>
+                <LockedField label="Họ và tên" value={deposit.hoTenKhachHang} />
+                <LockedField label="Số điện thoại" value={deposit.sdt} mono />
+                <LockedField label="Địa chỉ email" value={deposit.email} />
+                <LockedField label="Giới tính" value={deposit.gioiTinh} />
+                <LockedField label="Ngày sinh" value={formatDisplayDate(deposit.ngaySinh)} />
+                <LockedField label="Quốc tịch" value={deposit.quocTich} />
+                <LockedField label="Loại giấy tờ" value={deposit.loaiGiayTo} />
+                <LockedField label="Số giấy tờ" value={deposit.soGiayTo} mono />
               </div>
             </div>
 
             <div className="flex items-center gap-4 pt-2">
               <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
-                Địa chỉ thường trú
+                Thông tin cư trú
               </span>
               <div className="h-px flex-1 bg-gray-200" />
             </div>
@@ -362,10 +288,10 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
                 <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500">
                   <span>
                     Đại diện (1) + Thành viên ({members.length}) ={" "}
-                    <strong className="text-gray-700">{1 + members.length}</strong> /{" "}
-                    {deposit.soGiuongThue} giường đã đăng ký
+                    <strong className="text-gray-700">{1 + members.length}</strong> / {maxOccupants}{" "}
+                    giường đã đăng ký
                   </span>
-                  {1 + members.length === deposit.soGiuongThue && (
+                  {1 + members.length === maxOccupants && (
                     <span className="flex items-center gap-1 font-semibold text-emerald-600">
                       <CheckCircle2 className="size-3.5" /> Đủ số lượng
                     </span>
@@ -377,7 +303,7 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
                 members={members}
                 onChange={setMembers}
                 canAddMember={canAddMember}
-                maxMembers={deposit.soGiuongThue - 1}
+                maxMembers={maxOccupants - 1}
               />
             </FormCard>
           )}
@@ -388,6 +314,7 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
         <div className="mx-auto flex max-w-4xl items-center justify-end">
           <div className="flex items-center gap-2.5">
             <Button
+              type="button"
               size="sm"
               disabled={saving}
               onClick={() => void handleSave()}
@@ -450,4 +377,33 @@ function FormField({
   );
 }
 
+function LockedField({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string | null | undefined;
+  mono?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-semibold text-gray-600">{label}</Label>
+      <div className="relative">
+        <Input
+          value={value ?? ""}
+          readOnly
+          className={cn(
+            "h-10 rounded-lg border-gray-200 bg-gray-50 pr-8 text-sm text-gray-700 shadow-none",
+            mono && "font-mono",
+          )}
+        />
+        <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-300" />
+      </div>
+    </div>
+  );
+}
 
+function formatDisplayDate(value: string | null | undefined) {
+  return value ? value.slice(0, 10) : "";
+}

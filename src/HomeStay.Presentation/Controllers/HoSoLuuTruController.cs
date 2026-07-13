@@ -29,9 +29,8 @@ public sealed class HoSoLuuTruController(NhapHoSoLuuTru nhapHoSoLuuTru) : Contro
     {
         try
         {
-            var nguoiDaiDien = Map(request.NguoiDaiDien);
             var cacThanhVien = request.DanhSachThanhVien?.Select(Map).ToList();
-            var phieu = await nhapHoSoLuuTru.NhapHoSo(id, nguoiDaiDien, request.HinhThucThue, cacThanhVien);
+            var phieu = await nhapHoSoLuuTru.NhapHoSo(id, request.DiaChiThuongTru, cacThanhVien);
             return Ok(TaoChiTietResponse(phieu));
         }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }

@@ -26,6 +26,10 @@ VALUES
 ('KH0015', N'Lý Anh Tú', '2001-03-26', N'Nam', N'Việt Nam', N'CCCD', '079201000015', N'Bình Dương', '0900000015', 'kh0015@example.com');
 GO
 
+-- Đồng bộ sequence sau khi chèn mã khách hàng demo.
+ALTER SEQUENCE dbo.Seq_KhachHang RESTART WITH 16;
+GO
+
 -- ============================================================
 -- 2. Phòng và giường cho các trạng thái cần kiểm thử
 -- ============================================================
