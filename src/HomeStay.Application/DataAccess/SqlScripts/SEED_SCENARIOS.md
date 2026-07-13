@@ -43,7 +43,9 @@ done
 
 Bộ seed này cố định ngày giờ để kết quả kiểm thử không thay đổi theo ngày chạy. Không chạy lặp trên database đã có dữ liệu vì các script seed nghiệp vụ không có mục đích migration (ngoại trừ `01_InitTables.sql` vốn drop/create).
 Schema trong `01_InitTables.sql` là nguồn cấu trúc database duy nhất. Khi cấu trúc thay đổi,
-tạo lại database và chạy đầy đủ các script theo thứ tự trên.
+tạo lại database và chạy đầy đủ các script theo thứ tự trên; không chạy lại seed trên database đã có dữ liệu.
+`Seq_KhachHang` (mã khách hàng tuần tự) được tạo trong `01_InitTables.sql`; sau seed demo,
+`04_DemoScenarios.sql` restart sequence `WITH 16` để mã runtime không trùng `KH0001`–`KH0015`.
 
 ## Quy ước mã
 

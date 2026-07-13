@@ -23,6 +23,13 @@ SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
 GO
 
+-- Sequence sinh mã khách hàng tuần tự (NEXT VALUE FOR dbo.Seq_KhachHang)
+CREATE SEQUENCE dbo.Seq_KhachHang
+    AS BIGINT
+    START WITH 1
+    INCREMENT BY 1;
+GO
+
 -- ============================================================
 -- PHẦN 1: TẠO BẢNG (chỉ cột + kiểu dữ liệu + NULL/NOT NULL)
 -- ============================================================
