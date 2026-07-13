@@ -80,7 +80,7 @@ IF EXISTS (
     FROM Phong p
     INNER JOIN LoaiPhong lp ON lp.MaLP = p.MaLP
     LEFT JOIN Giuong g ON g.MaPhong = p.MaPhong
-    WHERE p.MaPhong BETWEEN 'P004' AND 'P011'
+    WHERE p.MaPhong BETWEEN 'P004' AND 'P012'
     GROUP BY p.MaPhong, lp.SucChua
     HAVING COUNT(g.MaGiuong) <> lp.SucChua
 )
@@ -91,7 +91,7 @@ GO
 IF EXISTS (
     SELECT pc.MaPhieuCoc
     FROM PhieuCoc pc
-    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0009'
+    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0010'
       AND (
           (SELECT COUNT(*) FROM ChiTietPhieuCoc ct WHERE ct.MaPhieuCoc = pc.MaPhieuCoc) <> pc.SoGiuongThue
           OR
@@ -108,7 +108,7 @@ IF EXISTS (
     LEFT JOIN ThanhVienDangKy tv
         ON tv.MaPhieuCoc = pc.MaPhieuCoc
        AND tv.VaiTro = N'DaiDien'
-    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0009'
+    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0010'
       AND (tv.MaKH IS NULL OR tv.MaKH <> pc.MaKH)
 )
     THROW 51008, 'Dai dien phieu coc khong trung MaKH.', 1;
@@ -120,7 +120,7 @@ IF EXISTS (
     FROM PhieuCoc pc
     INNER JOIN Phong p ON p.MaPhong = pc.MaPhong
     INNER JOIN LoaiPhong lp ON lp.MaLP = p.MaLP
-    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0009'
+    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0010'
       AND pc.HinhThucThue = N'NguyenCan'
       AND pc.SoGiuongThue <> lp.SucChua
 )

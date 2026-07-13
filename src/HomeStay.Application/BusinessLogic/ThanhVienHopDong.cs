@@ -14,4 +14,16 @@ public sealed class ThanhVienHopDong
 
     public static Task<IReadOnlyList<ThanhVienHopDong>> LayDanhSachTheoHopDong(string maHD) =>
         ThanhVienHopDongDB.LayDanhSachTheoHopDong(maHD);
+
+    /// <summary>Alias UML: layDanhSachGiuong(maHD).</summary>
+    public static Task<IReadOnlyList<ThanhVienHopDong>> LayDanhSachGiuong(string maHD) =>
+        LayDanhSachTheoHopDong(maHD);
+
+    public static async Task CapNhatTrangThaiDaTra(string maHD, DateTime ngayTra)
+    {
+        if (string.IsNullOrWhiteSpace(maHD))
+            throw new ArgumentException("Mã hợp đồng không được để trống.");
+        if (!await ThanhVienHopDongDB.UpdateTrangThaiDaTra(maHD.Trim(), ngayTra.Date))
+            throw new InvalidOperationException("Không thể cập nhật trạng thái chi tiết hợp đồng thành Đã trả.");
+    }
 }

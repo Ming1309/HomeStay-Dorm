@@ -88,4 +88,25 @@ public sealed class PhieuDoiSoat
         if (!await PhieuDoiSoatDB.UpdateTrangThai(maPDS, "DaChot", "DaTatToan"))
             throw new InvalidOperationException("Phiếu đối soát đã được xử lý hoặc không còn ở trạng thái Đã chốt.");
     }
+
+    // UC 1.4.23 Thanh lý hợp đồng
+    public static Task<PhieuDoiSoat?> LayThongTinDoiSoat(string maHD) =>
+        PhieuDoiSoatDB.GetPhieuDoiSoatTheoMaHD(maHD);
+
+    /// <summary>
+    /// true = khách đã hoàn tất nghĩa vụ tài chính (được hoàn / hòa vốn / đã tất toán khoản thu thêm).
+    /// </summary>
+    public static bool KiemTraCongNo(PhieuDoiSoat pds)
+    {
+        if (pds is null) throw new ArgumentNullException(nameof(pds));
+        if (pds.TienThuThem <= 0) return true;
+        return string.Equals(pds.TrangThai, "DaTatToan", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static async Task<bool> KiemTraCongNo(string maPDS)
+    {
+        var pds = await LayChiTietPhieuDoiSoat(maPDS)
+            ?? throw new KeyNotFoundException("Không tìm thấy phiếu đối soát.");
+        return KiemTraCongNo(pds);
+    }
 }

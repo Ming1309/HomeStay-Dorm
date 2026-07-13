@@ -24,6 +24,18 @@ public static class ThanhVienHopDongDB
         return rows.Select(TaoThanhVien).ToList();
     }
 
+    public static async Task<bool> UpdateTrangThaiDaTra(string maHD, DateTime ngayTra)
+    {
+        const string sql = """
+            UPDATE ChiTietHopDong
+            SET TrangThaiThue = N'DaTra', NgayTra = @NgayTra
+            WHERE MaHD = @MaHD AND TrangThaiThue = N'DangThue'
+            """;
+        var affected = await PhienDuLieu.Session.Connection.ExecuteAsync(
+            sql, new { MaHD = maHD, NgayTra = ngayTra }, PhienDuLieu.Session.Transaction);
+        return affected > 0;
+    }
+
     private class ThanhVienHopDongRow
     {
         public string MaHD { get; set; } = string.Empty;
