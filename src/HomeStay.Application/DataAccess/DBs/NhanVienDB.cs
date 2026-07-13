@@ -31,4 +31,6 @@ public static class NhanVienDB
         return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<NhanVien>(
             sql, new { MaNV = maNV }, PhienDuLieu.Session.Transaction);
     }
+
+    public static Task<NhanVien?> GetNhanVienTheoMaNV(string maNV) => DocChiTiet(maNV);
 }

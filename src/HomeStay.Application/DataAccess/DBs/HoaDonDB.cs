@@ -47,4 +47,10 @@ public static class HoaDonDB
         return await PhienDuLieu.Session.Connection.QuerySingleAsync<decimal>(sql,
             new { MaPDS = maPDS }, PhienDuLieu.Session.Transaction);
     }
+
+    public static Task<IReadOnlyList<HoaDon>> GetDSHoaDonCanThuTheoPDS(string maPDS) =>
+        GetDSHoaDonTheoMaPDS(maPDS);
+
+    public static Task<decimal> TinhTongCanThu(string maPDS) =>
+        TinhTongKhauTru(maPDS);
 }

@@ -20,6 +20,12 @@ public sealed class HoaDon
     public static Task<IReadOnlyList<HoaDon>> LayDSHoaDonTheoPhieuDoiSoat(string maPDS) =>
         HoaDonDB.GetDSHoaDonTheoMaPDS(maPDS);
 
+    public static Task<IReadOnlyList<HoaDon>> LayDSHoaDonCanThuTheoPDS(string maPDS) =>
+        HoaDonDB.GetDSHoaDonCanThuTheoPDS(maPDS);
+
     public static Task<decimal> TinhTongKhauTru(string maPDS) =>
         HoaDonDB.TinhTongKhauTru(maPDS);
+
+    public static Task<decimal> TinhTongCanThu(string maPDS) =>
+        HoaDonDB.TinhTongCanThu(maPDS);
 }
