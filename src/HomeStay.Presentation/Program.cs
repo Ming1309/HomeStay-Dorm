@@ -29,6 +29,7 @@ builder.Services.AddScoped<TinhTienCoc>();
 builder.Services.AddScoped<DichVuThongBao>();
 builder.Services.AddScoped<LapPhieuDoiSoat>();
 builder.Services.AddScoped<ThanhToanTraPhong>();
+builder.Services.AddScoped<LapPhieuHoanCoc>();
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();

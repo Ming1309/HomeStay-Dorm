@@ -55,6 +55,8 @@ public sealed class PhieuCoc
 
     public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => PhieuCocDB.DocChiTiet(maPhieuCoc);
 
+    public static Task<PhieuCoc?> LayChiTietPhieuCoc(string maPhieuCoc) => DocChiTiet(maPhieuCoc);
+
     public int TinhTienDuKien()
     {
         KiemTraCoTheTinhTien();

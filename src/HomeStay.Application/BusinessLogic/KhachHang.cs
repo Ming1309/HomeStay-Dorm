@@ -40,4 +40,7 @@ public sealed class KhachHang
     }
 
     public Task CapNhat() => KhachHangDB.CapNhat(this);
+
+    public static Task<KhachHang?> LayThongTinKhachHang(string maKH) =>
+        KhachHangDB.GetKhachHangTheoMaKH(maKH);
 }

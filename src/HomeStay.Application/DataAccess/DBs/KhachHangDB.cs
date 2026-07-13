@@ -17,4 +17,11 @@ public static class KhachHangDB
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, khachHang, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể cập nhật khách hàng của lịch hẹn.");
     }
+
+    public static async Task<KhachHang?> GetKhachHangTheoMaKH(string maKH)
+    {
+        const string sql = "SELECT * FROM KhachHang WHERE MaKH = @MaKH";
+        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<KhachHang>(
+            sql, new { MaKH = maKH }, PhienDuLieu.Session.Transaction);
+    }
 }
