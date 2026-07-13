@@ -209,6 +209,28 @@ public static class PhieuCocDB
                 throw new InvalidOperationException("Không thể lưu thành viên đăng ký của phiếu cọc.");
     }
 
+    public static async Task<IReadOnlyList<dynamic>> TimKiemPhieuDaDuyet(string? tuKhoa)
+    {
+        const string sql = """
+            SELECT pc.MaPhieuCoc, pc.TrangThai, kh.MaKH, kh.HoTen, kh.SDT
+            FROM PhieuCoc pc
+            JOIN KhachHang kh ON pc.MaKH = kh.MaKH
+            WHERE pc.TrangThai IN (N'DaThanhToan', N'DaDuyet')
+              AND (@TuKhoa IS NULL OR pc.MaPhieuCoc LIKE '%' + @TuKhoa + '%' OR kh.HoTen LIKE '%' + @TuKhoa + '%' OR kh.SDT LIKE '%' + @TuKhoa + '%')
+            ORDER BY pc.ThoiDiemCoc DESC
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync(
+            sql, new { TuKhoa = string.IsNullOrWhiteSpace(tuKhoa) ? null : tuKhoa.Trim() }, PhienDuLieu.Session.Transaction);
+        return rows.ToList();
+    }
+
+    public static async Task<bool> KiemTraConHopLe(string maPhieuCoc)
+    {
+        const string sql = "SELECT COUNT(1) FROM PhieuCoc WHERE MaPhieuCoc = @MaPhieuCoc AND TrangThai IN (N'DaThanhToan', N'DaDuyet')";
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(
+            sql, new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction) > 0;
+    }
+
     private class PhieuCocListRow
     {
         public string MaPhieuCoc { get; set; } = string.Empty;

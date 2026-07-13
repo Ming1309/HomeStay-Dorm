@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -34,6 +36,9 @@ builder.Services.AddScoped<XacNhanKhoanTienCoc>();
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();
+builder.Services.AddScoped<TaoLichHen>();
+builder.Services.AddScoped<TraCuuLichHen>();
+builder.Services.AddScoped<SuaLichHen>();
 
 var app = builder.Build();
 
@@ -41,6 +46,9 @@ app.Lifetime.ApplicationStarted.Register(() =>
 {
     _ = Task.Run(() => app.Services.GetRequiredService<AuthDatabaseInitializer>().TryInitializeAsync());
 });
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthentication();
 app.UseAuthorization();
