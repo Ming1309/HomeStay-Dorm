@@ -139,6 +139,8 @@ CREATE TABLE PhieuCoc (
     TongTien     DECIMAL(18,2)  NOT NULL,
     ThoiDiemCoc  DATETIME       NOT NULL,
     AnhMinhChung NVARCHAR(500)  NULL,
+    PhuongThucThanhToan NVARCHAR(20) NULL,
+    LyDoYeuCauBoSung NVARCHAR(500) NULL,
     TrangThai    NVARCHAR(20)   NOT NULL,
     MaKH         VARCHAR(20)    NOT NULL,
     MaPhong      VARCHAR(20)    NOT NULL,
@@ -367,6 +369,9 @@ ALTER TABLE KhachHang    ADD CONSTRAINT UQ_KhachHang_SoGiayTo   UNIQUE (SoGiayTo
 ALTER TABLE HopDong      ADD CONSTRAINT UQ_HopDong_PhieuCoc     UNIQUE (MaPhieuCoc);
 ALTER TABLE TaiKhoan     ADD CONSTRAINT UQ_TaiKhoan_TenDangNhap UNIQUE (TenDangNhap);
 ALTER TABLE TaiKhoan     ADD CONSTRAINT UQ_TaiKhoan_MaNV        UNIQUE (MaNV);
+CREATE UNIQUE INDEX UX_PhieuThu_MaPhieuCoc
+    ON PhieuThu (MaPhieuCoc)
+    WHERE MaPhieuCoc IS NOT NULL;
 GO
 
 
@@ -440,6 +445,8 @@ ALTER TABLE PhieuCoc ADD CONSTRAINT CK_PhieuCoc_TongTien
     CHECK (TongTien >= 0);
 ALTER TABLE PhieuCoc ADD CONSTRAINT CK_PhieuCoc_HinhThucThue
     CHECK (HinhThucThue IN (N'NguyenCan', N'OGhep'));
+ALTER TABLE PhieuCoc ADD CONSTRAINT CK_PhieuCoc_PhuongThucThanhToan
+    CHECK (PhuongThucThanhToan IS NULL OR PhuongThucThanhToan IN (N'ChuyenKhoan', N'TienMat'));
 ALTER TABLE PhieuCoc ADD CONSTRAINT CK_PhieuCoc_TrangThai
     CHECK (TrangThai IN (N'KhoiTao', N'ChoThanhToan', N'ChoDoiChieu', N'DaThanhToan', N'ChoDuyet', N'DaDuyet', N'DaHuy'));
 

@@ -11,6 +11,8 @@ public sealed class PhieuCoc
     public decimal TongTien { get; set; }
     public DateTime ThoiDiemCoc { get; set; }
     public string? AnhMinhChung { get; set; }
+    public string? PhuongThucThanhToan { get; set; }
+    public string? LyDoYeuCauBoSung { get; set; }
     public string TrangThai { get; set; } = "KhoiTao";
     public string MaKH { get; set; } = string.Empty;
     public string MaPhong { get; set; } = string.Empty;
@@ -47,6 +49,12 @@ public sealed class PhieuCoc
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null) =>
         PhieuCocDB.LayDanhSachKhoiTao(text);
 
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(string? text = null) =>
+        PhieuCocDB.LayDanhSachChoThanhToan(text);
+
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string? text = null) =>
+        PhieuCocDB.LayDanhSachChoDoiChieu(text);
+
     public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => PhieuCocDB.DocChiTiet(maPhieuCoc);
 
     public int TinhTienDuKien()
@@ -66,6 +74,63 @@ public sealed class PhieuCoc
         TrangThai = "ChoThanhToan";
     }
 
+    public void KiemTraTrangThaiChoGhiNhan()
+    {
+        if (TrangThai != "ChoThanhToan")
+            throw new InvalidOperationException("Phiếu cọc không còn ở trạng thái chờ thanh toán.");
+    }
+
+    public void KiemTraCoTheGhiNhanThanhToan(string phuongThucThanhToan)
+    {
+        KiemTraTrangThaiChoGhiNhan();
+        if (phuongThucThanhToan is not ("ChuyenKhoan" or "TienMat"))
+            throw new ArgumentException("Phương thức thanh toán không hợp lệ.", nameof(phuongThucThanhToan));
+    }
+
+    public void GhiNhanThanhToan(string phuongThucThanhToan, string anhMinhChung)
+    {
+        KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan);
+        if (string.IsNullOrWhiteSpace(anhMinhChung))
+            throw new ArgumentException("Vui lòng tải lên chứng từ thanh toán để tiếp tục.", nameof(anhMinhChung));
+
+        PhuongThucThanhToan = phuongThucThanhToan;
+        AnhMinhChung = anhMinhChung;
+        LyDoYeuCauBoSung = null;
+        TrangThai = "ChoDoiChieu";
+    }
+
+    public void KiemTraCoTheXacNhanThanhToan()
+    {
+        if (TrangThai != "ChoDoiChieu")
+            throw new InvalidOperationException("Phiếu cọc không còn ở trạng thái chờ đối chiếu.");
+        if (TongTien <= 0)
+            throw new InvalidOperationException("Số tiền cọc chưa hợp lệ để xác nhận.");
+        if (PhuongThucThanhToan is not ("ChuyenKhoan" or "TienMat"))
+            throw new InvalidOperationException("Phiếu cọc chưa có phương thức thanh toán hợp lệ.");
+        if (string.IsNullOrWhiteSpace(AnhMinhChung))
+            throw new InvalidOperationException("Phiếu cọc chưa có chứng từ thanh toán.");
+        if (Giuongs.Count != SoGiuongThue || Giuongs.Count == 0)
+            throw new InvalidOperationException("Chi tiết giường của phiếu cọc không hợp lệ.");
+    }
+
+    public void XacNhanThanhToan()
+    {
+        KiemTraCoTheXacNhanThanhToan();
+        LyDoYeuCauBoSung = null;
+        TrangThai = "DaThanhToan";
+    }
+
+    public void YeuCauBoSung(string lyDo)
+    {
+        if (TrangThai != "ChoDoiChieu")
+            throw new InvalidOperationException("Phiếu cọc không còn ở trạng thái chờ đối chiếu.");
+        var noiDung = lyDo?.Trim() ?? string.Empty;
+        if (noiDung.Length is < 1 or > 500)
+            throw new ArgumentException("Lý do yêu cầu bổ sung phải có từ 1 đến 500 ký tự.", nameof(lyDo));
+        LyDoYeuCauBoSung = noiDung;
+        TrangThai = "ChoThanhToan";
+    }
+
     private void KiemTraCoTheTinhTien()
     {
         if (HinhThucThue is not ("NguyenCan" or "OGhep"))
@@ -79,6 +144,12 @@ public sealed class PhieuCoc
     }
 
     public Task CapNhatTinhTien() => PhieuCocDB.CapNhatTinhTien(this);
+
+    public Task CapNhatThanhToan() => PhieuCocDB.CapNhatThanhToan(this);
+
+    public Task CapNhatXacNhanThanhToan() => PhieuCocDB.CapNhatXacNhanThanhToan(this);
+
+    public Task CapNhatYeuCauBoSung() => PhieuCocDB.CapNhatYeuCauBoSung(this);
 
     public Task Them() => PhieuCocDB.Them(this);
 }

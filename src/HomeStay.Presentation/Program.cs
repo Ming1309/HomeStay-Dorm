@@ -1,5 +1,6 @@
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Application.DataAccess.DbConnections;
+using HomeStay.Application.DataAccess.FileStorage;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 
@@ -21,11 +22,15 @@ builder.Services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddSingleton<AuthDatabaseInitializer>();
 builder.Services.AddScoped<Func<PhienDuLieu>>(provider =>
     () => new PhienDuLieu(new SqlSession(provider.GetRequiredService<ISqlConnectionFactory>())));
+builder.Services.AddSingleton<IChungTuCocStorage>(new ChungTuCocFileStorage(
+    Path.Combine(builder.Environment.ContentRootPath, "App_Data", "ChungTuCoc")));
 
 // Register Business Logic dependencies
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
+builder.Services.AddScoped<GhiNhanThanhToanCoc>();
+builder.Services.AddScoped<XacNhanKhoanTienCoc>();
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();
