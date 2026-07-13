@@ -19,6 +19,7 @@ public sealed class ChiTietGiaoNhan
     public string? MinhChung { get; set; }
     public string? TenTaiSan { get; set; }
     public int SoLuongTieuChuan { get; set; }
+    public decimal? GiaTriGoiY { get; set; }
 
     public void KiemTraHopLe()
     {
@@ -37,4 +38,7 @@ public sealed class ChiTietGiaoNhan
 
     public static Task ThemNhieu(IEnumerable<ChiTietGiaoNhan> chiTiet) =>
         ChiTietGiaoNhanDB.ThemNhieu(chiTiet);
+
+    public static Task<IReadOnlyList<ChiTietGiaoNhan>> LayDSTaiSanHuHongTheoBienBan(string maBienBan) =>
+        ChiTietGiaoNhanDB.GetDSTaiSanHuHongTheoBienBan(maBienBan);
 }

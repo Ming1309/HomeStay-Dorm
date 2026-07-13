@@ -53,4 +53,17 @@ public static class HoaDonDB
 
     public static Task<decimal> TinhTongCanThu(string maPDS) =>
         TinhTongKhauTru(maPDS);
+
+    public static async Task<string> InsertHoaDon(HoaDon hoaDon)
+    {
+        const string sql = """
+            INSERT INTO HoaDon
+                (MaHoaDon, NgayLap, HanThanhToan, LoaiHoaDon, TongTien, TrangThai, GhiChu, MaHD, MaNV)
+            VALUES
+                (@MaHoaDon, @NgayLap, @HanThanhToan, @LoaiHoaDon, @TongTien, @TrangThai, @GhiChu, @MaHD, @MaNV)
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, hoaDon, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Không thể lưu hóa đơn bồi thường.");
+        return hoaDon.MaHoaDon;
+    }
 }
