@@ -58,6 +58,18 @@ public static class PhieuDoiSoatDB
         return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<PhieuDoiSoat>(sql, new { MaPDS = maPDS }, PhienDuLieu.Session.Transaction);
     }
 
+    public static async Task<PhieuDoiSoat?> GetPhieuDoiSoatTheoMaHD(string maHD)
+    {
+        const string sql = """
+            SELECT TOP 1 *
+            FROM PhieuDoiSoat
+            WHERE MaHD = @MaHD
+            ORDER BY NgayDoiSoat DESC, MaPDS DESC
+            """;
+        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<PhieuDoiSoat>(
+            sql, new { MaHD = maHD }, PhienDuLieu.Session.Transaction);
+    }
+
     public static async Task<bool> UpdateTrangThai(string maPDS, string trangThaiHienTai, string trangThaiMoi)
     {
         const string sql = "UPDATE PhieuDoiSoat SET TrangThai = @TrangThaiMoi WHERE MaPDS = @MaPDS AND TrangThai = @TrangThaiHienTai";

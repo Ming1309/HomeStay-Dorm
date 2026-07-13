@@ -29,6 +29,14 @@ public sealed class Giuong
     public static Task CapNhatDanhSachTrong(IReadOnlyList<string> dsMaGiuong) =>
         GiuongDB.UpdateTrangThaiBatch(dsMaGiuong, "Trong");
 
+    public static async Task CapNhatTrangThaiTrong(string maGiuong)
+    {
+        if (string.IsNullOrWhiteSpace(maGiuong))
+            throw new ArgumentException("Mã giường không được để trống.");
+        if (!await GiuongDB.UpdateTrangThai(maGiuong.Trim(), "Trong"))
+            throw new InvalidOperationException($"Giường {maGiuong} không thể cập nhật trạng thái Trống.");
+    }
+
     public void GiaiPhong(string maPhong)
     {
         if (MaPhong != maPhong || TrangThai is not ("GiuCho" or "DaCoc"))

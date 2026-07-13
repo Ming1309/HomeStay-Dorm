@@ -66,6 +66,26 @@ public sealed class HopDong
     public static Task<HopDong?> LayChiTietHopDong(string maHD) =>
         LayThongTinLuuTru(maHD);
 
+    // UC 1.4.23 Thanh lý hợp đồng
+    public static Task<IReadOnlyList<HopDongChoThanhLy>> LayDanhSachChoThanhLy(string? tuKhoa = null) =>
+        HopDongDB.LayDanhSachChoThanhLy(tuKhoa);
+
+    public static Task<HopDong?> LayThongTinHopDong(string maHD) =>
+        DocChiTiet(maHD);
+
+    public static async Task ThanhLyHopDong(string maHD, DateTime ngayThanhLy, string nguoiThucHien, string? ghiChu = null)
+    {
+        if (string.IsNullOrWhiteSpace(maHD))
+            throw new ArgumentException("Mã hợp đồng không được để trống.");
+        if (string.IsNullOrWhiteSpace(nguoiThucHien))
+            throw new ArgumentException("Không xác định được quản lý thực hiện thanh lý.");
+        if (ngayThanhLy == default)
+            throw new ArgumentException("Ngày thanh lý không hợp lệ.");
+
+        if (!await HopDongDB.UpdateTrangThaiThanhLy(maHD.Trim()))
+            throw new InvalidOperationException("Hợp đồng không ở trạng thái Đang hiệu lực hoặc đã được thanh lý.");
+    }
+
     public int TinhSoThangThucTe(DateTime thoiDiemDoiSoat)
     {
         if (thoiDiemDoiSoat <= NgayBatDau) return 0;
@@ -97,4 +117,25 @@ public sealed class HopDongCoLichTraPhong
     public DateTime NgayTraPhong { get; set; }
     public TimeSpan GioTraPhong { get; set; }
     public string MaLH { get; set; } = string.Empty;
+}
+
+public sealed class HopDongChoThanhLy
+{
+    public string MaHD { get; set; } = string.Empty;
+    public DateTime NgayBatDau { get; set; }
+    public DateTime NgayKetThuc { get; set; }
+    public string TrangThai { get; set; } = string.Empty;
+    public decimal GiaThue { get; set; }
+    public decimal TienCoc { get; set; }
+    public string MaKH { get; set; } = string.Empty;
+    public string TenKhachHang { get; set; } = string.Empty;
+    public string? SDT { get; set; }
+    public string MaPhong { get; set; } = string.Empty;
+    public string SoPhong { get; set; } = string.Empty;
+    public string? ToaNha { get; set; }
+    public string MaPDS { get; set; } = string.Empty;
+    public decimal TienHoan { get; set; }
+    public decimal TienThuThem { get; set; }
+    public decimal TongKhauTru { get; set; }
+    public string TrangThaiPDS { get; set; } = string.Empty;
 }

@@ -170,6 +170,7 @@ public static class HopDongDB
     // ==========================================================
     public static async Task<IReadOnlyList<HopDong>> LayDanhSachChoDoiSoat()
     {
+        // UC 1.4.18: HĐ đang hiệu lực + đã thu hồi tài sản + chưa có phiếu đối soát
         const string sql = """
             SELECT hd.MaHD, hd.NgayBatDau, hd.NgayKetThuc, hd.GiaThue, hd.TrangThai, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQD,
                    kh.MaKH, kh.HoTen AS TenKhachHang,
@@ -179,7 +180,11 @@ public static class HopDongDB
             INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc = hd.MaPhieuCoc
             INNER JOIN KhachHang kh ON kh.MaKH = pc.MaKH
             INNER JOIN Phong p ON p.MaPhong = pc.MaPhong
-            WHERE hd.TrangThai = N'DaThanhLy'
+            WHERE hd.TrangThai = N'DangHieuLuc'
+              AND EXISTS (
+                  SELECT 1 FROM BienBanGiaoNhan bb
+                  WHERE bb.MaHD = hd.MaHD AND bb.LoaiBienBan = N'ThuHoi'
+              )
               AND NOT EXISTS (SELECT 1 FROM PhieuDoiSoat pds WHERE pds.MaHD = hd.MaHD)
             ORDER BY hd.NgayKetThuc, hd.MaHD
             """;
@@ -203,6 +208,45 @@ public static class HopDongDB
                 Phong = new Phong { MaPhong = x.MaPhong, SoPhong = x.SoPhong, ToaNha = x.ToaNha }
             }
         }).ToList();
+    }
+
+    // UC 1.4.23 Thanh lý hợp đồng
+    public static async Task<IReadOnlyList<HopDongChoThanhLy>> LayDanhSachChoThanhLy(string? tuKhoa = null)
+    {
+        const string sql = """
+            SELECT hd.MaHD, hd.NgayBatDau, hd.NgayKetThuc, hd.TrangThai, hd.GiaThue,
+                   pc.TongTien AS TienCoc,
+                   kh.MaKH, kh.HoTen AS TenKhachHang, kh.SDT,
+                   p.MaPhong, p.SoPhong, p.ToaNha,
+                   pds.MaPDS, pds.TienHoan, pds.TienThuThem, pds.TongKhauTru, pds.TrangThai AS TrangThaiPDS
+            FROM HopDong hd
+            INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc = hd.MaPhieuCoc
+            INNER JOIN KhachHang kh ON kh.MaKH = pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong = pc.MaPhong
+            INNER JOIN PhieuDoiSoat pds ON pds.MaHD = hd.MaHD
+            WHERE hd.TrangThai = N'DangHieuLuc'
+              AND (@TuKhoa IS NULL
+                   OR hd.MaHD LIKE '%' + @TuKhoa + '%'
+                   OR kh.HoTen LIKE '%' + @TuKhoa + '%'
+                   OR kh.SDT LIKE '%' + @TuKhoa + '%'
+                   OR p.SoPhong LIKE '%' + @TuKhoa + '%'
+                   OR pds.MaPDS LIKE '%' + @TuKhoa + '%')
+            ORDER BY pds.NgayDoiSoat DESC, hd.MaHD
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<HopDongChoThanhLy>(sql,
+            new { TuKhoa = ChuanHoa(tuKhoa) }, PhienDuLieu.Session.Transaction);
+        return rows.ToList();
+    }
+
+    public static async Task<bool> UpdateTrangThaiThanhLy(string maHD)
+    {
+        const string sql = """
+            UPDATE HopDong
+            SET TrangThai = N'DaThanhLy'
+            WHERE MaHD = @MaHD AND TrangThai = N'DangHieuLuc'
+            """;
+        return await PhienDuLieu.Session.Connection.ExecuteAsync(
+            sql, new { MaHD = maHD }, PhienDuLieu.Session.Transaction) == 1;
     }
 
     public static async Task<HopDong?> LayThongTinLuuTru(string maHD)
