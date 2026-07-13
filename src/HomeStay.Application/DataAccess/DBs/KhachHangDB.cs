@@ -28,10 +28,11 @@ public static class KhachHangDB
         const string sql = """
             UPDATE KhachHang SET HoTen=@HoTen, NgaySinh=@NgaySinh, GioiTinh=@GioiTinh,
                 QuocTich=@QuocTich, LoaiGiayTo=@LoaiGiayTo, SoGiayTo=@SoGiayTo,
-                SDT=@SDT, Email=@Email
+                DiaChiThuongTru=@DiaChiThuongTru, SDT=@SDT, Email=@Email
             WHERE MaKH=@MaKH
             """;
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, khachHang, PhienDuLieu.Session.Transaction) != 1)
-            throw new InvalidOperationException("Không thể cập nhật khách hàng của lịch hẹn.");
+            throw new InvalidOperationException("Không thể cập nhật khách hàng.");
     }
+
 }
