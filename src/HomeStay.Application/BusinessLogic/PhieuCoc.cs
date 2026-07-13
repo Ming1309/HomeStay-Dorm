@@ -47,6 +47,12 @@ public sealed class PhieuCoc
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null) =>
         PhieuCocDB.LayDanhSachKhoiTao(text);
 
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyDaThanhToan() =>
+        PhieuCocDB.LayDanhSachDaHuyDaThanhToan();
+
+    public static Task<decimal> LaySoTienCoc(string maPhieuCoc) =>
+        PhieuCocDB.LaySoTienCoc(maPhieuCoc);
+
     public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => PhieuCocDB.DocChiTiet(maPhieuCoc);
 
     public int TinhTienDuKien()

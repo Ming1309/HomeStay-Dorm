@@ -41,6 +41,43 @@ public static class PhieuCocDB
         }).ToList();
     }
 
+    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyDaThanhToan()
+    {
+        const string sql = """
+            SELECT pc.MaPhieuCoc, pc.HinhThucThue, pc.SoGiuongThue, pc.TongTien, pc.ThoiDiemCoc, pc.TrangThai, pc.MaKH, pc.MaPhong, pc.MaNV,
+                   kh.HoTen AS TenKhachHang, p.SoPhong, p.ToaNha
+            FROM PhieuCoc pc
+            INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
+            WHERE pc.TrangThai IN (N'DaHuy', N'DaThanhToan')
+              AND NOT EXISTS (SELECT 1 FROM PhieuDoiSoat pds WHERE pds.MaPhieuCoc = pc.MaPhieuCoc)
+            ORDER BY pc.ThoiDiemCoc, pc.MaPhieuCoc
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql,
+            null, PhienDuLieu.Session.Transaction);
+        return rows.Select(x => new PhieuCoc
+        {
+            MaPhieuCoc = x.MaPhieuCoc,
+            HinhThucThue = x.HinhThucThue,
+            SoGiuongThue = x.SoGiuongThue,
+            TongTien = x.TongTien,
+            ThoiDiemCoc = x.ThoiDiemCoc,
+            TrangThai = x.TrangThai,
+            MaKH = x.MaKH,
+            MaPhong = x.MaPhong,
+            MaNV = x.MaNV,
+            KhachHang = new KhachHang { MaKH = x.MaKH, HoTen = x.TenKhachHang },
+            Phong = new Phong { MaPhong = x.MaPhong, SoPhong = x.SoPhong, ToaNha = x.ToaNha },
+        }).ToList();
+    }
+
+    public static async Task<decimal> LaySoTienCoc(string maPhieuCoc)
+    {
+        const string sql = "SELECT TongTien FROM PhieuCoc WHERE MaPhieuCoc = @MaPhieuCoc";
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<decimal>(sql,
+            new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction);
+    }
+
     public static async Task<PhieuCoc?> DocChiTiet(string maPhieuCoc)
     {
         const string sql = """
