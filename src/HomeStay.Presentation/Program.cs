@@ -33,10 +33,11 @@ builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
 
 // ==========================================================
-// Services from feat/lap-phieu-doi-soat branch
+// Services from feat/lap-phieu-doi-soat & feat/thanh-toan-tra-phong
 // ==========================================================
 builder.Services.AddScoped<DichVuThongBao>();
 builder.Services.AddScoped<LapPhieuDoiSoat>();
+builder.Services.AddScoped<ThanhToanTraPhong>();
 
 // ==========================================================
 // Services from develop branch
