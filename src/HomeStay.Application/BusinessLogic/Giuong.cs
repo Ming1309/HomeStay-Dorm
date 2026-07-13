@@ -28,4 +28,11 @@ public sealed class Giuong
 
     public static Task CapNhatDanhSachTrong(IReadOnlyList<string> dsMaGiuong) =>
         GiuongDB.UpdateTrangThaiBatch(dsMaGiuong, "Trong");
+
+    public void GiaiPhong(string maPhong)
+    {
+        if (MaPhong != maPhong || TrangThai is not ("GiuCho" or "DaCoc"))
+            throw new InvalidOperationException($"Giường {MaGiuong} không còn hợp lệ để giải phóng.");
+        TrangThai = "Trong";
+    }
 }

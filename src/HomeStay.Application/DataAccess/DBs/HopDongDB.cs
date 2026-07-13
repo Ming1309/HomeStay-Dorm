@@ -5,6 +5,13 @@ using HomeStay.Application.DataAccess.DbConnections;
 
 public static class HopDongDB
 {
+    public static async Task<bool> TonTaiTheoPhieuCoc(string maPhieuCoc)
+    {
+        const string sql = "SELECT COUNT(1) FROM HopDong WHERE MaPhieuCoc=@MaPhieuCoc";
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(
+            sql, new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction) > 0;
+    }
+
     // Cài đặt tối thiểu phục vụ tra cứu tạo lịch hẹn (Tránh conflict với UC khác)
     public static async Task<IReadOnlyList<dynamic>> TimKiemHopDongHieuLuc(string? tuKhoa)
     {

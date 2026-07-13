@@ -17,6 +17,9 @@ public sealed class PhieuCoc
     public string MaKH { get; set; } = string.Empty;
     public string MaPhong { get; set; } = string.Empty;
     public string? MaNV { get; set; }
+    public DateTime? ThoiDiemHuy { get; set; }
+    public string? MaNVHuy { get; set; }
+    public bool DaDongTien { get; set; }
     public KhachHang KhachHang { get; set; } = new();
     public Phong Phong { get; set; } = new();
     public List<Giuong> Giuongs { get; set; } = [];
@@ -67,6 +70,16 @@ public sealed class PhieuCoc
 
     public bool KiemTraCoThanhVienHopLe() =>
         ThanhViens.Any(tv => tv.TrangThaiDuyet == "HopLe");
+
+    public static Task<IReadOnlyList<PhieuCoc>> TraCuu(
+        string? maPhieuCoc, string? sdt, string? email, string? soGiayTo) =>
+        PhieuCocDB.TraCuu(maPhieuCoc, sdt, email, soGiayTo);
+
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachCoTheHuy(string? text = null) =>
+        PhieuCocDB.LayDanhSachCoTheHuy(text);
+
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoat() =>
+        PhieuCocDB.LayDanhSachDaHuyChoDoiSoat();
 
     public int TinhTienDuKien()
     {
@@ -165,6 +178,18 @@ public sealed class PhieuCoc
         TrangThai = "DaHuy";
     }
 
+    public void Huy(string maNhanVien, DateTime thoiDiem)
+    {
+        if (TrangThai == "DaHuy")
+            throw new InvalidOperationException("Phiếu cọc đã được hủy trước đó.");
+        if (string.IsNullOrWhiteSpace(maNhanVien))
+            throw new ArgumentException("Không xác định được Nhân viên Sale đang đăng nhập.", nameof(maNhanVien));
+
+        TrangThai = "DaHuy";
+        MaNVHuy = maNhanVien.Trim();
+        ThoiDiemHuy = thoiDiem;
+    }
+
     private void KiemTraCoTheTinhTien()
     {
         if (HinhThucThue is not ("NguyenCan" or "OGhep"))
@@ -190,6 +215,8 @@ public sealed class PhieuCoc
     public Task CapNhatTrangThaiDaHuyDB() => PhieuCocDB.CapNhatDaHuy(this);
 
     public Task<bool> CapNhatTrangThai(string trangThai) => PhieuCocDB.CapNhatTrangThai(MaPhieuCoc, trangThai);
+
+    public Task CapNhatHuy() => PhieuCocDB.CapNhatHuy(this);
 
     public Task Them() => PhieuCocDB.Them(this);
 }

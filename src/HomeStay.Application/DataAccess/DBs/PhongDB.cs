@@ -26,6 +26,21 @@ public static class PhongDB
             .ToList();
     }
 
+    public static async Task<IReadOnlyList<Phong>> LayPhongTheoBoLoc(string? toaNha, string? tang,
+        string? maLP, string? maCN, string? trangThai, decimal giaMin, decimal giaMax)
+    {
+        var phongs = await DocPhongVaGiuong(null);
+        return phongs.Where(p => 
+            (string.IsNullOrWhiteSpace(toaNha) || p.ToaNha == toaNha) &&
+            (string.IsNullOrWhiteSpace(tang) || p.Tang == tang) &&
+            (string.IsNullOrWhiteSpace(maLP) || p.MaLP == maLP) &&
+            (string.IsNullOrWhiteSpace(maCN) || p.MaCN == maCN) &&
+            (string.IsNullOrWhiteSpace(trangThai) || p.TrangThai == trangThai) &&
+            (giaMin <= 0 || p.LoaiPhong.GiaThue >= giaMin) &&
+            (giaMax <= 0 || p.LoaiPhong.GiaThue <= giaMax)
+        ).ToList();
+    }
+
     public static async Task<Phong?> DocChiTiet(string maPhong) =>
         (await DocPhongVaGiuong(maPhong)).SingleOrDefault();
 
@@ -60,6 +75,25 @@ public static class PhongDB
             """;
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(updateRoom, phong, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể cập nhật trạng thái phòng sau khi xác nhận cọc.");
+    }
+
+    public static async Task CapNhatGiaiPhongDatCoc(Phong phong)
+    {
+        const string updateBed = "UPDATE Giuong SET TrangThai=N'Trong' WHERE MaGiuong=@MaGiuong AND MaPhong=@MaPhong AND TrangThai IN (N'GiuCho',N'DaCoc')";
+        foreach (var giuong in phong.GiuongsVuaGiaiPhong)
+            if (await PhienDuLieu.Session.Connection.ExecuteAsync(updateBed, giuong, PhienDuLieu.Session.Transaction) != 1)
+                throw new InvalidOperationException($"Giường {giuong.MaGiuong} đã được xử lý bởi người khác hoặc không còn thuộc phiếu cọc.");
+
+        const string updateRoom = """
+            UPDATE Phong
+            SET TrangThai = CASE
+                WHEN NOT EXISTS (SELECT 1 FROM Giuong WHERE MaPhong=@MaPhong AND TrangThai<>N'Trong') THEN N'Trong'
+                ELSE N'ConGiuongTrong'
+            END
+            WHERE MaPhong=@MaPhong
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(updateRoom, phong, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Không thể cập nhật trạng thái phòng sau khi hủy phiếu cọc.");
     }
 
     private static IEnumerable<Phong> LocTheoYeuCauChung(IEnumerable<Phong> phongs, string? toaNha,

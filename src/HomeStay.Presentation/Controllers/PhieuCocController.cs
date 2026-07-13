@@ -15,8 +15,57 @@ public sealed class PhieuCocController(
     GhiNhanThanhToanCoc ghiNhanThanhToanCoc,
     XacNhanKhoanTienCoc xacNhanKhoanTienCoc,
     XetDuyetHoSo xetDuyetHoSo,
+    TraCuuPhieuCoc traCuuPhieuCoc,
+    HuyPhieuCoc huyPhieuCoc,
     IChungTuCocStorage chungTuStorage) : ControllerBase
 {
+    [Authorize(Roles = "Sale,QuanLy,KeToan")]
+    [HttpGet("lookup")]
+    public async Task<IActionResult> TraCuu(
+        [FromQuery] string? maPhieuCoc = null,
+        [FromQuery] string? sdt = null,
+        [FromQuery] string? email = null,
+        [FromQuery] string? soGiayTo = null)
+    {
+        try
+        {
+            return Ok((await traCuuPhieuCoc.TimKiem(maPhieuCoc, sdt, email, soGiayTo))
+                .Select(TaoPhieuTraCuuResponse));
+        }
+        catch (ArgumentException ex) { return BadRequest(new { Message = ex.Message }); }
+    }
+
+    [Authorize(Roles = "Sale,QuanLy,KeToan")]
+    [HttpGet("{id}/lookup")]
+    public async Task<IActionResult> LayChiTietTraCuu(string id)
+    {
+        try { return Ok(TaoChiTietTraCuuResponse(await traCuuPhieuCoc.LayChiTiet(id))); }
+        catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
+    }
+
+    [Authorize(Roles = "Sale")]
+    [HttpGet("cancellable")]
+    public async Task<IActionResult> LayDanhSachCoTheHuy([FromQuery] string? text = null) =>
+        Ok((await traCuuPhieuCoc.LayDanhSachCoTheHuy(text)).Select(TaoPhieuTraCuuResponse));
+
+    [Authorize(Roles = "Sale")]
+    [HttpPost("{id}/cancel")]
+    public async Task<IActionResult> Huy(string id)
+    {
+        var maNhanVien = User.FindFirstValue("MaNV");
+        if (string.IsNullOrWhiteSpace(maNhanVien))
+            return Unauthorized(new { Message = "Không xác định được Nhân viên Sale đang đăng nhập." });
+        try { return Ok(TaoChiTietTraCuuResponse(await huyPhieuCoc.Huy(id, maNhanVien))); }
+        catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
+        catch (ArgumentException ex) { return BadRequest(new { Message = ex.Message }); }
+        catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
+    }
+
+    [Authorize(Roles = "KeToan")]
+    [HttpGet("cancelled-awaiting-reconciliation")]
+    public async Task<IActionResult> LayDanhSachDaHuyChoDoiSoat() =>
+        Ok((await traCuuPhieuCoc.LayDanhSachDaHuyChoDoiSoat()).Select(TaoPhieuTraCuuResponse));
+
     [Authorize(Roles = "QuanLy")]
     [HttpGet("cho-doi-chieu")]
     public async Task<IActionResult> LayDanhSachChoDoiChieu([FromQuery] string? text = null) =>
@@ -279,4 +328,18 @@ public sealed class PhieuCocController(
             tv.KhachHang?.Email,
             tv.KhachHang?.DiaChiThuongTru,
             tv.VaiTro, tv.TrangThaiDuyet)).ToList());
+
+    private static PhieuCocTraCuuHttpResponse TaoPhieuTraCuuResponse(PhieuCoc phieu) => new(
+        phieu.MaPhieuCoc, phieu.KhachHang.HoTen, phieu.KhachHang.SDT, phieu.KhachHang.Email,
+        phieu.KhachHang.SoGiayTo, phieu.MaPhong, phieu.Phong.SoPhong, phieu.Phong.ToaNha,
+        phieu.HinhThucThue, phieu.SoGiuongThue, phieu.TongTien, phieu.ThoiDiemCoc,
+        phieu.HanThanhToan, phieu.TrangThai, phieu.DaDongTien, phieu.ThoiDiemHuy, phieu.MaNVHuy);
+
+    private static ChiTietPhieuCocTraCuuHttpResponse TaoChiTietTraCuuResponse(PhieuCoc phieu) => new(
+        phieu.MaPhieuCoc, phieu.KhachHang.HoTen, phieu.KhachHang.SDT, phieu.KhachHang.Email,
+        phieu.KhachHang.LoaiGiayTo, phieu.KhachHang.SoGiayTo, phieu.MaPhong, phieu.Phong.SoPhong,
+        phieu.Phong.ToaNha, phieu.HinhThucThue, phieu.SoGiuongThue, phieu.TongTien,
+        phieu.ThoiDiemCoc, phieu.HanThanhToan, phieu.TrangThai, phieu.DaDongTien,
+        phieu.ThoiDiemHuy, phieu.MaNVHuy,
+        phieu.Giuongs.Select(g => new GiuongTraCuuHttpResponse(g.MaGiuong, g.SoGiuong, g.TrangThai)).ToList());
 }

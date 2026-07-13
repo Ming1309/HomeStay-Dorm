@@ -85,6 +85,7 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
       items: [
         { to: "/sale/lap-phieu-coc", label: "Lập phiếu cọc", icon: Receipt },
         { to: "/sale/ghi-nhan-coc", label: "Ghi nhận cọc", icon: Receipt },
+        { to: "/sale/huy-phieu-coc", label: "Hủy phiếu cọc", icon: FileWarning },
       ],
     },
     {
@@ -107,6 +108,7 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
       icon: Search,
       items: [
         { to: "/sale/tra-cuu-phieu-dang-ky", label: "Tra cứu đăng ký", icon: Search },
+        { to: "/sale/tra-cuu-phieu-coc", label: "Tra cứu phiếu cọc", icon: Search },
         { to: "/sale/tra-cuu-hop-dong", label: "Tra cứu hợp đồng", icon: Search },
         { to: "/sale/tra-cuu-lich-hen", label: "Tra cứu lịch hẹn", icon: Search },
         { to: "/sale/tra-cuu-phong", label: "Tra cứu phòng / giường", icon: Bed },
@@ -140,6 +142,7 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
       title: "Tra cứu",
       icon: Search,
       items: [
+        { to: "/manager/tra-cuu-phieu-coc", label: "Tra cứu phiếu cọc", icon: Search },
         {
           to: "/manager/contracts",
           label: "Tra cứu hợp đồng",
@@ -186,6 +189,7 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
       title: "Tra cứu",
       icon: Search,
       items: [
+        { to: "/accountant/tra-cuu-phieu-coc", label: "Tra cứu phiếu cọc", icon: Search },
         { to: "/accountant/tra-cuu-hop-dong", label: "Tra cứu hợp đồng", icon: Search },
         { to: "/accountant/tra-cuu-phong", label: "Tra cứu phòng / giường", icon: Bed },
       ],
