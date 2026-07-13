@@ -6,9 +6,14 @@ using HomeStay.Application.DataAccess.DbConnections;
 
 public static class KhachHangDB
 {
+    public static Task<long> LaySoThuTuMoi() =>
+        PhienDuLieu.Session.Connection.ExecuteScalarAsync<long>(
+            "SELECT NEXT VALUE FOR dbo.Seq_KhachHang",
+            transaction: PhienDuLieu.Session.Transaction);
+
     public static async Task<KhachHang?> TimTheoSoGiayTo(string soGiayTo)
     {
-        const string sql = "SELECT * FROM KhachHang WHERE SoGiayTo=@SoGiayTo";
+        const string sql = "SELECT * FROM KhachHang WITH (UPDLOCK, HOLDLOCK) WHERE SoGiayTo=@SoGiayTo";
         return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<KhachHang>(
             sql, new { SoGiayTo = soGiayTo.Trim() }, PhienDuLieu.Session.Transaction);
     }
@@ -33,6 +38,15 @@ public static class KhachHangDB
             """;
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, khachHang, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể cập nhật khách hàng.");
+    }
+
+    public static async Task CapNhatDiaChiThuongTru(string maKH, string diaChiThuongTru)
+    {
+        const string sql = "UPDATE KhachHang SET DiaChiThuongTru=@DiaChiThuongTru WHERE MaKH=@MaKH";
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql,
+                new { MaKH = maKH, DiaChiThuongTru = diaChiThuongTru },
+                PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Không thể cập nhật địa chỉ thường trú của khách hàng.");
     }
 
     public static async Task<List<KhachHang>> GetByMaPhieuCoc(string maPhieuCoc)

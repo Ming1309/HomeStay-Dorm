@@ -32,8 +32,8 @@ public sealed class NhapHoSoLuuTru
         return phieu;
     }
 
-    public async Task<PhieuCoc> NhapHoSo(string maPhieuCoc, KhachHang nguoiDaiDien,
-        string hinhThucThue, List<KhachHang>? cacThanhVien)
+    public async Task<PhieuCoc> NhapHoSo(string maPhieuCoc, string diaChiThuongTru,
+        List<KhachHang>? cacThanhVien)
     {
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
@@ -50,8 +50,11 @@ public sealed class NhapHoSoLuuTru
             lichHen.KiemTraLoaiNhanPhong();
             lichHen.KiemTraTrangThaiHopLe();
 
-            KhachHang.KiemTraThongTinBatBuoc(nguoiDaiDien);
+            var nguoiDaiDien = phieu.KhachHang;
+            if (nguoiDaiDien.MaKH != phieu.MaKH)
+                throw new InvalidOperationException("Người đại diện không khớp với Phiếu cọc.");
 
+            KhachHang.KiemTraThongTinBatBuoc(nguoiDaiDien);
             if (!KhachHang.KiemTraDinhDangEmail(nguoiDaiDien.Email))
                 throw new InvalidOperationException("Email không đúng định dạng.");
             if (!KhachHang.KiemTraSoGiayTo(nguoiDaiDien.SoGiayTo, nguoiDaiDien.LoaiGiayTo))
@@ -59,72 +62,44 @@ public sealed class NhapHoSoLuuTru
             if (!KhachHang.KiemTraNgaySinh(nguoiDaiDien.NgaySinh))
                 throw new InvalidOperationException("Ngày sinh không hợp lệ.");
 
+            cacThanhVien ??= [];
+            foreach (var thanhVien in cacThanhVien)
+                thanhVien.ChuanHoaThongTinNhanDang();
+
             KhachHang.KiemTraTrungSoGiayTo(nguoiDaiDien, cacThanhVien);
 
-            var now = _timeProvider.GetLocalNow().DateTime;
-
-            if (hinhThucThue == "TheoNhom")
+            foreach (var tv in cacThanhVien)
             {
-                if (cacThanhVien is null || cacThanhVien.Count == 0)
-                    throw new InvalidOperationException("Danh sách thành viên không được để trống khi thuê theo nhóm.");
-
-                foreach (var tv in cacThanhVien)
-                {
-                    KhachHang.KiemTraThongTinBatBuoc(tv);
-                    if (!KhachHang.KiemTraDinhDangEmail(tv.Email))
-                        throw new InvalidOperationException($"Email của thành viên '{tv.HoTen}' không đúng định dạng.");
-                    if (!KhachHang.KiemTraSoGiayTo(tv.SoGiayTo, tv.LoaiGiayTo))
-                        throw new InvalidOperationException($"Số giấy tờ của thành viên '{tv.HoTen}' không đúng định dạng.");
-                    if (!KhachHang.KiemTraNgaySinh(tv.NgaySinh))
-                        throw new InvalidOperationException($"Ngày sinh của thành viên '{tv.HoTen}' không hợp lệ.");
-                }
-
-                phieu.KiemTraSoLuongThanhVien(1 + cacThanhVien.Count);
-                phieu.Phong.KiemTraSucChua(1 + cacThanhVien.Count);
-            }
-            else if (hinhThucThue != "CaNhan")
-            {
-                throw new InvalidOperationException("Hình thức thuê không hợp lệ.");
+                KhachHang.KiemTraThongTinBatBuoc(tv);
+                if (!KhachHang.KiemTraDinhDangEmail(tv.Email))
+                    throw new InvalidOperationException($"Email của thành viên '{tv.HoTen}' không đúng định dạng.");
+                if (!KhachHang.KiemTraSoGiayTo(tv.SoGiayTo, tv.LoaiGiayTo))
+                    throw new InvalidOperationException($"Số giấy tờ của thành viên '{tv.HoTen}' không đúng định dạng.");
+                if (!KhachHang.KiemTraNgaySinh(tv.NgaySinh))
+                    throw new InvalidOperationException($"Ngày sinh của thành viên '{tv.HoTen}' không hợp lệ.");
+                if (await KhachHang.TimTheoSoGiayTo(tv.SoGiayTo!) is not null)
+                    throw new InvalidOperationException(
+                        $"Số giấy tờ '{tv.SoGiayTo}' đã tồn tại trong hệ thống.");
             }
 
-            var daiDienCu = await KhachHang.TimTheoSoGiayTo(nguoiDaiDien.SoGiayTo!);
-            if (daiDienCu is not null)
-            {
-                nguoiDaiDien.MaKH = daiDienCu.MaKH;
-                nguoiDaiDien.CapNhatTu(nguoiDaiDien);
-                await nguoiDaiDien.CapNhat();
-            }
-            else
-            {
-                nguoiDaiDien.MaKH = KhachHang.TaoMaMoi(now);
-                await nguoiDaiDien.ThemMoi();
-            }
+            phieu.KiemTraSoLuongThanhVien(1 + cacThanhVien.Count);
+            phieu.Phong.KiemTraSucChua(1 + cacThanhVien.Count);
+
+            nguoiDaiDien.CapNhatDiaChiThuongTru(diaChiThuongTru);
+            await nguoiDaiDien.LuuDiaChiThuongTru();
 
             var dsDangKy = new List<ThanhVienDangKy>
             {
-                ThanhVienDangKy.TaoDaiDien(maPhieuCoc, nguoiDaiDien.MaKH)
+                ThanhVienDangKy.TaoDaiDien(maPhieuCoc, phieu.MaKH)
             };
 
-            if (hinhThucThue == "TheoNhom" && cacThanhVien is not null)
+            foreach (var tv in cacThanhVien)
             {
-                foreach (var tv in cacThanhVien)
-                {
-                    var tvCu = await KhachHang.TimTheoSoGiayTo(tv.SoGiayTo!);
-                    if (tvCu is not null)
-                    {
-                        tv.MaKH = tvCu.MaKH;
-                        tv.CapNhatTu(tv);
-                        await tv.CapNhat();
-                    }
-                    else
-                    {
-                        tv.MaKH = KhachHang.TaoMaMoi(now);
-                        await tv.ThemMoi();
-                    }
-                    var tvDangKy = ThanhVienDangKy.TaoThanhVien(maPhieuCoc, tv.MaKH);
-                    tvDangKy.KiemTraVaiTroHopLe();
-                    dsDangKy.Add(tvDangKy);
-                }
+                tv.MaKH = await KhachHang.TaoMaMoi();
+                await tv.Them();
+                var tvDangKy = ThanhVienDangKy.TaoThanhVien(maPhieuCoc, tv.MaKH);
+                tvDangKy.KiemTraVaiTroHopLe();
+                dsDangKy.Add(tvDangKy);
             }
 
             await ThanhVienDangKy.XoaTheoPhieuCoc(maPhieuCoc);

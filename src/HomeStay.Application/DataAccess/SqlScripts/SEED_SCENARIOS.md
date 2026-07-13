@@ -13,6 +13,8 @@ Trên database mới, chạy lần lượt:
 Bộ seed này cố định ngày giờ để kết quả kiểm thử không thay đổi theo ngày chạy. Không chạy lặp trên database đã có dữ liệu vì các script seed nghiệp vụ không có mục đích migration.
 Schema trong `01_InitTables.sql` là nguồn cấu trúc database duy nhất. Khi cấu trúc thay đổi,
 tạo lại database và chạy đầy đủ các script theo thứ tự trên; không chạy lại seed trên database đã có dữ liệu.
+Với database hiện hữu, chạy `06_AddKhachHangSequence.sql` trước khi triển khai phiên bản ứng dụng
+dùng mã khách hàng tuần tự.
 
 ## Quy ước mã
 

@@ -15,23 +15,30 @@ public sealed class KhachHang
     public string? SDT { get; set; }
     public string? Email { get; set; }
 
-    public static KhachHang TaoMoi(string hoTen, string? gioiTinh, string? sdt, string? email,
-        string? diaChiThuongTru, string? loaiGiayTo, string? soGiayTo, DateTime thoiDiem) =>
+    public static KhachHang TaoMoi(string maKH, string hoTen, string? gioiTinh, string? sdt, string? email,
+        string? diaChiThuongTru, string? loaiGiayTo, string? soGiayTo) =>
         new()
         {
-            MaKH = $"KH{thoiDiem:yyyyMMddHHmmssfff}",
+            MaKH = maKH,
             HoTen = hoTen.Trim(),
             GioiTinh = gioiTinh,
             SDT = sdt,
             Email = email,
             DiaChiThuongTru = diaChiThuongTru,
             LoaiGiayTo = loaiGiayTo,
-            SoGiayTo = soGiayTo
+            SoGiayTo = soGiayTo?.Trim()
         };
 
     public static Task<KhachHang?> TimTheoSoGiayTo(string soGiayTo) => KhachHangDB.TimTheoSoGiayTo(soGiayTo);
 
-    public static string TaoMaMoi(DateTime thoiDiem) => $"KH{thoiDiem:yyyyMMddHHmmssfff}";
+    public static async Task<string> TaoMaMoi() => DinhDangMa(await KhachHangDB.LaySoThuTuMoi());
+
+    public static string DinhDangMa(long soThuTu)
+    {
+        if (soThuTu <= 0)
+            throw new ArgumentOutOfRangeException(nameof(soThuTu), "Số thứ tự khách hàng phải lớn hơn 0.");
+        return $"KH{soThuTu:D4}";
+    }
 
     public static void KiemTraThongTinBatBuoc(KhachHang kh)
     {
@@ -52,6 +59,7 @@ public sealed class KhachHang
     public static bool KiemTraSoGiayTo(string? soGiayTo, string? loaiGiayTo)
     {
         if (string.IsNullOrWhiteSpace(soGiayTo)) return false;
+        soGiayTo = soGiayTo.Trim();
         return loaiGiayTo switch
         {
             "CCCD" => soGiayTo.Length == 12 && soGiayTo.All(char.IsDigit),
@@ -70,12 +78,12 @@ public sealed class KhachHang
     public static void KiemTraTrungSoGiayTo(KhachHang nguoiDaiDien, List<KhachHang>? cacThanhVien)
     {
         var dsSoGiayTo = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        if (nguoiDaiDien.SoGiayTo is not null && !dsSoGiayTo.Add(nguoiDaiDien.SoGiayTo))
+        if (nguoiDaiDien.SoGiayTo is not null && !dsSoGiayTo.Add(nguoiDaiDien.SoGiayTo.Trim()))
             throw new InvalidOperationException("Số giấy tờ bị trùng.");
         if (cacThanhVien is null) return;
         foreach (var tv in cacThanhVien)
         {
-            if (tv.SoGiayTo is not null && !dsSoGiayTo.Add(tv.SoGiayTo))
+            if (tv.SoGiayTo is not null && !dsSoGiayTo.Add(tv.SoGiayTo.Trim()))
                 throw new InvalidOperationException($"Số giấy tờ '{tv.SoGiayTo}' bị trùng giữa các thành viên.");
         }
     }
@@ -135,7 +143,24 @@ public sealed class KhachHang
         return true;
     }
 
+    public void ChuanHoaThongTinNhanDang()
+    {
+        HoTen = HoTen?.Trim() ?? string.Empty;
+        SoGiayTo = SoGiayTo?.Trim();
+    }
+
+    public void CapNhatDiaChiThuongTru(string diaChiThuongTru)
+    {
+        var diaChi = diaChiThuongTru?.Trim() ?? string.Empty;
+        if (diaChi.Length == 0)
+            throw new InvalidOperationException("Vui lòng nhập địa chỉ thường trú.");
+        if (diaChi.Length > 200)
+            throw new InvalidOperationException("Địa chỉ thường trú không được vượt quá 200 ký tự.");
+        DiaChiThuongTru = diaChi;
+    }
+
     public Task ThemMoi() => KhachHangDB.Them(this);
     public Task CapNhat() => KhachHangDB.CapNhat(this);
+    public Task LuuDiaChiThuongTru() => KhachHangDB.CapNhatDiaChiThuongTru(MaKH, DiaChiThuongTru!);
     public Task Them() => KhachHangDB.Them(this);
 }

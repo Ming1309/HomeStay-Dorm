@@ -23,18 +23,7 @@ export type PhieuCocDetail = PhieuCocSummary & {
 };
 
 export type NhapHoSoRequest = {
-  nguoiDaiDien: {
-    hoTen: string;
-    ngaySinh: string | null;
-    gioiTinh: string | null;
-    quocTich: string | null;
-    loaiGiayTo: string | null;
-    soGiayTo: string | null;
-    diaChiThuongTru: string | null;
-    sdt: string | null;
-    email: string | null;
-  };
-  hinhThucThue: "CaNhan" | "TheoNhom";
+  diaChiThuongTru: string;
   danhSachThanhVien: Array<{
     hoTen: string;
     ngaySinh: string | null;
@@ -50,7 +39,10 @@ export type NhapHoSoRequest = {
 
 async function readResponse<T>(response: Response): Promise<T> {
   if (response.ok) return (await response.json()) as T;
-  const body = (await response.json().catch(() => null)) as { message?: string; Message?: string } | null;
+  const body = (await response.json().catch(() => null)) as {
+    message?: string;
+    Message?: string;
+  } | null;
   throw new Error(body?.message ?? body?.Message ?? "Không thể xử lý hồ sơ lưu trú.");
 }
 
@@ -60,7 +52,9 @@ export async function layDanhSachChoNhap(text = "") {
 }
 
 export async function layChiTiet(id: string) {
-  return readResponse<PhieuCocDetail>(await fetch(`/api/residence-profiles/${encodeURIComponent(id)}`));
+  return readResponse<PhieuCocDetail>(
+    await fetch(`/api/residence-profiles/${encodeURIComponent(id)}`),
+  );
 }
 
 export async function nhapHoSo(id: string, request: NhapHoSoRequest) {
