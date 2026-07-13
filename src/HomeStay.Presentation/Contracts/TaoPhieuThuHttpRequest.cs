@@ -1,9 +1,15 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace HomeStay.Presentation.Contracts;
 
-public sealed class TaoPhieuThuHttpRequest
-{
-    public string MaPDS { get; set; } = string.Empty;
-    public decimal SoTienThu { get; set; }
-    public string PhuongThucThanhToan { get; set; } = string.Empty;
-    public string? AnhMinhChung { get; set; }
-}
+public sealed record TaoPhieuThuHttpRequest(
+    [Required] string MaPDS,
+    [Required] string PhuongThucThanhToan,
+    string? AnhMinhChung);
+
+public sealed record TaoPhieuThuHttpResponse(
+    string MaPT,
+    decimal SoTienThu,
+    DateTime ThoiGian,
+    string PhuongThucThanhToan,
+    string MaNV);

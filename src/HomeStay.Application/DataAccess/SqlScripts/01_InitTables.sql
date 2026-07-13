@@ -408,6 +408,11 @@ ALTER TABLE TaiKhoan     ADD CONSTRAINT UQ_TaiKhoan_MaNV        UNIQUE (MaNV);
 CREATE UNIQUE INDEX UX_PhieuThu_MaPhieuCoc
     ON PhieuThu (MaPhieuCoc)
     WHERE MaPhieuCoc IS NOT NULL;
+CREATE UNIQUE INDEX UX_PhieuThu_MaPDS
+    ON PhieuThu (MaPDS)
+    WHERE MaPDS IS NOT NULL;
+CREATE UNIQUE INDEX UX_PhieuHoanCoc_MaPDS
+    ON PhieuHoanCoc (MaPDS);
 GO
 
 

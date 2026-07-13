@@ -86,21 +86,22 @@ activate MH
 
 MH -> MH : 3.1 hienThiDialogLapPhieuThu()
 
-KT -> MH : 3.2 Nhập soTienThucThu,\nchọn phuongThucThanhToan,\ntải minh chứng
+KT -> MH : 3.2 Chọn phuongThucThanhToan,\ntải minh chứng khi chuyển khoản
 
-MH -> MH : 3.3 tinhConLaiSauThu()
+MH -> MH : 3.3 Dùng tienThuThem do máy chủ tính
 
 KT -> MH : 3.4 btnXacNhanThuTien_Click()
-MH -> PT : 3.5 taoPhieuThu(maPDS, soTien,\nphuongThuc, maNV)
+MH -> PT : 3.5 taoPhieuThu(maPDS, tienThuThem,\nphuongThuc, anhMinhChung, maNV)
 activate PT
 PT -> PTDB : 3.6 insertPhieuThu(phieuThu)
 activate PTDB
 deactivate PTDB
 deactivate PT
 
-MH -> PDS : 3.7 capNhatTrangThai(maPDS, "DaTatToan")
+PT -> PT : 3.7 kiemTraTrungTheoMaPDS()
+MH -> PDS : 3.8 chuyenSangDaTatToan(maPDS)
 activate PDS
-PDS -> PDSDB : 3.8 updateTrangThai(maPDS, "DaTatToan")
+PDS -> PDSDB : 3.9 updateTrangThai(maPDS, "DaChot", "DaTatToan")
 activate PDSDB
 deactivate PDSDB
 deactivate PDS

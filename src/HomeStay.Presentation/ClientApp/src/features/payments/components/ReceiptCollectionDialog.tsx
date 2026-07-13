@@ -16,6 +16,7 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import { cn } from "@/shared/lib/utils";
+import { useAuth } from "@/features/auth/model/auth-store";
 
 export type ReceiptCollectionSource = "contract_payment" | "checkout_settlement";
 
@@ -38,7 +39,6 @@ export type ReceiptCollectionSubmit = {
   scenario: "full" | "partial";
 };
 
-const DEFAULT_COLLECTOR = "Nguyễn Thị Thu — Kế toán";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_FILE_TYPES = ["image/png", "image/jpeg", "image/jpg", "application/pdf"];
 
@@ -55,14 +55,24 @@ function formatAmountInput(value: string): string {
   return new Intl.NumberFormat("vi-VN").format(Number(value));
 }
 
-function createDefaultForm(totalDebt: number) {
+type ReceiptCollectionForm = {
+  amount: string;
+  paymentMethod: "cash" | "bank-transfer";
+  evidenceName: string;
+  evidenceFile: File | null;
+  note: string;
+  collector: string;
+  collectedAt: string;
+};
+
+function createDefaultForm(totalDebt: number, collector: string): ReceiptCollectionForm {
   return {
     amount: String(totalDebt),
-    paymentMethod: "cash" as const,
+    paymentMethod: "cash",
     evidenceName: "",
     evidenceFile: null as File | null,
     note: "",
-    collector: DEFAULT_COLLECTOR,
+    collector,
     collectedAt: new Date().toISOString().slice(0, 16),
   };
 }
@@ -94,17 +104,21 @@ export function ReceiptCollectionDialog({
   totalDebt: number;
   onSubmit: (data: ReceiptCollectionSubmit) => void;
 }) {
-  const [form, setForm] = useState(() => createDefaultForm(totalDebt));
+  const { user } = useAuth();
+  const collector = user
+    ? user.hoTen || user.tenDangNhap
+    : "Kế toán đang đăng nhập";
+  const [form, setForm] = useState(() => createDefaultForm(totalDebt, collector));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [partialOpen, setPartialOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setForm(createDefaultForm(totalDebt));
+      setForm(createDefaultForm(totalDebt, collector));
       setErrors({});
       setPartialOpen(false);
     }
-  }, [open, totalDebt]);
+  }, [open, totalDebt, collector]);
 
   const amount = Number(form.amount || 0);
   const remainingAfter = Math.max(totalDebt - amount, 0);
@@ -145,7 +159,7 @@ export function ReceiptCollectionDialog({
 
   const submit = () => {
     if (!validate()) return;
-    if (amount < totalDebt) {
+    if (source !== "checkout_settlement" && amount < totalDebt) {
       setPartialOpen(true);
       return;
     }
@@ -222,11 +236,19 @@ export function ReceiptCollectionDialog({
                 <Field label="Số tiền thực thu *" error={errors.amount}>
                   <Input
                     value={formatAmountInput(form.amount)}
+                    disabled={source === "checkout_settlement"}
                     onChange={(event) =>
                       updateForm("amount", normalizeAmountInput(event.target.value))
                     }
-                    className={cn("h-10 text-right font-mono", errors.amount && "border-rose-300")}
+                    className={cn(
+                      "h-10 text-right font-mono",
+                      source === "checkout_settlement" && "bg-gray-50",
+                      errors.amount && "border-rose-300",
+                    )}
                   />
+                  {source === "checkout_settlement" && (
+                    <p className="text-[11px] text-gray-500">Số tiền lấy từ phiếu đối soát đã chốt.</p>
+                  )}
                 </Field>
 
                 <div className="rounded-md border border-gray-200 bg-white p-3">

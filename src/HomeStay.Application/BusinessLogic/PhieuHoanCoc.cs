@@ -16,8 +16,16 @@ public sealed class PhieuHoanCoc
 
     public static PhieuHoanCoc TaoPhieuHoanCoc(string maPDS, decimal soTien, string phuongThuc, string thongTinNhanTien, string maNV, DateTime thoiDiem)
     {
+        if (string.IsNullOrWhiteSpace(maPDS))
+            throw new ArgumentException("Mã phiếu đối soát không được để trống.", nameof(maPDS));
         if (soTien <= 0)
             throw new ArgumentException("Số tiền hoàn cọc phải lớn hơn 0.");
+        if (phuongThuc is not ("TienMat" or "ChuyenKhoan"))
+            throw new ArgumentException("Phương thức hoàn cọc không hợp lệ.", nameof(phuongThuc));
+        if (phuongThuc == "ChuyenKhoan" && string.IsNullOrWhiteSpace(thongTinNhanTien))
+            throw new ArgumentException("Chuyển khoản phải có thông tin nhận tiền.", nameof(thongTinNhanTien));
+        if (string.IsNullOrWhiteSpace(maNV))
+            throw new ArgumentException("Không xác định được Kế toán thực hiện.", nameof(maNV));
 
         return new PhieuHoanCoc
         {
@@ -32,6 +40,9 @@ public sealed class PhieuHoanCoc
     }
 
     public Task LuuPhieu() => PhieuHoanCocDB.InsertPhieuHoanCoc(this);
+
+    public static Task<bool> DaTonTaiChoPhieuDoiSoat(string maPDS) =>
+        PhieuHoanCocDB.TonTaiTheoMaPhieuDoiSoat(maPDS);
 
     public static Task<PhieuHoanCoc?> LayThongTinPhieuHoanCoc(string maPHC) =>
         PhieuHoanCocDB.GetPhieuHoanCocTheoMaPHC(maPHC);

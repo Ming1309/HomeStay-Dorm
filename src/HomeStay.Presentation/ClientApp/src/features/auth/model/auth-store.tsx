@@ -5,6 +5,7 @@ export type UserRole = "accountant" | "manager" | "sale" | "admin";
 export type CurrentUser = {
   maTK: string;
   tenDangNhap: string;
+  hoTen?: string;
   maNV: string;
   vaiTro: string;
   role: UserRole;

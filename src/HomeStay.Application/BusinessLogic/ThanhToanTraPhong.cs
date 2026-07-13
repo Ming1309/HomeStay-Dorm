@@ -136,7 +136,7 @@ public sealed class ThanhToanTraPhong
         };
     }
 
-    public async Task<PhieuThu> TienHanhThuTien(string maPDS, decimal soTien, string phuongThuc, string? anhMinhChung, string maNV)
+    public async Task<PhieuThu> TienHanhThuTien(string maPDS, string phuongThuc, string? anhMinhChung, string maNV)
     {
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
@@ -147,14 +147,17 @@ public sealed class ThanhToanTraPhong
 
             if (pds.TrangThai != "DaChot")
                 throw new InvalidOperationException("Phiếu đối soát không ở trạng thái chờ thu tiền.");
+            if (pds.TienThuThem <= 0)
+                throw new InvalidOperationException("Phiếu đối soát không có khoản tiền cần thu thêm.");
+            if (await PhieuThu.DaTonTaiChoPhieuDoiSoat(maPDS))
+                throw new InvalidOperationException("Phiếu đối soát đã có phiếu thu.");
 
-            // Create PhieuThu entity
             var thoiDiem = _timeProvider.GetLocalNow().DateTime;
-            var phieuThu = PhieuThu.TaoPhieuThu(maPDS, soTien, phuongThuc, anhMinhChung, maNV, thoiDiem);
+            var phieuThu = PhieuThu.TaoPhieuThu(
+                maPDS, pds.TienThuThem, phuongThuc, anhMinhChung, maNV, thoiDiem);
             await phieuThu.LuuPhieu();
 
-            // Update Reconciliation slip status to DaTatToan
-            await PhieuDoiSoat.CapNhatTrangThai(maPDS, "DaTatToan");
+            await PhieuDoiSoat.ChuyenSangDaTatToan(maPDS);
 
             phien.Commit();
             return phieuThu;

@@ -129,7 +129,7 @@ export function AccountantReconciliationPage() {
         const result = await response.json();
         setIssuedCode(result.maPDS);
         toast.success("Lập phiếu đối soát thành công", {
-          description: `${result.maPDS} đã chốt và gửi thông báo sang Quản lý.`,
+          description: `${result.maPDS} đã được chốt và lưu thành công.`,
           icon: <CheckCircle2 className="size-4 text-emerald-600" />,
         });
         loadHoSoList(query);
@@ -361,7 +361,7 @@ export function AccountantReconciliationPage() {
                   Đã chốt phiếu đối soát {issuedCode}
                 </span>
               ) : (
-                <span>Hệ thống sẽ gửi thông báo sang Quản lý sau khi tạo phiếu.</span>
+                <span>Phiếu đối soát được lưu ngay sau khi xác nhận.</span>
               )}
             </div>
             <div className="flex items-center gap-2">

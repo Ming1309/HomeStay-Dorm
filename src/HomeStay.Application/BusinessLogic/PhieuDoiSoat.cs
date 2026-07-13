@@ -83,6 +83,9 @@ public sealed class PhieuDoiSoat
         return pds?.TienThuThem ?? 0;
     }
 
-    public static Task<bool> CapNhatTrangThai(string maPDS, string trangThai)
-        => PhieuDoiSoatDB.UpdateTrangThai(maPDS, trangThai);
+    public static async Task ChuyenSangDaTatToan(string maPDS)
+    {
+        if (!await PhieuDoiSoatDB.UpdateTrangThai(maPDS, "DaChot", "DaTatToan"))
+            throw new InvalidOperationException("Phiếu đối soát đã được xử lý hoặc không còn ở trạng thái Đã chốt.");
+    }
 }

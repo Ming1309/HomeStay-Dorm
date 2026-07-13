@@ -1,26 +1,31 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Presentation.Contracts;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HomeStay.Presentation.Controllers;
 
 [ApiController]
 [Route("api/payments")]
-public class PhieuThuController : ControllerBase
+[Authorize(Roles = "KeToan")]
+public sealed class PhieuThuController(
+    ThanhToanTraPhong thanhToanTraPhong,
+    ILogger<PhieuThuController> logger) : ControllerBase
 {
-    private readonly ThanhToanTraPhong _thanhToanTraPhong;
-
-    public PhieuThuController(ThanhToanTraPhong thanhToanTraPhong)
-    {
-        _thanhToanTraPhong = thanhToanTraPhong;
-    }
-
     [HttpGet("pds-cho-thu")]
     public async Task<IActionResult> LayDSPhieuDoiSoatDaChot()
     {
-        var results = await _thanhToanTraPhong.LayDSPhieuDoiSoatDaChot();
-        return Ok(results);
+        try
+        {
+            var results = await thanhToanTraPhong.LayDSPhieuDoiSoatDaChot();
+            return Ok(results);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Không thể tải danh sách phiếu đối soát chờ thu");
+            return StatusCode(500, new { Message = "Không thể tải danh sách thanh toán lúc này." });
+        }
     }
 
     [HttpGet("pds-details/{maPDS}")]
@@ -28,38 +33,54 @@ public class PhieuThuController : ControllerBase
     {
         try
         {
-            var detail = await _thanhToanTraPhong.LayChiTietPhieuDoiSoat(maPDS);
+            var detail = await thanhToanTraPhong.LayChiTietPhieuDoiSoat(maPDS);
             return Ok(detail);
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(ex.Message);
+            return NotFound(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Không thể tải phiếu đối soát {MaPDS}", maPDS);
+            return StatusCode(500, new { Message = "Không thể tải chi tiết thanh toán lúc này." });
         }
     }
 
     [HttpPost("phieu-thu")]
     public async Task<IActionResult> TaoPhieuThu([FromBody] TaoPhieuThuHttpRequest request)
     {
-        // For testing, NV02 is the login accountant ID
-        const string maNV = "NV02";
+        var maNV = User.FindFirstValue("MaNV");
+        if (string.IsNullOrWhiteSpace(maNV))
+            return Unauthorized(new { Message = "Không xác định được Kế toán đang đăng nhập." });
+
         try
         {
-            var phieuThu = await _thanhToanTraPhong.TienHanhThuTien(
+            var phieuThu = await thanhToanTraPhong.TienHanhThuTien(
                 request.MaPDS,
-                request.SoTienThu,
                 request.PhuongThucThanhToan,
                 request.AnhMinhChung,
-                maNV
-            );
-            return Ok(phieuThu);
+                maNV);
+            return Ok(new TaoPhieuThuHttpResponse(
+                phieuThu.MaPT,
+                phieuThu.SoTienThu,
+                phieuThu.ThoiGian,
+                phieuThu.PhuongThucThanhToan!,
+                maNV));
         }
+        catch (ArgumentException ex) { return BadRequest(new { Message = ex.Message }); }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(ex.Message);
+            return Conflict(new { Message = ex.Message });
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(ex.Message);
+            return NotFound(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Không thể lập phiếu thu cho {MaPDS}", request.MaPDS);
+            return StatusCode(500, new { Message = "Không thể lập phiếu thu lúc này." });
         }
     }
 }

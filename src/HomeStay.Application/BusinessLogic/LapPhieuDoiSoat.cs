@@ -138,6 +138,9 @@ public sealed class LapPhieuDoiSoat
 
     public async Task<PhieuDoiSoat> TaoPhieuDoiSoat(string maHoSo, string loaiHoSo, string? ghiChu, string? maNhanVien)
     {
+        if (string.IsNullOrWhiteSpace(maNhanVien))
+            throw new ArgumentException("Không xác định được Kế toán thực hiện.", nameof(maNhanVien));
+
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
         try
