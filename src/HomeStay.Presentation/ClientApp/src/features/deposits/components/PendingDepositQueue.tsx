@@ -64,8 +64,15 @@ export function PendingDepositQueue({
                     <span className="font-mono text-xs font-bold text-blue-600">
                       {item.maPhieuCoc}
                     </span>
-                    <Badge className="h-5 bg-amber-100 text-[10px] text-amber-700">
-                      Chờ thanh toán
+                    <Badge
+                      className={cn(
+                        "h-5 text-[10px]",
+                        item.lyDoYeuCauBoSung
+                          ? "bg-red-100 text-red-700"
+                          : "bg-amber-100 text-amber-700",
+                      )}
+                    >
+                      {item.lyDoYeuCauBoSung ? "Cần bổ sung" : "Chờ thanh toán"}
                     </Badge>
                   </div>
                   <p className="text-sm font-semibold text-gray-800">{item.hoTenKhachHang}</p>

@@ -62,7 +62,10 @@ export function PaymentProofForm({
     formState: { errors, isSubmitting },
   } = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
-    defaultValues: { paymentMethod: undefined, proofFile: undefined },
+    defaultValues: {
+      paymentMethod: deposit.phuongThucThanhToan ?? undefined,
+      proofFile: undefined,
+    },
   });
 
   const paymentMethod = watch("paymentMethod");
@@ -129,7 +132,13 @@ export function PaymentProofForm({
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white px-5 py-3">
         <div className="flex items-center gap-2">
           <h1 className="font-mono text-sm font-bold text-gray-900">{deposit.maPhieuCoc}</h1>
-          <Badge className="bg-amber-100 text-amber-700">Chờ thanh toán</Badge>
+          <Badge
+            className={
+              deposit.lyDoYeuCauBoSung ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
+            }
+          >
+            {deposit.lyDoYeuCauBoSung ? "Cần bổ sung" : "Chờ thanh toán"}
+          </Badge>
         </div>
         <p className="mt-0.5 text-xs text-gray-500">
           {deposit.hoTenKhachHang} • P. {deposit.soPhong}
@@ -138,6 +147,15 @@ export function PaymentProofForm({
 
       <div className="flex-1 overflow-y-auto px-5 py-4 pb-24">
         <div className="space-y-4">
+          {deposit.lyDoYeuCauBoSung && (
+            <section className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <h2 className="mb-1 text-xs font-semibold text-red-700">Quản lý yêu cầu bổ sung</h2>
+              <p className="text-sm text-red-700">{deposit.lyDoYeuCauBoSung}</p>
+              <p className="mt-1 text-xs text-red-600">
+                Vui lòng kiểm tra lại phương thức thanh toán và tải chứng từ mới.
+              </p>
+            </section>
+          )}
           <section className="rounded-lg border border-gray-200 bg-white p-4">
             <h2 className="mb-3 text-xs font-semibold text-gray-700">Thông tin phiếu cọc</h2>
             <div className="grid grid-cols-2 gap-3 text-sm">

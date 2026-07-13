@@ -10,7 +10,7 @@ public static class PhieuCocDB
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
-                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.PhuongThucThanhToan,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.PhuongThucThanhToan,pc.LyDoYeuCauBoSung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
                    kh.HoTen AS TenKhachHang, p.SoPhong, p.ToaNha
             FROM PhieuCoc pc
             INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
@@ -33,6 +33,7 @@ public static class PhieuCocDB
             ThoiDiemCoc = x.ThoiDiemCoc,
             AnhMinhChung = x.AnhMinhChung,
             PhuongThucThanhToan = x.PhuongThucThanhToan,
+            LyDoYeuCauBoSung = x.LyDoYeuCauBoSung,
             TrangThai = x.TrangThai,
             MaKH = x.MaKH,
             MaPhong = x.MaPhong,
@@ -46,7 +47,7 @@ public static class PhieuCocDB
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
-                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.PhuongThucThanhToan,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.PhuongThucThanhToan,pc.LyDoYeuCauBoSung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
                    kh.HoTen AS TenKhachHang, p.SoPhong, p.ToaNha
             FROM PhieuCoc pc
             INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
@@ -62,11 +63,31 @@ public static class PhieuCocDB
         return rows.Select(TaoPhieuCocDanhSach).ToList();
     }
 
+    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string? text = null)
+    {
+        const string sql = """
+            SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
+                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.PhuongThucThanhToan,pc.LyDoYeuCauBoSung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   kh.HoTen AS TenKhachHang, p.SoPhong, p.ToaNha
+            FROM PhieuCoc pc
+            INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
+            WHERE pc.TrangThai=N'ChoDoiChieu'
+              AND (@Text IS NULL OR pc.MaPhieuCoc LIKE '%' + @Text + '%'
+                   OR kh.HoTen LIKE '%' + @Text + '%' OR p.SoPhong LIKE '%' + @Text + '%')
+            ORDER BY pc.HanThanhToan, pc.MaPhieuCoc
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql,
+            new { Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim() },
+            PhienDuLieu.Session.Transaction);
+        return rows.Select(TaoPhieuCocDanhSach).ToList();
+    }
+
     public static async Task<PhieuCoc?> DocChiTiet(string maPhieuCoc)
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
-                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.PhuongThucThanhToan,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.PhuongThucThanhToan,pc.LyDoYeuCauBoSung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
                    kh.HoTen AS TenKhachHang, kh.SDT, kh.Email,
                    p.SoPhong, p.ToaNha, p.Tang, p.TrangThai AS TrangThaiPhong,
                    lp.MaLP, lp.TenLoaiPhong, lp.SucChua, lp.GiaThue
@@ -99,6 +120,7 @@ public static class PhieuCocDB
             ThoiDiemCoc = row.ThoiDiemCoc,
             AnhMinhChung = row.AnhMinhChung,
             PhuongThucThanhToan = row.PhuongThucThanhToan,
+            LyDoYeuCauBoSung = row.LyDoYeuCauBoSung,
             TrangThai = row.TrangThai,
             MaKH = row.MaKH,
             MaPhong = row.MaPhong,
@@ -139,6 +161,7 @@ public static class PhieuCocDB
             UPDATE PhieuCoc
             SET AnhMinhChung=@AnhMinhChung,
                 PhuongThucThanhToan=@PhuongThucThanhToan,
+                LyDoYeuCauBoSung=NULL,
                 TrangThai=@TrangThai
             WHERE MaPhieuCoc=@MaPhieuCoc AND TrangThai=N'ChoThanhToan'
             """;
@@ -146,11 +169,33 @@ public static class PhieuCocDB
             throw new InvalidOperationException("Phiếu cọc đã được xử lý bởi người khác hoặc không còn ở trạng thái chờ thanh toán.");
     }
 
+    public static async Task CapNhatXacNhanThanhToan(PhieuCoc phieu)
+    {
+        const string sql = """
+            UPDATE PhieuCoc
+            SET TrangThai=N'DaThanhToan', LyDoYeuCauBoSung=NULL
+            WHERE MaPhieuCoc=@MaPhieuCoc AND TrangThai=N'ChoDoiChieu'
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, phieu, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Phiếu cọc đã được xử lý bởi người khác hoặc không còn ở trạng thái chờ đối chiếu.");
+    }
+
+    public static async Task CapNhatYeuCauBoSung(PhieuCoc phieu)
+    {
+        const string sql = """
+            UPDATE PhieuCoc
+            SET TrangThai=N'ChoThanhToan', LyDoYeuCauBoSung=@LyDoYeuCauBoSung
+            WHERE MaPhieuCoc=@MaPhieuCoc AND TrangThai=N'ChoDoiChieu'
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, phieu, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Phiếu cọc đã được xử lý bởi người khác hoặc không còn ở trạng thái chờ đối chiếu.");
+    }
+
     public static async Task Them(PhieuCoc phieu)
     {
         const string insertDeposit = """
-            INSERT INTO PhieuCoc (MaPhieuCoc,HanThanhToan,HinhThucThue,SoGiuongThue,TongTien,ThoiDiemCoc,AnhMinhChung,PhuongThucThanhToan,TrangThai,MaKH,MaPhong,MaNV)
-            VALUES (@MaPhieuCoc,@HanThanhToan,@HinhThucThue,@SoGiuongThue,@TongTien,@ThoiDiemCoc,@AnhMinhChung,@PhuongThucThanhToan,@TrangThai,@MaKH,@MaPhong,@MaNV)
+            INSERT INTO PhieuCoc (MaPhieuCoc,HanThanhToan,HinhThucThue,SoGiuongThue,TongTien,ThoiDiemCoc,AnhMinhChung,PhuongThucThanhToan,LyDoYeuCauBoSung,TrangThai,MaKH,MaPhong,MaNV)
+            VALUES (@MaPhieuCoc,@HanThanhToan,@HinhThucThue,@SoGiuongThue,@TongTien,@ThoiDiemCoc,@AnhMinhChung,@PhuongThucThanhToan,@LyDoYeuCauBoSung,@TrangThai,@MaKH,@MaPhong,@MaNV)
             """;
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(insertDeposit, phieu, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể tạo phiếu cọc.");
@@ -174,6 +219,7 @@ public static class PhieuCocDB
         public DateTime ThoiDiemCoc { get; set; }
         public string? AnhMinhChung { get; set; }
         public string? PhuongThucThanhToan { get; set; }
+        public string? LyDoYeuCauBoSung { get; set; }
         public string TrangThai { get; set; } = string.Empty;
         public string MaKH { get; set; } = string.Empty;
         public string MaPhong { get; set; } = string.Empty;
@@ -205,6 +251,7 @@ public static class PhieuCocDB
         ThoiDiemCoc = x.ThoiDiemCoc,
         AnhMinhChung = x.AnhMinhChung,
         PhuongThucThanhToan = x.PhuongThucThanhToan,
+        LyDoYeuCauBoSung = x.LyDoYeuCauBoSung,
         TrangThai = x.TrangThai,
         MaKH = x.MaKH,
         MaPhong = x.MaPhong,

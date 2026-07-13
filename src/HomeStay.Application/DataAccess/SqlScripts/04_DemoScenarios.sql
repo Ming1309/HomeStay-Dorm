@@ -44,7 +44,7 @@ GO
 INSERT INTO Giuong (MaGiuong, SoGiuong, TrangThai, MaPhong)
 VALUES
 ('G015', N'Giường A', N'GiuCho', 'P004'),
-('G016', N'Giường B', N'Trong', 'P004'),
+('G016', N'Giường B', N'GiuCho', 'P004'),
 ('G017', N'Giường C', N'Trong', 'P004'),
 ('G018', N'Giường D', N'Trong', 'P004'),
 ('G019', N'Giường A', N'GiuCho', 'P005'),
@@ -93,16 +93,17 @@ GO
 -- ============================================================
 -- 4. Phiếu cọc và thành viên đăng ký
 -- ============================================================
-INSERT INTO PhieuCoc (MaPhieuCoc, HanThanhToan, HinhThucThue, SoGiuongThue, TongTien, ThoiDiemCoc, AnhMinhChung, PhuongThucThanhToan, TrangThai, MaKH, MaPhong, MaNV)
+INSERT INTO PhieuCoc (MaPhieuCoc, HanThanhToan, HinhThucThue, SoGiuongThue, TongTien, ThoiDiemCoc, AnhMinhChung, PhuongThucThanhToan, LyDoYeuCauBoSung, TrangThai, MaKH, MaPhong, MaNV)
 VALUES
-('PC0001', NULL, N'OGhep', 1, 0, '2026-07-23T10:00:00', NULL, NULL, N'KhoiTao', 'KH0004', 'P004', 'NV03'),
-('PC0002', '2026-07-25T10:00:00', N'OGhep', 2, 3800000, '2026-07-24T10:00:00', NULL, NULL, N'ChoThanhToan', 'KH0005', 'P005', 'NV04'),
-('PC0003', '2026-07-26T10:00:00', N'OGhep', 2, 3800000, '2026-07-25T10:00:00', N'/files/pc0003.png', N'ChuyenKhoan', N'DaThanhToan', 'KH0006', 'P006', 'NV03'),
-('PC0004', '2026-07-27T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-26T10:00:00', N'/files/pc0004.png', N'ChuyenKhoan', N'DaThanhToan', 'KH0007', 'P007', 'NV03'),
-('PC0005', '2026-07-28T10:00:00', N'NguyenCan', 6, 3720000, '2026-07-27T10:00:00', N'/files/pc0005.png', N'ChuyenKhoan', N'ChoDuyet', 'KH0008', 'P010', 'NV03'),
-('PC0006', '2026-07-29T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-28T10:00:00', N'/files/pc0006.png', N'TienMat', N'DaDuyet', 'KH0009', 'P011', 'NV04'),
-('PC0007', NULL, N'OGhep', 1, 1900000, '2026-07-20T10:00:00', NULL, NULL, N'DaHuy', 'KH0010', 'P002', 'NV03'),
-('PC0008', '2026-07-30T10:00:00', N'OGhep', 2, 1240000, '2026-07-29T10:00:00', N'/files/pc0008.png', N'ChuyenKhoan', N'DaThanhToan', 'KH0011', 'P003', 'NV04');
+('PC0001', NULL, N'OGhep', 1, 0, '2026-07-23T10:00:00', NULL, NULL, NULL, N'KhoiTao', 'KH0004', 'P004', 'NV03'),
+('PC0002', '2026-07-25T10:00:00', N'OGhep', 2, 3800000, '2026-07-24T10:00:00', NULL, NULL, NULL, N'ChoThanhToan', 'KH0005', 'P005', 'NV04'),
+('PC0003', '2026-07-26T10:00:00', N'OGhep', 2, 3800000, '2026-07-25T10:00:00', N'/files/pc0003.png', N'ChuyenKhoan', NULL, N'DaThanhToan', 'KH0006', 'P006', 'NV03'),
+('PC0004', '2026-07-27T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-26T10:00:00', N'/files/pc0004.png', N'ChuyenKhoan', NULL, N'DaThanhToan', 'KH0007', 'P007', 'NV03'),
+('PC0005', '2026-07-28T10:00:00', N'NguyenCan', 6, 3720000, '2026-07-27T10:00:00', N'/files/pc0005.png', N'ChuyenKhoan', NULL, N'ChoDuyet', 'KH0008', 'P010', 'NV03'),
+('PC0006', '2026-07-29T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-28T10:00:00', N'/files/pc0006.png', N'TienMat', NULL, N'DaDuyet', 'KH0009', 'P011', 'NV04'),
+('PC0007', NULL, N'OGhep', 1, 1900000, '2026-07-20T10:00:00', NULL, NULL, NULL, N'DaHuy', 'KH0010', 'P002', 'NV03'),
+('PC0008', '2026-07-30T10:00:00', N'OGhep', 2, 1240000, '2026-07-29T10:00:00', N'/files/pc0008.png', N'ChuyenKhoan', NULL, N'DaThanhToan', 'KH0011', 'P003', 'NV04'),
+('PC0009', '2026-07-31T10:00:00', N'OGhep', 1, 1900000, '2026-07-30T10:00:00', N'/files/pc0009.png', N'ChuyenKhoan', NULL, N'ChoDoiChieu', 'KH0001', 'P004', 'NV03');
 GO
 
 INSERT INTO ThanhVienDangKy (MaPhieuCoc, MaKH, VaiTro, TrangThaiDuyet)
@@ -124,7 +125,8 @@ VALUES
 ('PC0006', 'KH0015', N'ThanhVien', N'HopLe'),
 ('PC0007', 'KH0010', N'DaiDien', N'TuChoi'),
 ('PC0008', 'KH0011', N'DaiDien', N'HopLe'),
-('PC0008', 'KH0015', N'ThanhVien', N'HopLe');
+('PC0008', 'KH0015', N'ThanhVien', N'HopLe'),
+('PC0009', 'KH0001', N'DaiDien', N'ChoDuyet');
 GO
 
 INSERT INTO ChiTietPhieuCoc (MaPhieuCoc, MaGiuong)
@@ -136,7 +138,8 @@ VALUES
 ('PC0005', 'G035'), ('PC0005', 'G036'), ('PC0005', 'G037'), ('PC0005', 'G038'), ('PC0005', 'G039'), ('PC0005', 'G040'),
 ('PC0006', 'G041'), ('PC0006', 'G042'),
 ('PC0007', 'G005'),
-('PC0008', 'G009'), ('PC0008', 'G010');
+('PC0008', 'G009'), ('PC0008', 'G010'),
+('PC0009', 'G016');
 GO
 
 -- ============================================================

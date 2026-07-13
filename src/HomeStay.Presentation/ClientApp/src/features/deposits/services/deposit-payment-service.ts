@@ -8,6 +8,7 @@ export type PendingDeposit = {
   toaNha: string | null;
   tongTien: number;
   hanThanhToan: string | null;
+  lyDoYeuCauBoSung: string | null;
 };
 
 export type DepositPaymentDetail = PendingDeposit & {

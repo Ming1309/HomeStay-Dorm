@@ -13,4 +13,11 @@ public sealed class Giuong
             throw new InvalidOperationException($"Giường {MaGiuong} không còn hợp lệ để giữ chỗ.");
         TrangThai = "GiuCho";
     }
+
+    public void XacNhanDaCoc(string maPhong)
+    {
+        if (MaPhong != maPhong || TrangThai != "GiuCho")
+            throw new InvalidOperationException($"Giường {MaGiuong} không còn ở trạng thái giữ chỗ.");
+        TrangThai = "DaCoc";
+    }
 }

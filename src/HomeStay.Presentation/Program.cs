@@ -30,6 +30,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
 builder.Services.AddScoped<GhiNhanThanhToanCoc>();
+builder.Services.AddScoped<XacNhanKhoanTienCoc>();
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();

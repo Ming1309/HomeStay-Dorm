@@ -15,7 +15,8 @@ public sealed record PhieuCocChoThanhToanHttpResponse(
     string SoPhong,
     string? ToaNha,
     decimal TongTien,
-    DateTime? HanThanhToan);
+    DateTime? HanThanhToan,
+    string? LyDoYeuCauBoSung);
 
 public sealed record ChiTietGhiNhanThanhToanCocHttpResponse(
     string MaPhieuCoc,
@@ -30,4 +31,5 @@ public sealed record ChiTietGhiNhanThanhToanCocHttpResponse(
     DateTime? HanThanhToan,
     string TrangThai,
     string? PhuongThucThanhToan,
-    string? AnhMinhChung);
+    string? AnhMinhChung,
+    string? LyDoYeuCauBoSung);

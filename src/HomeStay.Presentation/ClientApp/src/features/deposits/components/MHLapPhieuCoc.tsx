@@ -9,24 +9,11 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Checkbox } from "@/shared/ui/checkbox";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
 import type { Appointment, Bed, Room } from "@/app/providers/workflow-store";
 
@@ -101,11 +88,12 @@ function chuyenLichHen(api: LichHenApiResponse): Appointment {
     gender: api.khachHang?.gioiTinh === "Nam" ? "male" : "female",
     dob: api.khachHang?.ngaySinh ? api.khachHang.ngaySinh.split("T")[0] : "",
     nationality: api.khachHang?.quocTich,
-    docType: api.khachHang?.loaiGiayTo === "Hộ chiếu"
-      ? "Hộ chiếu"
-      : api.khachHang?.loaiGiayTo === "CCCD"
-        ? "CCCD"
-        : undefined,
+    docType:
+      api.khachHang?.loaiGiayTo === "Hộ chiếu"
+        ? "Hộ chiếu"
+        : api.khachHang?.loaiGiayTo === "CCCD"
+          ? "CCCD"
+          : undefined,
     docNumber: api.khachHang?.soGiayTo,
     type: "viewing",
     status: "success",
@@ -162,7 +150,9 @@ export function MHLapPhieuCoc() {
       <aside className="flex h-full w-[350px] shrink-0 flex-col border-r border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-4 py-3">
           <h2 className="text-sm font-bold text-gray-800">Khách hàng chờ cọc</h2>
-          <p className="mt-0.5 text-xs text-gray-400">{danhSachHienThi.length} lịch hẹn xem phòng thành công</p>
+          <p className="mt-0.5 text-xs text-gray-400">
+            {danhSachHienThi.length} lịch hẹn xem phòng thành công
+          </p>
         </div>
         <div className="sticky top-0 z-10 border-b border-gray-100 bg-white px-3 py-2">
           <div className="relative">
@@ -195,7 +185,9 @@ export function MHLapPhieuCoc() {
                       )}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-blue-600">{item.code}</span>
+                        <span className="font-mono text-xs font-bold text-blue-600">
+                          {item.code}
+                        </span>
                         <Badge className="h-5 bg-emerald-100 text-[10px] text-emerald-700">
                           Xem phòng thành công
                         </Badge>
@@ -294,14 +286,7 @@ function FormLapPhieuCoc({
     setDanhSachGiuongDaChon([]);
     setGiaMin("");
     setGiaMax("");
-  }, [
-    lichHen.id,
-    lichHen.customerName,
-    lichHen.phone,
-    lichHen.email,
-    lichHen.gender,
-    form,
-  ]);
+  }, [lichHen.id, lichHen.customerName, lichHen.phone, lichHen.email, lichHen.gender, form]);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -346,23 +331,25 @@ function FormLapPhieuCoc({
 
       const phanHoi = await fetch(`/api/rooms/${loaiEndpoint}?${thamSoTimKiem.toString()}`);
       if (!phanHoi.ok) throw new Error("Lỗi khi tìm kiếm phòng");
-      
+
       const duLieuPhong = (await phanHoi.json()) as PhongApiResponse[];
-      
+
       const ketQuaTimKiem: Room[] = duLieuPhong.map((phong) => {
-        const beds: Bed[] = phong.giuongs?.map((giuong) => ({
-          id: giuong.maGiuong,
-          code: giuong.soGiuong,
-          status: giuong.trangThai === "Trong" ? "available" : "occupied",
-        })) || [];
+        const beds: Bed[] =
+          phong.giuongs?.map((giuong) => ({
+            id: giuong.maGiuong,
+            code: giuong.soGiuong,
+            status: giuong.trangThai === "Trong" ? "available" : "occupied",
+          })) || [];
         const soGiuongTrong = beds.filter((giuong) => giuong.status === "available").length;
-        const status = beds.length === 0
-          ? "maintenance"
-          : soGiuongTrong === beds.length
-            ? "available"
-            : soGiuongTrong > 0
-              ? "partially_available"
-              : "full";
+        const status =
+          beds.length === 0
+            ? "maintenance"
+            : soGiuongTrong === beds.length
+              ? "available"
+              : soGiuongTrong > 0
+                ? "partially_available"
+                : "full";
         return {
           id: phong.maPhong,
           code: phong.soPhong,
@@ -404,10 +391,11 @@ function FormLapPhieuCoc({
     setMaPhongDaChon(phong.id);
     setDanhSachGiuongDaChon((hienTai) => {
       let danhSachMoi;
-      if (hienTai.includes(giuong.id)) danhSachMoi = hienTai.filter((maGiuong) => maGiuong !== giuong.id);
+      if (hienTai.includes(giuong.id))
+        danhSachMoi = hienTai.filter((maGiuong) => maGiuong !== giuong.id);
       else if (hienTai.length >= soLuongGiuong) danhSachMoi = hienTai;
       else danhSachMoi = [...hienTai, giuong.id];
-      
+
       return danhSachMoi;
     });
   };
@@ -448,7 +436,9 @@ function FormLapPhieuCoc({
           KhachHang: {
             HoTen: duLieuKhachHang.hoTen,
             SDT: duLieuKhachHang.soDienThoai,
-            NgaySinh: duLieuKhachHang.ngaySinh ? new Date(duLieuKhachHang.ngaySinh).toISOString() : null,
+            NgaySinh: duLieuKhachHang.ngaySinh
+              ? new Date(duLieuKhachHang.ngaySinh).toISOString()
+              : null,
             Email: duLieuKhachHang.email,
             GioiTinh: duLieuKhachHang.gioiTinh === "male" ? "Nam" : "Nữ",
             QuocTich: duLieuKhachHang.quocTich,
@@ -458,8 +448,8 @@ function FormLapPhieuCoc({
           MaPhong: phongDaChon.id,
           DanhSachGiuong: danhSachGiuongDaChon,
           HinhThucThue: hinhThucThue === "shared" ? "OGhep" : "NguyenCan",
-          MaNV: "NV03"
-        })
+          MaNV: "NV03",
+        }),
       });
 
       if (!phanHoi.ok) {
@@ -494,12 +484,7 @@ function FormLapPhieuCoc({
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Thông tin khách hàng</CardTitle>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={btnChinhSua_Click}
-                >
+                <Button type="button" variant="outline" size="sm" onClick={btnChinhSua_Click}>
                   {dangChinhSuaKhachHang ? "Khóa chỉnh sửa" : "Chỉnh sửa"}
                 </Button>
               </div>
@@ -753,16 +738,15 @@ function FormLapPhieuCoc({
                     type="number"
                     min={1}
                     value={soLuongGiuong}
-                    onChange={(event) => setSoLuongGiuong(Math.max(1, Number(event.target.value) || 1))}
+                    onChange={(event) =>
+                      setSoLuongGiuong(Math.max(1, Number(event.target.value) || 1))
+                    }
                     className="mt-1 h-8 text-xs"
                   />
                 </div>
                 <div className="xl:col-span-2">
                   <Label className="text-xs text-gray-500">Tòa nhà</Label>
-                  <Select
-                    value={toaNha}
-                    onValueChange={(v) => setToaNha(v as typeof toaNha)}
-                  >
+                  <Select value={toaNha} onValueChange={(v) => setToaNha(v as typeof toaNha)}>
                     <SelectTrigger className="mt-1 h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
@@ -862,7 +846,8 @@ function FormLapPhieuCoc({
                               {phong.code} • Phòng {phong.type}
                             </p>
                             <p className="text-xs text-gray-500">
-                              Sức chứa {phong.maxCapacity} • {dinhDangTien(phong.basePrice)}/giường/tháng
+                              Sức chứa {phong.maxCapacity} • {dinhDangTien(phong.basePrice)}
+                              /giường/tháng
                             </p>
                           </div>
                           {hinhThucThue === "whole" && (
@@ -901,11 +886,16 @@ function FormLapPhieuCoc({
                                   <Checkbox
                                     checked={duocChon}
                                     disabled={biKhoa}
-                                    onCheckedChange={() => grvDanhSachGiuong_CellClick(phong, giuong)}
+                                    onCheckedChange={() =>
+                                      grvDanhSachGiuong_CellClick(phong, giuong)
+                                    }
                                   />
                                   <span className="font-mono">{giuong.code}</span>
                                   <Badge
-                                    className={cn("ml-auto h-5 text-[10px]", nhanTrangThai.className)}
+                                    className={cn(
+                                      "ml-auto h-5 text-[10px]",
+                                      nhanTrangThai.className,
+                                    )}
                                   >
                                     {nhanTrangThai.text}
                                   </Badge>

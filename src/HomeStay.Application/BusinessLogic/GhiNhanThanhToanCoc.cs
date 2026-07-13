@@ -31,17 +31,20 @@ public sealed class GhiNhanThanhToanCoc(
         using var phien = taoPhienDuLieu();
         phien.BatDauGiaoDich();
         string? duongDanChungTu = null;
+        string? duongDanChungTuCu = null;
+        PhieuCoc? phieuDaCapNhat = null;
         try
         {
             var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
                 ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
             phieu.KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan);
+            duongDanChungTuCu = phieu.AnhMinhChung;
 
             duongDanChungTu = await chungTuStorage.Luu(tepChungTu, cancellationToken);
             phieu.GhiNhanThanhToan(phuongThucThanhToan, duongDanChungTu);
             await phieu.CapNhatThanhToan();
             phien.Commit();
-            return phieu;
+            phieuDaCapNhat = phieu;
         }
         catch
         {
@@ -50,5 +53,12 @@ public sealed class GhiNhanThanhToanCoc(
                 await chungTuStorage.Xoa(duongDanChungTu, CancellationToken.None);
             throw;
         }
+
+        if (!string.IsNullOrWhiteSpace(duongDanChungTuCu) && duongDanChungTuCu != duongDanChungTu)
+        {
+            try { await chungTuStorage.Xoa(duongDanChungTuCu, CancellationToken.None); }
+            catch { /* Dọn tệp cũ không được làm thất bại giao dịch đã commit. */ }
+        }
+        return phieuDaCapNhat!;
     }
 }
