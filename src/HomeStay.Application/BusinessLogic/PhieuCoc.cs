@@ -17,6 +17,9 @@ public sealed class PhieuCoc
     public string MaKH { get; set; } = string.Empty;
     public string MaPhong { get; set; } = string.Empty;
     public string? MaNV { get; set; }
+    public DateTime? ThoiDiemHuy { get; set; }
+    public string? MaNVHuy { get; set; }
+    public bool DaDongTien { get; set; }
     public KhachHang KhachHang { get; set; } = new();
     public Phong Phong { get; set; } = new();
     public List<Giuong> Giuongs { get; set; } = [];
@@ -83,6 +86,16 @@ public sealed class PhieuCoc
             throw new InvalidOperationException(
                 $"Số người ({soLuongThanhVien}) vượt quá sức chứa phòng ({Phong.LoaiPhong.SucChua}).");
     }
+
+    public static Task<IReadOnlyList<PhieuCoc>> TraCuu(
+        string? maPhieuCoc, string? sdt, string? email, string? soGiayTo) =>
+        PhieuCocDB.TraCuu(maPhieuCoc, sdt, email, soGiayTo);
+
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachCoTheHuy(string? text = null) =>
+        PhieuCocDB.LayDanhSachCoTheHuy(text);
+
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoat() =>
+        PhieuCocDB.LayDanhSachDaHuyChoDoiSoat();
 
     public int TinhTienDuKien()
     {
@@ -158,6 +171,18 @@ public sealed class PhieuCoc
         TrangThai = "ChoThanhToan";
     }
 
+    public void Huy(string maNhanVien, DateTime thoiDiem)
+    {
+        if (TrangThai == "DaHuy")
+            throw new InvalidOperationException("Phiếu cọc đã được hủy trước đó.");
+        if (string.IsNullOrWhiteSpace(maNhanVien))
+            throw new ArgumentException("Không xác định được Nhân viên Sale đang đăng nhập.", nameof(maNhanVien));
+
+        TrangThai = "DaHuy";
+        MaNVHuy = maNhanVien.Trim();
+        ThoiDiemHuy = thoiDiem;
+    }
+
     private void KiemTraCoTheTinhTien()
     {
         if (HinhThucThue is not ("NguyenCan" or "OGhep"))
@@ -181,6 +206,8 @@ public sealed class PhieuCoc
     public Task CapNhatXacNhanThanhToan() => PhieuCocDB.CapNhatXacNhanThanhToan(this);
 
     public Task CapNhatYeuCauBoSung() => PhieuCocDB.CapNhatYeuCauBoSung(this);
+
+    public Task CapNhatHuy() => PhieuCocDB.CapNhatHuy(this);
 
     public Task Them() => PhieuCocDB.Them(this);
 }

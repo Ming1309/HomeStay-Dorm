@@ -34,6 +34,8 @@ builder.Services.AddScoped<TinhTienCoc>();
 builder.Services.AddScoped<NhapHoSoLuuTru>();
 builder.Services.AddScoped<GhiNhanThanhToanCoc>();
 builder.Services.AddScoped<XacNhanKhoanTienCoc>();
+builder.Services.AddScoped<TraCuuPhieuCoc>();
+builder.Services.AddScoped<HuyPhieuCoc>();
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();

@@ -6,6 +6,7 @@ public sealed class Phong
 {
     private readonly List<Giuong> _giuongsVuaGiu = [];
     private readonly List<Giuong> _giuongsVuaDatCoc = [];
+    private readonly List<Giuong> _giuongsVuaGiaiPhong = [];
     public string MaPhong { get; set; } = string.Empty;
     public string SoPhong { get; set; } = string.Empty;
     public string? ToaNha { get; set; }
@@ -19,6 +20,7 @@ public sealed class Phong
     public int SoGiuongTrong => Giuongs.Count(g => g.TrangThai == "Trong");
     public IReadOnlyList<Giuong> GiuongsVuaGiu => _giuongsVuaGiu;
     public IReadOnlyList<Giuong> GiuongsVuaDatCoc => _giuongsVuaDatCoc;
+    public IReadOnlyList<Giuong> GiuongsVuaGiaiPhong => _giuongsVuaGiaiPhong;
 
     public static Task<IReadOnlyList<Phong>> LayPhongOGhep(int soLuong, string? toaNha,
         string? loaiPhong, decimal giaMin, decimal giaMax) =>
@@ -28,7 +30,14 @@ public sealed class Phong
         decimal giaMin, decimal giaMax) =>
         PhongDB.LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax);
 
+    public static Task<IReadOnlyList<Phong>> LocPhongTheoTieuChi(string? toaNha, string? tang,
+        string? maLP, string? maCN, string? trangThai, decimal giaMin, decimal giaMax) =>
+        PhongDB.LayPhongTheoBoLoc(toaNha, tang, maLP, maCN, trangThai, giaMin, giaMax);
+
     public static Task<Phong?> DocChiTiet(string maPhong) => PhongDB.DocChiTiet(maPhong);
+
+    public static Task<IReadOnlyList<PhongTaiSan>> LayTaiSan(string maPhong) =>
+        PhongTaiSan.LayTaiSanTheoPhong(maPhong);
 
     public IReadOnlyList<Giuong> GiuGiuong(IEnumerable<string> maGiuongs)
     {
@@ -83,6 +92,19 @@ public sealed class Phong
         CapNhatTrangThaiSauDatCoc();
     }
 
+    public void GiaiPhongDatCoc(IEnumerable<string> maGiuongs)
+    {
+        var ids = maGiuongs.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
+        if (ids.Length == 0) throw new InvalidOperationException("Phiếu cọc không có giường cần giải phóng.");
+        var selected = Giuongs.Where(g => ids.Contains(g.MaGiuong)).ToList();
+        if (selected.Count != ids.Length)
+            throw new InvalidOperationException("Có giường của phiếu cọc không thuộc phòng đã chọn.");
+
+        foreach (var giuong in selected) giuong.GiaiPhong(MaPhong);
+        _giuongsVuaGiaiPhong.AddRange(selected);
+        TrangThai = Giuongs.All(g => g.TrangThai == "Trong") ? "Trong" : "ConGiuongTrong";
+    }
+
     public bool PhuHopYeuCau(string? toaNha, string? loaiPhong, decimal giaMin, decimal giaMax) =>
         (string.IsNullOrWhiteSpace(toaNha) || ToaNha == toaNha) &&
         (string.IsNullOrWhiteSpace(loaiPhong) || MaLP == loaiPhong
@@ -104,4 +126,6 @@ public sealed class Phong
     public Task CapNhat() => PhongDB.CapNhat(this);
 
     public Task CapNhatDatCoc() => PhongDB.CapNhatDatCoc(this);
+
+    public Task CapNhatGiaiPhongDatCoc() => PhongDB.CapNhatGiaiPhongDatCoc(this);
 }
