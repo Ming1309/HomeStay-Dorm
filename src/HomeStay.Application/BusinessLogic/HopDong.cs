@@ -33,6 +33,18 @@ public sealed class HopDong
     public static Task<IReadOnlyList<HopDong>> LayDanhSachHieuLuc() =>
         HopDongDB.LayDanhSachHieuLuc();
 
+    public static Task<IReadOnlyList<HopDongCoLichTraPhong>> LayDanhSachCoLichTraTrongNgay(string? tuKhoa = null) =>
+        HopDongDB.LayDanhSachCoLichTraTrongNgay(tuKhoa);
+
+    public static Task<bool> CoLichTraPhongTrongNgay(string maHD) =>
+        HopDongDB.CoLichTraPhongTrongNgay(maHD);
+
+    public void KiemTraDangHieuLuc()
+    {
+        if (!string.Equals(TrangThai, "DangHieuLuc", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Hợp đồng không ở trạng thái Đang hiệu lực.");
+    }
+
     public static async Task<HopDong?> DocChiTiet(string maHD)
     {
         var hopDong = await HopDongDB.DocChiTiet(maHD);
@@ -42,4 +54,15 @@ public sealed class HopDong
         hopDong.DichVus = (await DichVuHopDong.LayDanhSachTheoHopDong(maHD)).ToList();
         return hopDong;
     }
+}
+
+public sealed class HopDongCoLichTraPhong
+{
+    public string MaHD { get; set; } = string.Empty;
+    public string TenKhachHang { get; set; } = string.Empty;
+    public string SoPhong { get; set; } = string.Empty;
+    public string? ToaNha { get; set; }
+    public DateTime NgayTraPhong { get; set; }
+    public TimeSpan GioTraPhong { get; set; }
+    public string MaLH { get; set; } = string.Empty;
 }

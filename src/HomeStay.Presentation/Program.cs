@@ -26,6 +26,8 @@ builder.Services.AddScoped<Func<PhienDuLieu>>(provider =>
     () => new PhienDuLieu(new SqlSession(provider.GetRequiredService<ISqlConnectionFactory>())));
 builder.Services.AddSingleton<IChungTuCocStorage>(new ChungTuCocFileStorage(
     Path.Combine(builder.Environment.ContentRootPath, "App_Data", "ChungTuCoc")));
+builder.Services.AddSingleton<IMinhChungThuHoiStorage>(new MinhChungThuHoiFileStorage(
+    Path.Combine(builder.Environment.ContentRootPath, "App_Data", "MinhChungThuHoi")));
 
 // Register Business Logic dependencies
 builder.Services.AddSingleton(TimeProvider.System);
@@ -44,6 +46,8 @@ builder.Services.AddScoped<TraCuuLichHen>();
 builder.Services.AddScoped<SuaLichHen>();
 builder.Services.AddScoped<LapPhieuDangKy>();
 builder.Services.AddScoped<TraCuuHopDong>();
+builder.Services.AddScoped<DichVuThongBao>();
+builder.Services.AddScoped<LapBienBanThuHoiTaiSan>();
 
 var app = builder.Build();
 
