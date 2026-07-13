@@ -1,0 +1,83 @@
+@startuml
+title SO DO LOP 3 TANG - GHI NHAN THANH TOAN COC
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHGhiNhanThanhToanCoc {
+    - txtTimKiemPhieu: TextBox
+    - grvPhieuChoThanhToan: GridView
+    - lstPhuongThucThanhToan: ListBox
+    - uplChungTu: FileUpload
+    - btnGui: Button
+    --
+    + loadPendingDeposits(text: String)
+    + chonPhieuCoc(item: PendingDeposit)
+    + chonTepChungTu(file: File)
+    + guiChungTu()
+  }
+}
+
+package "TANG NGHIEP VU" #FCF3CF {
+  class GhiNhanThanhToanCoc {
+    + LayDanhSachChoThanhToan(text: String): IReadOnlyList<PhieuCoc>
+    + LayChiTiet(maPhieuCoc: String): PhieuCoc
+    + GuiChungTuThanhToan(maPhieuCoc: String, phuongThucThanhToan: String, tepChungTu: TepChungTuCoc): PhieuCoc
+  }
+
+  class PhieuCoc {
+    - MaPhieuCoc: String
+    - HanThanhToan: DateTime
+    - HinhThucThue: String
+    - SoGiuongThue: Integer
+    - TongTien: Decimal
+    - AnhMinhChung: String
+    - PhuongThucThanhToan: String
+    - TrangThai: String
+    - KhachHang: KhachHang
+    - Phong: Phong
+    --
+    + LayDanhSachChoThanhToan(text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + KiemTraTrangThaiChoGhiNhan()
+    + KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan: String)
+    + GhiNhanThanhToan(phuongThucThanhToan: String, anhMinhChung: String)
+    + CapNhatThanhToan()
+  }
+
+  class KhachHang {
+    - MaKH: String
+    - HoTen: String
+    - SDT: String
+  }
+
+  class Phong {
+    - MaPhong: String
+    - SoPhong: String
+    - ToaNha: String
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class PhieuCocDB {
+    + LayDanhSachChoThanhToan(text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + CapNhatThanhToan(phieu: PhieuCoc)
+  }
+}
+
+MHGhiNhanThanhToanCoc o-- GhiNhanThanhToanCoc
+GhiNhanThanhToanCoc o-- PhieuCoc
+PhieuCoc o-- PhieuCocDB
+PhieuCoc "0..*" -- "1" KhachHang : dai dien
+PhieuCoc "0..*" -- "1" Phong : dat
+
+@enduml
