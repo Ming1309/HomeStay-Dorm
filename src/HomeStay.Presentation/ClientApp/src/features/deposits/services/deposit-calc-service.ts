@@ -22,7 +22,10 @@ export type DepositCalculation = DepositInitialSummary & {
 
 async function readResponse<T>(response: Response): Promise<T> {
   if (response.ok) return (await response.json()) as T;
-  const body = (await response.json().catch(() => null)) as { message?: string; Message?: string } | null;
+  const body = (await response.json().catch(() => null)) as {
+    message?: string;
+    Message?: string;
+  } | null;
   throw new Error(body?.message ?? body?.Message ?? "Không thể xử lý phiếu cọc.");
 }
 
