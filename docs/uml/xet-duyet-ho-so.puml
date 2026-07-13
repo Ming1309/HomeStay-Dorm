@@ -1,0 +1,258 @@
+@startuml
+title SO DO LOP 3 TANG - XET DUYET HO SO NHAN PHONG
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHXetDuyetHoSo {
+    - lblTieuDeHoSoChoDuyet: Label
+    - lblSoLuongHoSoChoDuyet: Label
+    - txtTimKiemHoSo: TextBox
+    - pnlDanhSachHoSo: Panel
+    - cardHoSo: Panel
+    - lblMaHoSoCard: Label
+    - lblTenKhachCard: Label
+    - lblPhongCard: Label
+    - badgeChoDuyetCard: Badge
+    - lblMaHoSoDangChon: Label
+    - lblTenKhachDangChon: Label
+    - lblPhongDangChon: Label
+    - badgeTrangThaiChoDuyet: Badge
+    - dgvThanhVien: Table
+    - colSTT: TableColumn
+    - colHoVaTen: TableColumn
+    - colDacDiem: TableColumn
+    - colQuocTich: TableColumn
+    - colGiayTo: TableColumn
+    - colSDT: TableColumn
+    - colHanhDong: TableColumn
+    - btnXemChiTiet: Button
+    - btnTuChoiThanhVien: Button
+    - btnHoanTac: Button
+    - lblSubflowDuyetTheoThanhVien: Label
+    - btnDuyetToanBo: Button
+    - btnDuyetThanhVienConLai: Button
+    - btnTuChoiHoSo: Button
+    --
+    + loadDanhSachHoSoChoDuyet()
+    + timKiemHoSo()
+    + clickChonHoSo()
+    + hienThiDanhSachThanhVien()
+    + clickXemChiTietThanhVien()
+    + clickTuChoiThanhVien()
+    + clickDuyetToanBo()
+    + clickDuyetThanhVienConLai()
+    + clickTuChoiHoSo()
+    + clickHoanTac()
+    + hienThiThongBao()
+    + hienThiLoi()
+  }
+
+  class PopupChiTietThanhVien {
+    - lblTieuDePopup: Label
+    - btnDongPopup: Button
+    - txtHoTen: TextBox
+    - txtSoDienThoai: TextBox
+    - txtGioiTinh: TextBox
+    - txtNgaySinh: TextBox
+    - txtLoaiGiayTo: TextBox
+    - txtSoGiayTo: TextBox
+    - txtQuocTich: TextBox
+    - txtDiaChiThuongTru: TextBox
+    --
+    + hienThiPopup()
+    + hienThiThongTinThanhVien()
+    + clickDongPopup()
+  }
+}
+
+package "TANG NGHIEP VU" #cbf9c8 {
+  class XetDuyetHoSo {
+    + LayDanhSachChoDuyet(text: String): IReadOnlyList<PhieuCoc>
+    + LayChiTiet(maPhieuCoc: String): PhieuCoc
+    + DuyetToanBo(maPhieuCoc: String): PhieuCoc
+    + TuChoiThanhVien(maPhieuCoc: String, maKH: String)
+    + DuyetThanhVienConLai(maPhieuCoc: String): PhieuCoc
+    + TuChoiHoSo(maPhieuCoc: String)
+    + HoanTacThanhVien(maPhieuCoc: String, maKH: String)
+  }
+
+  class PhieuCoc {
+    - MaPhieuCoc: String
+    - HanThanhToan: DateTime
+    - HinhThucThue: String
+    - SoGiuongThue: Integer
+    - TongTien: Decimal
+    - ThoiDiemCoc: DateTime
+    - AnhMinhChung: String
+    - PhuongThucThanhToan: String
+    - LyDoYeuCauBoSung: String
+    - TrangThai: String
+    - MaKH: String
+    - MaPhong: String
+    - MaNV: String
+    - KhachHang: KhachHang
+    - Phong: Phong
+    - Giuongs: List<Giuong>
+    - ThanhViens: List<ThanhVienDangKy>
+    --
+    + LayDanhSachChoDuyet(text: String): IReadOnlyList<PhieuCoc>
+    + LayChiTietChoDuyet(maPhieuCoc: String): PhieuCoc
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + KiemTraCoTheXetDuyet()
+    + CapNhatTrangThaiDaDuyet()
+    + CapNhatTrangThaiDaHuy()
+    + CapNhatTrangThaiDaDuyetDB()
+    + CapNhatTrangThaiDaHuyDB()
+  }
+
+  class ThanhVienDangKy {
+    - MaPhieuCoc: String
+    - MaKH: String
+    - VaiTro: String
+    - TrangThaiDuyet: String
+    - KhachHang: KhachHang
+    --
+    + LayDanhSachThanhVien(maPhieuCoc: String): IReadOnlyList<ThanhVienDangKy>
+    + KiemTraTonTaiDaiDien(maPhieuCoc: String): Boolean
+    + DanhDauHopLe(maPhieuCoc: String, maKH: String): Boolean
+    + DanhDauTuChoi(maPhieuCoc: String, maKH: String): Boolean
+    + DuyetTatCaThanhVien(maPhieuCoc: String): Boolean
+    + TuChoiTatCaThanhVien(maPhieuCoc: String): Boolean
+    + DuyetThanhVienConLai(maPhieuCoc: String): Boolean
+    + DemThanhVienHopLe(maPhieuCoc: String): Integer
+    + HoanTac(maPhieuCoc: String, maKH: String): Boolean
+  }
+
+  class KhachHang {
+    - MaKH: String
+    - HoTen: String
+    - NgaySinh: DateTime
+    - GioiTinh: String
+    - QuocTich: String
+    - LoaiGiayTo: String
+    - SoGiayTo: String
+    - DiaChiThuongTru: String
+    - SDT: String
+    - Email: String
+    --
+    + LayThongTinKhachHang(maKH: String): KhachHang
+    + LayDanhSachKhachTheoPhieuCoc(maPhieuCoc: String): List<KhachHang>
+  }
+
+  class Phong {
+    - MaPhong: String
+    - SoPhong: String
+    - ToaNha: String
+    - Tang: String
+    - GioiTinhChoPhep: String
+    - TrangThai: String
+    - MaLP: String
+    - MaCN: String
+    - LoaiPhong: LoaiPhong
+    --
+    + DocChiTiet(maPhong: String): Phong
+    + KiemTraSucChua(soLuongThanhVien: Integer, soGiuongThue: Integer, sucChuaPhong: Integer, hinhThucThue: String): Boolean
+    + KiemTraGioiTinhChoPhep(dsKhach: IReadOnlyList<KhachHang>): Boolean
+  }
+
+  class LoaiPhong {
+    - MaLP: String
+    - TenLoaiPhong: String
+    - SucChua: Integer
+    - GiaThue: Decimal
+  }
+
+  class ChiTietPhieuCoc {
+    - MaPhieuCoc: String
+    - MaGiuong: String
+    --
+    + LayDanhSachGiuongTheoPhieuCoc(maPhieuCoc: String): IReadOnlyList<ChiTietPhieuCoc>
+    + DemSoGiuongDaCoc(maPhieuCoc: String): Integer
+  }
+
+  class Giuong {
+    - MaGiuong: String
+    - SoGiuong: String
+    - TrangThai: String
+    - MaPhong: String
+    --
+    + CapNhatDanhSachDaCoc(dsMaGiuong: IReadOnlyList<String>)
+    + CapNhatDanhSachTrong(dsMaGiuong: IReadOnlyList<String>)
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class PhieuCocDB {
+    + LayDanhSachChoDuyet(text: String): IReadOnlyList<PhieuCoc>
+    + LayChiTietChoDuyet(maPhieuCoc: String): PhieuCoc
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + CapNhatDaDuyet(phieu: PhieuCoc)
+    + CapNhatDaHuy(phieu: PhieuCoc)
+    + CapNhatTrangThai(maPhieuCoc: String, trangThai: String): Boolean
+  }
+
+  class ThanhVienDangKyDB {
+    + GetByMaPhieuCoc(maPhieuCoc: String): IReadOnlyList<ThanhVienDangKy>
+    + UpdateTrangThaiDuyet(maPhieuCoc: String, maKH: String, trangThaiDuyet: String): Boolean
+    + UpdateTatCaTrangThaiDuyet(maPhieuCoc: String, trangThaiDuyet: String): Boolean
+    + UpdateThanhVienConLaiHopLe(maPhieuCoc: String): Boolean
+    + CountThanhVienHopLe(maPhieuCoc: String): Integer
+  }
+
+  class KhachHangDB {
+    + GetByMaKH(maKH: String): KhachHang
+    + GetByMaPhieuCoc(maPhieuCoc: String): List<KhachHang>
+  }
+
+  class PhongDB {
+    + DocChiTiet(maPhong: String): Phong
+  }
+
+  class ChiTietPhieuCocDB {
+    + GetByMaPhieuCoc(maPhieuCoc: String): IReadOnlyList<ChiTietPhieuCoc>
+    + CountByMaPhieuCoc(maPhieuCoc: String): Integer
+  }
+
+  class GiuongDB {
+    + UpdateTrangThai(maGiuong: String, trangThai: String): Boolean
+    + UpdateTrangThaiBatch(dsMaGiuong: IReadOnlyList<String>, trangThai: String)
+  }
+}
+
+' Boundary dieu khien use case xet duyet ho so.
+MHXetDuyetHoSo  o--  XetDuyetHoSo
+PopupChiTietThanhVien  o--  KhachHang
+
+' Use case dieu phoi cac entity.
+XetDuyetHoSo  o--  PhieuCoc
+XetDuyetHoSo  o--  ThanhVienDangKy
+XetDuyetHoSo  o--  KhachHang
+XetDuyetHoSo  o--  Giuong
+
+' Trong BLL: duong thang, khong huong.
+PhieuCoc "1" -- "1..*" ThanhVienDangKy : gom
+PhieuCoc "0..*" -- "1" KhachHang : dai dien
+PhieuCoc "0..*" -- "1" Phong : dat
+PhieuCoc "1" -- "1..*" ChiTietPhieuCoc : chi tiet giuong
+ThanhVienDangKy "0..*" -- "1" KhachHang : thong tin
+Phong "0..*" -- "1" LoaiPhong : thuoc
+ChiTietPhieuCoc "0..*" -- "1" Giuong : cap nhat
+
+' Aggregation giua business va data access.
+PhieuCoc  o--  PhieuCocDB
+ThanhVienDangKy  o--  ThanhVienDangKyDB
+KhachHang  o--  KhachHangDB
+Phong  o--  PhongDB
+ChiTietPhieuCoc  o--  ChiTietPhieuCocDB
+Giuong  o--  GiuongDB
+
+@enduml
