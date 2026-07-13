@@ -28,7 +28,14 @@ public sealed class Phong
         decimal giaMin, decimal giaMax) =>
         PhongDB.LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax);
 
+    public static Task<IReadOnlyList<Phong>> LocPhongTheoTieuChi(string? toaNha, string? tang,
+        string? maLP, string? maCN, string? trangThai, decimal giaMin, decimal giaMax) =>
+        PhongDB.LayPhongTheoBoLoc(toaNha, tang, maLP, maCN, trangThai, giaMin, giaMax);
+
     public static Task<Phong?> DocChiTiet(string maPhong) => PhongDB.DocChiTiet(maPhong);
+
+    public static Task<IReadOnlyList<PhongTaiSan>> LayTaiSan(string maPhong) =>
+        PhongTaiSan.LayTaiSanTheoPhong(maPhong);
 
     public IReadOnlyList<Giuong> GiuGiuong(IEnumerable<string> maGiuongs)
     {

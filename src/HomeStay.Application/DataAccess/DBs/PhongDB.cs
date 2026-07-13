@@ -26,6 +26,21 @@ public static class PhongDB
             .ToList();
     }
 
+    public static async Task<IReadOnlyList<Phong>> LayPhongTheoBoLoc(string? toaNha, string? tang,
+        string? maLP, string? maCN, string? trangThai, decimal giaMin, decimal giaMax)
+    {
+        var phongs = await DocPhongVaGiuong(null);
+        return phongs.Where(p => 
+            (string.IsNullOrWhiteSpace(toaNha) || p.ToaNha == toaNha) &&
+            (string.IsNullOrWhiteSpace(tang) || p.Tang == tang) &&
+            (string.IsNullOrWhiteSpace(maLP) || p.MaLP == maLP) &&
+            (string.IsNullOrWhiteSpace(maCN) || p.MaCN == maCN) &&
+            (string.IsNullOrWhiteSpace(trangThai) || p.TrangThai == trangThai) &&
+            (giaMin <= 0 || p.LoaiPhong.GiaThue >= giaMin) &&
+            (giaMax <= 0 || p.LoaiPhong.GiaThue <= giaMax)
+        ).ToList();
+    }
+
     public static async Task<Phong?> DocChiTiet(string maPhong) =>
         (await DocPhongVaGiuong(maPhong)).SingleOrDefault();
 
