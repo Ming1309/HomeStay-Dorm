@@ -11,6 +11,12 @@ public sealed class BienBanGiaoNhan
     public string? MaNV { get; set; }
     public List<ChiTietGiaoNhan> ChiTiet { get; set; } = [];
 
+    // Display fields for UC 1.4.20 list/detail
+    public string? TenKhachHang { get; set; }
+    public string? SoPhong { get; set; }
+    public string? ToaNha { get; set; }
+    public string? TenNguoiLap { get; set; }
+
     public static BienBanGiaoNhan KhoiTaoThuHoi(
         string maHD,
         string? maNV,
@@ -46,4 +52,13 @@ public sealed class BienBanGiaoNhan
         BienBanGiaoNhanDB.TonTaiThuHoiTheoHD(maHD);
 
     public Task LuuBienBan() => BienBanGiaoNhanDB.Them(this);
+
+    public static Task<IReadOnlyList<BienBanGiaoNhan>> LayDSBienBanThuHoiChuaXuLy(string? text = null) =>
+        BienBanGiaoNhanDB.GetDSBienBanThuHoiChuaXuLy(text);
+
+    public static Task<BienBanGiaoNhan?> LayChiTietBienBan(string maBienBan) =>
+        BienBanGiaoNhanDB.GetBienBanTheoMaBienBan(maBienBan);
+
+    public static Task<bool> DaCoHoaDonBoiThuongTheoHD(string maHD) =>
+        BienBanGiaoNhanDB.DaCoHoaDonBoiThuongTheoHD(maHD);
 }
