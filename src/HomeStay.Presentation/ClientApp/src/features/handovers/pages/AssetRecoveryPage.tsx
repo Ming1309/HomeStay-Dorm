@@ -1,23 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangle, CheckCircle2, ClipboardCheck, Search, ImageIcon, Upload, X } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, ImageIcon, Search, Upload, X } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/shared/ui/form";
@@ -38,48 +25,16 @@ import {
   TableRow,
 } from "@/shared/ui/table";
 import { cn } from "@/shared/lib/utils";
-
-
-
-type RecoveryContract = {
-  id: string;
-  customerName: string;
-  room: string;
-  returnDate: string;
-  status: "pending_recovery";
-  assets: Array<{ id: string; name: string; expectedQty: number }>;
-};
-
-const mockRecoveryContracts: RecoveryContract[] = [
-  {
-    id: "HD-PC021",
-    customerName: "Nguyễn Thanh Sơn",
-    room: "P.210",
-    returnDate: "02/06/2026",
-    status: "pending_recovery",
-    assets: [
-      { id: "a1", name: "Giường", expectedQty: 1 },
-      { id: "a2", name: "Nệm", expectedQty: 1 },
-      { id: "a3", name: "Tủ lạnh", expectedQty: 1 },
-      { id: "a4", name: "Chìa khóa", expectedQty: 2 },
-      { id: "a5", name: "Thẻ từ", expectedQty: 2 },
-    ],
-  },
-  {
-    id: "HD-PC024",
-    customerName: "Phạm Thu Hà",
-    room: "P.302",
-    returnDate: "02/06/2026",
-    status: "pending_recovery",
-    assets: [
-      { id: "b1", name: "Giường", expectedQty: 2 },
-      { id: "b2", name: "Nệm", expectedQty: 2 },
-      { id: "b3", name: "Tủ lạnh", expectedQty: 1 },
-      { id: "b4", name: "Ghế học", expectedQty: 1 },
-      { id: "b5", name: "Bàn", expectedQty: 1 },
-    ],
-  },
-];
+import {
+  formatReturnDate,
+  loadRecoveryContractDetail,
+  loadRecoveryContracts,
+  saveRecoveryReport,
+  uploadRecoveryProof,
+  type AssetRecoveryAsset,
+  type AssetRecoveryDetail,
+  type AssetRecoveryListItem,
+} from "@/features/handovers/services/asset-recovery-service";
 
 const schema = z
   .object({
@@ -93,6 +48,7 @@ const schema = z
             .number({ invalid_type_error: "Nhập số lượng thu hồi" })
             .min(0, "Số lượng phải lớn hơn hoặc bằng 0"),
           condition: z.string().min(1, "Chọn tình trạng"),
+          proofUrl: z.string().optional(),
           proofName: z.string().optional(),
           note: z.string().optional(),
         })
@@ -114,7 +70,7 @@ const schema = z
     data.assets.forEach((asset, index) => {
       if (Number.isNaN(asset.recoveredQty)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.invalid_type,
+          code: z.ZodIssueCode.custom,
           path: ["assets", index, "recoveredQty"],
           message: "Nhập số lượng thu hồi hợp lệ",
         });
@@ -124,151 +80,244 @@ const schema = z
 
 type FormValues = z.infer<typeof schema>;
 
-export function ManagerAssetRecoveryPage() {
+function mapAssetsToForm(assets: AssetRecoveryAsset[]) {
+  return assets.map((asset) => ({
+    id: asset.maTS,
+    name: asset.tenTaiSan,
+    expectedQty: asset.soLuongTieuChuan,
+    recoveredQty: asset.soLuongTieuChuan,
+    condition: "Bình thường",
+    proofUrl: undefined as string | undefined,
+    proofName: undefined as string | undefined,
+    note: "",
+  }));
+}
 
-  const [items, setItems] = useState<RecoveryContract[]>(mockRecoveryContracts);
+export function ManagerAssetRecoveryPage() {
+  const [items, setItems] = useState<AssetRecoveryListItem[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedDetail, setSelectedDetail] = useState<AssetRecoveryDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
   const [query, setQuery] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const fetchList = async (tuKhoa?: string) => {
+    setLoadingList(true);
+    try {
+      const results = await loadRecoveryContracts(tuKhoa);
+      setItems(results);
+      if (selectedId && !results.some((item) => item.maHD === selectedId)) {
+        setSelectedId(null);
+        setSelectedDetail(null);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể tải danh sách hợp đồng");
+      setItems([]);
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchList();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setSelectedDetail(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setLoadingDetail(true);
+    loadRecoveryContractDetail(selectedId, controller.signal)
+      .then((detail) => setSelectedDetail(detail))
+      .catch((error) => {
+        if ((error as Error).name === "AbortError") return;
+        toast.error(error instanceof Error ? error.message : "Không thể tải chi tiết hợp đồng");
+        setSelectedDetail(null);
+      })
+      .finally(() => setLoadingDetail(false));
+
+    return () => controller.abort();
+  }, [selectedId]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return items;
     return items.filter(
       (item) =>
-        item.id.toLowerCase().includes(q) ||
-        item.customerName.toLowerCase().includes(q) ||
-        item.room.toLowerCase().includes(q) ||
-        item.returnDate.toLowerCase().includes(q),
+        item.maHD.toLowerCase().includes(q) ||
+        item.tenKhachHang.toLowerCase().includes(q) ||
+        item.soPhong.toLowerCase().includes(q) ||
+        (item.toaNha ?? "").toLowerCase().includes(q),
     );
   }, [items, query]);
 
-  const selected = filtered.find((item) => item.id === selectedId) ?? null;
+  const selectedListItem = filtered.find((item) => item.maHD === selectedId) ?? null;
+
+  const handleSave = async (values: FormValues) => {
+    if (!selectedId) return;
+    setSaving(true);
+    try {
+      await saveRecoveryReport(
+        selectedId,
+        values.assets.map((asset) => ({
+          maTS: asset.id,
+          soLuong: asset.recoveredQty,
+          tinhTrang: asset.condition,
+          ghiChu: asset.note?.trim() || undefined,
+          minhChung: asset.proofUrl || undefined,
+        })),
+      );
+      setItems((current) => current.filter((item) => item.maHD !== selectedId));
+      setSelectedId(null);
+      setSelectedDetail(null);
+      toast.success("Lập biên bản thu hồi thành công. Đã gửi thông báo cho Kế toán.", {
+        icon: <CheckCircle2 className="size-4 text-emerald-600" />,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể lưu biên bản thu hồi");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-      <div className="flex h-full overflow-hidden">
-        <aside className="flex h-full w-[360px] shrink-0 flex-col border-r border-gray-200 bg-white">
-          <div className="border-b border-gray-200 px-4 py-3">
-            <h2 className="text-sm font-bold text-gray-800">Thu hồi tài sản</h2>
-            <p className="mt-1 text-xs text-gray-500">Hợp đồng có lịch trả phòng trong ngày</p>
-            <p className="mt-2 text-xs text-gray-400">{filtered.length} hợp đồng chờ thu hồi</p>
+    <div className="flex h-full overflow-hidden">
+      <aside className="flex h-full w-[360px] shrink-0 flex-col border-r border-gray-200 bg-white">
+        <div className="border-b border-gray-200 px-4 py-3">
+          <h2 className="text-sm font-bold text-gray-800">Thu hồi tài sản</h2>
+          <p className="mt-1 text-xs text-gray-500">Hợp đồng có lịch trả phòng trong ngày</p>
+          <p className="mt-2 text-xs text-gray-400">
+            {loadingList ? "Đang tải..." : `${filtered.length} hợp đồng chờ thu hồi`}
+          </p>
+        </div>
+        <div className="sticky top-0 z-10 border-b border-gray-100 bg-white px-3 py-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Tìm hợp đồng, phòng, khách..."
+              className="h-8 pl-8 text-xs"
+            />
           </div>
-          <div className="sticky top-0 z-10 border-b border-gray-100 bg-white px-3 py-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Tìm hợp đồng, phòng, khách..."
-                className="h-8 pl-8 text-xs"
-              />
-            </div>
-          </div>
+        </div>
 
-          <div className="flex-1 overflow-y-auto">
-            {filtered.length === 0 ? (
-              <div className="p-4 text-sm text-gray-500">Không có hợp đồng nào phù hợp.</div>
-            ) : (
-              <ul className="divide-y divide-gray-100">
-                {filtered.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedId(item.id)}
-                      className={cn(
-                        "flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left hover:bg-slate-50/80",
-                        selectedId === item.id && "border-l-blue-500 bg-blue-50",
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-slate-700">
-                          {item.id}
-                        </span>
-                        <Badge className="h-5 bg-blue-100 text-[10px] text-blue-700">
-                          {item.returnDate}
-                        </Badge>
-                      </div>
-                      <p className="text-sm font-semibold text-gray-900">{item.customerName}</p>
-                      <p className="font-mono text-xs text-gray-500">{item.room}</p>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </aside>
-
-        {!selected ? (
-          <section className="flex flex-1 items-center justify-center bg-gray-50/60 p-6">
-            <div className="max-w-xl rounded-lg border border-dashed border-gray-200 bg-white px-8 py-10 text-center text-sm text-gray-500">
-              <p className="mb-2 text-base font-semibold text-gray-900">
-                Chọn hợp đồng để lập biên bản thu hồi tài sản
-              </p>
-              <p>
-                Hệ thống sẽ hiện danh sách tài sản cho sẵn. Ghi số lượng thu hồi và tình trạng của
-                từng thứ.
-              </p>
+        <div className="flex-1 overflow-y-auto">
+          {filtered.length === 0 ? (
+            <div className="p-4 text-sm text-gray-500">
+              {loadingList
+                ? "Đang tải danh sách hợp đồng..."
+                : "Không có hợp đồng nào có lịch trả phòng trong ngày."}
             </div>
-          </section>
-        ) : (
-          <RecoveryForm
-            contract={selected}
-            onSave={() => {
-              setItems((current) => current.filter((item) => item.id !== selected.id));
-              setSelectedId(null);
-              toast.success("Lập biên bản thu hồi thành công. Đã gửi thông báo cho Kế toán.", {
-                icon: <CheckCircle2 className="size-4 text-emerald-600" />,
-              });
-            }}
-            onReject={() => {
-              setItems((current) => current.filter((item) => item.id !== selected.id));
-              setSelectedId(null);
-              toast.success("Biên bản thu hồi bị hủy. Hợp đồng sẽ được xem lại.");
-            }}
-          />
-        )}
-      </div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {filtered.map((item) => (
+                <li key={item.maHD}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(item.maHD)}
+                    className={cn(
+                      "flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left hover:bg-slate-50/80",
+                      selectedId === item.maHD && "border-l-blue-500 bg-blue-50",
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-xs font-bold text-slate-700">{item.maHD}</span>
+                      <Badge className="h-5 bg-blue-100 text-[10px] text-blue-700">
+                        {formatReturnDate(item.ngayTraPhong)}
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900">{item.tenKhachHang}</p>
+                    <p className="font-mono text-xs text-gray-500">
+                      {item.soPhong}
+                      {item.toaNha ? ` • ${item.toaNha}` : ""}
+                      {item.gioTraPhong ? ` • ${item.gioTraPhong}` : ""}
+                    </p>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </aside>
+
+      {!selectedListItem ? (
+        <section className="flex flex-1 items-center justify-center bg-gray-50/60 p-6">
+          <div className="max-w-xl rounded-lg border border-dashed border-gray-200 bg-white px-8 py-10 text-center text-sm text-gray-500">
+            <p className="mb-2 text-base font-semibold text-gray-900">
+              Chọn hợp đồng để lập biên bản thu hồi tài sản
+            </p>
+            <p>
+              Hệ thống sẽ hiện danh sách tài sản cho sẵn. Ghi số lượng thu hồi và tình trạng của từng
+              thứ.
+            </p>
+          </div>
+        </section>
+      ) : loadingDetail || !selectedDetail ? (
+        <section className="flex flex-1 items-center justify-center bg-gray-50/60 p-6">
+          <p className="text-sm text-gray-500">
+            {loadingDetail ? "Đang tải danh sách tài sản..." : "Không thể tải chi tiết hợp đồng."}
+          </p>
+        </section>
+      ) : (
+        <RecoveryForm
+          contract={selectedDetail}
+          returnDate={selectedListItem.ngayTraPhong}
+          returnTime={selectedListItem.gioTraPhong}
+          saving={saving}
+          onSave={handleSave}
+        />
+      )}
+    </div>
   );
 }
 
 function RecoveryForm({
   contract,
+  returnDate,
+  returnTime,
+  saving,
   onSave,
-  onReject,
 }: {
-  contract: RecoveryContract;
-  onSave: () => void;
-  onReject: () => void;
+  contract: AssetRecoveryDetail;
+  returnDate: string;
+  returnTime: string;
+  saving: boolean;
+  onSave: (values: FormValues) => Promise<void>;
 }) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      assets: contract.assets.map((asset) => ({
-        id: asset.id,
-        name: asset.name,
-        expectedQty: asset.expectedQty,
-        recoveredQty: asset.expectedQty,
-        condition: "Bình thường",
-        proofName: undefined,
-        note: "",
-      })),
+      assets: mapAssetsToForm(contract.taiSan),
     },
   });
 
   const { fields } = useFieldArray({ control: form.control, name: "assets" });
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     form.reset({
-      assets: contract.assets.map((asset) => ({
-        id: asset.id,
-        name: asset.name,
-        expectedQty: asset.expectedQty,
-        recoveredQty: asset.expectedQty,
-        condition: "Bình thường",
-        proofName: undefined,
-        note: "",
-      })),
+      assets: mapAssetsToForm(contract.taiSan),
     });
   }, [contract, form]);
+
+  const handleUpload = async (index: number, file: File | undefined) => {
+    if (!file) return;
+    setUploadingIndex(index);
+    try {
+      const result = await uploadRecoveryProof(file);
+      form.setValue(`assets.${index}.proofUrl`, result.duongDan, { shouldDirty: true });
+      form.setValue(`assets.${index}.proofName`, file.name, { shouldDirty: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Không thể tải ảnh minh chứng");
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
@@ -276,13 +325,15 @@ function RecoveryForm({
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs uppercase text-gray-500">Hợp đồng</p>
-            <p className="font-mono text-sm font-bold text-gray-900">{contract.id}</p>
+            <p className="font-mono text-sm font-bold text-gray-900">{contract.maHD}</p>
             <p className="mt-1 text-sm text-gray-600">
-              {contract.customerName} • {contract.room}
+              {contract.tenKhachHang} • {contract.soPhong}
+              {contract.toaNha ? ` • ${contract.toaNha}` : ""}
             </p>
           </div>
           <Badge className="h-6 bg-emerald-100 text-[10px] text-emerald-700">
-            Lịch trả: {contract.returnDate}
+            Lịch trả: {formatReturnDate(returnDate)}
+            {returnTime ? ` ${returnTime}` : ""}
           </Badge>
         </div>
       </div>
@@ -364,18 +415,25 @@ function RecoveryForm({
                           render={({ field: proofField }) => {
                             const condition = form.watch(`assets.${index}.condition`);
                             const needsProof = condition !== "Bình thường";
+                            const isUploading = uploadingIndex === index;
                             return (
                               <FormItem>
                                 <FormControl>
                                   {proofField.value ? (
                                     <div className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1">
-                                      <ImageIcon className="shrink-0 size-3.5 text-gray-400" />
-                                      <span className="flex-1 truncate text-[11px] text-gray-700 font-medium" title={proofField.value}>
+                                      <ImageIcon className="size-3.5 shrink-0 text-gray-400" />
+                                      <span
+                                        className="flex-1 truncate text-[11px] font-medium text-gray-700"
+                                        title={proofField.value}
+                                      >
                                         {proofField.value}
                                       </span>
                                       <button
                                         type="button"
-                                        onClick={() => proofField.onChange(undefined)}
+                                        onClick={() => {
+                                          proofField.onChange(undefined);
+                                          form.setValue(`assets.${index}.proofUrl`, undefined);
+                                        }}
                                         className="text-gray-400 hover:text-rose-600"
                                       >
                                         <X className="size-3.5" />
@@ -386,12 +444,11 @@ function RecoveryForm({
                                       <input
                                         type="file"
                                         accept="image/*"
-                                        className="absolute inset-0 cursor-pointer w-full opacity-0"
+                                        disabled={isUploading || saving}
+                                        className="absolute inset-0 w-full cursor-pointer opacity-0"
                                         onChange={(e) => {
                                           const file = e.target.files?.[0];
-                                          if (file) {
-                                            proofField.onChange(file.name);
-                                          }
+                                          void handleUpload(index, file);
                                           e.target.value = "";
                                         }}
                                       />
@@ -400,14 +457,18 @@ function RecoveryForm({
                                         variant="outline"
                                         size="sm"
                                         className={cn(
-                                          "h-8 w-full px-2 text-[11px] font-normal shadow-none pointer-events-none",
-                                          needsProof 
-                                            ? "border-amber-300 bg-amber-50 text-amber-700" 
-                                            : "text-gray-500 bg-white"
+                                          "pointer-events-none h-8 w-full px-2 text-[11px] font-normal shadow-none",
+                                          needsProof
+                                            ? "border-amber-300 bg-amber-50 text-amber-700"
+                                            : "bg-white text-gray-500",
                                         )}
                                       >
                                         <Upload className="mr-1.5 size-3" />
-                                        {needsProof ? "Cần ảnh" : "Tải lên"}
+                                        {isUploading
+                                          ? "Đang tải..."
+                                          : needsProof
+                                            ? "Cần ảnh"
+                                            : "Tải lên"}
                                       </Button>
                                     </div>
                                   )}
@@ -458,10 +519,11 @@ function RecoveryForm({
           <Button
             type="submit"
             form="recovery-form"
+            disabled={saving || uploadingIndex !== null}
             className="bg-emerald-600 hover:bg-emerald-700"
           >
             <ClipboardCheck className="mr-1.5 size-4" />
-            Lưu biên bản thu hồi
+            {saving ? "Đang lưu..." : "Lưu biên bản thu hồi"}
           </Button>
         </div>
       </footer>
