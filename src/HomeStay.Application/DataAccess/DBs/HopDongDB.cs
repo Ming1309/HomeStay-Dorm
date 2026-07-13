@@ -97,6 +97,51 @@ public static class HopDongDB
         return rows.Select(TaoHopDongDanhSach).ToList();
     }
 
+    public static async Task<IReadOnlyList<HopDongCoLichTraPhong>> LayDanhSachCoLichTraTrongNgay(string? tuKhoa = null)
+    {
+        const string sql = """
+            SELECT hd.MaHD, kh.HoTen AS TenKhachHang, p.SoPhong, p.ToaNha,
+                   lh.NgayHen AS NgayTraPhong, lh.GioHen AS GioTraPhong, lh.MaLH
+            FROM HopDong hd
+            INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc = hd.MaPhieuCoc
+            INNER JOIN KhachHang kh ON kh.MaKH = pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong = pc.MaPhong
+            INNER JOIN LichHen lh ON lh.MaHD = hd.MaHD
+            WHERE hd.TrangThai = N'DangHieuLuc'
+              AND lh.LoaiLichHen = N'TraPhong'
+              AND CAST(lh.NgayHen AS DATE) = CAST(GETDATE() AS DATE)
+              AND lh.TrangThai NOT IN (N'DaHuy', N'VangMat')
+              AND NOT EXISTS (
+                  SELECT 1 FROM BienBanGiaoNhan bb
+                  WHERE bb.MaHD = hd.MaHD AND bb.LoaiBienBan = N'ThuHoi'
+              )
+              AND (@TuKhoa IS NULL
+                   OR hd.MaHD LIKE '%' + @TuKhoa + '%'
+                   OR kh.HoTen LIKE '%' + @TuKhoa + '%'
+                   OR p.SoPhong LIKE '%' + @TuKhoa + '%')
+            ORDER BY lh.GioHen, hd.MaHD
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<HopDongCoLichTraPhong>(sql,
+            new { TuKhoa = ChuanHoa(tuKhoa) }, PhienDuLieu.Session.Transaction);
+        return rows.ToList();
+    }
+
+    public static async Task<bool> CoLichTraPhongTrongNgay(string maHD)
+    {
+        const string sql = """
+            SELECT COUNT(1)
+            FROM LichHen lh
+            INNER JOIN HopDong hd ON hd.MaHD = lh.MaHD
+            WHERE lh.MaHD = @MaHD
+              AND hd.TrangThai = N'DangHieuLuc'
+              AND lh.LoaiLichHen = N'TraPhong'
+              AND CAST(lh.NgayHen AS DATE) = CAST(GETDATE() AS DATE)
+              AND lh.TrangThai NOT IN (N'DaHuy', N'VangMat')
+            """;
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(
+            sql, new { MaHD = maHD }, PhienDuLieu.Session.Transaction) > 0;
+    }
+
     public static async Task<HopDong?> DocChiTiet(string maHD)
     {
         const string sql = """

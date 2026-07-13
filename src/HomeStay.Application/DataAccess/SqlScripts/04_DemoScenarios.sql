@@ -45,6 +45,19 @@ VALUES
 ('P011', '209', N'Tòa B', N'Tầng 2', N'Nữ', N'Trong', 'LP08', 'CN02');
 GO
 
+-- Tài sản chuẩn phòng P007 (HD0004) — phục vụ UC 1.4.17 Lập biên bản thu hồi
+INSERT INTO Phong_TaiSan (MaPhong, MaTS, SoLuongTieuChuan)
+VALUES
+('P007', 'TS01', 1),
+('P007', 'TS02', 1),
+('P007', 'TS03', 1),
+('P007', 'TS04', 2),
+('P007', 'TS05', 2),
+('P007', 'TS09', 2),
+('P007', 'TS12', 2),
+('P007', 'TS13', 2);
+GO
+
 INSERT INTO Giuong (MaGiuong, SoGiuong, TrangThai, MaPhong)
 VALUES
 ('G015', N'Giường A', N'GiuCho', 'P004'),
@@ -169,7 +182,9 @@ VALUES
 ('LH0006', '2026-07-25', '11:30:00', N'XemPhong', N'DaHoanThanh', 'PDK0006', 'PC0003', 'HD0003', 'NV03', 'CN01'),
 ('LH0007', '2026-07-26', '13:00:00', N'NhanPhong', N'DaCheckin', 'PDK0007', 'PC0004', 'HD0004', 'NV03', 'CN01'),
 ('LH0008', '2026-07-27', '14:00:00', N'TraPhong', N'DaHoanThanh', 'PDK0008', 'PC0005', 'HD0005', 'NV03', 'CN01'),
-('LH0009', '2026-07-28', '14:30:00', N'TraPhong', N'DaHoanThanh', 'PDK0009', 'PC0006', 'HD0006', 'NV04', 'CN02');
+('LH0009', '2026-07-28', '14:30:00', N'TraPhong', N'DaHoanThanh', 'PDK0009', 'PC0006', 'HD0006', 'NV04', 'CN02'),
+-- Lịch trả phòng trong ngày (phục vụ UC 1.4.17 Lập biên bản thu hồi tài sản)
+('LH0010', CAST(GETDATE() AS DATE), '09:00:00', N'TraPhong', N'DaXacNhan', NULL, 'PC0004', 'HD0004', 'NV03', 'CN01');
 GO
 
 INSERT INTO ChiTietHopDong (MaHD, MaGiuong, MaKH, TrangThaiThue, NgayTra)

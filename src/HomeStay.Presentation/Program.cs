@@ -26,28 +26,31 @@ builder.Services.AddScoped<Func<PhienDuLieu>>(provider =>
     () => new PhienDuLieu(new SqlSession(provider.GetRequiredService<ISqlConnectionFactory>())));
 builder.Services.AddSingleton<IChungTuCocStorage>(new ChungTuCocFileStorage(
     Path.Combine(builder.Environment.ContentRootPath, "App_Data", "ChungTuCoc")));
+builder.Services.AddSingleton<IMinhChungThuHoiStorage>(new MinhChungThuHoiFileStorage(
+    Path.Combine(builder.Environment.ContentRootPath, "App_Data", "MinhChungThuHoi")));
 
 // Register Business Logic dependencies
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
 
-// ==========================================================
-// Services from feature branches (đối soát, trả phòng, hoàn cọc)
-// ==========================================================
+// Shared notification service (UC 1.4.17, 1.4.18, ...)
 builder.Services.AddScoped<DichVuThongBao>();
+
+// Đối soát / trả phòng / hoàn cọc
 builder.Services.AddScoped<LapPhieuDoiSoat>();
 builder.Services.AddScoped<ThanhToanTraPhong>();
 builder.Services.AddScoped<LapPhieuHoanCoc>();
 
-// ==========================================================
-// Services from develop branch
-// ==========================================================
+// Cọc / hồ sơ / lịch hẹn
 builder.Services.AddScoped<NhapHoSoLuuTru>();
 builder.Services.AddScoped<GhiNhanThanhToanCoc>();
 builder.Services.AddScoped<XacNhanKhoanTienCoc>();
 builder.Services.AddScoped<TraCuuPhieuCoc>();
 builder.Services.AddScoped<HuyPhieuCoc>();
+builder.Services.AddScoped<XetDuyetHoSo>();
+builder.Services.AddScoped<TraCuuHopDong>();
+builder.Services.AddScoped<LapBienBanThuHoiTaiSan>();
 
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
@@ -56,8 +59,6 @@ builder.Services.AddScoped<TaoLichHen>();
 builder.Services.AddScoped<TraCuuLichHen>();
 builder.Services.AddScoped<SuaLichHen>();
 builder.Services.AddScoped<LapPhieuDangKy>();
-builder.Services.AddScoped<XetDuyetHoSo>();
-builder.Services.AddScoped<TraCuuHopDong>();
 
 var app = builder.Build();
 
