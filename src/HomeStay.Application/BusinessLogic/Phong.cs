@@ -5,6 +5,7 @@ using HomeStay.Application.DataAccess.DBs;
 public sealed class Phong
 {
     private readonly List<Giuong> _giuongsVuaGiu = [];
+    private readonly List<Giuong> _giuongsVuaDatCoc = [];
     public string MaPhong { get; set; } = string.Empty;
     public string SoPhong { get; set; } = string.Empty;
     public string? ToaNha { get; set; }
@@ -17,6 +18,7 @@ public sealed class Phong
     public List<Giuong> Giuongs { get; set; } = [];
     public int SoGiuongTrong => Giuongs.Count(g => g.TrangThai == "Trong");
     public IReadOnlyList<Giuong> GiuongsVuaGiu => _giuongsVuaGiu;
+    public IReadOnlyList<Giuong> GiuongsVuaDatCoc => _giuongsVuaDatCoc;
 
     public static Task<IReadOnlyList<Phong>> LayPhongOGhep(int soLuong, string? toaNha,
         string? loaiPhong, decimal giaMin, decimal giaMax) =>
@@ -68,6 +70,19 @@ public sealed class Phong
     public decimal TinhTienCoc(int soGiuong) =>
         soGiuong > 0 ? LoaiPhong.GiaThue * 2 * soGiuong : throw new InvalidOperationException("Số giường thuê không hợp lệ.");
 
+    public void XacNhanDatCoc(IEnumerable<string> maGiuongs)
+    {
+        var ids = maGiuongs.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToArray();
+        if (ids.Length == 0) throw new InvalidOperationException("Phiếu cọc chưa có giường cần xác nhận.");
+        var selected = Giuongs.Where(g => ids.Contains(g.MaGiuong)).ToList();
+        if (selected.Count != ids.Length)
+            throw new InvalidOperationException("Có giường của phiếu cọc không thuộc phòng đã chọn.");
+
+        foreach (var giuong in selected) giuong.XacNhanDaCoc(MaPhong);
+        _giuongsVuaDatCoc.AddRange(selected);
+        CapNhatTrangThaiSauDatCoc();
+    }
+
     public bool PhuHopYeuCau(string? toaNha, string? loaiPhong, decimal giaMin, decimal giaMax) =>
         (string.IsNullOrWhiteSpace(toaNha) || ToaNha == toaNha) &&
         (string.IsNullOrWhiteSpace(loaiPhong) || MaLP == loaiPhong
@@ -79,5 +94,14 @@ public sealed class Phong
     private void CapNhatTrangThaiTheoGiuong() =>
         TrangThai = Giuongs.Any(g => g.TrangThai == "Trong") ? "ConGiuongTrong" : "GiuCho";
 
+    private void CapNhatTrangThaiSauDatCoc()
+    {
+        if (Giuongs.All(g => g.TrangThai == "DaCoc")) TrangThai = "DaCoc";
+        else if (Giuongs.Any(g => g.TrangThai == "Trong")) TrangThai = "ConGiuongTrong";
+        else if (Giuongs.Any(g => g.TrangThai == "GiuCho")) TrangThai = "GiuCho";
+    }
+
     public Task CapNhat() => PhongDB.CapNhat(this);
+
+    public Task CapNhatDatCoc() => PhongDB.CapNhatDatCoc(this);
 }

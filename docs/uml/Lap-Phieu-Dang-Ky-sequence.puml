@@ -1,0 +1,59 @@
+@startuml
+title Sequence Diagram - Tạo Phiếu Đăng Ký
+
+skinparam dpi 180
+skinparam shadowing false
+skinparam sequence {
+    ArrowThickness 1
+    LifeLineBorderColor Black
+    LifeLineBackgroundColor White
+    ParticipantBorderColor Black
+    ParticipantBackgroundColor White
+    ParticipantFontStyle bold
+}
+
+actor "NhânViênSale" as NV
+
+box "GUI" #D5F5D3
+boundary "MHTaoPhieuDangKy" as GUI
+end box
+
+box "BUS" #FDE9A9
+control "PhieuDangKy" as PDK
+control "KhachHang" as KH
+end box
+
+box "DB" #D6EAF8
+database "PhieuDangKyDB" as PDKDB
+database "KhachHangDB" as KHDB
+end box
+
+NV -> GUI : 1.0 Chọn chức năng tạo phiếu đăng ký
+
+NV -> GUI : 2.0 Nhập thông tin
+
+NV -> GUI : 3.0 btnTaoPhieuDangKy_Click()
+
+GUI -> KH : 3.1 kiemTraTonTai(soGiayTo)
+
+KH -> KHDB : 3.2 TimKhachHangTheoSoGiayTo(soGiayTo)
+
+alt Khách hàng chưa tồn tại
+
+    KH -> KH : 3.3 TaoKhachHang(ThongTinKH)
+
+    KH -> KHDB : 3.4 themKhachHang(KhachHang)
+
+end
+
+GUI -> PDK : 4.0 TaoPhieuDangKy(ThongTinPDK)
+
+PDK -> PDK : 4.1 KiemTraDieuKien()
+
+alt Thông tin hợp lệ
+
+    PDK -> PDKDB : 4.2 themPhieuDangKy(PhieuDangKy)
+
+end
+
+@enduml

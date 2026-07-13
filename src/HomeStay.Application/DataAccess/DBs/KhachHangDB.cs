@@ -6,6 +6,23 @@ using HomeStay.Application.DataAccess.DbConnections;
 
 public static class KhachHangDB
 {
+    public static async Task<KhachHang?> TimTheoSoGiayTo(string soGiayTo)
+    {
+        const string sql = "SELECT * FROM KhachHang WHERE SoGiayTo=@SoGiayTo";
+        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<KhachHang>(
+            sql, new { SoGiayTo = soGiayTo.Trim() }, PhienDuLieu.Session.Transaction);
+    }
+
+    public static async Task Them(KhachHang khachHang)
+    {
+        const string sql = """
+            INSERT INTO KhachHang (MaKH,HoTen,NgaySinh,GioiTinh,QuocTich,LoaiGiayTo,SoGiayTo,DiaChiThuongTru,SDT,Email)
+            VALUES (@MaKH,@HoTen,@NgaySinh,@GioiTinh,@QuocTich,@LoaiGiayTo,@SoGiayTo,@DiaChiThuongTru,@SDT,@Email)
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, khachHang, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Không thể thêm khách hàng mới.");
+    }
+
     public static async Task CapNhat(KhachHang khachHang)
     {
         const string sql = """

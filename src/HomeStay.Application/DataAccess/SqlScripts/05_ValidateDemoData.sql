@@ -91,7 +91,7 @@ GO
 IF EXISTS (
     SELECT pc.MaPhieuCoc
     FROM PhieuCoc pc
-    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0008'
+    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0009'
       AND (
           (SELECT COUNT(*) FROM ChiTietPhieuCoc ct WHERE ct.MaPhieuCoc = pc.MaPhieuCoc) <> pc.SoGiuongThue
           OR
@@ -108,7 +108,7 @@ IF EXISTS (
     LEFT JOIN ThanhVienDangKy tv
         ON tv.MaPhieuCoc = pc.MaPhieuCoc
        AND tv.VaiTro = N'DaiDien'
-    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0008'
+    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0009'
       AND (tv.MaKH IS NULL OR tv.MaKH <> pc.MaKH)
 )
     THROW 51008, 'Dai dien phieu coc khong trung MaKH.', 1;
@@ -120,11 +120,42 @@ IF EXISTS (
     FROM PhieuCoc pc
     INNER JOIN Phong p ON p.MaPhong = pc.MaPhong
     INNER JOIN LoaiPhong lp ON lp.MaLP = p.MaLP
-    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0008'
+    WHERE pc.MaPhieuCoc BETWEEN 'PC0001' AND 'PC0009'
       AND pc.HinhThucThue = N'NguyenCan'
       AND pc.SoGiuongThue <> lp.SucChua
 )
     THROW 51009, 'Phieu thue nguyen can khong du suc chua.', 1;
+GO
+
+-- Phiếu thu tiền cọc chỉ tồn tại sau khi Quản lý xác nhận thanh toán.
+IF EXISTS (
+    SELECT 1
+    FROM PhieuThu pt
+    INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc = pt.MaPhieuCoc
+    WHERE pc.TrangThai = N'ChoDoiChieu'
+)
+    THROW 51010, 'Phieu coc cho doi chieu khong duoc co PhieuThu.', 1;
+GO
+
+-- Phiếu chờ đối chiếu phải có chứng từ, phương thức và toàn bộ giường còn giữ chỗ.
+IF EXISTS (
+    SELECT 1
+    FROM PhieuCoc pc
+    WHERE pc.TrangThai = N'ChoDoiChieu'
+      AND (
+          pc.AnhMinhChung IS NULL
+          OR pc.PhuongThucThanhToan IS NULL
+          OR pc.PhuongThucThanhToan NOT IN (N'ChuyenKhoan', N'TienMat')
+          OR EXISTS (
+              SELECT 1
+              FROM ChiTietPhieuCoc ct
+              INNER JOIN Giuong g ON g.MaGiuong = ct.MaGiuong
+              WHERE ct.MaPhieuCoc = pc.MaPhieuCoc
+                AND g.TrangThai <> N'GiuCho'
+          )
+      )
+)
+    THROW 51012, 'Phieu coc cho doi chieu chua san sang de xac nhan.', 1;
 GO
 
 -- Giường trong hợp đồng phải thuộc phòng của phiếu cọc tương ứng.
@@ -137,7 +168,7 @@ IF EXISTS (
     WHERE ct.MaHD BETWEEN 'HD0001' AND 'HD0006'
       AND g.MaPhong <> pc.MaPhong
 )
-    THROW 51010, 'Chi tiet hop dong co giuong khac phong dat coc.', 1;
+    THROW 51011, 'Chi tiet hop dong co giuong khac phong dat coc.', 1;
 GO
 
 -- Tổng hóa đơn phải bằng tổng các dòng chi tiết.

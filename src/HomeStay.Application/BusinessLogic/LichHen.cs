@@ -43,6 +43,64 @@ public sealed class LichHen
             throw new InvalidOperationException("Lịch hẹn không ở trạng thái hợp lệ để nhập hồ sơ.");
     }
 
+    public static LichHen TaoMoi(string loai, string maChungTu, string maCN, DateTime ngay, TimeSpan gio, string maNV)
+    {
+        var lh = new LichHen
+        {
+            MaLH = $"LH{DateTime.Now:yyyyMMddHHmmss}",
+            NgayHen = ngay,
+            GioHen = gio,
+            LoaiLichHen = loai,
+            TrangThai = "DaXacNhan",
+            MaCN = string.IsNullOrWhiteSpace(maCN) ? null : maCN,
+            MaNV = maNV
+        };
+
+        if (loai == "XemPhong") lh.MaPDK = maChungTu;
+        else if (loai == "NhanPhong") lh.MaPhieuCoc = maChungTu;
+        else if (loai == "TraPhong") lh.MaHD = maChungTu;
+        else throw new ArgumentException("Loại lịch hẹn không hợp lệ.");
+
+        return lh;
+    }
+
+    public async Task KiemTraHopLe()
+    {
+        bool hopLe = LoaiLichHen switch
+        {
+            "XemPhong" => await PhieuDangKyDB.KiemTraConHopLe(MaPDK!),
+            "NhanPhong" => await PhieuCocDB.KiemTraConHopLe(MaPhieuCoc!),
+            "TraPhong" => await HopDongDB.KiemTraConHopLe(MaHD!),
+            _ => false
+        };
+
+        if (!hopLe)
+            throw new InvalidOperationException("Chứng từ liên kết không còn hợp lệ hoặc sai trạng thái.");
+    }
+
+    public async Task KiemTraTrungLich()
+    {
+        if (await LichHenDB.KiemTraLichTrungCaNhanVien(MaNV!, NgayHen, GioHen))
+            throw new InvalidOperationException("Nhân viên đã có lịch bận vào thời điểm này.");
+    }
+
+    public async Task KiemTraTrungLichCapNhat()
+    {
+        if (await LichHenDB.KiemTraLichTrungCaNhanVienKhacLichHienTai(MaNV!, NgayHen, GioHen, MaLH))
+            throw new InvalidOperationException("Nhân viên đã có lịch bận vào thời điểm này.");
+    }
+
+    public Task Them() => LichHenDB.Them(this);
+
+    public void CapNhatThongTin(DateTime ngay, TimeSpan gio, string maNV, string trangThai)
+    {
+        NgayHen = ngay;
+        GioHen = gio;
+        MaNV = maNV;
+        TrangThai = trangThai;
+    }
+
+    public Task LuuCapNhat() => LichHenDB.CapNhat(this);
     public void KiemTraCoTheLapPhieuCoc()
     {
         if (LoaiLichHen != "XemPhong" || TrangThai != "DaHoanThanh")

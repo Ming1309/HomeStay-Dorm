@@ -1,0 +1,172 @@
+@startuml
+title SO DO TUAN TU - TAO LICH HEN
+
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+
+actor "NhanVien Sale" as NV
+
+participant ": MHTaoLichHen" as MH
+participant ": TaoLichHenController" as CTRL
+participant ": LichHen" as LH
+participant ": DichVuThongBao" as TB
+
+participant ": LichHenDAO" as LHDAO
+participant ": PhieuDangKyDAO" as PDKDAO
+participant ": PhieuCocDAO" as PCDAO
+participant ": HopDongDAO" as HDDAO
+participant ": NhanVienDAO" as NVDAO
+participant ": ChiNhanhDAO" as CNDAO
+
+NV -> MH : Chon chuc nang tao lich hen
+activate MH
+
+MH -> CTRL : khoiTaoForm()
+activate CTRL
+
+CTRL -> NVDAO : layTheoMa(maNV)
+activate NVDAO
+NVDAO --> CTRL : nhanVien
+deactivate NVDAO
+
+CTRL -> CNDAO : layTatCa()
+activate CNDAO
+CNDAO --> CTRL : dsChiNhanh
+deactivate CNDAO
+
+CTRL --> MH : hienThiForm(dsChiNhanh)
+
+deactivate CTRL
+
+== Tim kiem chung tu ==
+
+NV -> MH : chonLoaiLichHen() + nhapTuKhoaTimKiem()
+
+MH -> CTRL : taiDanhSachChungTu(loai,tuKhoa)
+activate CTRL
+
+alt loai = Xem phong (view-room)
+
+CTRL -> PDKDAO : timKiemPhieuDuDieuKien(tuKhoa)
+activate PDKDAO
+PDKDAO --> CTRL : ds
+deactivate PDKDAO
+
+else loai = Nhan phong (checkin)
+
+CTRL -> PCDAO : timKiemPhieuDaDuyet(tuKhoa)
+activate PCDAO
+PCDAO --> CTRL : ds
+deactivate PCDAO
+
+else loai = Tra phong (checkout)
+
+CTRL -> HDDAO : timKiemHopDongHieuLuc(tuKhoa)
+activate HDDAO
+HDDAO --> CTRL : ds
+deactivate HDDAO
+
+end
+
+CTRL --> MH : hienThiDanhSachChungTu(ds)
+
+deactivate CTRL
+
+NV -> MH : chonChungTu()
+
+NV -> MH : chonChiNhanh()
+
+NV -> MH : nhapNgayGio()
+
+NV -> MH : nhanLuu()
+
+MH -> CTRL : luuLichHen(loai,chungTu,maCN,ngay,gio)
+activate CTRL
+
+CTRL -> CTRL : kiemTraDuLieuDauVao(maCN,ngay,gio,chungTu)
+
+alt Du lieu khong hop le / chua chon chung tu
+
+CTRL --> MH : hienThiLoi("Vui long nhap day du thong tin")
+
+else Du lieu hop le
+
+CTRL -> LH : khoiTao(loai,chungTu,maCN,ngay,gio,maNV)
+activate LH
+
+LH -> LH : ganChungTu(loai,maChungTu)
+
+LH -> LH : kiemTraHopLe()
+
+alt loai = Xem phong (view-room)
+
+    LH -> PDKDAO : kiemTraConHopLe(maPDK)
+    activate PDKDAO
+    PDKDAO --> LH
+    deactivate PDKDAO
+
+else loai = Nhan phong (checkin)
+
+    LH -> PCDAO : kiemTraConHopLe(maPhieuCoc)
+    activate PCDAO
+    PCDAO --> LH
+    deactivate PCDAO
+
+else loai = Tra phong (checkout)
+
+    LH -> HDDAO : kiemTraConHopLe(maHD)
+    activate HDDAO
+    HDDAO --> LH
+    deactivate HDDAO
+
+end
+
+alt Chung tu khong con hop le
+
+    LH --> CTRL : false
+
+    CTRL --> MH : hienThiLoi("Chung tu lien ket khong con hop le.")
+
+else Chung tu hop le
+
+    LH -> LH : kiemTraTrungLich()
+
+    LH -> LHDAO : kiemTraLichTrungCaNhanVien(maNV, ngay, gio)
+    activate LHDAO
+    LHDAO --> LH : ketQua
+    deactivate LHDAO
+
+    alt Nhan vien da ban (co lich trung)
+
+        LH --> CTRL : false
+
+        CTRL --> MH : hienThiLoi("Nhan vien da ban vao thoi diem nay")
+
+    else Khong trung lich
+
+        LH -> LH : ganTrangThaiMacDinh()
+
+        LH -> LH : luu()
+LH -> LHDAO : them(lichHen)
+activate LHDAO
+LHDAO --> LH
+deactivate LHDAO
+
+LH --> CTRL : lichHen
+deactivate LH
+
+CTRL -> TB : guiThongBaoLichHen(lichHen, khachHang)
+activate TB
+TB --> CTRL
+deactivate TB
+
+CTRL --> MH : hienThiThongBao("Tao lich hen thanh cong")
+
+end
+end
+
+deactivate CTRL
+deactivate MH
+
+@enduml

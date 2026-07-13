@@ -1,0 +1,320 @@
+@startuml UC11_3Layers_NhapHoSoLuuTru
+title 3 Layers - UC Nhập hồ sơ lưu trú
+
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+hide circle
+
+' ================= PRESENTATION LAYER =================
+package "Presentation Layer\n(Tầng giao diện)" {
+
+    class MH_NhapHoSoLuuTru <<boundary>> {
+        -lblTieuDePhieuCoc: Label
+        -lblSoLuongPhieuHomNay: Label
+        -txtTimKiemPhieuCoc: TextBox
+        -pnlDanhSachPhieuCoc: Panel
+        --
+        -cardPhieuCoc: Panel
+        -lblMaPhieuCocCard: Label
+        -lblTenKhachCard: Label
+        -lblSDTCard: Label
+        -lblPhongCard: Label
+        -lblGioNhanPhongCard: Label
+        -badgeTrangThaiThanhToanCard: Label
+        --
+        -lblMaPhieuCocDangChon: Label
+        -lblTenKhachDangChon: Label
+        -badgeDaThanhToan: Label
+        -badgeSoGiuong: Label
+        -badgeHinhThucThue: Label
+        -lblPhongDangChon: Label
+        -lblGioNhanPhongDangChon: Label
+        --
+        -lblTieuDeThongTinKhach: Label
+        -grpThongTinTuPhieuCoc: GroupBox
+        -lblHoTen: Label
+        -txtHoTen: TextBox
+        -lblSoDienThoai: Label
+        -txtSoDienThoai: TextBox
+        -lblEmail: Label
+        -txtEmail: TextBox
+        -lblGioiTinh: Label
+        -txtGioiTinh: TextBox
+        --
+        -lblThongTinCuTru: Label
+        -lblNgaySinh: Label
+        -dtpNgaySinh: DateTimePicker
+        -lblQuocTich: Label
+        -cboQuocTich: ComboBox
+        -lblLoaiGiayTo: Label
+        -cboLoaiGiayTo: ComboBox
+        -lblSoGiayTo: Label
+        -txtSoGiayTo: TextBox
+        -lblDiaChiThuongTru: Label
+        -txtDiaChiThuongTru: TextBox
+        -lblTinhTP: Label
+        -cboTinhTP: ComboBox
+        -lblQuanHuyen: Label
+        -cboQuanHuyen: ComboBox
+        -lblPhuongXa: Label
+        -cboPhuongXa: ComboBox
+        --
+        -grpNguoiOCung: GroupBox
+        -pnlDanhSachNguoiOCung: Panel
+        -btnThemNguoiOCung: Button
+        --
+        -btnTrangTruoc: Button
+        -lblTrangHienTai: Label
+        -btnTrangSau: Button
+        -btnVeDau: Button
+        -lblSoLuongTheo: Label
+        -btnXuat: Button
+        -btnLuuNhap: Button
+        -btnLuuHoSo: Button
+        --
+        -errThongTin: ErrorProvider
+        ==
+        +loadDanhSachPhieuCoc(): void
+        +timKiemPhieuCoc(): void
+        +clickChonPhieuCoc(): void
+        +hienThiThongTinTuPhieuCoc(): void
+        +nhapThongTinCuTru(): void
+        +clickThemNguoiOCung(): void
+        +clickLuuNhap(): void
+        +clickLuuHoSo(): void
+        +clickXuat(): void
+        +hienThiLoi(): void
+        +hienThiThongBao(): void
+    }
+
+    class Popup_ThemNguoiOCung <<boundary>> {
+        -lblTieuDePopup: Label
+        -btnDongPopup: Button
+        --
+        -lblHoTen: Label
+        -txtHoTen: TextBox
+        -lblSoDienThoai: Label
+        -txtSoDienThoai: TextBox
+        -lblGioiTinh: Label
+        -cboGioiTinh: ComboBox
+        -lblNgaySinh: Label
+        -dtpNgaySinh: DateTimePicker
+        -lblQuocTich: Label
+        -txtQuocTich: TextBox
+        -lblLoaiGiayTo: Label
+        -cboLoaiGiayTo: ComboBox
+        -lblSoGiayTo: Label
+        -txtSoGiayTo: TextBox
+        --
+        -lblDiaChiThuongTru: Label
+        -lblSoNhaTenDuong: Label
+        -txtSoNhaTenDuong: TextBox
+        -lblTinhTP: Label
+        -cboTinhTP: ComboBox
+        -lblQuanHuyen: Label
+        -cboQuanHuyen: ComboBox
+        -lblPhuongXa: Label
+        -cboPhuongXa: ComboBox
+        --
+        -btnHuy: Button
+        -btnXacNhan: Button
+        -errThongTin: ErrorProvider
+        ==
+        +hienThiPopup(): void
+        +nhapThongTinNguoiOCung(): void
+        +clickXacNhan(): KhachHang
+        +clickHuy(): void
+        +clickDongPopup(): void
+        +hienThiLoi(): void
+    }
+}
+
+' ================= BUSINESS LAYER =================
+package "Business Layer\n(Tầng nghiệp vụ)" {
+
+    class LichHen <<entity>> {
+        -maLH: String
+        -ngayHen: Date
+        -gioHen: Time
+        -loaiLichHen: String
+        -trangThai: String
+        -maPDK: String
+        -maPhieuCoc: String
+        -maHD: String
+        -maNV: String
+        -maCN: String
+        ==
+        +layLichNhanPhongHomNay(): List<LichHen>
+        +kiemTraLichNhanPhongHomNay(): boolean
+        +kiemTraLoaiNhanPhong(): boolean
+        +kiemTraTrangThaiHopLe(): boolean
+    }
+
+    class PhieuCoc <<entity>> {
+        -maPhieuCoc: String
+        -hanThanhToan: Date
+        -hinhThucThue: String
+        -soGiuongThue: int
+        -tongTien: Decimal
+        -thoiDiemCoc: DateTime
+        -anhMinhChung: String
+        -trangThai: String
+        -maKH: String
+        -maPhong: String
+        -maNV: String
+        ==
+        +layPhieuCocDaThanhToanNhanPhongHomNay(): List<PhieuCoc>
+        +layThongTinPhieuCoc(maPhieuCoc: String): PhieuCoc
+        +kiemTraDaThanhToan(): boolean
+        +kiemTraHinhThucThue(): boolean
+        +kiemTraSoLuongThanhVien(soLuongThanhVien: int): boolean
+        +capNhatTrangThaiChoDuyet(): boolean
+    }
+
+    class ChiTietPhieuCoc <<entity>> {
+        -maPhieuCoc: String
+        -maGiuong: String
+        ==
+        +layDanhSachGiuongTheoPhieuCoc(maPhieuCoc: String): List<ChiTietPhieuCoc>
+        +demSoGiuongDaCoc(maPhieuCoc: String): int
+    }
+
+    class Phong <<entity>> {
+        -maPhong: String
+        -soPhong: String
+        -toaNha: String
+        -tang: int
+        -gioiTinhChoPhep: String
+        -trangThai: String
+        -maLP: String
+        -maCN: String
+        ==
+        +layThongTinPhong(maPhong: String): Phong
+        +kiemTraSucChua(soLuongThanhVien: int): boolean
+        +kiemTraTrangThaiPhong(): boolean
+    }
+
+    class KhachHang <<entity>> {
+        -maKH: String
+        -hoTen: String
+        -ngaySinh: Date
+        -gioiTinh: String
+        -quocTich: String
+        -loaiGiayTo: String
+        -soGiayTo: String
+        -diaChiThuongTru: String
+        -sdt: String
+        -email: String
+        ==
+        +layThongTinNguoiDaiDien(maKH: String): KhachHang
+        +timKhachHangTheoSoGiayTo(soGiayTo: String): KhachHang
+        +kiemTraThongTinBatBuoc(): boolean
+        +kiemTraDinhDangEmail(): boolean
+        +kiemTraSoGiayTo(): boolean
+        +kiemTraNgaySinh(): boolean
+        +kiemTraTrungSoGiayTo(dsThanhVien: List<KhachHang>): boolean
+        +themMoiKhachHang(): String
+        +capNhatThongTinKhachHang(): boolean
+    }
+
+    class ThanhVienDangKy <<entity>> {
+        -maPhieuCoc: String
+        -maKH: String
+        -vaiTro: String
+        -trangThaiDuyet: String
+        ==
+        +taoDaiDien(maPhieuCoc: String, maKH: String): ThanhVienDangKy
+        +taoThanhVien(maPhieuCoc: String, maKH: String): ThanhVienDangKy
+        +kiemTraTonTaiDaiDien(maPhieuCoc: String): boolean
+        +kiemTraVaiTroHopLe(): boolean
+        +kiemTraSoLuongThanhVien(maPhieuCoc: String): boolean
+        +luuDanhSachThanhVien(dsThanhVienDangKy: List<ThanhVienDangKy>): boolean
+        +capNhatTrangThaiChoDuyet(): void
+    }
+
+    ' Liên kết ẩn để ép các class dàn ngang thành 1 hàng, tránh mũi tên đè lên nhau
+    LichHen -[hidden]right-> PhieuCoc
+    PhieuCoc -[hidden]right-> ChiTietPhieuCoc
+    ChiTietPhieuCoc -[hidden]right-> Phong
+    Phong -[hidden]right-> KhachHang
+    KhachHang -[hidden]right-> ThanhVienDangKy
+}
+
+' ================= DATA ACCESS LAYER =================
+package "Data Access Layer\n(Tầng truy xuất dữ liệu)" {
+
+    class LichHenDB <<database>> {
+        +getLichNhanPhongHomNay(): List<LichHen>
+        +getByMaPhieuCoc(maPhieuCoc: String): LichHen
+    }
+
+    class PhieuCocDB <<database>> {
+        +getPhieuCocDaThanhToanNhanPhongHomNay(): List<PhieuCoc>
+        +getByMaPhieuCoc(maPhieuCoc: String): PhieuCoc
+        +updateTrangThai(maPhieuCoc: String, trangThai: String): boolean
+    }
+
+    class ChiTietPhieuCocDB <<database>> {
+        +getByMaPhieuCoc(maPhieuCoc: String): List<ChiTietPhieuCoc>
+        +countByMaPhieuCoc(maPhieuCoc: String): int
+    }
+
+    class PhongDB <<database>> {
+        +getByMaPhong(maPhong: String): Phong
+    }
+
+    class KhachHangDB <<database>> {
+        +getByMaKH(maKH: String): KhachHang
+        +findBySoGiayTo(soGiayTo: String): KhachHang
+        +insert(khachHang: KhachHang): String
+        +update(khachHang: KhachHang): boolean
+    }
+
+    class ThanhVienDangKyDB <<database>> {
+        +getByMaPhieuCoc(maPhieuCoc: String): List<ThanhVienDangKy>
+        +insert(thanhVienDangKy: ThanhVienDangKy): boolean
+        +insertBatch(dsThanhVienDangKy: List<ThanhVienDangKy>): boolean
+        +deleteByMaPhieuCoc(maPhieuCoc: String): boolean
+    }
+
+    ' Liên kết ẩn để ép các class dàn ngang thành 1 hàng, tránh mũi tên đè lên nhau
+    LichHenDB -[hidden]right-> PhieuCocDB
+    PhieuCocDB -[hidden]right-> ChiTietPhieuCocDB
+    ChiTietPhieuCocDB -[hidden]right-> PhongDB
+    PhongDB -[hidden]right-> KhachHangDB
+    KhachHangDB -[hidden]right-> ThanhVienDangKyDB
+}
+
+' ================= RELATIONSHIPS (aggregation only, giống ảnh gốc) =================
+' Presentation -> Business
+MH_NhapHoSoLuuTru o-- LichHen : xem lịch nhận phòng
+MH_NhapHoSoLuuTru o-- PhieuCoc : chọn phiếu cọc
+MH_NhapHoSoLuuTru o-- ChiTietPhieuCoc : hiển thị phòng
+MH_NhapHoSoLuuTru o-- Phong : hiển thị phòng
+MH_NhapHoSoLuuTru o-- KhachHang : nhập thông tin đại diện
+MH_NhapHoSoLuuTru o-- ThanhVienDangKy : lưu danh sách thành viên
+
+Popup_ThemNguoiOCung o-- KhachHang : nhập người ở cùng
+Popup_ThemNguoiOCung o-- ThanhVienDangKy : danh sách đăng ký
+
+' Business internal associations
+LichHen "1" o-- "1" PhieuCoc : lịch nhận phòng
+PhieuCoc "1" o-- "*" ChiTietPhieuCoc : danh sách giường cọc
+ChiTietPhieuCoc "*" o-- "1" Phong : phòng đã cọc
+PhieuCoc "*" o-- "1" KhachHang : khách đại diện
+PhieuCoc "1" o-- "*" ThanhVienDangKy : danh sách đăng ký
+KhachHang "1" o-- "*" ThanhVienDangKy : thông tin khách
+
+' Business -> Data Access
+LichHen o-- LichHenDB : đọc lịch hẹn
+PhieuCoc o-- PhieuCocDB : đọc / cập nhật phiếu cọc
+ChiTietPhieuCoc o-- ChiTietPhieuCocDB : đọc giường đã cọc
+Phong o-- PhongDB : đọc thông tin phòng
+KhachHang o-- KhachHangDB : thêm / cập nhật khách hàng
+ThanhVienDangKy o-- ThanhVienDangKyDB : lưu thành viên đăng ký
+
+@enduml

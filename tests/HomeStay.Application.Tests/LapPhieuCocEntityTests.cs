@@ -101,6 +101,46 @@ public sealed class LapPhieuCocEntityTests
         Assert.Equal(8_000_000m, phieu.TongTien);
     }
 
+    [Fact]
+    public void PhieuCoc_GhiNhanThanhToanChuyenSangChoDoiChieu()
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC1", TrangThai = "ChoThanhToan" };
+
+        phieu.GhiNhanThanhToan("ChuyenKhoan", "/api/deposits/chung-tu/proof.png");
+
+        Assert.Equal("ChuyenKhoan", phieu.PhuongThucThanhToan);
+        Assert.Equal("/api/deposits/chung-tu/proof.png", phieu.AnhMinhChung);
+        Assert.Equal("ChoDoiChieu", phieu.TrangThai);
+    }
+
+    [Fact]
+    public void PhieuCoc_TuChoiGhiNhanKhiKhongChoThanhToan()
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC1", TrangThai = "ChoDoiChieu" };
+
+        Assert.Throws<InvalidOperationException>(() =>
+            phieu.GhiNhanThanhToan("ChuyenKhoan", "/api/deposits/chung-tu/proof.png"));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("TheTinDung")]
+    public void PhieuCoc_TuChoiPhuongThucThanhToanKhongHopLe(string phuongThuc)
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC1", TrangThai = "ChoThanhToan" };
+
+        Assert.Throws<ArgumentException>(() =>
+            phieu.GhiNhanThanhToan(phuongThuc, "/api/deposits/chung-tu/proof.png"));
+    }
+
+    [Fact]
+    public void PhieuCoc_TuChoiLienKetChungTuRong()
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC1", TrangThai = "ChoThanhToan" };
+
+        Assert.Throws<ArgumentException>(() => phieu.GhiNhanThanhToan("TienMat", " "));
+    }
+
 
     [Fact]
     public void KhachHang_ChiDanhDauCapNhatKhiThongTinThayDoi()
