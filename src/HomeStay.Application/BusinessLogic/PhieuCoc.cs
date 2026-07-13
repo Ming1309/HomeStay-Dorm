@@ -75,6 +75,11 @@ public sealed class PhieuCoc
 
     public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => PhieuCocDB.DocChiTiet(maPhieuCoc);
 
+    // ==========================================================
+    // Methods from feat/lap-phieu-hoan-coc branch
+    // ==========================================================
+    public static Task<PhieuCoc?> LayChiTietPhieuCoc(string maPhieuCoc) => DocChiTiet(maPhieuCoc);
+
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDuyet(string? text = null) =>
         PhieuCocDB.LayDanhSachChoDuyet(text);
 

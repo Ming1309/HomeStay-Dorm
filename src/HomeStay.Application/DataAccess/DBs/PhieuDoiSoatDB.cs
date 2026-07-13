@@ -41,6 +41,17 @@ public static class PhieuDoiSoatDB
         return rows.ToList();
     }
 
+    public static async Task<IReadOnlyList<PhieuDoiSoat>> GetDSPhieuDoiSoatCanHoan()
+    {
+        const string sql = """
+            SELECT * FROM PhieuDoiSoat
+            WHERE TrangThai = N'DaChot' AND TienHoan > 0
+            ORDER BY NgayDoiSoat DESC
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuDoiSoat>(sql, null, PhienDuLieu.Session.Transaction);
+        return rows.ToList();
+    }
+
     public static async Task<PhieuDoiSoat?> GetPhieuDoiSoatTheoMaPDS(string maPDS)
     {
         const string sql = "SELECT * FROM PhieuDoiSoat WHERE MaPDS = @MaPDS";

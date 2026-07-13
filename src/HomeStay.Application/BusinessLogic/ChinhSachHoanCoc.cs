@@ -15,6 +15,9 @@ public sealed class ChinhSachHoanCoc
     public static Task<ChinhSachHoanCoc?> LayChinhSachDangApDung() =>
         ChinhSachHoanCocDB.LayChinhSachDangApDung();
 
+    public static Task<ChinhSachHoanCoc?> LayChinhSachTheoMa(string maChinhSach) =>
+        ChinhSachHoanCocDB.GetChinhSachTheoMa(maChinhSach);
+
     public decimal XacDinhTyLeHoan(int soThangThucTe, int soThangHopDong)
     {
         if (soThangThucTe >= soThangHopDong)

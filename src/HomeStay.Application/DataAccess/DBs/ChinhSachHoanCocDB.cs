@@ -16,4 +16,15 @@ public static class ChinhSachHoanCocDB
         return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<ChinhSachHoanCoc>(
             sql, null, PhienDuLieu.Session.Transaction);
     }
+
+    public static async Task<ChinhSachHoanCoc?> GetChinhSachTheoMa(string maChinhSach)
+    {
+        const string sql = """
+            SELECT MaChinhSach, TenChinhSach, TiLe_ChuaKy, TiLe_TruocHan_NganHan, TiLe_TruocHan_DaiHan, TiLe_DungHan, MocLuuTru
+            FROM ChinhSachHoanCoc
+            WHERE MaChinhSach = @MaChinhSach
+            """;
+        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<ChinhSachHoanCoc>(
+            sql, new { MaChinhSach = maChinhSach }, PhienDuLieu.Session.Transaction);
+    }
 }

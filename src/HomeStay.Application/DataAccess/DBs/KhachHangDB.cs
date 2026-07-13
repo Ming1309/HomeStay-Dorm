@@ -56,4 +56,11 @@ public static class KhachHangDB
         return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<KhachHang>(sql,
             new { MaKH = maKH }, PhienDuLieu.Session.Transaction);
     }
+
+    public static async Task<KhachHang?> GetKhachHangTheoMaKH(string maKH)
+    {
+        const string sql = "SELECT * FROM KhachHang WHERE MaKH = @MaKH";
+        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<KhachHang>(
+            sql, new { MaKH = maKH }, PhienDuLieu.Session.Transaction);
+    }
 }

@@ -71,6 +71,9 @@ public sealed class PhieuDoiSoat
     public static Task<IReadOnlyList<PhieuDoiSoat>> LayDSPhieuDoiSoatDaChot()
         => PhieuDoiSoatDB.GetDSPhieuDoiSoatDaChot();
 
+    public static Task<IReadOnlyList<PhieuDoiSoat>> LayDSPhieuDoiSoatCanHoan()
+        => PhieuDoiSoatDB.GetDSPhieuDoiSoatCanHoan();
+
     public static Task<PhieuDoiSoat?> LayChiTietPhieuDoiSoat(string maPDS)
         => PhieuDoiSoatDB.GetPhieuDoiSoatTheoMaPDS(maPDS);
 

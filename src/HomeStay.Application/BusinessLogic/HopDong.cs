@@ -56,6 +56,9 @@ public sealed class HopDong
     public static Task<HopDong?> LayThongTinLuuTru(string maHD) =>
         HopDongDB.LayThongTinLuuTru(maHD);
 
+    public static Task<HopDong?> LayChiTietHopDong(string maHD) =>
+        LayThongTinLuuTru(maHD);
+
     public int TinhSoThangThucTe(DateTime thoiDiemDoiSoat)
     {
         if (thoiDiemDoiSoat <= NgayBatDau) return 0;
