@@ -124,6 +124,8 @@ VALUES
 ('P002', 'TS04', 4), -- 4 Tủ cá nhân
 ('P002', 'TS12', 4), -- 4 Chìa khóa phòng
 ('P002', 'TS13', 4); -- 4 Thẻ từ ra vào cổng
+-- Lưu ý: tài sản P007 (phòng demo UC thu hồi) được seed trong 04_DemoScenarios.sql
+-- vì P007 chỉ được tạo ở script kịch bản.
 GO
 
 -- 9. Quy Định
