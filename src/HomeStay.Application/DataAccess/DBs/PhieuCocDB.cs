@@ -231,6 +231,122 @@ public static class PhieuCocDB
             sql, new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction) > 0;
     }
 
+    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDuyet(string? text = null)
+    {
+        const string sql = """
+            SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
+                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   kh.HoTen AS TenKhachHang, p.SoPhong, p.ToaNha
+            FROM PhieuCoc pc
+            INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
+            WHERE pc.TrangThai=N'ChoDuyet'
+              AND (@Text IS NULL OR pc.MaPhieuCoc LIKE '%' + @Text + '%'
+                   OR kh.HoTen LIKE '%' + @Text + '%' OR p.SoPhong LIKE '%' + @Text + '%')
+            ORDER BY pc.ThoiDiemCoc DESC, pc.MaPhieuCoc
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql,
+            new { Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim() },
+            PhienDuLieu.Session.Transaction);
+        return rows.Select(TaoPhieuCocDanhSach).ToList();
+    }
+
+    public static async Task<PhieuCoc?> LayChiTietChoDuyet(string maPhieuCoc)
+    {
+        const string sql = """
+            SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
+                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   kh.HoTen AS TenKhachHang, kh.SDT, kh.NgaySinh, kh.GioiTinh, kh.QuocTich,
+                   kh.LoaiGiayTo, kh.SoGiayTo, kh.Email, kh.DiaChiThuongTru,
+                   p.SoPhong, p.ToaNha, p.Tang, p.GioiTinhChoPhep, p.TrangThai AS TrangThaiPhong,
+                   lp.MaLP, lp.TenLoaiPhong, lp.SucChua, lp.GiaThue
+            FROM PhieuCoc pc
+            INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
+            INNER JOIN LoaiPhong lp ON lp.MaLP=p.MaLP
+            WHERE pc.MaPhieuCoc=@MaPhieuCoc
+            """;
+        var row = await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<PhieuCocDetailRow>(sql,
+            new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction);
+        if (row is null) return null;
+
+        const string bedSql = """
+            SELECT g.MaGiuong,g.SoGiuong,g.TrangThai,g.MaPhong
+            FROM ChiTietPhieuCoc ct
+            INNER JOIN Giuong g ON g.MaGiuong=ct.MaGiuong
+            WHERE ct.MaPhieuCoc=@MaPhieuCoc
+            ORDER BY g.SoGiuong
+            """;
+        var giuongs = (await PhienDuLieu.Session.Connection.QueryAsync<Giuong>(bedSql,
+            new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction)).ToList();
+
+        var thanhViens = await ThanhVienDangKyDB.GetByMaPhieuCoc(maPhieuCoc);
+
+        return new PhieuCoc
+        {
+            MaPhieuCoc = row.MaPhieuCoc,
+            HanThanhToan = row.HanThanhToan,
+            HinhThucThue = row.HinhThucThue,
+            SoGiuongThue = row.SoGiuongThue,
+            TongTien = row.TongTien,
+            ThoiDiemCoc = row.ThoiDiemCoc,
+            AnhMinhChung = row.AnhMinhChung,
+            TrangThai = row.TrangThai,
+            MaKH = row.MaKH,
+            MaPhong = row.MaPhong,
+            MaNV = row.MaNV,
+            KhachHang = new KhachHang
+            {
+                MaKH = row.MaKH, HoTen = row.TenKhachHang, SDT = row.SDT,
+                NgaySinh = row.NgaySinh, GioiTinh = row.GioiTinh, QuocTich = row.QuocTich,
+                LoaiGiayTo = row.LoaiGiayTo, SoGiayTo = row.SoGiayTo,
+                Email = row.Email, DiaChiThuongTru = row.DiaChiThuongTru,
+            },
+            Phong = new Phong
+            {
+                MaPhong = row.MaPhong, SoPhong = row.SoPhong, ToaNha = row.ToaNha, Tang = row.Tang,
+                GioiTinhChoPhep = row.GioiTinhChoPhep, TrangThai = row.TrangThaiPhong!,
+                LoaiPhong = new LoaiPhong
+                {
+                    MaLP = row.MaLP, TenLoaiPhong = row.TenLoaiPhong, SucChua = row.SucChua, GiaThue = row.GiaThue,
+                },
+                Giuongs = giuongs,
+            },
+            Giuongs = giuongs,
+            ThanhViens = thanhViens.ToList(),
+        };
+    }
+
+    public static async Task CapNhatDaDuyet(PhieuCoc phieu)
+    {
+        const string sql = """
+            UPDATE PhieuCoc
+            SET TrangThai=N'DaDuyet'
+            WHERE MaPhieuCoc=@MaPhieuCoc AND TrangThai=N'ChoDuyet'
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, phieu, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Phiếu cọc đã được xử lý bởi người khác hoặc không còn ở trạng thái chờ duyệt.");
+    }
+
+    public static async Task CapNhatDaHuy(PhieuCoc phieu)
+    {
+        const string sql = """
+            UPDATE PhieuCoc
+            SET TrangThai=N'DaHuy'
+            WHERE MaPhieuCoc=@MaPhieuCoc AND TrangThai<>N'DaHuy'
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, phieu, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Phiếu cọc đã được hủy trước đó.");
+    }
+
+    public static async Task<bool> CapNhatTrangThai(string maPhieuCoc, string trangThai)
+    {
+        const string sql = "UPDATE PhieuCoc SET TrangThai=@TrangThai WHERE MaPhieuCoc=@MaPhieuCoc";
+        return await PhienDuLieu.Session.Connection.ExecuteAsync(sql,
+            new { MaPhieuCoc = maPhieuCoc, TrangThai = trangThai },
+            PhienDuLieu.Session.Transaction) > 0;
+    }
+
     private class PhieuCocListRow
     {
         public string MaPhieuCoc { get; set; } = string.Empty;
@@ -256,6 +372,13 @@ public static class PhieuCocDB
         public string? SDT { get; set; }
         public string? Email { get; set; }
         public string? Tang { get; set; }
+        public string? GioiTinhChoPhep { get; set; }
+        public DateTime? NgaySinh { get; set; }
+        public string? GioiTinh { get; set; }
+        public string? QuocTich { get; set; }
+        public string? LoaiGiayTo { get; set; }
+        public string? SoGiayTo { get; set; }
+        public string? DiaChiThuongTru { get; set; }
         public string? TrangThaiPhong { get; set; }
         public string MaLP { get; set; } = string.Empty;
         public string TenLoaiPhong { get; set; } = string.Empty;

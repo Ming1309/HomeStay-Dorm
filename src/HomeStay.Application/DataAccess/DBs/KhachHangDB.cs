@@ -34,4 +34,26 @@ public static class KhachHangDB
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, khachHang, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể cập nhật khách hàng của lịch hẹn.");
     }
+
+    public static async Task<List<KhachHang>> GetByMaPhieuCoc(string maPhieuCoc)
+    {
+        const string sql = """
+            SELECT kh.MaKH, kh.HoTen, kh.NgaySinh, kh.GioiTinh, kh.QuocTich,
+                   kh.LoaiGiayTo, kh.SoGiayTo, kh.SDT, kh.Email, kh.DiaChiThuongTru
+            FROM KhachHang kh
+            INNER JOIN ThanhVienDangKy tv ON tv.MaKH = kh.MaKH
+            WHERE tv.MaPhieuCoc = @MaPhieuCoc
+            ORDER BY tv.VaiTro DESC, kh.HoTen
+            """;
+        return (await PhienDuLieu.Session.Connection.QueryAsync<KhachHang>(sql,
+            new { MaPhieuCoc = maPhieuCoc },
+            PhienDuLieu.Session.Transaction)).ToList();
+    }
+
+    public static async Task<KhachHang?> GetByMaKH(string maKH)
+    {
+        const string sql = "SELECT * FROM KhachHang WHERE MaKH=@MaKH";
+        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<KhachHang>(sql,
+            new { MaKH = maKH }, PhienDuLieu.Session.Transaction);
+    }
 }
