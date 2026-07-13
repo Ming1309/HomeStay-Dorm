@@ -17,12 +17,13 @@ public sealed class HopDong
     public string? MaChinhSach { get; set; }
     public string? MaQD { get; set; }
     public string? MaQLDuyet { get; set; }
+    public decimal TienCoc { get; set; }
 
+    public PhieuCoc? PhieuCoc { get; set; }
     public KhachHang KhachHang { get; set; } = new();
     public Phong Phong { get; set; } = new();
     public List<ThanhVienHopDong> ThanhViens { get; set; } = [];
     public List<DichVuHopDong> DichVus { get; set; } = [];
-    public decimal TienCoc { get; set; }
 
     public static Task<bool> TonTaiTheoPhieuCoc(string maPhieuCoc) =>
         HopDongDB.TonTaiTheoPhieuCoc(maPhieuCoc);
@@ -53,6 +54,37 @@ public sealed class HopDong
         hopDong.ThanhViens = (await ThanhVienHopDong.LayDanhSachTheoHopDong(maHD)).ToList();
         hopDong.DichVus = (await DichVuHopDong.LayDanhSachTheoHopDong(maHD)).ToList();
         return hopDong;
+    }
+
+    // UC 1.4.18 Lập phiếu đối soát
+    public static Task<IReadOnlyList<HopDong>> LayDanhSachChoDoiSoat() =>
+        HopDongDB.LayDanhSachChoDoiSoat();
+
+    public static Task<HopDong?> LayThongTinLuuTru(string maHD) =>
+        HopDongDB.LayThongTinLuuTru(maHD);
+
+    public static Task<HopDong?> LayChiTietHopDong(string maHD) =>
+        LayThongTinLuuTru(maHD);
+
+    public int TinhSoThangThucTe(DateTime thoiDiemDoiSoat)
+    {
+        if (thoiDiemDoiSoat <= NgayBatDau) return 0;
+        int years = thoiDiemDoiSoat.Year - NgayBatDau.Year;
+        int months = thoiDiemDoiSoat.Month - NgayBatDau.Month;
+        int totalMonths = years * 12 + months;
+        if (thoiDiemDoiSoat.Day < NgayBatDau.Day)
+            totalMonths--;
+        return Math.Max(0, totalMonths);
+    }
+
+    public int TinhSoThangHopDong()
+    {
+        int years = NgayKetThuc.Year - NgayBatDau.Year;
+        int months = NgayKetThuc.Month - NgayBatDau.Month;
+        int totalMonths = years * 12 + months;
+        if (NgayKetThuc.Day < NgayBatDau.Day)
+            totalMonths--;
+        return Math.Max(0, totalMonths);
     }
 }
 

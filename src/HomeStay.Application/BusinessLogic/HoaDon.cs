@@ -1,0 +1,31 @@
+namespace HomeStay.Application.BusinessLogic;
+
+using HomeStay.Application.DataAccess.DBs;
+
+public sealed class HoaDon
+{
+    public string MaHoaDon { get; set; } = string.Empty;
+    public DateTime NgayLap { get; set; }
+    public DateTime? HanThanhToan { get; set; }
+    public string LoaiHoaDon { get; set; } = string.Empty;
+    public decimal TongTien { get; set; }
+    public string TrangThai { get; set; } = string.Empty;
+    public string? GhiChu { get; set; }
+    public string MaHD { get; set; } = string.Empty;
+    public string? MaNV { get; set; }
+
+    public static Task<IReadOnlyList<HoaDon>> LayDanhSachChuaThanhToan(string maHD) =>
+        HoaDonDB.LayDanhSachChuaThanhToanTheoHD(maHD);
+
+    public static Task<IReadOnlyList<HoaDon>> LayDSHoaDonTheoPhieuDoiSoat(string maPDS) =>
+        HoaDonDB.GetDSHoaDonTheoMaPDS(maPDS);
+
+    public static Task<IReadOnlyList<HoaDon>> LayDSHoaDonCanThuTheoPDS(string maPDS) =>
+        HoaDonDB.GetDSHoaDonCanThuTheoPDS(maPDS);
+
+    public static Task<decimal> TinhTongKhauTru(string maPDS) =>
+        HoaDonDB.TinhTongKhauTru(maPDS);
+
+    public static Task<decimal> TinhTongCanThu(string maPDS) =>
+        HoaDonDB.TinhTongCanThu(maPDS);
+}

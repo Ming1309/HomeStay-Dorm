@@ -33,11 +33,25 @@ builder.Services.AddSingleton<IMinhChungThuHoiStorage>(new MinhChungThuHoiFileSt
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
+
+// Shared notification service (UC 1.4.17, 1.4.18, ...)
+builder.Services.AddScoped<DichVuThongBao>();
+
+// Đối soát / trả phòng / hoàn cọc
+builder.Services.AddScoped<LapPhieuDoiSoat>();
+builder.Services.AddScoped<ThanhToanTraPhong>();
+builder.Services.AddScoped<LapPhieuHoanCoc>();
+
+// Cọc / hồ sơ / lịch hẹn
 builder.Services.AddScoped<NhapHoSoLuuTru>();
 builder.Services.AddScoped<GhiNhanThanhToanCoc>();
 builder.Services.AddScoped<XacNhanKhoanTienCoc>();
 builder.Services.AddScoped<TraCuuPhieuCoc>();
 builder.Services.AddScoped<HuyPhieuCoc>();
+builder.Services.AddScoped<XetDuyetHoSo>();
+builder.Services.AddScoped<TraCuuHopDong>();
+builder.Services.AddScoped<LapBienBanThuHoiTaiSan>();
+
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();
@@ -45,9 +59,6 @@ builder.Services.AddScoped<TaoLichHen>();
 builder.Services.AddScoped<TraCuuLichHen>();
 builder.Services.AddScoped<SuaLichHen>();
 builder.Services.AddScoped<LapPhieuDangKy>();
-builder.Services.AddScoped<TraCuuHopDong>();
-builder.Services.AddScoped<DichVuThongBao>();
-builder.Services.AddScoped<LapBienBanThuHoiTaiSan>();
 
 var app = builder.Build();
 

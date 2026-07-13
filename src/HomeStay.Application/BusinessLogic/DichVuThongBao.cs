@@ -28,6 +28,24 @@ public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvide
         await tb.Luu();
     }
 
+    /// <summary>
+    /// UC 1.4.18: sau khi lập phiếu đối soát, thông báo Quản lý.
+    /// Gọi trong transaction đã mở của use-case.
+    /// </summary>
+    public async Task GuiThongBaoQuanLy(string maPDS)
+    {
+        var tb = ThongBao.Tao(
+            tieuDe: "Phiếu đối soát mới",
+            noiDung: $"Phiếu đối soát {maPDS} đã được lập. Vui lòng kiểm tra kết quả và tiến hành thanh lý hợp đồng nếu đủ điều kiện.",
+            vaiTroNhan: "QuanLy",
+            lienKet: "/manager/termination",
+            tone: "blue",
+            maNVGui: null,
+            maThamChieu: maPDS,
+            thoiGianTao: timeProvider.GetLocalNow().DateTime);
+        await tb.Luu();
+    }
+
     public async Task GuiTheoVaiTro(
         string vaiTroNhan,
         string tieuDe,

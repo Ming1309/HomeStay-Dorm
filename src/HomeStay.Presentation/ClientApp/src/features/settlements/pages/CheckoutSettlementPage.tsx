@@ -1,8 +1,6 @@
-import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { CheckCircle2, CreditCard, Info as InfoIcon, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, CreditCard, Search } from "lucide-react";
 import { toast } from "sonner";
-
 
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -24,52 +22,114 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/table";
-import {
-  ReceiptCollectionDialog,
-  type ReceiptCollectionInvoice,
-} from "@/features/payments/components/ReceiptCollectionDialog";
+import { ReceiptCollectionDialog } from "@/features/payments/components/ReceiptCollectionDialog";
 import { cn } from "@/shared/lib/utils";
-import { useWorkflowStore, type DepositRequest, type ReceiptVoucher } from "@/app/providers/workflow-store";
-
-
 
 const ACCOUNTANT_NAME = "Nguyễn Thị Thu — Kế toán";
 const formatCurrency = (amount: number) =>
   `${new Intl.NumberFormat("vi-VN").format(amount)} VNĐ`;
 
-type InvoiceRow = ReceiptCollectionInvoice;
+interface PhieuDoiSoatDto {
+  maPDS: string;
+  maHD?: string;
+  maPhieuCoc: string;
+  tenKhachHang: string;
+  phong: string;
+  tienThuThem: number;
+  ngayDoiSoat: string;
+  trangThai: string;
+}
 
-/** Row in the full deduction table (no paid/remaining split needed here) */
-type DeductionRow = {
-  code: string;
-  type: string;
-  description: string;
-  amount: number;
-};
+interface HoaDonDto {
+  maHoaDon: string;
+  loaiHoaDon: string;
+  tongTien: number;
+  ngayLap: string;
+}
+
+interface ChiTietPhieuDoiSoatDto {
+  maPDS: string;
+  maHD?: string;
+  maPhieuCoc: string;
+  tenKhachHang: string;
+  phone: string;
+  email: string;
+  phong: string;
+  soTienCoc: number;
+  ngayDoiSoat: string;
+  tyLeHoanCoc: number;
+  tongKhauTru: number;
+  tienHoan: number;
+  tienThuThem: number;
+  trangThai: string;
+  hoaDons: HoaDonDto[];
+}
 
 export function AccountantSettlementPage() {
   return <AccountantSettlementScreen currentPath="/accountant/thanh-toan-tra-phong" />;
 }
 
 export function AccountantSettlementScreen({ currentPath }: { currentPath: string }) {
-  const { depositRequests, receiptVouchers } = useWorkflowStore();
-
-  const queue = useMemo(
-    () =>
-      depositRequests.filter((item) => {
-        const additionalDue = getAdditionalDue(item);
-        const paid = getPaidAmount(receiptVouchers, getContractCode(item));
-        return item.status === "pending_settlement" && additionalDue > 0 && additionalDue - paid > 0;
-      }),
-    [depositRequests, receiptVouchers],
-  );
+  const [queue, setQueue] = useState<PhieuDoiSoatDto[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selected = queue.find((item) => item.id === selectedId) ?? null;
+  const [selectedDetails, setSelectedDetails] = useState<ChiTietPhieuDoiSoatDto | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchQueue = async () => {
+    try {
+      const res = await fetch("/api/payments/pds-cho-thu");
+      if (res.ok) {
+        const data = await res.json();
+        setQueue(data);
+      }
+    } catch (err) {
+      console.error("Error fetching queue:", err);
+    }
+  };
+
+  const fetchDetails = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/payments/pds-details/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedDetails(data);
+      }
+    } catch (err) {
+      console.error("Error fetching details:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQueue();
+  }, []);
+
+  useEffect(() => {
+    if (selectedId) {
+      fetchDetails(selectedId);
+    } else {
+      setSelectedDetails(null);
+    }
+  }, [selectedId]);
 
   return (
     <div className="flex h-full overflow-hidden">
-      <QueuePanel items={queue} selectedId={selectedId} onSelect={setSelectedId} />
-      <SettlementWorkspace request={selected} />
+      <QueuePanel
+        items={queue}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+      />
+      <SettlementWorkspace
+        details={selectedDetails}
+        isLoading={isLoading}
+        onSuccess={() => {
+          setSelectedId(null);
+          setSelectedDetails(null);
+          fetchQueue();
+        }}
+      />
     </div>
   );
 }
@@ -81,20 +141,19 @@ function QueuePanel({
   selectedId,
   onSelect,
 }: {
-  items: DepositRequest[];
+  items: PhieuDoiSoatDto[];
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
-  const { receiptVouchers } = useWorkflowStore();
   const [query, setQuery] = useState("");
   const filtered = items.filter((item) => {
     const q = query.toLowerCase().trim();
     if (!q) return true;
     return (
-      getReconciliationCode(item).toLowerCase().includes(q) ||
-      getContractCode(item).toLowerCase().includes(q) ||
-      item.customerName.toLowerCase().includes(q) ||
-      item.room.toLowerCase().includes(q)
+      item.maPDS.toLowerCase().includes(q) ||
+      (item.maHD || "").toLowerCase().includes(q) ||
+      item.tenKhachHang.toLowerCase().includes(q) ||
+      item.phong.toLowerCase().includes(q)
     );
   });
 
@@ -123,35 +182,33 @@ function QueuePanel({
         ) : (
           <ul className="divide-y divide-gray-100">
             {filtered.map((item) => {
-              const paid = getPaidAmount(receiptVouchers, getContractCode(item));
-              const remaining = Math.max(getAdditionalDue(item) - paid, 0);
               return (
-                <li key={item.id}>
+                <li key={item.maPDS}>
                   <button
                     type="button"
-                    onClick={() => onSelect(item.id)}
+                    onClick={() => onSelect(item.maPDS)}
                     className={cn(
                       "flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left transition-colors hover:bg-rose-50/40",
-                      selectedId === item.id && "border-l-rose-500 bg-rose-50/60",
+                      selectedId === item.maPDS && "border-l-rose-500 bg-rose-50/60",
                     )}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-mono text-xs font-bold text-blue-600">
-                        {getReconciliationCode(item)}
+                        {item.maPDS}
                       </span>
                       <Badge className="h-5 bg-rose-100 text-[10px] font-semibold text-rose-700 hover:bg-rose-100">
                         Cần thu thêm
                       </Badge>
                     </div>
                     <p className="truncate text-sm font-semibold text-gray-800">
-                      {item.customerName}
+                      {item.tenKhachHang}
                     </p>
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-mono text-gray-500">
-                        {item.room} · {getContractCode(item)}
+                        {item.phong} {item.maHD ? `· ${item.maHD}` : ""}
                       </span>
                       <span className="font-mono font-semibold text-rose-700">
-                        {formatCurrency(remaining)}
+                        {formatCurrency(item.tienThuThem)}
                       </span>
                     </div>
                   </button>
@@ -167,15 +224,28 @@ function QueuePanel({
 
 // ─── Main workspace ───────────────────────────────────────────────────────────
 
-function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
-  const { collectReceiptForInvoices, receiptVouchers, settleDepositReconciliation } =
-    useWorkflowStore();
+function SettlementWorkspace({
+  details,
+  isLoading,
+  onSuccess,
+}: {
+  details: ChiTietPhieuDoiSoatDto | null;
+  isLoading: boolean;
+  onSuccess: () => void;
+}) {
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
-  const [issuedVoucher, setIssuedVoucher] = useState<ReceiptVoucher | null>(null);
-  const [remainingAfterReceipt, setRemainingAfterReceipt] = useState(0);
+  const [issuedVoucher, setIssuedVoucher] = useState<{ code: string; amount: number } | null>(null);
 
-  if (!request) {
+  if (isLoading) {
+    return (
+      <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
+        <p className="text-sm text-gray-500">Đang tải chi tiết phiếu đối soát...</p>
+      </section>
+    );
+  }
+
+  if (!details) {
     return (
       <section className="flex h-full flex-1 items-center justify-center bg-gray-50/60">
         <div className="text-center">
@@ -191,60 +261,60 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
     );
   }
 
-  const reconciliationCode = getReconciliationCode(request);
-  const contractCode = getContractCode(request);
-  const paidAmount = getPaidAmount(receiptVouchers, contractCode);
-  const reconciliationSummary = getReconciliationSummary(request);
-  const remainingDebt = Math.max(reconciliationSummary.additionalDue - paidAmount, 0);
-
-  // Full deduction rows (for the main deduction table)
-  const deductionRows = buildDeductionRows(request);
-
-  // Invoice rows for the ReceiptCollectionDialog (needs paid/remaining split)
-  const invoiceRows = buildInvoiceRows(request, paidAmount);
-
-  const handleCreateReceipt = (data: {
+  const handleCreateReceipt = async (data: {
     amount: number;
     paymentMethod: "cash" | "bank-transfer";
     evidenceName: string;
     note: string;
-    collector: string;
-    collectedAt: string;
-    scenario: "full" | "partial";
   }) => {
-    const result = collectReceiptForInvoices({
-      source: "checkout_settlement",
-      contractId: contractCode,
-      customerName: request.customerName,
-      amount: data.amount,
-      totalDebt: remainingDebt,
-      paymentMethod: data.paymentMethod,
-      collector: data.collector,
-      date: data.collectedAt,
-      note: data.note,
-    });
-    const nextRemainingDebt = Math.max(remainingDebt - data.amount, 0);
-    setIssuedVoucher(result.voucher);
-    setRemainingAfterReceipt(nextRemainingDebt);
-    setReceiptOpen(false);
-    setSuccessOpen(true);
+    try {
+      const res = await fetch("/api/payments/phieu-thu", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          maPDS: details.maPDS,
+          soTienThu: data.amount,
+          phuongThucThanhToan: data.paymentMethod === "bank-transfer" ? "BankTransfer" : "Cash",
+          anhMinhChung: data.evidenceName,
+        }),
+      });
 
-    if (nextRemainingDebt === 0) {
-      settleDepositReconciliation(request.id);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Không thể lập phiếu thu.");
+      }
+
+      const phieuThu = await res.json();
+      setIssuedVoucher({ code: phieuThu.maPT, amount: phieuThu.soTienThu });
+      setReceiptOpen(false);
+      setSuccessOpen(true);
+
+      toast.success("Lập phiếu thu thành công", {
+        description: `Mã phiếu thu: ${phieuThu.maPT}`,
+        icon: <CheckCircle2 className="size-4 text-emerald-600" />,
+      });
+    } catch (err: any) {
+      toast.error("Lỗi lập phiếu thu", {
+        description: err.message,
+      });
     }
-
-    toast.success("Lập phiếu thu thành công", {
-      description: `Mã phiếu thu: ${result.voucher.code}`,
-      icon: <CheckCircle2 className="size-4 text-emerald-600" />,
-    });
   };
+
+  const dialogInvoices = details.hoaDons.map((hd) => ({
+    code: hd.maHoaDon,
+    type: hd.loaiHoaDon === "DichVu" ? "Dịch vụ" : "Bồi thường",
+    description: hd.loaiHoaDon === "DichVu" ? "Hóa đơn dịch vụ" : "Hóa đơn bồi thường",
+    amount: hd.tongTien,
+    paid: 0,
+    remaining: hd.tongTien,
+  }));
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
       {/* ── Sticky header ── */}
       <div className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-gray-200 bg-white px-5">
         <div className="flex items-center gap-2">
-          <h1 className="font-mono text-sm font-bold text-gray-900">{reconciliationCode}</h1>
+          <h1 className="font-mono text-sm font-bold text-gray-900">{details.maPDS}</h1>
           <Badge className="h-5 bg-slate-100 text-[10px] font-semibold text-slate-600 hover:bg-slate-100">
             Đã chốt
           </Badge>
@@ -252,7 +322,7 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
             Cần thu thêm
           </Badge>
           <span className="hidden text-xs text-gray-500 md:inline">
-            {request.customerName} · {request.room} · {contractCode}
+            {details.tenKhachHang} · {details.phong} {details.maHD ? `· ${details.maHD}` : ""}
           </span>
         </div>
         <div className="text-right">
@@ -260,7 +330,7 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
             Cần thu thêm
           </p>
           <p className="font-mono text-lg font-bold leading-tight text-rose-700">
-            {formatCurrency(remainingDebt)}
+            {formatCurrency(details.tienThuThem)}
           </p>
         </div>
       </div>
@@ -276,11 +346,11 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
                 Thông tin phiếu đối soát
               </h3>
               <div className="grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-3">
-                <InfoField label="Mã phiếu đối soát" value={reconciliationCode} mono />
-                <InfoField label="Hợp đồng" value={contractCode} mono />
-                <InfoField label="Khách hàng" value={request.customerName} />
-                <InfoField label="Phòng" value={request.room} mono />
-                <InfoField label="Ngày đối soát" value={formatDate(request.updatedAt)} />
+                <InfoField label="Mã phiếu đối soát" value={details.maPDS} mono />
+                <InfoField label="Hợp đồng / Phiếu cọc" value={details.maHD || details.maPhieuCoc} mono />
+                <InfoField label="Khách hàng" value={details.tenKhachHang} />
+                <InfoField label="Phòng" value={details.phong} />
+                <InfoField label="Ngày đối soát" value={formatDate(details.ngayDoiSoat)} />
                 <InfoField label="Người lập đối soát" value={ACCOUNTANT_NAME} />
               </div>
             </CardContent>
@@ -305,27 +375,35 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {deductionRows.map((row) => (
-                    <TableRow key={row.code} className="hover:bg-transparent">
-                      <TableCell className="px-4 py-2.5 font-mono text-xs font-semibold text-blue-700">
-                        {row.code}
-                      </TableCell>
-                      <TableCell className="py-2.5 text-sm text-gray-600">
-                        {row.type}
-                      </TableCell>
-                      <TableCell className="py-2.5 text-sm text-gray-700">
-                        {row.description}
-                      </TableCell>
-                      <TableCell className="py-2.5 text-right font-mono text-sm text-gray-800">
-                        {formatCurrency(row.amount)}
-                      </TableCell>
-                      <TableCell className="px-4 py-2.5">
-                        <Badge className="h-5 bg-rose-100 text-[10px] font-semibold text-rose-700 hover:bg-rose-100">
-                          Chưa thanh toán
-                        </Badge>
+                  {details.hoaDons.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="py-6 text-center text-xs text-gray-400">
+                        Không có khoản khấu trừ nào.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    details.hoaDons.map((row) => (
+                      <TableRow key={row.maHoaDon} className="hover:bg-transparent">
+                        <TableCell className="px-4 py-2.5 font-mono text-xs font-semibold text-blue-700">
+                          {row.maHoaDon}
+                        </TableCell>
+                        <TableCell className="py-2.5 text-sm text-gray-600">
+                          {row.loaiHoaDon === "DichVu" ? "Dịch vụ" : "Bồi thường"}
+                        </TableCell>
+                        <TableCell className="py-2.5 text-sm text-gray-700">
+                          {row.loaiHoaDon === "DichVu" ? "Hóa đơn dịch vụ" : "Hóa đơn bồi thường"}
+                        </TableCell>
+                        <TableCell className="py-2.5 text-right font-mono text-sm text-gray-800">
+                          {formatCurrency(row.tongTien)}
+                        </TableCell>
+                        <TableCell className="px-4 py-2.5">
+                          <Badge className="h-5 bg-rose-100 text-[10px] font-semibold text-rose-700 hover:bg-rose-100">
+                            Chưa thanh toán
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
                 <TableFooter className="bg-gray-50/80">
                   <TableRow className="hover:bg-transparent">
@@ -333,7 +411,7 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
                       Tổng khấu trừ:
                     </TableCell>
                     <TableCell className="py-2.5 text-right font-mono text-sm font-bold text-gray-900">
-                      {formatCurrency(reconciliationSummary.totalDeductions)}
+                      {formatCurrency(details.tongKhauTru)}
                     </TableCell>
                     <TableCell />
                   </TableRow>
@@ -349,7 +427,6 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
                 <h3 className="text-sm font-semibold text-gray-800">Kết quả đối soát</h3>
               </div>
 
-              {/* Three-column layout */}
               <div className="grid gap-3 md:grid-cols-3">
                 {/* Thông tin cọc */}
                 <div className="rounded-md border border-gray-200 bg-white p-3">
@@ -359,16 +436,16 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
                   <div className="space-y-2">
                     <SummaryLine
                       label="Tiền cọc ban đầu"
-                      value={formatCurrency(reconciliationSummary.initialDeposit)}
+                      value={formatCurrency(details.soTienCoc)}
                     />
                     <SummaryLine
                       label="Tỷ lệ hoàn cọc áp dụng"
-                      value={`${reconciliationSummary.refundRate}%`}
+                      value={`${Math.round(details.tyLeHoanCoc * 100)}%`}
                     />
                     <div className="flex items-center justify-between gap-3 rounded bg-gray-50 px-2 py-1 text-xs">
                       <span className="font-medium text-gray-600">Cọc được xét hoàn</span>
                       <span className="font-mono font-bold text-gray-900">
-                        {formatCurrency(reconciliationSummary.baseRefund)}
+                        {formatCurrency(details.soTienCoc * details.tyLeHoanCoc)}
                       </span>
                     </div>
                   </div>
@@ -382,11 +459,11 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
                   <div className="space-y-2">
                     <SummaryLine
                       label="Tổng khấu trừ"
-                      value={formatCurrency(reconciliationSummary.totalDeductions)}
+                      value={formatCurrency(details.tongKhauTru)}
                     />
                     <SummaryLine
-                      label="Đã bù trừ bằng cọc được xét hoàn"
-                      value={formatCurrency(reconciliationSummary.offsetByDeposit)}
+                      label="Đã bù trừ bằng cọc"
+                      value={formatCurrency(Math.min(details.soTienCoc * details.tyLeHoanCoc, details.tongKhauTru))}
                     />
                   </div>
                 </div>
@@ -399,18 +476,18 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
                   <div className="flex flex-1 flex-col justify-center">
                     <p className="text-[11px] text-gray-500">Khách cần thanh toán thêm</p>
                     <p className="mt-1 font-mono text-2xl font-bold text-rose-700">
-                      {formatCurrency(reconciliationSummary.additionalDue)}
+                      {formatCurrency(details.tienThuThem)}
                     </p>
                     <p className="mt-2 text-[11px] leading-relaxed text-gray-500">
-                      = Tổng khấu trừ ({formatCurrency(reconciliationSummary.totalDeductions)}) −
-                      Cọc được xét hoàn ({formatCurrency(reconciliationSummary.baseRefund)})
+                      = Tổng khấu trừ ({formatCurrency(details.tongKhauTru)}) −
+                      Cọc được xét hoàn ({formatCurrency(details.soTienCoc * details.tyLeHoanCoc)})
                     </p>
                   </div>
                 </div>
               </div>
 
               <p className="mt-3 text-xs text-gray-400">
-                Chính sách áp dụng: CSHC_003 · Hoàn {reconciliationSummary.refundRate}%
+                Chính sách áp dụng: Hoàn {Math.round(details.tyLeHoanCoc * 100)}%
               </p>
             </CardContent>
           </Card>
@@ -424,16 +501,16 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
               <div className="grid gap-3 md:grid-cols-3">
                 <DebtMetric
                   label="Tổng phải thu thêm"
-                  value={reconciliationSummary.additionalDue}
+                  value={details.tienThuThem}
                 />
-                <DebtMetric label="Đã thu" value={paidAmount} />
+                <DebtMetric label="Đã thu" value={0} />
                 <DebtMetric
                   label="Còn phải thu"
-                  value={remainingDebt}
-                  danger={remainingDebt > 0}
+                  value={details.tienThuThem}
+                  danger={details.tienThuThem > 0}
                 />
               </div>
-              {remainingDebt > 0 && (
+              {details.tienThuThem > 0 && (
                 <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                   Khách còn công nợ cần thanh toán trước khi thanh lý hợp đồng.
                 </p>
@@ -450,7 +527,7 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
           type="button"
           onClick={() => setReceiptOpen(true)}
           className="shrink-0 bg-blue-600 hover:bg-blue-700"
-          disabled={remainingDebt <= 0}
+          disabled={details.tienThuThem <= 0}
         >
           <CreditCard className="size-4" />
           Tiến hành thu tiền
@@ -462,20 +539,24 @@ function SettlementWorkspace({ request }: { request: DepositRequest | null }) {
         onOpenChange={setReceiptOpen}
         source="checkout_settlement"
         contextLabel="Thanh toán trả phòng"
-        customerName={request.customerName}
-        room={request.room}
-        contractCode={contractCode}
-        reconciliationCode={reconciliationCode}
-        invoices={invoiceRows.filter((invoice) => invoice.remaining > 0)}
-        totalDebt={remainingDebt}
+        customerName={details.tenKhachHang}
+        room={details.phong}
+        contractCode={details.maHD || ""}
+        reconciliationCode={details.maPDS}
+        invoices={dialogInvoices}
+        totalDebt={details.tienThuThem}
         onSubmit={handleCreateReceipt}
       />
       <SuccessDialog
         open={successOpen}
-        onOpenChange={setSuccessOpen}
+        onOpenChange={(open) => {
+          setSuccessOpen(open);
+          if (!open) {
+            onSuccess();
+          }
+        }}
         voucher={issuedVoucher}
-        reconciliationCode={reconciliationCode}
-        remainingAfterReceipt={remainingAfterReceipt}
+        reconciliationCode={details.maPDS}
       />
     </section>
   );
@@ -488,16 +569,13 @@ function SuccessDialog({
   onOpenChange,
   voucher,
   reconciliationCode,
-  remainingAfterReceipt,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  voucher: ReceiptVoucher | null;
+  voucher: { code: string; amount: number } | null;
   reconciliationCode: string;
-  remainingAfterReceipt: number;
 }) {
   if (!voucher) return null;
-  const isSettled = remainingAfterReceipt === 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -505,25 +583,13 @@ function SuccessDialog({
         <DialogHeader>
           <DialogTitle>Thu tiền trả phòng thành công</DialogTitle>
           <DialogDescription>
-            {isSettled
-              ? `Phiếu thu ${voucher.code} đã được tạo. Công nợ của Phiếu đối soát ${reconciliationCode} đã được thanh toán đầy đủ.`
-              : `Phiếu thu ${voucher.code} đã được tạo. Phiếu đối soát ${reconciliationCode} cần thu thêm ${formatCurrency(remainingAfterReceipt)}.`}
+            Phiếu thu {voucher.code} đã được tạo. Công nợ của Phiếu đối soát {reconciliationCode} đã được thanh toán đầy đủ ({formatCurrency(voucher.amount)}).
           </DialogDescription>
         </DialogHeader>
-        {isSettled && (
-          <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-            Phiếu đối soát đã được cập nhật thành &apos;Đã tất toán&apos;.
-          </div>
-        )}
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+          Phiếu đối soát đã được cập nhật thành &apos;Đã tất toán&apos;.
+        </div>
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-8 text-xs"
-            onClick={() => onOpenChange(false)}
-          >
-            Xem phiếu thu
-          </Button>
           <Button
             type="button"
             className="h-8 bg-blue-600 text-xs hover:bg-blue-700"
@@ -574,92 +640,6 @@ function DebtMetric({
       </p>
     </div>
   );
-}
-
-// ─── Pure helpers ─────────────────────────────────────────────────────────────
-
-function getReconciliationCode(request: DepositRequest): string {
-  return `PDS-${request.code.replace(/\D/g, "").padStart(4, "0")}`;
-}
-
-function getContractCode(request: DepositRequest): string {
-  return `HD-${request.code}`;
-}
-
-/** Total additional amount customer owes = sum of all reconciliation items */
-function getAdditionalDue(request: DepositRequest): number {
-  const totalDeductions = request.reconciliationItems?.reduce((s, l) => s + l.amount, 0) ?? 0;
-  const depositAmount = request.depositAmount ?? 0;
-  const refundRate = 70;
-  const baseRefund = Math.round(depositAmount * (refundRate / 100));
-  // additionalDue = totalDeductions - baseRefund (can't be negative)
-  return Math.max(totalDeductions - baseRefund, 0);
-}
-
-function getPaidAmount(vouchers: ReceiptVoucher[], contractCode: string): number {
-  return vouchers
-    .filter((v) => v.contractId === contractCode)
-    .reduce((s, v) => s + v.amount, 0);
-}
-
-/** Build the full deduction rows for the main table (no paid/remaining split) */
-function buildDeductionRows(request: DepositRequest): DeductionRow[] {
-  return (request.reconciliationItems ?? []).map((line, index) => ({
-    code: getInvoiceCode(index),
-    type: line.description.toLowerCase().includes("vệ sinh") ? "Dịch vụ" : "Bồi thường",
-    description: line.description,
-    amount: line.amount,
-  }));
-}
-
-/** Build invoice rows for the ReceiptCollectionDialog (needs paid/remaining split) */
-function buildInvoiceRows(request: DepositRequest, paidAmount: number): InvoiceRow[] {
-  const additionalDue = getAdditionalDue(request);
-  // The only "invoice" the accountant actually collects is the net additional due
-  // We represent it as a single virtual invoice matching the total payable
-  const deductions = buildDeductionRows(request);
-  // Spread paidAmount proportionally across the items, but since the deposit
-  // already covers the first chunk, only the remaining additionalDue is collected.
-  // For the dialog we show a single aggregated row.
-  const paid = Math.min(paidAmount, additionalDue);
-  const remaining = Math.max(additionalDue - paid, 0);
-  return deductions.map((row, index) => {
-    // Proportional split for display purposes
-    const proportion = additionalDue > 0 ? row.amount / (request.reconciliationItems?.reduce((s, l) => s + l.amount, 0) ?? 1) : 0;
-    const rowPaid = Math.round(paid * proportion);
-    const rowRemaining = Math.max(row.amount - rowPaid, 0);
-    return {
-      code: row.code,
-      type: row.type,
-      description: row.description,
-      amount: row.amount,
-      paid: rowPaid,
-      remaining: rowRemaining,
-    };
-  });
-}
-
-function getInvoiceCode(index: number): string {
-  const codes = ["HD-BT-001", "HD-DV-002"];
-  return codes[index] ?? `HD-CN-${String(index + 1).padStart(3, "0")}`;
-}
-
-function getReconciliationSummary(request: DepositRequest) {
-  const initialDeposit = request.depositAmount ?? 0;
-  const refundRate = 70;
-  const baseRefund = Math.round(initialDeposit * (refundRate / 100));
-  const totalDeductions = request.reconciliationItems?.reduce((s, l) => s + l.amount, 0) ?? 0;
-  // offsetByDeposit = how much of the deposit is used to cover deductions
-  const offsetByDeposit = Math.min(baseRefund, totalDeductions);
-  const additionalDue = Math.max(totalDeductions - baseRefund, 0);
-  return {
-    initialDeposit,
-    refundRate,
-    baseRefund,
-    totalDeductions,
-    offsetByDeposit,
-    additionalDue,
-  };
 }
 
 function formatDate(value: string): string {

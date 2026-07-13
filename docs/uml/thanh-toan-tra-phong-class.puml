@@ -1,0 +1,181 @@
+@startuml ThanhToanTraPhong_3Lop
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam classHeaderBackgroundColor #AED6F1
+skinparam classBorderColor #2980B9
+skinparam classBackgroundColor #EBF5FB
+skinparam ArrowColor #2C3E50
+skinparam ArrowThickness 1.5
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam linetype ortho
+
+' =====================
+' LỚP GIAO DIỆN
+' =====================
+
+package "Lớp giao diện" #EBF5FB {
+
+    class MHThanhToanTraPhong {
+    ' --- Danh sách phiếu ---
+    +grvDSPhieuDoiSoat : DataGridView
+    +txtTimKiem : TextBox
+    ' --- Thông tin phiếu đối soát ---
+    +lblMaPhieuDoiSoat : Label
+    +lblHopDong : Label
+    +lblKhachHang : Label
+    +lblPhong : Label
+    +lblNgayDoiSoat : Label
+    +lblNguoiLap : Label
+    +lblTrangThai : Label
+    +lblKetQua : Label
+    ' --- Bảng hóa đơn khấu trừ ---
+    +grvDSHoaDon : DataGridView
+    ' --- Kết quả đối soát ---
+    +lblTienCocBanDau : Label
+    +lblTyLeHoanCoc : Label
+    +lblCocDuocXetHoan : Label
+    +lblTongKhauTru : Label
+    +lblDaBuTru : Label
+    +lblConPhaiThu : Label
+    +lblTongPhaiThuThem : Label
+    +lblDaThu : Label
+    +lblConPhaiThuThem : Label
+    ' --- Nút hành động màn hình chính ---
+    +btnTienHanhThuTien : Button
+
+    ' --- Phương thức ---
+    +hienThiForm()
+    +loadDSPhieuDoiSoatCanThu()
+    +hienThiChiTietPhieuDoiSoat()
+    +hienThiDSHoaDonKhauTru()
+    +hienThiKetQuaDoiSoat()
+    +btnTienHanhThuTien_Click()
+    +hienThiDialogLapPhieuThu()
+    +tinhConLaiSauThu()
+    +btnXacNhanThuTien_Click()
+    +btnQuayLai_Click()
+}
+}
+
+' =====================
+' LỚP NGHIỆP VỤ
+' =====================
+
+package "Lớp nghiệp vụ" #FEF9E7 {
+
+    class PhieuDoiSoat {
+        +maPDS : String
+        +ngayDoiSoat : DateTime
+        +tyLeHoanCoc : Decimal
+        +tongKhauTru : Decimal
+        +tienHoan : Decimal
+        +tienThuThem : Decimal
+        +trangThai : String
+        +ghiChu : String
+        +maHD : String
+        +maNV : String
+        +maPhieuCoc : String
+        +maGiuong : String
+        ' ---
+        +layDSPhieuDoiSoatDaChot() : List<PhieuDoiSoat>
+        +layChiTietPhieuDoiSoat(maPDS : String) : PhieuDoiSoat
+        +tinhToanKetQua(maPDS : String) : Decimal
+        +capNhatTrangThai(maPDS : String, trangThai : String) : Boolean
+    }
+
+    class HoaDon {
+        +maHoaDon : String
+        +ngayLap : DateTime
+        +hanThanhToan : DateTime
+        +loaiHoaDon : String
+        +tongTien : Decimal
+        +trangThai : String
+        +ghiChu : String
+        +maHD : String
+        +maNV : String
+        ' ---
+        +layDSHoaDonTheoPhieuDoiSoat(maPDS : String) : List<HoaDon>
+        +tinhTongKhauTru(maPDS : String) : Decimal
+    }
+
+    class PhieuThu {
+        +maPT : String
+        +soTienThu : Decimal
+        +thoiGian : DateTime
+        +phuongThucThanhToan : String
+        +anhMinhChung : String
+        +maHoaDon : String
+        +maPhieuCoc : String
+        +maPDS : String
+        +maNV : String
+        ' ---
+        +taoPhieuThu(maPDS : String, soTien : Decimal, maNV : String) : PhieuThu
+    }
+
+    class ChiTietDoiSoat {
+        +maPDS : String
+        +maHoaDon : String
+        ' ---
+        +layDSHoaDonThuocPhieuDoiSoat(maPDS : String) : List<HoaDon>
+    }
+
+    class NhanVien {
+        +maNV : String
+        +hoTen : String
+        +sdt : String
+        +vaiTro : String
+        +maCN : String
+        ' ---
+        +layThongTinNhanVien(maNV : String) : NhanVien
+    }
+}
+
+' =====================
+' LỚP TRUY XUẤT DỮ LIỆU
+' =====================
+
+package "Lớp truy xuất dữ liệu" #FDF2F8 {
+
+    class PhieuDoiSoatDB {
+        +getDSPhieuDoiSoatDaChot() : List<PhieuDoiSoat>
+        +getPhieuDoiSoatTheoMaPDS(maPDS : String) : PhieuDoiSoat
+        +updateTrangThai(maPDS : String, trangThai : String) : Boolean
+    }
+
+    class HoaDonDB {
+        +getDSHoaDonTheoMaPDS(maPDS : String) : List<HoaDon>
+        +tinhTongKhauTru(maPDS : String) : Decimal
+    }
+
+    class PhieuThuDB {
+        +insertPhieuThu(phieuThu : PhieuThu) : String
+    }
+
+    class ChiTietDoiSoatDB {
+        +getDSHoaDonThuocPhieuDoiSoat(maPDS : String) : List<HoaDon>
+    }
+
+    class NhanVienDB {
+        +getNhanVienTheoMaNV(maNV : String) : NhanVien
+    }
+}
+
+' =====================
+' QUAN HỆ
+' =====================
+
+MHThanhToanTraPhong o-- PhieuDoiSoat
+MHThanhToanTraPhong o-- HoaDon
+MHThanhToanTraPhong o-- PhieuThu
+MHThanhToanTraPhong o-- ChiTietDoiSoat
+MHThanhToanTraPhong o-- NhanVien
+
+PhieuDoiSoat   o-- PhieuDoiSoatDB
+HoaDon         o-- HoaDonDB
+PhieuThu       o-- PhieuThuDB
+ChiTietDoiSoat o-- ChiTietDoiSoatDB
+NhanVien       o-- NhanVienDB
+
+@enduml

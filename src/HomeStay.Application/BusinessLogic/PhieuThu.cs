@@ -1,5 +1,7 @@
 namespace HomeStay.Application.BusinessLogic;
 
+using System;
+using System.Threading.Tasks;
 using HomeStay.Application.DataAccess.DBs;
 
 public sealed class PhieuThu
@@ -14,6 +16,31 @@ public sealed class PhieuThu
     public string? MaPDS { get; set; }
     public string? MaNV { get; set; }
 
+    // ==========================================================
+    // Methods from feat/thanh-toan-tra-phong branch
+    // ==========================================================
+    public static PhieuThu TaoPhieuThu(string maPDS, decimal soTien, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
+    {
+        if (soTien <= 0)
+            throw new ArgumentException("Số tiền thu phải lớn hơn 0.");
+
+        return new PhieuThu
+        {
+            MaPT = $"PT{thoiDiem:yyyyMMddHHmmssfff}",
+            SoTienThu = soTien,
+            ThoiGian = thoiDiem,
+            PhuongThucThanhToan = phuongThuc,
+            AnhMinhChung = anhMinhChung,
+            MaPDS = maPDS,
+            MaNV = maNV
+        };
+    }
+
+    public Task LuuPhieu() => PhieuThuDB.InsertPhieuThu(this);
+
+    // ==========================================================
+    // Methods from develop branch
+    // ==========================================================
     public static PhieuThu TaoChoTienCoc(PhieuCoc phieuCoc, string maNhanVien, DateTime thoiGian)
     {
         phieuCoc.KiemTraCoTheXacNhanThanhToan();
