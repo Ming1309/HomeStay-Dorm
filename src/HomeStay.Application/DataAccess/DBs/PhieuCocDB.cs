@@ -46,7 +46,8 @@ public static class PhieuCocDB
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
                    pc.ThoiDiemCoc,pc.AnhMinhChung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
-                   kh.HoTen AS TenKhachHang, kh.SDT, kh.Email,
+                    kh.HoTen AS TenKhachHang, kh.SDT, kh.Email,
+                   kh.GioiTinh, kh.NgaySinh, kh.QuocTich, kh.LoaiGiayTo, kh.SoGiayTo, kh.DiaChiThuongTru,
                    p.SoPhong, p.ToaNha, p.Tang, p.TrangThai AS TrangThaiPhong,
                    lp.MaLP, lp.TenLoaiPhong, lp.SucChua, lp.GiaThue
             FROM PhieuCoc pc
@@ -84,6 +85,8 @@ public static class PhieuCocDB
             KhachHang = new KhachHang
             {
                 MaKH = row.MaKH, HoTen = row.TenKhachHang, SDT = row.SDT, Email = row.Email,
+                GioiTinh = row.GioiTinh, NgaySinh = row.NgaySinh, QuocTich = row.QuocTich,
+                LoaiGiayTo = row.LoaiGiayTo, SoGiayTo = row.SoGiayTo, DiaChiThuongTru = row.DiaChiThuongTru,
             },
             Phong = new Phong
             {
@@ -129,6 +132,57 @@ public static class PhieuCocDB
                 throw new InvalidOperationException("Không thể lưu thành viên đăng ký của phiếu cọc.");
     }
 
+    public static async Task<IReadOnlyList<PhieuCoc>> LayPhieuCocDaThanhToanNhanPhongHomNay(string? text = null)
+    {
+        const string sql = """
+            SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
+                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   kh.HoTen AS TenKhachHang, kh.SDT,
+                   p.SoPhong, p.ToaNha,
+                   lh.NgayHen, lh.GioHen
+            FROM PhieuCoc pc
+            INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
+            INNER JOIN LichHen lh ON lh.MaPhieuCoc=pc.MaPhieuCoc
+            WHERE pc.TrangThai=N'DaThanhToan'
+              AND lh.LoaiLichHen=N'NhanPhong'
+              AND CAST(lh.NgayHen AS DATE)=CAST(GETDATE() AS DATE)
+              AND (@Text IS NULL OR pc.MaPhieuCoc LIKE '%' + @Text + '%'
+                   OR kh.HoTen LIKE '%' + @Text + '%' OR kh.SDT LIKE '%' + @Text + '%'
+                   OR p.SoPhong LIKE '%' + @Text + '%')
+            ORDER BY lh.GioHen, pc.MaPhieuCoc
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocNhapHoSoRow>(sql,
+            new { Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim() },
+            PhienDuLieu.Session.Transaction);
+        return rows.Select(x => new PhieuCoc
+        {
+            MaPhieuCoc = x.MaPhieuCoc,
+            HinhThucThue = x.HinhThucThue,
+            SoGiuongThue = x.SoGiuongThue,
+            TongTien = x.TongTien,
+            ThoiDiemCoc = x.ThoiDiemCoc,
+            TrangThai = x.TrangThai,
+            MaKH = x.MaKH,
+            MaPhong = x.MaPhong,
+            MaNV = x.MaNV,
+            KhachHang = new KhachHang { MaKH = x.MaKH, HoTen = x.TenKhachHang, SDT = x.SDT },
+            Phong = new Phong { MaPhong = x.MaPhong, SoPhong = x.SoPhong, ToaNha = x.ToaNha },
+        }).ToList();
+    }
+
+    public static async Task CapNhatTrangThai(string maPhieuCoc, string trangThai)
+    {
+        const string sql = """
+            UPDATE PhieuCoc SET TrangThai=@TrangThai
+            WHERE MaPhieuCoc=@MaPhieuCoc AND TrangThai=N'DaThanhToan'
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql,
+            new { MaPhieuCoc = maPhieuCoc, TrangThai = trangThai },
+            PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Phiếu cọc đã được xử lý bởi người khác hoặc không còn ở trạng thái thanh toán.");
+    }
+
     private class PhieuCocListRow
     {
         public string MaPhieuCoc { get; set; } = string.Empty;
@@ -151,11 +205,36 @@ public static class PhieuCocDB
     {
         public string? SDT { get; set; }
         public string? Email { get; set; }
+        public string? GioiTinh { get; set; }
+        public DateTime? NgaySinh { get; set; }
+        public string? QuocTich { get; set; }
+        public string? LoaiGiayTo { get; set; }
+        public string? SoGiayTo { get; set; }
+        public string? DiaChiThuongTru { get; set; }
         public string? Tang { get; set; }
         public string? TrangThaiPhong { get; set; }
         public string MaLP { get; set; } = string.Empty;
         public string TenLoaiPhong { get; set; } = string.Empty;
         public int SucChua { get; set; }
         public decimal GiaThue { get; set; }
+    }
+
+    private sealed class PhieuCocNhapHoSoRow
+    {
+        public string MaPhieuCoc { get; set; } = string.Empty;
+        public DateTime? HanThanhToan { get; set; }
+        public string HinhThucThue { get; set; } = string.Empty;
+        public int SoGiuongThue { get; set; }
+        public decimal TongTien { get; set; }
+        public DateTime ThoiDiemCoc { get; set; }
+        public string? AnhMinhChung { get; set; }
+        public string TrangThai { get; set; } = string.Empty;
+        public string MaKH { get; set; } = string.Empty;
+        public string MaPhong { get; set; } = string.Empty;
+        public string? MaNV { get; set; }
+        public string TenKhachHang { get; set; } = string.Empty;
+        public string? SDT { get; set; }
+        public string SoPhong { get; set; } = string.Empty;
+        public string? ToaNha { get; set; }
     }
 }
