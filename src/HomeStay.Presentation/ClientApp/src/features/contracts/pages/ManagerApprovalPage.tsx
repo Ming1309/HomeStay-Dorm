@@ -341,21 +341,21 @@ export function ManagerApprovalPage() {
             </div>
 
             <footer className="sticky bottom-0 flex min-h-14 items-center justify-between gap-4 border-t border-gray-200 bg-white px-5 py-2">
-              {allMembersRejected ? (
-                <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
-                  <AlertCircle className="size-3.5" />
-                  <span>Hồ sơ không còn thành viên hợp lệ để duyệt</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <Users className="size-3.5" />
-                  <span>Duyệt theo thành viên</span>
-                </div>
-              )}
-              {allMembersRejected ? (
+              <div className="flex items-center gap-3">
+                {allMembersRejected ? (
+                  <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                    <AlertCircle className="size-3.5" />
+                    <span>Hồ sơ không còn thành viên hợp lệ để duyệt</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <Users className="size-3.5" />
+                    <span>Duyệt theo thành viên</span>
+                  </div>
+                )}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button type="button" className="bg-red-600 hover:bg-red-700">
+                    <Button type="button" variant="outline" className="h-8 border-red-300 text-xs text-red-700 hover:bg-red-50">
                       Từ chối hồ sơ
                     </Button>
                   </AlertDialogTrigger>
@@ -363,8 +363,7 @@ export function ManagerApprovalPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Từ chối hồ sơ này?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Hồ sơ {detail.maPhieuCoc} không còn thành viên hợp lệ để duyệt và sẽ bị loại khỏi
-                        danh sách chờ xét duyệt.
+                        Hồ sơ {detail.maPhieuCoc} sẽ bị hủy. Giường liên quan sẽ được giải phóng.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -374,19 +373,20 @@ export function ManagerApprovalPage() {
                         onClick={async () => {
                           try {
                             await rejectProfile(detail.maPhieuCoc);
-                            toast.success("Đã từ chối hồ sơ.");
+                            toast.success("Đã hủy hồ sơ.");
                             completeAction();
                           } catch (error) {
                             toast.error(error instanceof Error ? error.message : "Không thể từ chối hồ sơ.");
                           }
                         }}
                       >
-                        Từ chối hồ sơ
+                        Xác nhận từ chối
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-              ) : allMembersApproved || canCompleteApproval ? (
+              </div>
+              {allMembersApproved || canCompleteApproval ? (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button type="button" className="bg-emerald-600 hover:bg-emerald-700">
