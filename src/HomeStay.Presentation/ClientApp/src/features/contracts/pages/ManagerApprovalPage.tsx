@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AlertCircle, CheckCircle2, Eye, Search, Users } from "lucide-react";
 import { toast } from "sonner";
 
@@ -35,133 +34,103 @@ import {
 } from "@/shared/ui/table";
 import { cn } from "@/shared/lib/utils";
 
+import {
+  loadPendingApprovals,
+  loadApprovalDetail,
+  approveAll,
+  rejectMember,
+  approveRemaining,
+  rejectProfile,
+  undoRejectMember,
+  type PhieuCocChoDuyet,
+  type ChiTietXetDuyet,
+  type ThanhVienDuyet,
+} from "@/features/handovers/services/xet-duyet-ho-so-service";
 
-
-type Member = {
-  id: string;
-  fullName: string;
-  gender: "male" | "female";
-  birthYear: number;
-  dob: string;
-  nationality: string;
-  docType: "CCCD" | "Hộ chiếu";
-  docNumber: string;
-  phone: string;
-  diaChiThuongTru: {
-    street: string;
-    ward: string;
-    district: string;
-    province: string;
-  } | null;
-  status: "pending" | "approved" | "rejected";
-};
-
-type ApprovalContract = {
-  id: string;
-  customerName: string;
-  room: string;
-  status: "pending_approval";
-  members: Member[];
-};
-
-const mockApprovalContracts: ApprovalContract[] = [
-  {
-    id: "HD-PC020",
-    customerName: "Phạm Hoàng Sơn",
-    room: "P.208",
-    status: "pending_approval",
-    members: [
-      {
-        id: "m20-1",
-        fullName: "Phạm Hoàng Sơn",
-        gender: "male",
-        birthYear: 2000,
-        dob: "20/07/2000",
-        nationality: "Việt Nam",
-        docType: "CCCD",
-        docNumber: "079200456789",
-        phone: "0901234567",
-        diaChiThuongTru: {
-          street: "12 Nguyễn Huệ",
-          ward: "Phường Bến Nghé",
-          district: "Quận 1",
-          province: "TP. Hồ Chí Minh",
-        },
-        status: "pending",
-      },
-      {
-        id: "m20-2",
-        fullName: "Lê Gia Hân",
-        gender: "female",
-        birthYear: 2001,
-        dob: "12/03/2001",
-        nationality: "Singapore",
-        docType: "Hộ chiếu",
-        docNumber: "E12345678",
-        phone: "0909001122",
-        diaChiThuongTru: null,
-        status: "pending",
-      },
-    ],
-  },
-  {
-    id: "HD-PC021",
-    customerName: "Nguyễn Khánh Duy",
-    room: "P.310",
-    status: "pending_approval",
-    members: [
-      {
-        id: "m21-1",
-        fullName: "Nguyễn Khánh Duy",
-        gender: "male",
-        birthYear: 1999,
-        dob: "05/11/1999",
-        nationality: "Việt Nam",
-        docType: "CCCD",
-        docNumber: "079199123888",
-        phone: "0911223344",
-        diaChiThuongTru: {
-          street: "45 Hoàng Sa",
-          ward: "Phường Tân Định",
-          district: "Quận 1",
-          province: "TP. Hồ Chí Minh",
-        },
-        status: "pending",
-      },
-    ],
-  },
-];
+type MemberWithDetail = ThanhVienDuyet & { status: "pending" | "approved" | "rejected" };
 
 export function ManagerApprovalPage() {
 
-  const [items, setItems] = useState<ApprovalContract[]>(mockApprovalContracts);
+  const [items, setItems] = useState<PhieuCocChoDuyet[]>([]);
+  const [detail, setDetail] = useState<ChiTietXetDuyet | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [loadingList, setLoadingList] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Load list with debounce
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setLoadingList(true);
+      try {
+        setItems(await loadPendingApprovals(query, controller.signal));
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          toast.error(error instanceof Error ? error.message : "Không thể tải danh sách hồ sơ.");
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoadingList(false);
+      }
+    }, 250);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [query, refreshKey]);
+
+  // Load detail when selected
+  useEffect(() => {
+    if (!selectedId) { setDetail(null); return; }
+    const controller = new AbortController();
+    setLoadingDetail(true);
+    loadApprovalDetail(selectedId, controller.signal)
+      .then(setDetail)
+      .catch((error) => {
+        if (!controller.signal.aborted) {
+          toast.error(error instanceof Error ? error.message : "Không thể tải chi tiết hồ sơ.");
+        }
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoadingDetail(false); });
+    return () => controller.abort();
+  }, [selectedId]);
+
+  const isSelected = selectedId !== null;
+
+  const members: MemberWithDetail[] = useMemo(() => {
+    return (detail?.thanhViens ?? []).map((tv) => ({
+      ...tv,
+      status: tv.trangThaiDuyet === "HopLe" ? "approved" as const
+        : tv.trangThaiDuyet === "TuChoi" ? "rejected" as const
+        : "pending" as const,
+    }));
+  }, [detail]);
+
+  const pendingMembers = members.filter((m) => m.status === "pending");
+  const approvedMembers = members.filter((m) => m.status === "approved");
+  const rejectedMembers = members.filter((m) => m.status === "rejected");
+  const hasPendingValidMembers = pendingMembers.length > 0;
+  const hasRejectedMembers = rejectedMembers.length > 0;
+  const hasMembers = members.length > 0;
+  const allMembersRejected = hasMembers && rejectedMembers.length === members.length;
+  const allMembersApproved = hasMembers && !hasPendingValidMembers
+    && approvedMembers.length + rejectedMembers.length === members.length;
+  const canCompleteApproval = hasMembers && !hasRejectedMembers && hasPendingValidMembers;
+
+  const completeAction = () => {
+    setSelectedId(null);
+    setDetail(null);
+    setRefreshKey((value) => value + 1);
+  };
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return items;
     return items.filter(
       (item) =>
-        item.id.toLowerCase().includes(q) ||
-        item.customerName.toLowerCase().includes(q) ||
-        item.room.toLowerCase().includes(q),
+        item.maPhieuCoc.toLowerCase().includes(q) ||
+        item.hoTenKhachHang.toLowerCase().includes(q) ||
+        item.soPhong.toLowerCase().includes(q),
     );
   }, [items, query]);
-  const selected = filtered.find((item) => item.id === selectedId) ?? null;
-  const pendingMembers = selected?.members.filter((member) => member.status === "pending") ?? [];
-  const approvedMembers = selected?.members.filter((member) => member.status === "approved") ?? [];
-  const rejectedMembers = selected?.members.filter((member) => member.status === "rejected") ?? [];
-  const hasPendingValidMembers = pendingMembers.length > 0;
-  const hasRejectedMembers = rejectedMembers.length > 0;
-  const hasMembers = !!selected && selected.members.length > 0;
-  const allMembersRejected = hasMembers && rejectedMembers.length === selected.members.length;
-  const allMembersApproved =
-    hasMembers &&
-    !hasPendingValidMembers &&
-    approvedMembers.length + rejectedMembers.length === selected.members.length;
-  const canCompleteApproval = hasMembers && !hasRejectedMembers && hasPendingValidMembers;
-
-
 
   return (
       <div className="flex h-full overflow-hidden">
@@ -176,51 +145,65 @@ export function ManagerApprovalPage() {
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Tìm hợp đồng..."
+                placeholder="Tìm hồ sơ..."
                 className="h-8 pl-8 text-xs"
               />
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
-            <ul className="divide-y divide-gray-100">
-              {filtered.map((item) => (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(item.id)}
-                    className={cn(
-                      "flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left hover:bg-amber-50/60",
-                      selectedId === item.id && "border-l-amber-500 bg-amber-50",
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-xs font-bold text-blue-600">{item.id}</span>
-                      <Badge className="h-5 bg-amber-100 text-[10px] text-amber-700">
-                        Chờ duyệt
-                      </Badge>
-                    </div>
-                    <p className="text-sm font-semibold text-gray-800">{item.customerName}</p>
-                    <p className="font-mono text-xs text-gray-500">{item.room}</p>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            {loadingList ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-xs text-gray-400">Đang tải...</p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-xs text-gray-400">Không có hồ sơ chờ duyệt.</p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {filtered.map((item) => (
+                  <li key={item.maPhieuCoc}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(item.maPhieuCoc)}
+                      className={cn(
+                        "flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left hover:bg-amber-50/60",
+                        selectedId === item.maPhieuCoc && "border-l-amber-500 bg-amber-50",
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-blue-600">{item.maPhieuCoc}</span>
+                        <Badge className="h-5 bg-amber-100 text-[10px] text-amber-700">
+                          Chờ duyệt
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800">{item.hoTenKhachHang}</p>
+                      <p className="font-mono text-xs text-gray-500">{item.soPhong}</p>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </aside>
 
-        {!selected ? (
+        {!isSelected ? (
           <section className="flex flex-1 items-center justify-center bg-gray-50/60">
             <p className="text-sm text-gray-500">Chọn hồ sơ để xét duyệt thành viên.</p>
+          </section>
+        ) : loadingDetail || !detail ? (
+          <section className="flex flex-1 items-center justify-center bg-gray-50/60">
+            <p className="text-sm text-gray-500">Đang tải chi tiết...</p>
           </section>
         ) : (
           <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
             <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-3">
               <div className="flex items-center gap-2">
-                <h1 className="font-mono text-sm font-bold text-gray-900">{selected.id}</h1>
+                <h1 className="font-mono text-sm font-bold text-gray-900">{detail.maPhieuCoc}</h1>
                 <Badge className="h-5 bg-amber-100 text-[10px] text-amber-700">Chờ duyệt</Badge>
               </div>
               <p className="mt-0.5 text-xs text-gray-500">
-                {selected.customerName} • {selected.room}
+                {detail.hoTenKhachHang} • {detail.soPhong}
               </p>
             </div>
 
@@ -239,12 +222,16 @@ export function ManagerApprovalPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selected.members.map((member, index) => {
+                    {members.map((member, index) => {
                       const rejected = member.status === "rejected";
                       const approved = member.status === "approved";
+                      const genderLabel = member.gioiTinh === "Nam" ? "Nam" : member.gioiTinh === "Nu" ? "Nữ" : member.gioiTinh ?? "";
+                      const birthYear = member.ngaySinh ? new Date(member.ngaySinh).getFullYear() : "";
+                      const docLabel = member.loaiGiayTo ?? "";
+                      const docNumber = member.soGiayTo ?? "";
                       return (
                         <TableRow
-                          key={member.id}
+                          key={member.maKH}
                           className={cn(
                             rejected ? "bg-red-50/50 hover:bg-red-50/50" : "",
                             approved ? "bg-emerald-50/50 hover:bg-emerald-50/50" : "",
@@ -258,19 +245,19 @@ export function ManagerApprovalPage() {
                               approved ? "text-emerald-700" : "",
                             )}
                           >
-                            {member.fullName}
+                            {member.hoTen}
                           </TableCell>
                           <TableCell className="p-2 text-sm text-gray-600">
-                            {member.gender === "male" ? "Nam" : "Nữ"} • {member.birthYear}
+                            {genderLabel}{birthYear ? ` • ${birthYear}` : ""}
                           </TableCell>
                           <TableCell className="p-2 text-sm text-slate-600">
-                            {member.nationality}
+                            {member.quocTich}
                           </TableCell>
                           <TableCell className="p-2 font-mono text-sm text-gray-700">
-                            {member.docType}: {member.docNumber}
+                            {docLabel}{docNumber ? `: ${docNumber}` : ""}
                           </TableCell>
                           <TableCell className="p-2 font-mono text-sm text-gray-700">
-                            {member.phone}
+                            {member.sdt}
                           </TableCell>
                           <TableCell className="p-2 text-right">
                             <div className="flex items-center justify-end gap-2">
@@ -295,23 +282,17 @@ export function ManagerApprovalPage() {
                                     <DialogTitle>Chi tiết thành viên</DialogTitle>
                                   </DialogHeader>
                                   <div className="grid grid-cols-2 gap-3 text-sm">
-                                    <ReadOnlyLine label="Họ và tên" value={member.fullName} />
-                                    <ReadOnlyLine label="Số điện thoại" value={member.phone} />
-                                    <ReadOnlyLine
-                                      label="Giới tính"
-                                      value={member.gender === "male" ? "Nam" : "Nữ"}
-                                    />
-                                    <ReadOnlyLine label="Ngày sinh" value={member.dob} />
-                                    <ReadOnlyLine label="Loại giấy tờ" value={member.docType} />
-                                    <ReadOnlyLine label="Số giấy tờ" value={member.docNumber} />
-                                    <ReadOnlyLine label="Quốc tịch" value={member.nationality} />
+                                    <ReadOnlyLine label="Họ và tên" value={member.hoTen} />
+                                    <ReadOnlyLine label="Số điện thoại" value={member.sdt ?? ""} />
+                                    <ReadOnlyLine label="Giới tính" value={genderLabel} />
+                                    <ReadOnlyLine label="Ngày sinh" value={member.ngaySinh ?? ""} />
+                                    <ReadOnlyLine label="Loại giấy tờ" value={member.loaiGiayTo ?? ""} />
+                                    <ReadOnlyLine label="Số giấy tờ" value={member.soGiayTo ?? ""} />
+                                    <ReadOnlyLine label="Quốc tịch" value={member.quocTich ?? ""} />
                                     <div />
-                                    {member.nationality === "Việt Nam" && member.diaChiThuongTru ? (
+                                    {member.quocTich === "Việt Nam" && member.diaChiThuongTru ? (
                                       <div className="col-span-2">
-                                        <ReadOnlyLine
-                                          label="Địa chỉ thường trú"
-                                          value={`${member.diaChiThuongTru.street}, ${member.diaChiThuongTru.ward}, ${member.diaChiThuongTru.district}, ${member.diaChiThuongTru.province}`}
-                                        />
+                                        <ReadOnlyLine label="Địa chỉ thường trú" value={member.diaChiThuongTru} />
                                       </div>
                                     ) : null}
                                   </div>
@@ -329,29 +310,22 @@ export function ManagerApprovalPage() {
                                     ? "border-gray-300 text-gray-700 hover:bg-gray-50"
                                     : "border-red-300 text-red-700 hover:bg-red-50",
                                 )}
-                                onClick={() => {
-                                  setItems((current) =>
-                                    current.map((contract) =>
-                                      contract.id !== selected.id
-                                        ? contract
-                                        : {
-                                            ...contract,
-                                            members: contract.members.map((m) =>
-                                              m.id === member.id
-                                                ? {
-                                                    ...m,
-                                                    status: rejected ? "pending" : "rejected",
-                                                  }
-                                                : m,
-                                            ),
-                                          },
-                                    ),
-                                  );
-                                  toast.success(
-                                    rejected
-                                      ? `Đã hoàn tác thành viên ${member.fullName}.`
-                                      : `Đã từ chối thành viên ${member.fullName}.`,
-                                  );
+                                onClick={async () => {
+                                  try {
+                                    if (rejected) {
+                                      await undoRejectMember(detail.maPhieuCoc, member.maKH);
+                                      const updated = await loadApprovalDetail(detail.maPhieuCoc);
+                                      setDetail(updated);
+                                      toast.success(`Đã hoàn tác thành viên ${member.hoTen}.`);
+                                    } else {
+                                      await rejectMember(detail.maPhieuCoc, member.maKH);
+                                      const updated = await loadApprovalDetail(detail.maPhieuCoc);
+                                      setDetail(updated);
+                                      toast.success(`Đã từ chối thành viên ${member.hoTen}.`);
+                                    }
+                                  } catch (error) {
+                                    toast.error(error instanceof Error ? error.message : "Không thể thực hiện thao tác.");
+                                  }
                                 }}
                               >
                                 {rejected ? "Hoàn tác" : "Từ chối"}
@@ -375,7 +349,7 @@ export function ManagerApprovalPage() {
               ) : (
                 <div className="flex items-center gap-1 text-xs text-gray-400">
                   <Users className="size-3.5" />
-                  <span>Sub-flow A4: Duyệt theo thành viên</span>
+                  <span>Duyệt theo thành viên</span>
                 </div>
               )}
               {allMembersRejected ? (
@@ -389,7 +363,7 @@ export function ManagerApprovalPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Từ chối hồ sơ này?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Hồ sơ {selected.id} không còn thành viên hợp lệ để duyệt và sẽ bị loại khỏi
+                        Hồ sơ {detail.maPhieuCoc} không còn thành viên hợp lệ để duyệt và sẽ bị loại khỏi
                         danh sách chờ xét duyệt.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -397,10 +371,14 @@ export function ManagerApprovalPage() {
                       <AlertDialogCancel>Hủy</AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-red-600 hover:bg-red-700"
-                        onClick={() => {
-                          setItems((current) => current.filter((c) => c.id !== selected.id));
-                          setSelectedId(null);
-                          toast.success("Đã từ chối hồ sơ.");
+                        onClick={async () => {
+                          try {
+                            await rejectProfile(detail.maPhieuCoc);
+                            toast.success("Đã từ chối hồ sơ.");
+                            completeAction();
+                          } catch (error) {
+                            toast.error(error instanceof Error ? error.message : "Không thể từ chối hồ sơ.");
+                          }
                         }}
                       >
                         Từ chối hồ sơ
@@ -419,19 +397,27 @@ export function ManagerApprovalPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Hoàn tất xét duyệt hồ sơ?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Hồ sơ {selected.id} sẽ được duyệt và chuyển sang bước tiếp theo.
+                        Hồ sơ {detail.maPhieuCoc} sẽ được duyệt và chuyển sang bước tiếp theo.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Hủy</AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-emerald-600 hover:bg-emerald-700"
-                        onClick={() => {
-                          setItems((current) => current.filter((c) => c.id !== selected.id));
-                          setSelectedId(null);
-                          toast.success("Hoàn tất xét duyệt hồ sơ.", {
-                            icon: <CheckCircle2 className="size-4 text-emerald-100" />,
-                          });
+                        onClick={async () => {
+                          try {
+                            if (!hasRejectedMembers) {
+                              await approveAll(detail.maPhieuCoc);
+                            } else {
+                              await approveRemaining(detail.maPhieuCoc);
+                            }
+                            toast.success("Hoàn tất xét duyệt hồ sơ.", {
+                              icon: <CheckCircle2 className="size-4 text-emerald-100" />,
+                            });
+                            completeAction();
+                          } catch (error) {
+                            toast.error(error instanceof Error ? error.message : "Không thể duyệt hồ sơ.");
+                          }
                         }}
                       >
                         Xác nhận
@@ -450,7 +436,7 @@ export function ManagerApprovalPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Duyệt các thành viên còn lại?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        {pendingMembers.length} thành viên hợp lệ còn lại trong hồ sơ {selected.id}{" "}
+                        {pendingMembers.length} thành viên hợp lệ còn lại trong hồ sơ {detail.maPhieuCoc}{" "}
                         sẽ được chuyển sang trạng thái đã duyệt.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -458,24 +444,16 @@ export function ManagerApprovalPage() {
                       <AlertDialogCancel>Hủy</AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-emerald-600 hover:bg-emerald-700"
-                        onClick={() => {
-                          setItems((current) =>
-                            current.map((contract) =>
-                              contract.id !== selected.id
-                                ? contract
-                                : {
-                                    ...contract,
-                                    members: contract.members.map((member) =>
-                                      member.status === "pending"
-                                        ? { ...member, status: "approved" }
-                                        : member,
-                                    ),
-                                  },
-                            ),
-                          );
-                          toast.success("Đã duyệt các thành viên còn lại.", {
-                            icon: <CheckCircle2 className="size-4 text-emerald-100" />,
-                          });
+                        onClick={async () => {
+                          try {
+                            await approveRemaining(detail.maPhieuCoc);
+                            toast.success("Đã duyệt các thành viên còn lại.", {
+                              icon: <CheckCircle2 className="size-4 text-emerald-100" />,
+                            });
+                            completeAction();
+                          } catch (error) {
+                            toast.error(error instanceof Error ? error.message : "Không thể duyệt thành viên.");
+                          }
                         }}
                       >
                         Xác nhận
