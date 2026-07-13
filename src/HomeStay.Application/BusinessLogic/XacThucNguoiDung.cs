@@ -14,4 +14,9 @@ public sealed class XacThucNguoiDung(Func<PhienDuLieu> taoPhien, MatKhauHasher h
         return taiKhoan;
     }
 
+    public async Task<TaiKhoan?> LayTaiKhoanHienTai(string maTK)
+    {
+        using var phien = taoPhien();
+        return await TaiKhoan.Doc(maTK);
+    }
 }

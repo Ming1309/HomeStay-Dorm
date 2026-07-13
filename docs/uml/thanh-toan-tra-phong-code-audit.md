@@ -21,7 +21,8 @@ Bảng đối chiếu khớp chữ literal (literal string matching) giữa sơ 
 | `PhieuDoiSoat.layDSPhieuDoiSoatDaChot()` | `PhieuDoiSoat.LayDSPhieuDoiSoatDaChot()` | [PhieuDoiSoat.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/BusinessLogic/PhieuDoiSoat.cs) |
 | `PhieuDoiSoat.layChiTietPhieuDoiSoat()` | `PhieuDoiSoat.LayChiTietPhieuDoiSoat(maPDS)` | [PhieuDoiSoat.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/BusinessLogic/PhieuDoiSoat.cs) |
 | `PhieuDoiSoat.tinhToanKetQua()` | `PhieuDoiSoat.TinhToanKetQua(maPDS)` | [PhieuDoiSoat.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/BusinessLogic/PhieuDoiSoat.cs) |
-| `PhieuDoiSoat.capNhatTrangThai()` | `PhieuDoiSoat.CapNhatTrangThai(maPDS, trangThai)` | [PhieuDoiSoat.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/BusinessLogic/PhieuDoiSoat.cs) |
+| `PhieuDoiSoat.chuyenSangDaTatToan()` | `PhieuDoiSoat.ChuyenSangDaTatToan(maPDS)` | `PhieuDoiSoat.cs` |
+| `ThanhToanTraPhong.tienHanhThuTien()` | Lấy `TienThuThem` từ phiếu đối soát, kiểm tra trạng thái và trùng phiếu | `ThanhToanTraPhong.cs` |
 | `HoaDon.layDSHoaDonTheoPhieuDoiSoat()` | `HoaDon.LayDSHoaDonTheoPhieuDoiSoat(maPDS)` | [HoaDon.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/BusinessLogic/HoaDon.cs) |
 | `HoaDon.tinhTongKhauTru()` | `HoaDon.TinhTongKhauTru(maPDS)` | [HoaDon.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/BusinessLogic/HoaDon.cs) |
 | `PhieuThu.taoPhieuThu()` | `PhieuThu.TaoPhieuThu(maPDS, soTien, phuongThuc, anhMinhChung, maNV)` | [PhieuThu.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/BusinessLogic/PhieuThu.cs) |
@@ -35,7 +36,8 @@ Bảng đối chiếu khớp chữ literal (literal string matching) giữa sơ 
 | :--- | :--- | :--- |
 | `PhieuDoiSoatDB.getDSPhieuDoiSoatDaChot()` | `PhieuDoiSoatDB.GetDSPhieuDoiSoatDaChot()` | [PhieuDoiSoatDB.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/DataAccess/DBs/PhieuDoiSoatDB.cs) |
 | `PhieuDoiSoatDB.getPhieuDoiSoatTheoMaPDS()` | `PhieuDoiSoatDB.GetPhieuDoiSoatTheoMaPDS(maPDS)` | [PhieuDoiSoatDB.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/DataAccess/DBs/PhieuDoiSoatDB.cs) |
-| `PhieuDoiSoatDB.updateTrangThai()` | `PhieuDoiSoatDB.UpdateTrangThai(maPDS, trangThai)` | [PhieuDoiSoatDB.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/DataAccess/DBs/PhieuDoiSoatDB.cs) |
+| `PhieuDoiSoatDB.updateTrangThai()` | Cập nhật có điều kiện `DaChot -> DaTatToan` | `PhieuDoiSoatDB.cs` |
+| `PhieuThuDB.tonTaiTheoMaPhieuDoiSoat()` | Kiểm tra trùng; schema có unique filtered index theo `MaPDS` | `PhieuThuDB.cs`, `01_InitTables.sql` |
 | `HoaDonDB.getDSHoaDonTheoMaPDS()` | `HoaDonDB.GetDSHoaDonTheoMaPDS(maPDS)` | [HoaDonDB.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/DataAccess/DBs/HoaDonDB.cs) |
 | `HoaDonDB.tinhTongKhauTru()` | `HoaDonDB.TinhTongKhauTru(maPDS)` | [HoaDonDB.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/DataAccess/DBs/HoaDonDB.cs) |
 | `PhieuThuDB.insertPhieuThu()` | `PhieuThuDB.InsertPhieuThu(phieuThu)` | [PhieuThuDB.cs](file:///c:/Users/PC/Downloads/PTTK-HTTT/HomeStay-Dorm/src/HomeStay.Application/DataAccess/DBs/PhieuThuDB.cs) |

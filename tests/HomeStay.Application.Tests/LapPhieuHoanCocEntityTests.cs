@@ -1,5 +1,7 @@
 using System;
 using HomeStay.Application.BusinessLogic;
+using HomeStay.Application.DataAccess.DbConnections;
+using Microsoft.Data.SqlClient;
 using Xunit;
 
 namespace HomeStay.Application.Tests;
@@ -26,35 +28,56 @@ public sealed class LapPhieuHoanCocEntityTests
     {
         var now = DateTime.Now;
         Assert.Throws<ArgumentException>(() =>
-            PhieuHoanCoc.TaoPhieuHoanCoc("PDS0001", -100m, "Cash", "", "NV02", now));
+            PhieuHoanCoc.TaoPhieuHoanCoc("PDS0001", -100m, "TienMat", "", "NV02", now));
     }
 
-    private class FakeSqlConnectionFactory : HomeStay.Application.DataAccess.DbConnections.ISqlConnectionFactory
+    [Theory]
+    [InlineData("Cash")]
+    [InlineData("BankTransfer")]
+    [InlineData("")]
+    public void TaoPhieuHoanCoc_InvalidRefundMethod_ThrowsArgumentException(string method)
     {
-        public System.Data.IDbConnection CreateConnection()
-        {
-            var connection = new Microsoft.Data.SqlClient.SqlConnection("Server=HONGPHUC;Database=HomeStay;User Id=sa;Password=123456;TrustServerCertificate=True;");
-            connection.Open();
-            return connection;
-        }
+        Assert.Throws<ArgumentException>(() =>
+            PhieuHoanCoc.TaoPhieuHoanCoc("PDS0001", 100m, method, "", "NV02", DateTime.Now));
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task DebugGetDSPhieuDoiSoatCanHoan()
+    public void TaoPhieuHoanCoc_BankTransferWithoutRecipient_ThrowsArgumentException()
     {
-        var factory = new FakeSqlConnectionFactory();
-        using var phien = new HomeStay.Application.DataAccess.DbConnections.PhienDuLieu(
-            new HomeStay.Application.DataAccess.DbConnections.SqlSession(factory));
-        
-        try
+        Assert.Throws<ArgumentException>(() =>
+            PhieuHoanCoc.TaoPhieuHoanCoc("PDS0001", 100m, "ChuyenKhoan", " ", "NV02", DateTime.Now));
+    }
+
+    [Fact]
+    public void TaoPhieuHoanCoc_MissingEmployee_ThrowsArgumentException()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            PhieuHoanCoc.TaoPhieuHoanCoc("PDS0001", 100m, "TienMat", "", " ", DateTime.Now));
+    }
+
+    [IntegrationFact]
+    public async System.Threading.Tasks.Task LayDSPhieuDoiSoatCanHoan_WithConfiguredDatabase_ReturnsList()
+    {
+        var factory = new EnvironmentSqlConnectionFactory();
+        var lap = new LapPhieuHoanCoc(
+            () => new PhienDuLieu(new SqlSession(factory)),
+            TimeProvider.System);
+
+        var results = await lap.LayDSPhieuDoiSoatCanHoan();
+
+        Assert.NotNull(results);
+    }
+
+    private sealed class EnvironmentSqlConnectionFactory : ISqlConnectionFactory
+    {
+        public System.Data.IDbConnection CreateConnection()
         {
-            var lap = new LapPhieuHoanCoc(() => phien);
-            var results = await lap.LayDSPhieuDoiSoatCanHoan();
-            Assert.NotNull(results);
-        }
-        catch (Exception ex)
-        {
-            Assert.Fail($"Database query threw exception: {ex.Message}\n{ex.StackTrace}");
+            var connectionString = Environment.GetEnvironmentVariable(
+                IntegrationFactAttribute.ConnectionStringEnvironmentVariable)
+                ?? throw new InvalidOperationException("Missing integration test connection string.");
+            var connection = new SqlConnection(connectionString);
+            connection.Open();
+            return connection;
         }
     }
 }

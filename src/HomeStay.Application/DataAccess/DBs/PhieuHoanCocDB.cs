@@ -18,6 +18,13 @@ public static class PhieuHoanCocDB
             throw new InvalidOperationException("Không thể lưu phiếu hoàn cọc.");
     }
 
+    public static async Task<bool> TonTaiTheoMaPhieuDoiSoat(string maPDS)
+    {
+        const string sql = "SELECT CASE WHEN EXISTS (SELECT 1 FROM PhieuHoanCoc WHERE MaPDS = @MaPDS) THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END";
+        return await PhienDuLieu.Session.Connection.QuerySingleAsync<bool>(
+            sql, new { MaPDS = maPDS }, PhienDuLieu.Session.Transaction);
+    }
+
     public static async Task<PhieuHoanCoc?> GetPhieuHoanCocTheoMaPHC(string maPHC)
     {
         const string sql = """

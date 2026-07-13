@@ -15,12 +15,12 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import { cn } from "@/shared/lib/utils";
+import { useAuth } from "@/features/auth/model/auth-store";
 
 export const Route = createFileRoute("/accountant/refunds")({
   component: AccountantRefundsPage,
 });
 
-const ACCOUNTANT_NAME = "Nguyễn Thị Thu — Kế toán";
 const formatCurrency = (amount: number) =>
   `${new Intl.NumberFormat("vi-VN").format(amount)} VNĐ`;
 
@@ -56,6 +56,10 @@ interface ChiTietDoiSoatChoHoan {
 }
 
 function AccountantRefundsPage() {
+  const { user } = useAuth();
+  const accountantLabel = user
+    ? user.hoTen || user.tenDangNhap
+    : "Kế toán đang đăng nhập";
   const [queue, setQueue] = useState<PhieuDoiSoatChoHoan[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDetails, setSelectedDetails] = useState<ChiTietDoiSoatChoHoan | null>(null);
@@ -64,12 +68,13 @@ function AccountantRefundsPage() {
   const fetchQueue = async () => {
     try {
       const res = await fetch("/api/refunds/pds-cho-hoan");
-      if (res.ok) {
-        const data = await res.json();
-        setQueue(data);
-      }
+      if (!res.ok) throw new Error(await readApiError(res, "Không thể tải danh sách phiếu chờ hoàn."));
+      const data = await res.json();
+      setQueue(data);
     } catch (err) {
-      console.error("Error fetching refunds queue:", err);
+      toast.error("Không thể tải danh sách phiếu chờ hoàn", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     }
   };
 
@@ -77,12 +82,13 @@ function AccountantRefundsPage() {
     setIsLoading(true);
     try {
       const res = await fetch(`/api/refunds/pds-details/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setSelectedDetails(data);
-      }
+      if (!res.ok) throw new Error(await readApiError(res, "Không thể tải chi tiết phiếu đối soát."));
+      const data = await res.json();
+      setSelectedDetails(data);
     } catch (err) {
-      console.error("Error fetching refund PDS details:", err);
+      toast.error("Không thể tải chi tiết phiếu đối soát", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -110,6 +116,7 @@ function AccountantRefundsPage() {
       <RefundWorkspace
         details={selectedDetails}
         isLoading={isLoading}
+        accountantLabel={accountantLabel}
         onSuccess={() => {
           setSelectedId(null);
           setSelectedDetails(null);
@@ -211,10 +218,12 @@ function QueuePanel({
 function RefundWorkspace({
   details,
   isLoading,
+  accountantLabel,
   onSuccess,
 }: {
   details: ChiTietDoiSoatChoHoan | null;
   isLoading: boolean;
+  accountantLabel: string;
   onSuccess: () => void;
 }) {
   const [method, setMethod] = useState<"cash" | "bank-transfer">("bank-transfer");
@@ -252,35 +261,33 @@ function RefundWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           maPDS: details.maPDS,
-          soTienHoan: details.tienHoan,
           phuongThucHoan: method === "bank-transfer" ? "ChuyenKhoan" : "TienMat",
           thongTinNhanTien: thongTinTaiKhoan,
         }),
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Lỗi lập phiếu hoàn cọc.");
+        throw new Error(await readApiError(res, "Lỗi lập phiếu hoàn cọc."));
       }
 
       const phc = await res.json();
       setIssued({
-        code: phc.code,
+        code: phc.maPHC,
         customerName: details.tenKhachHang,
-        amount: phc.amount,
-        method: phc.method,
-        date: phc.date,
-        executor: phc.executor,
+        amount: phc.soTienHoan,
+        method: phc.phuongThucHoan,
+        date: phc.thoiGian,
+        executor: accountantLabel,
       });
       setSuccessOpen(true);
 
       toast.success("Lập phiếu hoàn cọc thành công", {
-        description: `Mã phiếu hoàn: ${phc.code}`,
+        description: `Mã phiếu hoàn: ${phc.maPHC}`,
         icon: <CheckCircle2 className="size-4 text-emerald-600" />,
       });
-    } catch (err: any) {
+    } catch (err) {
       toast.error("Lỗi lập phiếu hoàn cọc", {
-        description: err.message,
+        description: err instanceof Error ? err.message : undefined,
       });
     }
   };
@@ -479,7 +486,7 @@ function RefundWorkspace({
                   <input
                     disabled
                     type="text"
-                    value={ACCOUNTANT_NAME}
+                    value={accountantLabel}
                     className="h-10 w-full rounded-md border border-gray-200 bg-gray-50 px-3 text-sm outline-none"
                   />
                 </div>
@@ -597,7 +604,7 @@ function SuccessDialog({
           <div className="flex items-center justify-between">
             <span className="text-gray-500">Hình thức</span>
             <span className="font-medium text-gray-900">
-              {voucher.method === "cash" ? "Tiền mặt" : "Chuyển khoản"}
+              {voucher.method === "TienMat" ? "Tiền mặt" : "Chuyển khoản"}
             </span>
           </div>
           <div className="flex items-center justify-between">
@@ -644,4 +651,14 @@ function SummaryLine({ label, value }: { label: string; value: string }) {
       <span className="font-mono font-semibold text-gray-900">{value}</span>
     </div>
   );
+}
+
+async function readApiError(response: Response, fallback: string) {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    const body = await response.json().catch(() => null);
+    return body?.message ?? fallback;
+  }
+
+  return (await response.text()) || fallback;
 }

@@ -23,9 +23,9 @@ import {
   TableRow,
 } from "@/shared/ui/table";
 import { ReceiptCollectionDialog } from "@/features/payments/components/ReceiptCollectionDialog";
+import { useAuth } from "@/features/auth/model/auth-store";
 import { cn } from "@/shared/lib/utils";
 
-const ACCOUNTANT_NAME = "Nguyễn Thị Thu — Kế toán";
 const formatCurrency = (amount: number) =>
   `${new Intl.NumberFormat("vi-VN").format(amount)} VNĐ`;
 
@@ -70,6 +70,10 @@ export function AccountantSettlementPage() {
 }
 
 export function AccountantSettlementScreen({ currentPath }: { currentPath: string }) {
+  const { user } = useAuth();
+  const accountantLabel = user
+    ? user.hoTen || user.tenDangNhap
+    : "Kế toán đang đăng nhập";
   const [queue, setQueue] = useState<PhieuDoiSoatDto[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedDetails, setSelectedDetails] = useState<ChiTietPhieuDoiSoatDto | null>(null);
@@ -78,12 +82,13 @@ export function AccountantSettlementScreen({ currentPath }: { currentPath: strin
   const fetchQueue = async () => {
     try {
       const res = await fetch("/api/payments/pds-cho-thu");
-      if (res.ok) {
-        const data = await res.json();
-        setQueue(data);
-      }
+      if (!res.ok) throw new Error(await readApiError(res, "Không thể tải danh sách phiếu cần thu."));
+      const data = await res.json();
+      setQueue(data);
     } catch (err) {
-      console.error("Error fetching queue:", err);
+      toast.error("Không thể tải danh sách phiếu cần thu", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     }
   };
 
@@ -91,12 +96,13 @@ export function AccountantSettlementScreen({ currentPath }: { currentPath: strin
     setIsLoading(true);
     try {
       const res = await fetch(`/api/payments/pds-details/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setSelectedDetails(data);
-      }
+      if (!res.ok) throw new Error(await readApiError(res, "Không thể tải chi tiết phiếu đối soát."));
+      const data = await res.json();
+      setSelectedDetails(data);
     } catch (err) {
-      console.error("Error fetching details:", err);
+      toast.error("Không thể tải chi tiết phiếu đối soát", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -124,6 +130,7 @@ export function AccountantSettlementScreen({ currentPath }: { currentPath: strin
       <SettlementWorkspace
         details={selectedDetails}
         isLoading={isLoading}
+        accountantLabel={accountantLabel}
         onSuccess={() => {
           setSelectedId(null);
           setSelectedDetails(null);
@@ -227,10 +234,12 @@ function QueuePanel({
 function SettlementWorkspace({
   details,
   isLoading,
+  accountantLabel,
   onSuccess,
 }: {
   details: ChiTietPhieuDoiSoatDto | null;
   isLoading: boolean;
+  accountantLabel: string;
   onSuccess: () => void;
 }) {
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -273,15 +282,13 @@ function SettlementWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           maPDS: details.maPDS,
-          soTienThu: data.amount,
-          phuongThucThanhToan: data.paymentMethod === "bank-transfer" ? "BankTransfer" : "Cash",
+          phuongThucThanhToan: data.paymentMethod === "bank-transfer" ? "ChuyenKhoan" : "TienMat",
           anhMinhChung: data.evidenceName,
         }),
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Không thể lập phiếu thu.");
+        throw new Error(await readApiError(res, "Không thể lập phiếu thu."));
       }
 
       const phieuThu = await res.json();
@@ -293,9 +300,9 @@ function SettlementWorkspace({
         description: `Mã phiếu thu: ${phieuThu.maPT}`,
         icon: <CheckCircle2 className="size-4 text-emerald-600" />,
       });
-    } catch (err: any) {
+    } catch (err) {
       toast.error("Lỗi lập phiếu thu", {
-        description: err.message,
+        description: err instanceof Error ? err.message : undefined,
       });
     }
   };
@@ -351,7 +358,7 @@ function SettlementWorkspace({
                 <InfoField label="Khách hàng" value={details.tenKhachHang} />
                 <InfoField label="Phòng" value={details.phong} />
                 <InfoField label="Ngày đối soát" value={formatDate(details.ngayDoiSoat)} />
-                <InfoField label="Người lập đối soát" value={ACCOUNTANT_NAME} />
+                <InfoField label="Kế toán đang xử lý" value={accountantLabel} />
               </div>
             </CardContent>
           </Card>
@@ -644,4 +651,14 @@ function DebtMetric({
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleDateString("vi-VN");
+}
+
+async function readApiError(response: Response, fallback: string) {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    const body = await response.json().catch(() => null);
+    return body?.message ?? fallback;
+  }
+
+  return (await response.text()) || fallback;
 }

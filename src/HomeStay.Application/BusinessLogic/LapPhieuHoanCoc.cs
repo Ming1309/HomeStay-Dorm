@@ -41,10 +41,12 @@ public sealed class ChiTietHoanCocDto
 public sealed class LapPhieuHoanCoc
 {
     private readonly Func<PhienDuLieu> _taoPhienDuLieu;
+    private readonly TimeProvider _timeProvider;
 
-    public LapPhieuHoanCoc(Func<PhienDuLieu> taoPhienDuLieu)
+    public LapPhieuHoanCoc(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
     {
         _taoPhienDuLieu = taoPhienDuLieu;
+        _timeProvider = timeProvider;
     }
 
     public async Task<IReadOnlyList<DoiSoatChoHoanCocDto>> LayDSPhieuDoiSoatCanHoan()
@@ -108,31 +110,37 @@ public sealed class LapPhieuHoanCoc
         };
     }
 
-    public async Task<PhieuHoanCoc> ThucHienHoanCoc(string maPDS, decimal soTien, string phuongThuc, string thongTinNhanTien, string maNV)
+    public async Task<PhieuHoanCoc?> LayThongTinPhieuHoanCoc(string maPHC)
+    {
+        using var phien = _taoPhienDuLieu();
+        return await PhieuHoanCoc.LayThongTinPhieuHoanCoc(maPHC);
+    }
+
+    public async Task<PhieuHoanCoc> ThucHienHoanCoc(
+        string maPDS, string phuongThuc, string thongTinNhanTien, string maNV)
     {
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
         try
         {
-            // 1. Kiểm tra sự tồn tại của phiếu đối soát
             var pds = await PhieuDoiSoat.LayChiTietPhieuDoiSoat(maPDS);
             if (pds == null)
-                throw new ArgumentException("Phiếu đối soát không tồn tại.");
+                throw new KeyNotFoundException("Phiếu đối soát không tồn tại.");
 
             if (pds.TrangThai != "DaChot")
                 throw new InvalidOperationException("Phiếu đối soát phải ở trạng thái Đã chốt.");
 
             if (pds.TienHoan <= 0)
                 throw new InvalidOperationException("Phiếu đối soát này không có tiền cọc cần hoàn trả.");
+            if (await PhieuHoanCoc.DaTonTaiChoPhieuDoiSoat(maPDS))
+                throw new InvalidOperationException("Phiếu đối soát đã có phiếu hoàn cọc.");
 
-            // 2. Tạo đối tượng Phiếu hoàn cọc
-            var phieuHoanCoc = PhieuHoanCoc.TaoPhieuHoanCoc(maPDS, soTien, phuongThuc, thongTinNhanTien, maNV, DateTime.Now);
+            var phieuHoanCoc = PhieuHoanCoc.TaoPhieuHoanCoc(
+                maPDS, pds.TienHoan, phuongThuc, thongTinNhanTien, maNV,
+                _timeProvider.GetLocalNow().DateTime);
 
-            // 3. Lưu vào cơ sở dữ liệu
             await phieuHoanCoc.LuuPhieu();
-
-            // 4. Cập nhật trạng thái phiếu đối soát -> DaTatToan
-            await PhieuDoiSoat.CapNhatTrangThai(maPDS, "DaTatToan");
+            await PhieuDoiSoat.ChuyenSangDaTatToan(maPDS);
 
             phien.Commit();
 

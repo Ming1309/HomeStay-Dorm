@@ -1,0 +1,47 @@
+@startuml LapPhieuHoanCoc_3Lop
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+package "Lớp giao diện" {
+  class MHHoanCoc {
+    +chonPhieuDoiSoat(maPDS : String)
+    +chonPhuongThuc(TienMat | ChuyenKhoan)
+    +lapPhieuHoanCoc()
+  }
+  class PhieuHoanCocController {
+    +TaoPhieuHoanCoc(request) : HttpResponse
+  }
+}
+
+package "Lớp nghiệp vụ" {
+  class LapPhieuHoanCoc {
+    +ThucHienHoanCoc(maPDS, phuongThuc, thongTinNhanTien, maNV) : PhieuHoanCoc
+  }
+  class PhieuHoanCoc {
+    +SoTienHoan : Decimal
+    +TaoPhieuHoanCoc(maPDS, soTien, phuongThuc, thongTinNhanTien, maNV, thoiDiem)
+    +DaTonTaiChoPhieuDoiSoat(maPDS) : Boolean
+  }
+  class PhieuDoiSoat {
+    +TienHoan : Decimal
+    +ChuyenSangDaTatToan(maPDS) : Task
+  }
+}
+
+package "Lớp truy xuất dữ liệu" {
+  class PhieuHoanCocDB {
+    +InsertPhieuHoanCoc(phieuHoanCoc)
+    +TonTaiTheoMaPhieuDoiSoat(maPDS) : Boolean
+  }
+  class PhieuDoiSoatDB {
+    +UpdateTrangThai(maPDS, trangThaiHienTai, trangThaiMoi) : Integer
+  }
+}
+
+MHHoanCoc --> PhieuHoanCocController
+PhieuHoanCocController --> LapPhieuHoanCoc
+LapPhieuHoanCoc --> PhieuHoanCoc
+LapPhieuHoanCoc --> PhieuDoiSoat
+PhieuHoanCoc --> PhieuHoanCocDB
+PhieuDoiSoat --> PhieuDoiSoatDB
+@enduml

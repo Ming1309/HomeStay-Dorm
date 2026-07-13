@@ -42,18 +42,20 @@ public sealed class XacThucNguoiDungController(XacThucNguoiDung xacThuc) : Contr
 
     [Authorize]
     [HttpGet("me")]
-    public IActionResult TaiKhoanHienTai() => Ok(new
+    public async Task<IActionResult> TaiKhoanHienTai()
     {
-        maTK = User.FindFirstValue(ClaimTypes.NameIdentifier),
-        tenDangNhap = User.Identity?.Name,
-        maNV = User.FindFirstValue("MaNV"),
-        vaiTro = User.FindFirstValue(ClaimTypes.Role),
-    });
+        var maTK = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(maTK)) return Unauthorized();
+
+        var taiKhoan = await xacThuc.LayTaiKhoanHienTai(maTK);
+        return taiKhoan is null ? Unauthorized() : Ok(TaoResponse(taiKhoan));
+    }
 
     private static object TaoResponse(TaiKhoan taiKhoan) => new
     {
         maTK = taiKhoan.MaTK,
         tenDangNhap = taiKhoan.TenDangNhap,
+        hoTen = taiKhoan.NhanVien.HoTen,
         maNV = taiKhoan.MaNV,
         vaiTro = taiKhoan.NhanVien.VaiTro,
     };

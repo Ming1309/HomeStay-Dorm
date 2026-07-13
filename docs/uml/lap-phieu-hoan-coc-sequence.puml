@@ -1,0 +1,25 @@
+@startuml LapPhieuHoanCoc_Sequence
+actor "Kế toán" as KT
+boundary "MHHoanCoc" as MH
+control "PhieuHoanCocController" as API
+control "LapPhieuHoanCoc" as UC
+entity "PhieuDoiSoat" as PDS
+entity "PhieuHoanCoc" as PHC
+database "SQL Server" as DB
+
+KT -> MH : Chọn phiếu và phương thức hoàn
+MH -> API : POST /api/refunds/phieu-hoan-coc\n(maPDS, phuongThucHoan, thongTinNhanTien)
+API -> API : Xác thực role Kế toán và lấy MaNV từ claim
+API -> UC : ThucHienHoanCoc(maPDS, phuongThuc, thongTin, maNV)
+UC -> DB : BEGIN TRANSACTION
+UC -> PDS : LayChiTietPhieuDoiSoat(maPDS)
+PDS --> UC : TienHoan, TrangThai
+UC -> PHC : DaTonTaiChoPhieuDoiSoat(maPDS)
+UC -> PHC : TaoPhieuHoanCoc(maPDS, PDS.TienHoan, ...)
+PHC -> DB : INSERT PhieuHoanCoc
+UC -> PDS : ChuyenSangDaTatToan(maPDS)
+PDS -> DB : UPDATE WHERE TrangThai = 'DaChot'
+UC -> DB : COMMIT
+UC --> API : Phiếu đã lưu với số tiền thực tế
+API --> MH : 200 (MaPHC, SoTienHoan, ThoiGian, MaNV)
+@enduml

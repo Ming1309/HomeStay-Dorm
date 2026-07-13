@@ -37,6 +37,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
 import { cn } from "@/shared/lib/utils";
 import { useWorkflowStore, type UserRole } from "@/app/providers/workflow-store";
+import { useAuth } from "@/features/auth/model/auth-store";
 
 const SIDEBAR_STORAGE_KEY = "homestay-sidebar-expanded";
 let appSidebarExpandedState = true;
@@ -53,6 +54,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { setRole } = useWorkflowStore();
   const [expanded, setExpanded] = useState(appSidebarExpandedState);
   const meta = roleMeta[role];
@@ -61,6 +63,8 @@ export function AppShell({
   const [notifications, setNotifications] = useState<AppNotificationDto[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const unreadCount = notifications.filter((item) => !item.daDoc).length;
+  const employeeName = user?.hoTen || user?.tenDangNhap || "Người dùng";
+  const employeeInitials = getInitials(employeeName);
 
   const refreshNotifications = useCallback(async (signal?: AbortSignal) => {
     setLoadingNotifications(true);
@@ -256,15 +260,15 @@ export function AppShell({
                     aria-label="Tài khoản"
                   >
                     <div className="flex size-8 items-center justify-center rounded-full bg-purple-600 text-xs font-semibold text-white">
-                      MP
+                      {employeeInitials}
                     </div>
-                    <span className="hidden font-medium text-gray-900 xl:inline">Minh Phạm</span>
+                    <span className="hidden font-medium text-gray-900 xl:inline">{employeeName}</span>
                     <Settings className="hidden size-4 text-gray-400 xl:block" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52 rounded-lg border-gray-200 p-2">
                   <DropdownMenuLabel className="px-2 py-1.5">
-                    <div className="text-sm font-semibold text-gray-900">Minh Phạm</div>
+                    <div className="text-sm font-semibold text-gray-900">{employeeName}</div>
                     <div className="mt-0.5 text-xs font-normal text-blue-600">
                       {meta.badgeLabel}
                     </div>
@@ -289,6 +293,12 @@ export function AppShell({
       </div>
     </div>
   );
+}
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return (parts.length > 1 ? `${parts[0][0]}${parts.at(-1)?.[0]}` : parts[0]?.slice(0, 2) || "ND")
+    .toLocaleUpperCase("vi-VN");
 }
 
 const notificationTone = {

@@ -21,8 +21,16 @@ public sealed class PhieuThu
     // ==========================================================
     public static PhieuThu TaoPhieuThu(string maPDS, decimal soTien, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
     {
+        if (string.IsNullOrWhiteSpace(maPDS))
+            throw new ArgumentException("Mã phiếu đối soát không được để trống.", nameof(maPDS));
         if (soTien <= 0)
             throw new ArgumentException("Số tiền thu phải lớn hơn 0.");
+        if (phuongThuc is not ("TienMat" or "ChuyenKhoan"))
+            throw new ArgumentException("Phương thức thanh toán không hợp lệ.", nameof(phuongThuc));
+        if (phuongThuc == "ChuyenKhoan" && string.IsNullOrWhiteSpace(anhMinhChung))
+            throw new ArgumentException("Chuyển khoản phải có thông tin chứng từ.", nameof(anhMinhChung));
+        if (string.IsNullOrWhiteSpace(maNV))
+            throw new ArgumentException("Không xác định được Kế toán thực hiện.", nameof(maNV));
 
         return new PhieuThu
         {
@@ -37,6 +45,9 @@ public sealed class PhieuThu
     }
 
     public Task LuuPhieu() => PhieuThuDB.InsertPhieuThu(this);
+
+    public static Task<bool> DaTonTaiChoPhieuDoiSoat(string maPDS) =>
+        PhieuThuDB.TonTaiTheoMaPhieuDoiSoat(maPDS);
 
     // ==========================================================
     // Methods from develop branch

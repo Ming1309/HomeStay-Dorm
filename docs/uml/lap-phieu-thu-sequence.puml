@@ -58,8 +58,7 @@ deactivate HD
 ' NHẬP LIỆU
 ' =====================
 
-KT -> MH : 3.0 Nhập soTienThucThu
-MH -> MH : 3.1 tinhConLaiSauThu()
+MH -> MH : 3.0 Hiển thị tienThuThem do máy chủ tính
 
 KT -> MH : 4.0 Chọn phuongThucThanhToan\n(Tiền mặt / Chuyển khoản)
 
@@ -79,16 +78,17 @@ activate NVDB
 deactivate NVDB
 deactivate NV
 
-MH -> PT : 5.3 taoPhieuThu(maPDS, soTienThucThu,\nphuongThuc, anhMinhChung, maNV)
+MH -> PT : 5.3 taoPhieuThu(maPDS, tienThuThem,\nphuongThuc, anhMinhChung, maNV)
 activate PT
 PT -> PTDB : 5.4 insertPhieuThu(phieuThu)
 activate PTDB
 deactivate PTDB
 deactivate PT
 
-MH -> PDS : 5.5 capNhatTrangThai(maPDS, "DaTatToan")
+PT -> PT : 5.5 kiemTraTrungTheoMaPDS()
+MH -> PDS : 5.6 chuyenSangDaTatToan(maPDS)
 activate PDS
-PDS -> PDSDB : 5.6 updateTrangThai(maPDS, "DaTatToan")
+PDS -> PDSDB : 5.7 updateTrangThai(maPDS, "DaChot", "DaTatToan")
 activate PDSDB
 deactivate PDSDB
 deactivate PDS

@@ -58,10 +58,12 @@ public static class PhieuDoiSoatDB
         return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<PhieuDoiSoat>(sql, new { MaPDS = maPDS }, PhienDuLieu.Session.Transaction);
     }
 
-    public static async Task<bool> UpdateTrangThai(string maPDS, string trangThai)
+    public static async Task<bool> UpdateTrangThai(string maPDS, string trangThaiHienTai, string trangThaiMoi)
     {
-        const string sql = "UPDATE PhieuDoiSoat SET TrangThai = @TrangThai WHERE MaPDS = @MaPDS";
-        var affected = await PhienDuLieu.Session.Connection.ExecuteAsync(sql, new { MaPDS = maPDS, TrangThai = trangThai }, PhienDuLieu.Session.Transaction);
+        const string sql = "UPDATE PhieuDoiSoat SET TrangThai = @TrangThaiMoi WHERE MaPDS = @MaPDS AND TrangThai = @TrangThaiHienTai";
+        var affected = await PhienDuLieu.Session.Connection.ExecuteAsync(
+            sql, new { MaPDS = maPDS, TrangThaiHienTai = trangThaiHienTai, TrangThaiMoi = trangThaiMoi },
+            PhienDuLieu.Session.Transaction);
         return affected == 1;
     }
 }
