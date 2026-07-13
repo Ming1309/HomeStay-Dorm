@@ -47,7 +47,34 @@ public sealed class PhieuCoc
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null) =>
         PhieuCocDB.LayDanhSachKhoiTao(text);
 
+    public static Task<IReadOnlyList<PhieuCoc>> LayPhieuCocDaThanhToanNhanPhongHomNay(string? text = null) =>
+        PhieuCocDB.LayPhieuCocDaThanhToanNhanPhongHomNay(text);
+
     public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => PhieuCocDB.DocChiTiet(maPhieuCoc);
+
+    public void KiemTraDaThanhToan()
+    {
+        if (TrangThai != "DaThanhToan")
+            throw new InvalidOperationException("Phiếu cọc không còn ở trạng thái thanh toán.");
+    }
+
+    public void KiemTraHinhThucThue()
+    {
+        if (HinhThucThue is not ("NguyenCan" or "OGhep"))
+            throw new InvalidOperationException("Hình thức thuê không hợp lệ.");
+    }
+
+    public void KiemTraSoLuongThanhVien(int soLuongThanhVien)
+    {
+        if (soLuongThanhVien <= 0)
+            throw new InvalidOperationException("Số lượng thành viên không hợp lệ.");
+        if (soLuongThanhVien > SoGiuongThue)
+            throw new InvalidOperationException(
+                $"Số người ({soLuongThanhVien}) vượt quá số giường đã đặt cọc ({SoGiuongThue}).");
+        if (soLuongThanhVien > Phong.LoaiPhong.SucChua)
+            throw new InvalidOperationException(
+                $"Số người ({soLuongThanhVien}) vượt quá sức chứa phòng ({Phong.LoaiPhong.SucChua}).");
+    }
 
     public int TinhTienDuKien()
     {
@@ -77,6 +104,10 @@ public sealed class PhieuCoc
         if (HinhThucThue == "OGhep" && Giuongs.Count == 0)
             throw new InvalidOperationException("Phiếu cọc chưa có giường thuê.");
     }
+
+    public void CapNhatTrangThai(string trangThaiMoi) => TrangThai = trangThaiMoi;
+
+    public Task LuuCapNhatTrangThai() => PhieuCocDB.CapNhatTrangThai(MaPhieuCoc, TrangThai);
 
     public Task CapNhatTinhTien() => PhieuCocDB.CapNhatTinhTien(this);
 

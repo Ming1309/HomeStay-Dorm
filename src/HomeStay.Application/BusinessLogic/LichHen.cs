@@ -21,6 +21,28 @@ public sealed class LichHen
 
     public static Task<LichHen?> DocChiTiet(string maLichHen) => LichHenDB.DocChiTiet(maLichHen);
 
+    public static Task<LichHen?> DocTheoMaPhieuCoc(string maPhieuCoc) => LichHenDB.DocTheoMaPhieuCoc(maPhieuCoc);
+
+    public bool KiemTraLichNhanPhongHomNay()
+    {
+        if (LoaiLichHen != "NhanPhong") return false;
+        if (string.IsNullOrWhiteSpace(MaPhieuCoc)) return false;
+        return NgayHen.Date == DateTime.Today;
+    }
+
+    public void KiemTraLoaiNhanPhong()
+    {
+        if (LoaiLichHen != "NhanPhong")
+            throw new InvalidOperationException("Lịch hẹn không phải loại nhận phòng.");
+    }
+
+    public void KiemTraTrangThaiHopLe()
+    {
+        var hopLe = TrangThai is "DaXacNhan" or "DaCheckin" or "DaHoanThanh";
+        if (!hopLe)
+            throw new InvalidOperationException("Lịch hẹn không ở trạng thái hợp lệ để nhập hồ sơ.");
+    }
+
     public void KiemTraCoTheLapPhieuCoc()
     {
         if (LoaiLichHen != "XemPhong" || TrangThai != "DaHoanThanh")
