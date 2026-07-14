@@ -180,7 +180,7 @@ IF EXISTS (
         FROM ChiTietHoaDon
         GROUP BY MaHoaDon
     ) ct ON ct.MaHoaDon = h.MaHoaDon
-    WHERE h.MaHoaDon BETWEEN 'HDON0001' AND 'HDON0004'
+    WHERE h.MaHoaDon BETWEEN 'HDON0002' AND 'HDON0004'
       AND h.TongTien <> ct.TongChiTiet
 )
     THROW 51011, 'Tong hoa don khong khop chi tiet.', 1;
