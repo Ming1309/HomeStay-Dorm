@@ -4,6 +4,13 @@ using HomeStay.Application.DataAccess.DBs;
 
 public sealed class Phong
 {
+    public static readonly IReadOnlyList<string> TrangThaiHopLe =
+        ["Trong", "ConGiuongTrong", "GiuCho", "DaCoc", "DangSuDung", "DangBaoTri", "NgungSuDung"];
+
+    // Trang thai coi la "dang su dung" -> chan xoa phong.
+    public static readonly IReadOnlyList<string> TrangThaiDangSuDung =
+        ["GiuCho", "DaCoc", "DangSuDung"];
+
     private readonly List<Giuong> _giuongsVuaGiu = [];
     private readonly List<Giuong> _giuongsVuaDatCoc = [];
     private readonly List<Giuong> _giuongsVuaGiaiPhong = [];
@@ -15,6 +22,7 @@ public sealed class Phong
     public string TrangThai { get; set; } = string.Empty;
     public string MaLP { get; set; } = string.Empty;
     public string MaCN { get; set; } = string.Empty;
+    public string? TenChiNhanh { get; set; }
     public LoaiPhong LoaiPhong { get; set; } = new();
     public List<Giuong> Giuongs { get; set; } = [];
     public int SoGiuongTrong => Giuongs.Count(g => g.TrangThai == "Trong");
@@ -38,6 +46,107 @@ public sealed class Phong
 
     public static Task<IReadOnlyList<PhongTaiSan>> LayTaiSan(string maPhong) =>
         PhongTaiSan.LayTaiSanTheoPhong(maPhong);
+
+    // ---- UC 1.4.25: Quan ly phong (QuanTri) ----
+
+    public static Task<IReadOnlyList<Phong>> LayDanhSachQuanTri(string? text, string? maCN,
+        string? toaNha, string? trangThai) =>
+        PhongDB.LayDanhSachQuanTri(text, maCN, toaNha, trangThai);
+
+    public static Task<bool> TrungSoPhong(string maCN, string soPhong, string? maPhongBoQua) =>
+        PhongDB.TrungSoPhong(maCN, soPhong, maPhongBoQua);
+
+    public static Task<bool> DangDuocThamChieu(string maPhong) => PhongDB.DangDuocThamChieu(maPhong);
+
+    public static Task<string> TaoMaMoi() => PhongDB.TaoMaMoi();
+
+    // Do dai toi da theo schema (01_InitTables.sql).
+    private const int MaxSoPhong = 20;
+    private const int MaxToaNha = 50;
+    private const int MaxTang = 10;
+    private const int MaxGioiTinh = 20;
+    private const int MaxMa = 20;
+
+    // Chuan hoa chuoi truoc khi kiem tra/luu: trim va chuyen rong -> null cho cot tuy chon.
+    public void ChuanHoa()
+    {
+        SoPhong = SoPhong?.Trim() ?? string.Empty;
+        TrangThai = TrangThai?.Trim() ?? string.Empty;
+        MaLP = MaLP?.Trim() ?? string.Empty;
+        MaCN = MaCN?.Trim() ?? string.Empty;
+        ToaNha = ChuanHoaTuyChon(ToaNha);
+        Tang = ChuanHoaTuyChon(Tang);
+        GioiTinhChoPhep = ChuanHoaTuyChon(GioiTinhChoPhep);
+    }
+
+    public void KiemTraDuLieuHopLe()
+    {
+        if (string.IsNullOrWhiteSpace(SoPhong))
+            throw new ArgumentException("Số phòng không được để trống.");
+        if (string.IsNullOrWhiteSpace(MaLP))
+            throw new ArgumentException("Loại phòng không được để trống.");
+        if (string.IsNullOrWhiteSpace(MaCN))
+            throw new ArgumentException("Chi nhánh không được để trống.");
+        if (!TrangThaiHopLe.Contains(TrangThai))
+            throw new ArgumentException("Trạng thái phòng không hợp lệ.");
+        KiemTraDoDai(SoPhong, MaxSoPhong, "Số phòng");
+        KiemTraDoDai(ToaNha, MaxToaNha, "Tòa nhà");
+        KiemTraDoDai(Tang, MaxTang, "Tầng");
+        KiemTraDoDai(GioiTinhChoPhep, MaxGioiTinh, "Giới tính cho phép");
+        KiemTraDoDai(MaLP, MaxMa, "Mã loại phòng");
+        KiemTraDoDai(MaCN, MaxMa, "Mã chi nhánh");
+    }
+
+    public void KiemTraCoTheXoa()
+    {
+        if (TrangThaiDangSuDung.Contains(TrangThai))
+            throw new InvalidOperationException(
+                "Không thể xóa phòng/giường đang được sử dụng hoặc đã có đặt cọc.");
+    }
+
+    public void KiemTraSoGiuongKhongVuotSucChua(int soGiuongHienCo)
+    {
+        if (LoaiPhong.SucChua > 0 && soGiuongHienCo >= LoaiPhong.SucChua)
+            throw new InvalidOperationException(
+                $"Số giường ({soGiuongHienCo}) đã đạt sức chứa của loại phòng ({LoaiPhong.SucChua}).");
+    }
+
+    // Khi doi loai phong, suc chua moi khong duoc nho hon so giuong hien co cua phong.
+    public void KiemTraSucChuaChoDoiLoaiPhong(int sucChuaMoi, int soGiuongHienCo)
+    {
+        if (sucChuaMoi > 0 && soGiuongHienCo > sucChuaMoi)
+            throw new InvalidOperationException(
+                $"Loại phòng mới có sức chứa ({sucChuaMoi}) nhỏ hơn số giường hiện có ({soGiuongHienCo}).");
+    }
+
+    // Chan doi trang thai mau thuan voi coc/hop dong dang hieu luc hoac giuong dang su dung.
+    public void KiemTraDoiTrangThai(string trangThaiMoi, IReadOnlyList<Giuong> giuongHienCo,
+        bool dangDuocThamChieu)
+    {
+        var khongConSuDung = trangThaiMoi is "Trong" or "DangBaoTri" or "NgungSuDung";
+        var coGiuongDangDung = giuongHienCo.Any(g => TrangThaiDangSuDung.Contains(g.TrangThai));
+        if (khongConSuDung && (dangDuocThamChieu || coGiuongDangDung))
+            throw new InvalidOperationException(
+                "Không thể đổi trạng thái phòng đang được sử dụng hoặc đã có đặt cọc.");
+    }
+
+    private static string? ChuanHoaTuyChon(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        return value.Trim();
+    }
+
+    private static void KiemTraDoDai(string? value, int max, string ten)
+    {
+        if (value is not null && value.Length > max)
+            throw new ArgumentException($"{ten} vượt quá {max} ký tự cho phép.");
+    }
+
+    public Task Them() => PhongDB.Them(this);
+
+    public Task CapNhatThongTin() => PhongDB.CapNhatThongTin(this);
+
+    public Task Xoa() => PhongDB.Xoa(MaPhong);
 
     public IReadOnlyList<Giuong> GiuGiuong(IEnumerable<string> maGiuongs)
     {
@@ -103,7 +212,8 @@ public sealed class Phong
     {
         if (string.IsNullOrWhiteSpace(GioiTinhChoPhep)) return true;
         if (GioiTinhChoPhep == "Nam" && dsKhach.Any(k => k.GioiTinh != "Nam")) return false;
-        if (GioiTinhChoPhep == "Nu" && dsKhach.Any(k => k.GioiTinh != "Nu")) return false;
+        if (GioiTinhChoPhep is "Nữ" or "Nu"
+            && dsKhach.Any(k => k.GioiTinh is not ("Nữ" or "Nu"))) return false;
         return true;
     }
 

@@ -72,7 +72,6 @@ CREATE TABLE TaiKhoan (
     TrangThai            NVARCHAR(20)   NOT NULL,
     LanDangNhapCuoi      DATETIME       NULL,
     Email                VARCHAR(100)   NULL,
-    PhongBan             NVARCHAR(100)  NULL,
     MaNV                 VARCHAR(20)    NOT NULL
 );
 GO
@@ -108,7 +107,8 @@ GO
 CREATE TABLE QuyDinh (
     MaQD         VARCHAR(20)    NOT NULL,
     TenQD        NVARCHAR(200)  NOT NULL,
-    DuongDanFile NVARCHAR(500)  NULL,
+    LoaiQD       NVARCHAR(30)   NOT NULL,
+    DuongDanFile NVARCHAR(500)  NOT NULL,
     NgayApDung   DATE           NOT NULL,
     NgayKetThuc  DATE           NULL
 );
@@ -121,7 +121,9 @@ CREATE TABLE ChinhSachHoanCoc (
     TiLe_TruocHan_NganHan  DECIMAL(5,4)   NOT NULL,
     TiLe_TruocHan_DaiHan   DECIMAL(5,4)   NOT NULL,
     TiLe_DungHan           DECIMAL(5,4)   NOT NULL,
-    MocLuuTru              INT            NULL
+    MocLuuTru              INT            NOT NULL,
+    NgayApDung              DATE           NOT NULL,
+    NgayKetThuc             DATE           NULL
 );
 GO
 
@@ -188,8 +190,13 @@ CREATE TABLE HopDong (
     MaNV        VARCHAR(20)    NULL,
     MaPhieuCoc  VARCHAR(20)    NOT NULL,
     MaChinhSach VARCHAR(20)    NULL,
-    MaQD        VARCHAR(20)    NULL,
     MaQLDuyet   VARCHAR(20)    NULL
+);
+GO
+
+CREATE TABLE HopDong_QuyDinh (
+    MaHD VARCHAR(20) NOT NULL,
+    MaQD VARCHAR(20) NOT NULL
 );
 GO
 
@@ -220,7 +227,8 @@ CREATE TABLE DichVu (
     MaDV      VARCHAR(20)    NOT NULL,
     TenDV     NVARCHAR(100)  NOT NULL,
     DonGia    DECIMAL(18,2)  NOT NULL,
-    DonViTinh NVARCHAR(50)   NULL
+    DonViTinh NVARCHAR(50)   NOT NULL,
+    TrangThai NVARCHAR(20)   NOT NULL
 );
 GO
 
@@ -232,9 +240,12 @@ CREATE TABLE HopDong_DichVu (
 GO
 
 CREATE TABLE TaiSan (
-    MaTS      VARCHAR(20)    NOT NULL,
-    TenTaiSan NVARCHAR(100)  NOT NULL,
-    GiaTri    DECIMAL(18,2)  NULL
+    MaTS        VARCHAR(20)    NOT NULL,
+    TenTaiSan   NVARCHAR(100)  NOT NULL,
+    LoaiTaiSan  NVARCHAR(30)   NOT NULL,
+    GiaTri      DECIMAL(18,2)  NOT NULL,
+    MoTa        NVARCHAR(500)  NULL,
+    TrangThai   NVARCHAR(20)   NOT NULL
 );
 GO
 
@@ -377,6 +388,7 @@ ALTER TABLE PhieuCoc         ADD CONSTRAINT PK_PhieuCoc         PRIMARY KEY (MaP
 ALTER TABLE ThanhVienDangKy  ADD CONSTRAINT PK_ThanhVienDangKy  PRIMARY KEY (MaPhieuCoc, MaKH);
 ALTER TABLE ChiTietPhieuCoc  ADD CONSTRAINT PK_ChiTietPhieuCoc  PRIMARY KEY (MaPhieuCoc, MaGiuong);
 ALTER TABLE HopDong          ADD CONSTRAINT PK_HopDong          PRIMARY KEY (MaHD);
+ALTER TABLE HopDong_QuyDinh  ADD CONSTRAINT PK_HopDong_QuyDinh  PRIMARY KEY (MaHD, MaQD);
 ALTER TABLE LichHen          ADD CONSTRAINT PK_LichHen          PRIMARY KEY (MaLH);
 ALTER TABLE ChiTietHopDong   ADD CONSTRAINT PK_ChiTietHopDong   PRIMARY KEY (MaHD, MaGiuong);
 ALTER TABLE DichVu           ADD CONSTRAINT PK_DichVu           PRIMARY KEY (MaDV);
@@ -405,6 +417,7 @@ ALTER TABLE KhachHang    ADD CONSTRAINT UQ_KhachHang_SoGiayTo   UNIQUE (SoGiayTo
 ALTER TABLE HopDong      ADD CONSTRAINT UQ_HopDong_PhieuCoc     UNIQUE (MaPhieuCoc);
 ALTER TABLE TaiKhoan     ADD CONSTRAINT UQ_TaiKhoan_TenDangNhap UNIQUE (TenDangNhap);
 ALTER TABLE TaiKhoan     ADD CONSTRAINT UQ_TaiKhoan_MaNV        UNIQUE (MaNV);
+ALTER TABLE TaiSan       ADD CONSTRAINT UQ_TaiSan_TenTaiSan     UNIQUE (TenTaiSan);
 CREATE UNIQUE INDEX UX_PhieuThu_MaPhieuCoc
     ON PhieuThu (MaPhieuCoc)
     WHERE MaPhieuCoc IS NOT NULL;
@@ -413,6 +426,10 @@ CREATE UNIQUE INDEX UX_PhieuThu_MaPDS
     WHERE MaPDS IS NOT NULL;
 CREATE UNIQUE INDEX UX_PhieuHoanCoc_MaPDS
     ON PhieuHoanCoc (MaPDS);
+CREATE UNIQUE INDEX UX_ChinhSachHoanCoc_NgayApDung
+    ON ChinhSachHoanCoc (NgayApDung);
+CREATE INDEX IX_HopDong_QuyDinh_MaQD
+    ON HopDong_QuyDinh (MaQD);
 GO
 
 
@@ -423,6 +440,8 @@ GO
 ALTER TABLE Phong        ADD CONSTRAINT DF_Phong_TrangThai        DEFAULT N'Trong'        FOR TrangThai;
 ALTER TABLE Giuong       ADD CONSTRAINT DF_Giuong_TrangThai       DEFAULT N'Trong'        FOR TrangThai;
 ALTER TABLE PhieuDangKy  ADD CONSTRAINT DF_PhieuDangKy_TrangThai  DEFAULT N'DangXuLy'    FOR TrangThai;
+ALTER TABLE DichVu       ADD CONSTRAINT DF_DichVu_TrangThai        DEFAULT N'DangApDung'  FOR TrangThai;
+ALTER TABLE TaiSan       ADD CONSTRAINT DF_TaiSan_TrangThai        DEFAULT N'DangApDung'  FOR TrangThai;
 ALTER TABLE PhieuCoc     ADD CONSTRAINT DF_PhieuCoc_ThoiDiemCoc   DEFAULT GETDATE()       FOR ThoiDiemCoc;
 ALTER TABLE PhieuCoc     ADD CONSTRAINT DF_PhieuCoc_TrangThai      DEFAULT N'KhoiTao'     FOR TrangThai;
 ALTER TABLE ThanhVienDangKy ADD CONSTRAINT DF_ThanhVienDangKy_TrangThaiDuyet DEFAULT N'ChoDuyet' FOR TrangThaiDuyet;
@@ -472,6 +491,17 @@ ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_TiLe_TruocHan_DaiHan
     CHECK (TiLe_TruocHan_DaiHan BETWEEN 0 AND 1);
 ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_TiLe_DungHan
     CHECK (TiLe_DungHan BETWEEN 0 AND 1);
+ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_MocLuuTru
+    CHECK (MocLuuTru > 0);
+ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_NgayKetThuc
+    CHECK (NgayKetThuc IS NULL OR NgayKetThuc >= NgayApDung);
+
+-- QuyDinh
+ALTER TABLE QuyDinh ADD CONSTRAINT CK_QuyDinh_LoaiQD
+    CHECK (LoaiQD IN (N'DieuKienLuuTru', N'NoiQuySinhHoat', N'HoSoPhapLyCuTru',
+                      N'TaiChinhThanhToan', N'TaiSanTienIchAnToan', N'ViPhamBoiThuong'));
+ALTER TABLE QuyDinh ADD CONSTRAINT CK_QuyDinh_NgayKetThuc
+    CHECK (NgayKetThuc IS NULL OR NgayKetThuc > NgayApDung);
 
 -- PhieuDangKy
 ALTER TABLE PhieuDangKy ADD CONSTRAINT CK_PhieuDangKy_SoLuongNguoi
@@ -518,6 +548,8 @@ ALTER TABLE ChiTietHopDong ADD CONSTRAINT CK_ChiTietHopDong_TrangThaiThue
 -- DichVu
 ALTER TABLE DichVu ADD CONSTRAINT CK_DichVu_DonGia
     CHECK (DonGia >= 0);
+ALTER TABLE DichVu ADD CONSTRAINT CK_DichVu_TrangThai
+    CHECK (TrangThai IN (N'DangApDung', N'NgungApDung'));
 
 -- HopDong_DichVu
 ALTER TABLE HopDong_DichVu ADD CONSTRAINT CK_HopDong_DichVu_DonGiaKyKet
@@ -526,6 +558,10 @@ ALTER TABLE HopDong_DichVu ADD CONSTRAINT CK_HopDong_DichVu_DonGiaKyKet
 -- TaiSan
 ALTER TABLE TaiSan ADD CONSTRAINT CK_TaiSan_GiaTri
     CHECK (GiaTri >= 0);
+ALTER TABLE TaiSan ADD CONSTRAINT CK_TaiSan_LoaiTaiSan
+    CHECK (LoaiTaiSan IN (N'NoiThat', N'ThietBiDien', N'TienIchBanGiao'));
+ALTER TABLE TaiSan ADD CONSTRAINT CK_TaiSan_TrangThai
+    CHECK (TrangThai IN (N'DangApDung', N'NgungApDung'));
 
 -- Phong_TaiSan
 ALTER TABLE Phong_TaiSan ADD CONSTRAINT CK_Phong_TaiSan_SoLuong
@@ -644,7 +680,11 @@ ALTER TABLE HopDong ADD CONSTRAINT FK_HopDong_PhieuCoc
     FOREIGN KEY (MaPhieuCoc) REFERENCES PhieuCoc(MaPhieuCoc);
 ALTER TABLE HopDong ADD CONSTRAINT FK_HopDong_ChinhSach
     FOREIGN KEY (MaChinhSach) REFERENCES ChinhSachHoanCoc(MaChinhSach);
-ALTER TABLE HopDong ADD CONSTRAINT FK_HopDong_QuyDinh
+
+-- HopDong_QuyDinh
+ALTER TABLE HopDong_QuyDinh ADD CONSTRAINT FK_HopDong_QuyDinh_HopDong
+    FOREIGN KEY (MaHD) REFERENCES HopDong(MaHD);
+ALTER TABLE HopDong_QuyDinh ADD CONSTRAINT FK_HopDong_QuyDinh_QuyDinh
     FOREIGN KEY (MaQD) REFERENCES QuyDinh(MaQD);
 
 -- LichHen

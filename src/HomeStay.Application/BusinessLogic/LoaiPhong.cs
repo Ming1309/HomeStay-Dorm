@@ -10,4 +10,6 @@ public sealed class LoaiPhong
     public decimal GiaThue { get; set; }
 
     public static Task<IReadOnlyList<LoaiPhong>> LayDanhSach() => LoaiPhongDB.LayDanhSach();
+
+    public static Task<LoaiPhong?> LayTheoMa(string maLP) => LoaiPhongDB.LayTheoMa(maLP);
 }

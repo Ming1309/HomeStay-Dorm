@@ -64,7 +64,6 @@ package "TANG NGHIEP VU" #FCF3CF {
     - MaNV: String
     - MaPhieuCoc: String
     - MaChinhSach: String
-    - MaQD: String
     - MaQLDuyet: String
     --
     + LayDanhSachChoThanhToan(): IReadOnlyList<HopDong>

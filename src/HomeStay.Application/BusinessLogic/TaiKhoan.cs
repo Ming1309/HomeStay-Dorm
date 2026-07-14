@@ -10,7 +10,6 @@ public sealed class TaiKhoan
     public string TrangThai { get; set; } = "HoatDong";
     public DateTime? LanDangNhapCuoi { get; set; }
     public string? Email { get; set; }
-    public string? PhongBan { get; set; }
     public string MaNV { get; set; } = string.Empty;
     public NhanVien NhanVien { get; set; } = new();
 

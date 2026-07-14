@@ -35,40 +35,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { Switch } from "@/shared/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useWorkflowStore } from "@/app/providers/workflow-store";
 
-
-
 type UserRole = "Sale" | "Kế toán" | "Quản lý" | "Quản trị hệ thống";
 type UserStatus = "Đang hoạt động" | "Đã khóa" | "Vô hiệu hoá" | "Ngừng làm việc" | "Lưu trữ";
-type Branch = "Chi nhánh 1" | "Chi nhánh 2";
+
+type Branch = {
+  maCN: string;
+  tenChiNhanh: string;
+};
 
 type Staff = {
   id: string;
@@ -78,8 +60,8 @@ type Staff = {
   email: string;
   phone: string;
   role: UserRole;
-  branch: Branch;
-  department: string;
+  branchCode: string;
+  branchName: string;
   status: UserStatus;
   lastLoginAt: string;
   createdAt: string;
@@ -87,22 +69,56 @@ type Staff = {
 };
 
 type ApiStaff = {
-  id: string; code: string; fullName: string; username: string; email: string; phone: string;
-  role: string; branch: string; department: string; status: string; lastLoginAt: string | null;
-  createdAt: string | null; createdBy: string;
+  id: string;
+  code: string;
+  fullName: string;
+  username: string;
+  email: string;
+  phone: string;
+  role: string;
+  branchCode: string;
+  branchName: string;
+  status: string;
+  lastLoginAt: string | null;
+  createdAt: string | null;
+  createdBy: string;
 };
 
 type ActionType = "disable" | "archive" | "offboard";
 
 function mapStaff(item: ApiStaff): Staff {
-  const roles: Record<string, UserRole> = { Sale: "Sale", KeToan: "Kế toán", QuanLy: "Quản lý", QuanTri: "Quản trị hệ thống" };
-  const statuses: Record<string, UserStatus> = { HoatDong: "Đang hoạt động", Khoa: "Đã khóa", VoHieuHoa: "Vô hiệu hoá", NgungLamViec: "Ngừng làm việc", LuuTru: "Lưu trữ" };
-  const branch = item.branch === "CN02" || item.branch.includes("Làng Đại Học") ? "Chi nhánh 2" : "Chi nhánh 1";
-  return { ...item, role: roles[item.role] ?? "Sale", branch, status: statuses[item.status] ?? "Lưu trữ", lastLoginAt: item.lastLoginAt ?? "", createdAt: item.createdAt ?? new Date().toISOString() };
+  const roles: Record<string, UserRole> = {
+    Sale: "Sale",
+    KeToan: "Kế toán",
+    QuanLy: "Quản lý",
+    QuanTri: "Quản trị hệ thống",
+  };
+  const statuses: Record<string, UserStatus> = {
+    HoatDong: "Đang hoạt động",
+    Khoa: "Đã khóa",
+    VoHieuHoa: "Vô hiệu hoá",
+    NgungLamViec: "Ngừng làm việc",
+    LuuTru: "Lưu trữ",
+  };
+  return {
+    ...item,
+    role: roles[item.role] ?? "Sale",
+    status: statuses[item.status] ?? "Lưu trữ",
+    lastLoginAt: item.lastLoginAt ?? "",
+    createdAt: item.createdAt ?? new Date().toISOString(),
+  };
 }
 
-function roleCode(role: UserRole) { return ({ Sale: "Sale", "Kế toán": "KeToan", "Quản lý": "QuanLy", "Quản trị hệ thống": "QuanTri" } as Record<UserRole, string>)[role]; }
-function branchCode(branch: Branch) { return branch === "Chi nhánh 2" ? "CN02" : "CN01"; }
+function roleCode(role: UserRole) {
+  return (
+    {
+      Sale: "Sale",
+      "Kế toán": "KeToan",
+      "Quản lý": "QuanLy",
+      "Quản trị hệ thống": "QuanTri",
+    } as Record<UserRole, string>
+  )[role];
+}
 
 const staffSchema = z.object({
   fullName: z.string().min(1, "Vui lòng nhập họ tên"),
@@ -111,9 +127,20 @@ const staffSchema = z.object({
   username: z.string().min(1, "Vui lòng nhập tên đăng nhập"),
   tempPassword: z.string().optional(),
   role: z.enum(["Sale", "Kế toán", "Quản lý", "Quản trị hệ thống"]),
-  branch: z.enum(["Chi nhánh 1", "Chi nhánh 2"]),
-  department: z.string().min(1, "Vui lòng nhập phòng ban"),
+  branch: z.string().min(1, "Vui lòng chọn chi nhánh"),
 });
+
+const resetPasswordSchema = z
+  .object({
+    tempPassword: z.string().min(8, "Mật khẩu tạm phải có ít nhất 8 ký tự"),
+    confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu tạm"),
+  })
+  .refine((values) => values.tempPassword === values.confirmPassword, {
+    message: "Mật khẩu xác nhận không khớp",
+    path: ["confirmPassword"],
+  });
+
+type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
 export function AdminUsersPage() {
   const navigate = useNavigate();
@@ -122,12 +149,15 @@ export function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"Tất cả" | UserRole>("Tất cả");
   const [statusFilter, setStatusFilter] = useState<"Tất cả" | UserStatus>("Tất cả");
-  const [branchFilter, setBranchFilter] = useState<"Tất cả" | Branch>("Tất cả");
+  const [branchFilter, setBranchFilter] = useState("all");
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   const [statusTarget, setStatusTarget] = useState<{ id: string; type: ActionType } | null>(null);
   const [lockTargetId, setLockTargetId] = useState<string | null>(null);
+  const [resetPasswordTargetId, setResetPasswordTargetId] = useState<string | null>(null);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const form = useForm<z.infer<typeof staffSchema>>({
     resolver: zodResolver(staffSchema),
@@ -138,9 +168,13 @@ export function AdminUsersPage() {
       username: "",
       tempPassword: "",
       role: "Sale",
-      branch: "Chi nhánh 1",
-      department: "",
+      branch: "",
     },
+  });
+
+  const resetPasswordForm = useForm<ResetPasswordValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { tempPassword: "", confirmPassword: "" },
   });
 
   useEffect(() => {
@@ -149,10 +183,23 @@ export function AdminUsersPage() {
   }, [isHydrated, role, navigate]);
 
   useEffect(() => {
-    fetch("/api/users")
-      .then(async (response) => { if (!response.ok) throw new Error("Không thể tải danh sách tài khoản."); return response.json(); })
-      .then((items: ApiStaff[]) => setStaffs(items.map(mapStaff)))
-      .catch((error) => toast.error(error instanceof Error ? error.message : "Không thể tải tài khoản."))
+    Promise.all([
+      fetch("/api/users").then(async (response) => {
+        if (!response.ok) throw new Error("Không thể tải danh sách tài khoản.");
+        return response.json() as Promise<ApiStaff[]>;
+      }),
+      fetch("/api/users/branches").then(async (response) => {
+        if (!response.ok) throw new Error("Không thể tải danh sách chi nhánh.");
+        return response.json() as Promise<Branch[]>;
+      }),
+    ])
+      .then(([items, branchItems]) => {
+        setStaffs(items.map(mapStaff));
+        setBranches(branchItems);
+      })
+      .catch((error) =>
+        toast.error(error instanceof Error ? error.message : "Không thể tải tài khoản."),
+      )
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -171,7 +218,7 @@ export function AdminUsersPage() {
     return staffs.filter((staff) => {
       if (roleFilter !== "Tất cả" && staff.role !== roleFilter) return false;
       if (statusFilter !== "Tất cả" && staff.status !== statusFilter) return false;
-      if (branchFilter !== "Tất cả" && staff.branch !== branchFilter) return false;
+      if (branchFilter !== "all" && staff.branchCode !== branchFilter) return false;
       if (!q) return true;
       return [staff.fullName, staff.email, staff.phone, staff.username]
         .join(" ")
@@ -189,8 +236,7 @@ export function AdminUsersPage() {
       username: "",
       tempPassword: "",
       role: "Sale",
-      branch: "Chi nhánh 1",
-      department: "",
+      branch: branches[0]?.maCN ?? "",
     });
     setDialogOpen(true);
   };
@@ -204,8 +250,7 @@ export function AdminUsersPage() {
       username: staff.username,
       tempPassword: "",
       role: staff.role,
-      branch: staff.branch,
-      department: staff.department,
+      branch: staff.branchCode,
     });
     setDialogOpen(true);
   };
@@ -216,18 +261,43 @@ export function AdminUsersPage() {
       return;
     }
 
-    const body = editingStaff ? {
-      hoTen: values.fullName, sdt: values.phone, email: values.email, tenDangNhap: values.username,
-      vaiTro: roleCode(values.role), maCN: branchCode(values.branch), phongBan: values.department,
-    } : {
-      maNV: `NV${Date.now().toString().slice(-8)}`, hoTen: values.fullName, sdt: values.phone, email: values.email,
-      tenDangNhap: values.username, vaiTro: roleCode(values.role), maCN: branchCode(values.branch), phongBan: values.department, matKhauTam: values.tempPassword,
-    };
-    const response = await fetch(editingStaff ? `/api/users/${editingStaff.id}` : "/api/users", { method: editingStaff ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (!response.ok) { toast.error((await response.json()).message ?? "Không thể lưu tài khoản."); return; }
+    const body = editingStaff
+      ? {
+          hoTen: values.fullName,
+          sdt: values.phone,
+          email: values.email,
+          tenDangNhap: values.username,
+          vaiTro: roleCode(values.role),
+          maCN: values.branch,
+        }
+      : {
+          maNV: `NV${Date.now().toString().slice(-8)}`,
+          hoTen: values.fullName,
+          sdt: values.phone,
+          email: values.email,
+          tenDangNhap: values.username,
+          vaiTro: roleCode(values.role),
+          maCN: values.branch,
+          matKhauTam: values.tempPassword,
+        };
+    const response = await fetch(editingStaff ? `/api/users/${editingStaff.id}` : "/api/users", {
+      method: editingStaff ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      toast.error((await response.json()).message ?? "Không thể lưu tài khoản.");
+      return;
+    }
     const saved = mapStaff(await response.json());
-    setStaffs((prev) => editingStaff ? prev.map((staff) => staff.id === saved.id ? saved : staff) : [...prev, saved]);
-    toast.success(editingStaff ? "Cập nhật nhân viên thành công." : "Thêm nhân viên mới thành công.");
+    setStaffs((prev) =>
+      editingStaff
+        ? prev.map((staff) => (staff.id === saved.id ? saved : staff))
+        : [...prev, saved],
+    );
+    toast.success(
+      editingStaff ? "Cập nhật nhân viên thành công." : "Thêm nhân viên mới thành công.",
+    );
     setDialogOpen(false);
   };
 
@@ -253,9 +323,22 @@ export function AdminUsersPage() {
     if (!lockTargetId) return;
     const staff = staffs.find((item) => item.id === lockTargetId);
     if (!staff) return;
-    const response = await fetch(`/api/users/${lockTargetId}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ trangThai: staff.status === "Đã khóa" ? "HoatDong" : "Khoa" }) });
-    if (!response.ok) { toast.error((await response.json()).message ?? "Không thể cập nhật trạng thái."); return; }
-    setStaffs((prev) => prev.map((item) => item.id === lockTargetId ? { ...item, status: staff.status === "Đã khóa" ? "Đang hoạt động" : "Đã khóa" } : item));
+    const response = await fetch(`/api/users/${lockTargetId}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trangThai: staff.status === "Đã khóa" ? "HoatDong" : "Khoa" }),
+    });
+    if (!response.ok) {
+      toast.error((await response.json()).message ?? "Không thể cập nhật trạng thái.");
+      return;
+    }
+    setStaffs((prev) =>
+      prev.map((item) =>
+        item.id === lockTargetId
+          ? { ...item, status: staff.status === "Đã khóa" ? "Đang hoạt động" : "Đã khóa" }
+          : item,
+      ),
+    );
     setLockTargetId(null);
     toast.success("Cập nhật trạng thái khóa tài khoản thành công.");
   };
@@ -268,16 +351,64 @@ export function AdminUsersPage() {
       archive: "Lưu trữ",
     };
 
-    const response = await fetch(`/api/users/${statusTarget.id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ trangThai: { disable: "VoHieuHoa", offboard: "NgungLamViec", archive: "LuuTru" }[statusTarget.type] }) });
-    if (!response.ok) { toast.error((await response.json()).message ?? "Không thể cập nhật trạng thái."); return; }
-    setStaffs((prev) => prev.map((staff) => staff.id === statusTarget.id ? { ...staff, status: mappedStatus[statusTarget.type] } : staff));
+    const response = await fetch(`/api/users/${statusTarget.id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        trangThai: { disable: "VoHieuHoa", offboard: "NgungLamViec", archive: "LuuTru" }[
+          statusTarget.type
+        ],
+      }),
+    });
+    if (!response.ok) {
+      toast.error((await response.json()).message ?? "Không thể cập nhật trạng thái.");
+      return;
+    }
+    setStaffs((prev) =>
+      prev.map((staff) =>
+        staff.id === statusTarget.id
+          ? { ...staff, status: mappedStatus[statusTarget.type] }
+          : staff,
+      ),
+    );
 
     setStatusTarget(null);
     toast.success("Đã cập nhật trạng thái tài khoản.");
   };
 
+  const openResetPasswordDialog = (staff: Staff) => {
+    resetPasswordForm.reset({ tempPassword: "", confirmPassword: "" });
+    setResetPasswordTargetId(staff.id);
+  };
+
+  const confirmResetPassword = async (values: ResetPasswordValues) => {
+    if (!resetPasswordTargetId) return;
+
+    setIsResettingPassword(true);
+    try {
+      const response = await fetch(`/api/users/${resetPasswordTargetId}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matKhauTam: values.tempPassword }),
+      });
+      if (!response.ok) {
+        toast.error(await getApiError(response, "Không thể đặt lại mật khẩu."));
+        return;
+      }
+
+      toast.success("Đặt lại mật khẩu tạm thành công.");
+      setResetPasswordTargetId(null);
+      resetPasswordForm.reset();
+    } catch {
+      toast.error("Không thể kết nối đến máy chủ để đặt lại mật khẩu.");
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
   const lockTarget = staffs.find((staff) => staff.id === lockTargetId) ?? null;
   const statusTargetStaff = staffs.find((staff) => staff.id === statusTarget?.id) ?? null;
+  const resetPasswordTarget = staffs.find((staff) => staff.id === resetPasswordTargetId) ?? null;
 
   if (!isHydrated || role !== "admin") return null;
 
@@ -359,17 +490,17 @@ export function AdminUsersPage() {
                 </div>
                 <div className="w-full md:w-[200px]">
                   <p className="mb-1 text-xs font-medium text-gray-600">Chi nhánh</p>
-                  <Select
-                    value={branchFilter}
-                    onValueChange={(value) => setBranchFilter(value as "Tất cả" | Branch)}
-                  >
+                  <Select value={branchFilter} onValueChange={setBranchFilter}>
                     <SelectTrigger className="h-9 text-sm">
                       <SelectValue placeholder="Chi nhánh" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Tất cả">Tất cả chi nhánh</SelectItem>
-                      <SelectItem value="Chi nhánh 1">Chi nhánh 1</SelectItem>
-                      <SelectItem value="Chi nhánh 2">Chi nhánh 2</SelectItem>
+                      <SelectItem value="all">Tất cả chi nhánh</SelectItem>
+                      {branches.map((branch) => (
+                        <SelectItem key={branch.maCN} value={branch.maCN}>
+                          {branch.tenChiNhanh}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -427,7 +558,7 @@ export function AdminUsersPage() {
                               {staff.fullName}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {staff.code} • {staff.department} • Tạo bởi {staff.createdBy} •{" "}
+                              {staff.code} • Tạo bởi {staff.createdBy} •{" "}
                               {formatDate(staff.createdAt)}
                             </div>
                           </TableCell>
@@ -435,7 +566,7 @@ export function AdminUsersPage() {
                           <TableCell className="py-2">
                             <RoleBadge role={staff.role} />
                           </TableCell>
-                          <TableCell className="py-2 text-sm">{staff.branch}</TableCell>
+                          <TableCell className="py-2 text-sm">{staff.branchName}</TableCell>
                           <TableCell className="py-2">
                             <StatusBadge status={staff.status} />
                           </TableCell>
@@ -458,9 +589,7 @@ export function AdminUsersPage() {
                                   <Pencil className="mr-2 size-4" />
                                   Chỉnh sửa
                                 </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={async () => { const response = await fetch(`/api/users/${staff.id}/reset-password`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ matKhauTam: "HomeStay@123" }) }); response.ok ? toast.success("Đã đặt lại mật khẩu tạm thời.") : toast.error((await response.json()).message ?? "Không thể đặt lại mật khẩu."); }}
-                                >
+                                <DropdownMenuItem onClick={() => openResetPasswordDialog(staff)}>
                                   <KeyRound className="mr-2 size-4" />
                                   Đặt lại mật khẩu
                                 </DropdownMenuItem>
@@ -640,22 +769,87 @@ export function AdminUsersPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Chi nhánh 1">Chi nhánh 1</SelectItem>
-                          <SelectItem value="Chi nhánh 2">Chi nhánh 2</SelectItem>
+                          {branches.map((branch) => (
+                            <SelectItem key={branch.maCN} value={branch.maCN}>
+                              {branch.tenChiNhanh}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                    Hủy
+                  </Button>
+                  <Button type="submit">Lưu</Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={Boolean(resetPasswordTargetId)}
+          onOpenChange={(open) => {
+            if (!open && !isResettingPassword) {
+              setResetPasswordTargetId(null);
+              resetPasswordForm.reset();
+            }
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Đặt lại mật khẩu</DialogTitle>
+              <DialogDescription>
+                Nhập mật khẩu tạm mới cho tài khoản. Nhân viên sẽ dùng mật khẩu này ở lần đăng nhập
+                tiếp theo.
+              </DialogDescription>
+              {resetPasswordTarget && (
+                <p className="text-sm font-medium text-gray-700">
+                  {resetPasswordTarget.fullName} ({resetPasswordTarget.username})
+                </p>
+              )}
+            </DialogHeader>
+
+            <Form {...resetPasswordForm}>
+              <form
+                className="space-y-4"
+                onSubmit={resetPasswordForm.handleSubmit(confirmResetPassword)}
+              >
                 <FormField
-                  control={form.control}
-                  name="department"
+                  control={resetPasswordForm.control}
+                  name="tempPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phòng ban *</FormLabel>
+                      <FormLabel>Mật khẩu tạm mới *</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input
+                          type="password"
+                          autoComplete="new-password"
+                          disabled={isResettingPassword}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={resetPasswordForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Xác nhận mật khẩu tạm *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          autoComplete="new-password"
+                          disabled={isResettingPassword}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -663,10 +857,17 @@ export function AdminUsersPage() {
                 />
 
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isResettingPassword}
+                    onClick={() => setResetPasswordTargetId(null)}
+                  >
                     Hủy
                   </Button>
-                  <Button type="submit">Lưu</Button>
+                  <Button type="submit" disabled={isResettingPassword}>
+                    {isResettingPassword ? "Đang đặt lại..." : "Đặt lại mật khẩu"}
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -755,6 +956,15 @@ function formatDateTime(isoDate: string) {
     month: "2-digit",
     year: "numeric",
   }).format(date);
+}
+
+async function getApiError(response: Response, fallback: string) {
+  try {
+    const body = (await response.json()) as { message?: string };
+    return body.message ?? fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function RoleBadge({ role }: { role: UserRole }) {

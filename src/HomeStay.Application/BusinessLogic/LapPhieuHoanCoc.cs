@@ -85,7 +85,10 @@ public sealed class LapPhieuHoanCoc
 
         var kh = await KhachHang.LayThongTinKhachHang(pc.MaKH);
         var hd = pds.MaHD != null ? await HopDong.LayChiTietHopDong(pds.MaHD) : null;
-        var policy = hd != null && hd.MaChinhSach != null ? await ChinhSachHoanCoc.LayChinhSachTheoMa(hd.MaChinhSach) : await ChinhSachHoanCoc.LayChinhSachDangApDung();
+        var homNay = DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
+        var policy = hd != null && hd.MaChinhSach != null
+            ? await ChinhSachHoanCoc.LayChinhSachTheoMa(hd.MaChinhSach)
+            : await ChinhSachHoanCoc.LayChinhSachDangApDung(homNay);
         var phg = await Phong.DocChiTiet(pc.MaPhong);
 
         return new ChiTietHoanCocDto

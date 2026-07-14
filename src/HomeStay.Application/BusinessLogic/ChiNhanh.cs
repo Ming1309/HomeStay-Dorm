@@ -10,4 +10,6 @@ public sealed class ChiNhanh
     public string SDT { get; set; } = string.Empty;
 
     public static Task<IReadOnlyList<ChiNhanh>> LayDanhSach() => ChiNhanhDB.LayDanhSach();
+
+    public static Task<bool> TonTai(string maCN) => ChiNhanhDB.TonTai(maCN);
 }

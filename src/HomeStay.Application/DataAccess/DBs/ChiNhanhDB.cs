@@ -13,4 +13,11 @@ public static class ChiNhanhDB
             sql, transaction: PhienDuLieu.Session.Transaction);
         return result.ToList();
     }
+
+    public static async Task<bool> TonTai(string maCN)
+    {
+        const string sql = "SELECT COUNT(1) FROM ChiNhanh WHERE MaCN=@MaCN";
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(
+            sql, new { MaCN = maCN }, PhienDuLieu.Session.Transaction) > 0;
+    }
 }

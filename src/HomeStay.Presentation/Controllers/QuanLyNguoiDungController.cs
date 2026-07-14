@@ -14,6 +14,14 @@ public sealed class QuanLyNguoiDungController(QuanLyNguoiDung quanLy) : Controll
     [HttpGet]
     public async Task<IActionResult> LayDanhSach() => Ok((await quanLy.LayDanhSach()).Select(TaoResponse));
 
+    [HttpGet("branches")]
+    public async Task<IActionResult> LayDanhSachChiNhanh() => Ok(
+        (await quanLy.LayDanhSachChiNhanh()).Select(x => new
+        {
+            maCN = x.MaCN,
+            tenChiNhanh = x.TenChiNhanh,
+        }));
+
     [HttpPost]
     public async Task<IActionResult> Tao(TaoTaiKhoanHttpRequest request)
     {
@@ -21,7 +29,7 @@ public sealed class QuanLyNguoiDungController(QuanLyNguoiDung quanLy) : Controll
         {
             var taiKhoan = await quanLy.Tao(new TaiKhoan
             {
-                MaTK = $"TK_{request.MaNV}", TenDangNhap = request.TenDangNhap, Email = request.Email, PhongBan = request.PhongBan,
+                MaTK = $"TK_{request.MaNV}", TenDangNhap = request.TenDangNhap, Email = request.Email,
             }, new NhanVien { MaNV = request.MaNV, HoTen = request.HoTen, SDT = request.SDT, VaiTro = request.VaiTro, MaCN = request.MaCN }, request.MatKhauTam);
             return Ok(TaoResponse(taiKhoan));
         }
@@ -36,7 +44,7 @@ public sealed class QuanLyNguoiDungController(QuanLyNguoiDung quanLy) : Controll
         {
             var taiKhoan = (await quanLy.LayDanhSach()).SingleOrDefault(x => x.MaTK == id);
             if (taiKhoan is null) return NotFound();
-            taiKhoan.TenDangNhap = request.TenDangNhap; taiKhoan.Email = request.Email; taiKhoan.PhongBan = request.PhongBan;
+            taiKhoan.TenDangNhap = request.TenDangNhap; taiKhoan.Email = request.Email;
             taiKhoan.NhanVien.HoTen = request.HoTen; taiKhoan.NhanVien.SDT = request.SDT; taiKhoan.NhanVien.VaiTro = request.VaiTro; taiKhoan.NhanVien.MaCN = request.MaCN;
             await quanLy.CapNhat(taiKhoan, taiKhoan.NhanVien);
             return Ok(TaoResponse(taiKhoan));
@@ -64,7 +72,7 @@ public sealed class QuanLyNguoiDungController(QuanLyNguoiDung quanLy) : Controll
     {
         id = x.MaTK, code = x.NhanVien.MaNV, fullName = x.NhanVien.HoTen, username = x.TenDangNhap,
         email = x.Email ?? string.Empty, phone = x.NhanVien.SDT ?? string.Empty, role = x.NhanVien.VaiTro,
-        branch = x.NhanVien.TenChiNhanh ?? x.NhanVien.MaCN, department = x.PhongBan ?? string.Empty,
+        branchCode = x.NhanVien.MaCN, branchName = x.NhanVien.TenChiNhanh ?? x.NhanVien.MaCN,
         status = x.TrangThai, lastLoginAt = x.LanDangNhapCuoi, createdAt = (DateTime?)null, createdBy = "System",
     };
 }

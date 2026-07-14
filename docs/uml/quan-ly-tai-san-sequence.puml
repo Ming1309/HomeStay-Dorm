@@ -1,0 +1,54 @@
+@startuml
+title SO DO TUAN TU - QUAN LY TAI SAN (UC 1.4.30)
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+actor "Quan tri vien" as QTV
+boundary ": MHQuanLyTaiSan" as MH
+control ": QuanLyTaiSan" as QL
+control ": TaiSan" as TS
+entity ": TaiSanDB" as DB
+
+QTV -> MH : loadAssets()
+MH -> QL : LayDanhSach()
+QL -> TS : LayDanhSach()
+TS -> DB : LayDanhSach()
+MH -> MH : hien thi danh sach
+
+QTV -> MH : onSubmit(values)
+MH -> MH : validate form
+alt them moi
+  MH -> QL : Them(taiSan)
+  QL -> TS : ChuanHoa()
+  QL -> TS : KiemTraDuLieuHopLe()
+  QL -> TS : TrungTen(tenTaiSan, maLoaiTru)
+  TS -> DB : TrungTen(tenTaiSan, maLoaiTru)
+  QL -> TS : TaoMaMoi()
+  TS -> DB : TaoMaMoi()
+  QL -> TS : Them()
+  TS -> DB : Them(taiSan)
+else cap nhat
+  MH -> QL : CapNhat(maTS, thongTin)
+  QL -> TS : ChuanHoa()
+  QL -> TS : KiemTraDuLieuHopLe()
+  QL -> TS : Doc(maTS)
+  TS -> DB : Doc(maTS)
+  QL -> TS : TrungTen(tenTaiSan, maLoaiTru)
+  TS -> DB : TrungTen(tenTaiSan, maLoaiTru)
+  QL -> TS : CapNhat()
+  TS -> DB : CapNhat(taiSan)
+end
+
+QTV -> MH : confirmDelete()
+MH -> QL : Xoa(maTS)
+QL -> TS : Doc(maTS)
+TS -> DB : Doc(maTS)
+QL -> TS : DangDuocThamChieu(maTS)
+TS -> DB : DangDuocThamChieu(maTS)
+alt da duoc tham chieu
+  QL -> QL : throw InvalidOperationException
+else chua duoc tham chieu
+  QL -> TS : Xoa()
+  TS -> DB : Xoa(maTS)
+end
+@enduml

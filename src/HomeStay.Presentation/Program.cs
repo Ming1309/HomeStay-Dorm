@@ -28,6 +28,10 @@ builder.Services.AddSingleton<IChungTuCocStorage>(new ChungTuCocFileStorage(
     Path.Combine(builder.Environment.ContentRootPath, "App_Data", "ChungTuCoc")));
 builder.Services.AddSingleton<IMinhChungThuHoiStorage>(new MinhChungThuHoiFileStorage(
     Path.Combine(builder.Environment.ContentRootPath, "App_Data", "MinhChungThuHoi")));
+var thuMucQuyDinh = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "QuyDinh");
+var thuMucQuyDinhMau = Path.Combine(builder.Environment.ContentRootPath, "SeedData");
+builder.Services.AddSingleton<IQuyDinhFileStorage>(
+    new QuyDinhFileStorage(thuMucQuyDinh, thuMucQuyDinhMau));
 
 // Register Business Logic dependencies
 builder.Services.AddSingleton(TimeProvider.System);
@@ -56,6 +60,11 @@ builder.Services.AddScoped<LapBienBanThuHoiTaiSan>();
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();
+builder.Services.AddScoped<QuanLyPhongGiuong>();
+builder.Services.AddScoped<QuanLyDichVu>();
+builder.Services.AddScoped<QuanLyTaiSan>();
+builder.Services.AddScoped<QuanLyQuyDinh>();
+builder.Services.AddScoped<QuanLyChinhSachHoanCoc>();
 builder.Services.AddScoped<TaoLichHen>();
 builder.Services.AddScoped<TraCuuLichHen>();
 builder.Services.AddScoped<SuaLichHen>();
