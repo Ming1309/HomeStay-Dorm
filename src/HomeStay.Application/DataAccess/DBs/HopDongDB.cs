@@ -224,6 +224,7 @@ public static class HopDongDB
             INNER JOIN Phong p ON p.MaPhong = pc.MaPhong
             INNER JOIN PhieuDoiSoat pds ON pds.MaHD = hd.MaHD
             WHERE hd.TrangThai = N'DangHieuLuc'
+              AND pds.TrangThai IN (N'DaChot', N'DaTatToan')
               AND (@TuKhoa IS NULL
                    OR hd.MaHD LIKE '%' + @TuKhoa + '%'
                    OR kh.HoTen LIKE '%' + @TuKhoa + '%'

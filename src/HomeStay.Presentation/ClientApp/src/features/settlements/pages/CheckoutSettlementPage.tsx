@@ -274,17 +274,17 @@ function SettlementWorkspace({
     amount: number;
     paymentMethod: "cash" | "bank-transfer";
     evidenceName: string;
+    evidenceFile: File;
     note: string;
   }) => {
     try {
+      const body = new FormData();
+      body.append("maPDS", details.maPDS);
+      body.append("phuongThucThanhToan", data.paymentMethod === "bank-transfer" ? "ChuyenKhoan" : "TienMat");
+      body.append("chungTu", data.evidenceFile);
       const res = await fetch("/api/payments/phieu-thu", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          maPDS: details.maPDS,
-          phuongThucThanhToan: data.paymentMethod === "bank-transfer" ? "ChuyenKhoan" : "TienMat",
-          anhMinhChung: data.evidenceName,
-        }),
+        body,
       });
 
       if (!res.ok) {
@@ -537,7 +537,7 @@ function SettlementWorkspace({
           disabled={details.tienThuThem <= 0}
         >
           <CreditCard className="size-4" />
-          Tiến hành thu tiền
+          Xác nhận đã thu và lập phiếu
         </Button>
       </footer>
 

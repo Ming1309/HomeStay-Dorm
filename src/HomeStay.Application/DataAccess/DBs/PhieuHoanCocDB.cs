@@ -11,8 +11,10 @@ public static class PhieuHoanCocDB
     public static async Task InsertPhieuHoanCoc(PhieuHoanCoc phc)
     {
         const string sql = """
-            INSERT INTO PhieuHoanCoc (MaPHC, SoTienHoan, PhuongThucHoan, ThongTinNhanTien, ThoiGian, MaPDS, MaNV)
-            VALUES (@MaPHC, @SoTienHoan, @PhuongThucHoan, @ThongTinNhanTien, @ThoiGian, @MaPDS, @MaNV)
+            INSERT INTO PhieuHoanCoc (MaPHC, SoTienHoan, PhuongThucHoan, ThongTinNhanTien,
+                                     MaGiaoDich, MinhChung, ThoiGian, MaPDS, MaNV)
+            VALUES (@MaPHC, @SoTienHoan, @PhuongThucHoan, @ThongTinNhanTien,
+                    @MaGiaoDich, @MinhChung, @ThoiGian, @MaPDS, @MaNV)
             """;
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, phc, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể lưu phiếu hoàn cọc.");
@@ -28,7 +30,8 @@ public static class PhieuHoanCocDB
     public static async Task<PhieuHoanCoc?> GetPhieuHoanCocTheoMaPHC(string maPHC)
     {
         const string sql = """
-            SELECT MaPHC, SoTienHoan, PhuongThucHoan, ThongTinNhanTien, ThoiGian, MaPDS, MaNV
+            SELECT MaPHC, SoTienHoan, PhuongThucHoan, ThongTinNhanTien, MaGiaoDich, MinhChung,
+                   ThoiGian, MaPDS, MaNV
             FROM PhieuHoanCoc
             WHERE MaPHC = @MaPHC
             """;

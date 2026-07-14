@@ -1,0 +1,39 @@
+@startuml
+title SO DO LOP 3 TANG - XAC NHAN PHIEU DOI SOAT
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class { BackgroundColor #FFFACD BorderColor #9B7B7B }
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHXacNhanPhieuDoiSoat { + HienThi() + grvChoXacNhan_CellClick(maPDS: String) + btnXacNhan_Click() }
+}
+package "TANG NGHIEP VU" #FCF3CF {
+  class XacNhanPhieuDoiSoat {
+    + LayDanhSachChoXacNhan(): IReadOnlyList<PhieuDoiSoat>
+    + LayChiTiet(maPDS: String): PhieuDoiSoat
+    + XacNhan(maPDS: String, khachHangDongY: Boolean, ghiChu: String, maNhanVien: String): PhieuDoiSoat
+  }
+  class PhieuDoiSoat {
+    - TrangThai: String
+    - KhachHangDongY: Boolean
+    - MaNVChot: String
+    - ThoiDiemChot: DateTime
+    - GhiChuXacNhan: String
+    + LayDanhSachChoXacNhan(): IReadOnlyList<PhieuDoiSoat>
+    + LayChiTietChoCapNhat(maPDS: String): PhieuDoiSoat
+    + XacNhanKhachHangDongY(maNhanVien: String, thoiDiem: DateTime, ghiChu: String)
+  }
+}
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class PhieuDoiSoatDB {
+    + GetDanhSachChoXacNhan(): IReadOnlyList<PhieuDoiSoat>
+    + GetPhieuDoiSoatChoCapNhat(maPDS: String): PhieuDoiSoat
+    + XacNhan(phieu: PhieuDoiSoat, trangThaiMoi: String): Boolean
+  }
+}
+MHXacNhanPhieuDoiSoat o-- XacNhanPhieuDoiSoat
+XacNhanPhieuDoiSoat o-- PhieuDoiSoat
+PhieuDoiSoat o-- PhieuDoiSoatDB
+@enduml

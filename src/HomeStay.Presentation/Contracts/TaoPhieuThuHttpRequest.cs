@@ -2,10 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HomeStay.Presentation.Contracts;
 
-public sealed record TaoPhieuThuHttpRequest(
-    [Required] string MaPDS,
-    [Required] string PhuongThucThanhToan,
-    string? AnhMinhChung);
+public sealed class TaoPhieuThuHttpRequest
+{
+    [Required] public string MaPDS { get; set; } = string.Empty;
+    [Required] public string PhuongThucThanhToan { get; set; } = string.Empty;
+    [Required] public IFormFile? ChungTu { get; set; }
+}
 
 public sealed record TaoPhieuThuHttpResponse(
     string MaPT,

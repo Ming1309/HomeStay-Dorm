@@ -10,7 +10,7 @@ Trên database mới, chạy lần lượt:
 4. `04_DemoScenarios.sql` — kịch bản nghiệp vụ
 5. `05_ValidateDemoData.sql` — kiểm tra ràng buộc
 
-> `01_InitTables.sql` tự drop/create database `HomeStay`. Chỉ cần chạy 5 file theo thứ tự trên là đủ reset sạch.
+> `01_InitTables.sql` tự drop/create database `HomeStay` và tạo luôn filtered unique index chống trùng PĐS cho phiếu cọc chưa ký. Chạy 5 file theo thứ tự trên để reset sạch.
 
 ### Ví dụ với Docker SQL Server (`homestay-sql`)
 
@@ -56,11 +56,11 @@ Mã nghiệp vụ chỉ là số thứ tự, không mã hóa trạng thái hay u
 | Khách hàng | `KH0001` - `KH0015` |
 | Phiếu đăng ký | `PDK0001` - `PDK0010` |
 | Lịch hẹn | `LH0001` - `LH0010` |
-| Phiếu cọc | `PC0001` - `PC0009` |
-| Hợp đồng | `HD0001` - `HD0006` |
+| Phiếu cọc | `PC0001` - `PC0010` |
+| Hợp đồng | `HD0001` - `HD0007` |
 | Hóa đơn | `HDON0001` - `HDON0004` |
-| Phiếu đối soát | `PDS0001` - `PDS0002` |
-| Phiếu thu | `PT0001` - `PT0003` |
+| Phiếu đối soát | `PDS0001` - `PDS0004` |
+| Phiếu thu | `PT0001` - `PT0007` |
 | Phiếu hoàn cọc | `PHC0001` - `PHC0002` |
 | Biên bản giao nhận | `BBGN0001` - `BBGN0003`, `BBTH0001` (UC 1.4.20) |
 | Thông báo | `TB...` (sinh runtime) |
@@ -69,13 +69,14 @@ Mã nghiệp vụ chỉ là số thứ tự, không mã hóa trạng thái hay u
 
 - `PDK0001` - `PDK0010` phủ đăng ký đang xử lý, đã hẹn xem phòng và đã hủy.
 - `LH0001` - `LH0010` phủ lịch xem phòng, nhận phòng và trả phòng; `LH0010` là lịch trả phòng **trong ngày** cho `HD0004` (UC 1.4.17).
-- `PC0001` - `PC0009` phủ toàn bộ trạng thái phiếu cọc, cả `OGhep` và `NguyenCan`;
-  `PC0009` là phiếu chờ Quản lý đối chiếu.
+- `PC0001` - `PC0010` phủ toàn bộ trạng thái phiếu cọc, cả `OGhep` và `NguyenCan`;
+  `PC0007` / `PT0004` là phiếu đã thu tiền bị hủy chờ đối soát, `PC0008` / `PT0006` là phiếu đã thu tiền chưa có hợp đồng có thể dùng để thử thao tác hủy, `PC0009` là phiếu chờ Quản lý đối chiếu.
 - `P004` - `P011` phủ toàn bộ trạng thái phòng; các giường tương ứng được seed đủ theo sức chứa loại phòng.
   `P007` có danh mục tài sản phục vụ UC thu hồi.
-- `HD0001` - `HD0006` phủ vòng đời hợp đồng từ chờ ký đến đang hiệu lực, đã thanh lý và đã hủy.
+- `HD0001` - `HD0007` phủ vòng đời hợp đồng từ chờ ký đến đang hiệu lực, đã thanh lý và đã hủy.
 - `HDON0001` - `HDON0004` phủ hóa đơn chưa thanh toán, thanh toán một phần, đã thanh toán và bồi thường.
-- `PDS0001` - `PDS0002`, `PT0001` - `PT0003` và `PHC0001` - `PHC0002` phục vụ đối soát, thu tiền và hoàn cọc.
+- `PDS0001` - `PDS0002` đã tất toán và có PHC; `PDS0003` đã được khách đồng ý, chờ thanh lý; `PDS0004` ở `ChoXacNhan` để Quản lý thao tác.
+- `PT0001` - `PT0007` đều có minh chứng; `PHC0001` - `PHC0002` có chứng từ giao/chuyển tiền, trong đó chuyển khoản có mã giao dịch.
 - `BBGN0001` - `BBGN0003` phục vụ bàn giao và thu hồi tài sản.
 - `BBTH0001` là biên bản thu hồi `HD0004` có tài sản `Hư hỏng`/`Mất mát`, **chưa** có hóa đơn bồi thường — phục vụ UC 1.4.20.
 - Bảng `ThongBao` / `ThongBao_NguoiDoc` phục vụ chuông thông báo theo vai trò (header Bell).

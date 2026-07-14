@@ -1,182 +1,77 @@
-@startuml LapPhieuDoiSoat_Sequence
-
-skinparam sequenceArrowThickness 1.2
+@startuml
+title SO DO TUAN TU - LAP PHIEU DOI SOAT
+hide footbox
+autonumber 1 1
 skinparam shadowing false
-skinparam sequenceMessageAlign left
-skinparam maxMessageSize 80
 
-title Lập phiếu đối soát
+actor "Ke toan" as KT
+boundary ": MHLapPhieuDoiSoat" as MH
+control ": LapPhieuDoiSoat" as LPDS
+control ": PhieuCoc" as PC
+entity ": PhieuCocDB" as PCDB
+control ": PhieuThu" as PT
+entity ": PhieuThuDB" as PTDB
+control ": HopDong" as HD
+entity ": HopDongDB" as HDDB
+control ": ChinhSachHoanCoc" as CS
+entity ": ChinhSachHoanCocDB" as CSDB
+control ": HoaDon" as HDON
+entity ": HoaDonDB" as HDONDB
+control ": PhieuDoiSoat" as PDS
+entity ": PhieuDoiSoatDB" as PDSDB
+control ": DichVuThongBao" as TB
 
-actor "Kế toán" as KT
+KT -> MH : mo man hinh doi soat
+MH -> LPDS : LayDanhSachChoDoiSoat(text)
+LPDS -> HD : LayDanhSachChoDoiSoat()
+HD -> HDDB : LayDanhSachChoDoiSoat()
+LPDS -> PC : LayDanhSachDaHuyChoDoiSoat()
+PC -> PCDB : LayDanhSachDaHuyChoDoiSoat()
 
-box "GUI" #F9FBE7
-boundary "MHLapPhieuDoiSoat" as MH
-end box
-
-box "BUS" #FEF9E7
-control "DieuKhienLapPhieuDoiSoat" as DK
-control "HopDong" as HD
-control "PhieuCoc" as PC
-control "ChinhSachHoanCoc" as CS
-control "HoaDon" as HOADON
-control "PhieuDoiSoat" as PDS
-control "DichVuThongBao" as TB
-end box
-
-box "DB" #F5EEF8
-entity "NhanVienDB" as NVDB
-entity "HopDongDB" as HDDB
-entity "PhieuCocDB" as PCDB
-entity "ChinhSachHoanCocDB" as CSDB
-entity "HoaDonDB" as HDONDB
-entity "PhieuDoiSoatDB" as PDSDB
-end box
-
-
-'=====================
-' TẢI DANH SÁCH HỒ SƠ CHỜ ĐỐI SOÁT
-'=====================
-
-KT -> MH : 1.0 Truy cập chức năng
-activate MH
-
-MH -> DK : 1.1 khoiTaoForm(maNVDangNhap)
-activate DK
-
-DK -> NVDB : 1.2 getNhanVien(maNVDangNhap)
-activate NVDB
-deactivate NVDB
-
-DK -> HD : 1.3 layDanhSachChoDoiSoat()
-activate HD
-
-HD -> HDDB : 1.4 getDanhSachChoDoiSoat()
-activate HDDB
-deactivate HDDB
-
-deactivate HD
-
-DK -> PC : 1.5 layDanhSachDaHuyDaThanhToan()
-activate PC
-
-PC -> PCDB : 1.6 getDanhSachDaHuyDaThanhToan()
-activate PCDB
-deactivate PCDB
-
-deactivate PC
-
-DK -> MH : 1.7 hienThiDanhSachHoSo()
-
-deactivate DK
-deactivate MH
-
-
-'=====================
-' CHỌN HỒ SƠ VÀ TÍNH TOÁN
-'=====================
-
-KT -> MH : 2.0 Chọn hồ sơ
-activate MH
-
-MH -> DK : 2.1 layChiTietVaTinhToan(maHoSo, loaiHoSo)
-activate DK
-
-DK -> CS : 2.2 layChinhSachDangApDung()
-activate CS
-
-CS -> CSDB : 2.3 getChinhSachDangApDung()
-activate CSDB
-deactivate CSDB
-
-deactivate CS
-
-alt A2 Hồ sơ là Phiếu cọc đã hủy
-
-DK -> PC : A2.1 laySoTienCoc(maPhieuCoc)
-activate PC
-
-PC -> PCDB : A2.2 getSoTienCoc(maPhieuCoc)
-activate PCDB
-deactivate PCDB
-
-deactivate PC
-
-DK -> PDS : A2.3 apDungChinhSachHoanCoc(tiLeChuaKy)
-activate PDS
-
-PDS -> PDS : A2.4 tinhTongKhauTru(0)
-
-deactivate PDS
-
-else Hồ sơ là Hợp đồng chờ thanh lý
-
-DK -> HD : 2.4 layThongTinLuuTru(maHD)
-activate HD
-
-HD -> HDDB : 2.5 getThongTinLuuTru(maHD)
-activate HDDB
-deactivate HDDB
-
-deactivate HD
-
-DK -> CS : 2.6 xacDinhTyLeHoan(thoiGianLuuTru)
-activate CS
-deactivate CS
-
-DK -> HOADON : 2.7 layDanhSachChuaThanhToan(maHD)
-activate HOADON
-
-HOADON -> HDONDB : 2.8 getDanhSachChuaThanhToanTheoHD(maHD)
-activate HDONDB
-deactivate HDONDB
-
-deactivate HOADON
-
-DK -> PDS : 2.9 tinhToanDoiSoat(tienCoc, tyLe, dsHoaDon)
-activate PDS
-
-PDS -> PDS : 2.10 chotKetQua()
-
-deactivate PDS
-
+KT -> MH : chon ho so
+MH -> LPDS : LayChiTietVaTinhToan(maHoSo, loaiHoSo)
+alt loaiHoSo = PhieuCoc
+  LPDS -> PC : DocChiTiet(maHoSo)
+  PC -> PCDB : DocChiTiet(maHoSo)
+  LPDS -> PC : KiemTraCoTheDoiSoatHoanCoc()
+  LPDS -> HD : TonTaiTheoPhieuCoc(maHoSo)
+  HD -> HDDB : TonTaiTheoPhieuCoc(maHoSo)
+  LPDS -> PT : LayTheoPhieuCoc(maHoSo)
+  PT -> PTDB : LayTheoPhieuCoc(maHoSo)
+  LPDS -> PT : KiemTraKhopTienCoc(phieuCoc)
+  LPDS -> PDS : TonTaiChoPhieuCocChuaKy(maHoSo)
+  PDS -> PDSDB : TonTaiChoPhieuCocChuaKy(maHoSo)
+  LPDS -> CS : LayChinhSachDangApDung(homNay)
+  CS -> CSDB : LayChinhSachDangApDung(homNay)
+  LPDS -> PDS : TaoMoi(maHoSo, null, null, thoiDiem)
+  LPDS -> PDS : ApDungChinhSachHoanCoc(chinhSach.TiLe_ChuaKy)
+  LPDS -> PDS : TinhTongKhauTru(0)
+  LPDS -> PDS : ChotKetQua(phieuThu.SoTienThu)
+else loaiHoSo = HopDong
+  LPDS -> HD : LayThongTinLuuTru(maHoSo)
+  HD -> HDDB : LayThongTinLuuTru(maHoSo)
+  LPDS -> HD : TinhSoThangThucTe(thoiDiem)
+  LPDS -> HD : TinhSoThangHopDong()
+  alt hopDong.MaChinhSach co gia tri
+    LPDS -> CS : LayChinhSachTheoMa(hopDong.MaChinhSach)
+    CS -> CSDB : GetChinhSachTheoMa(hopDong.MaChinhSach)
+  else hop dong cu chua gan chinh sach
+    LPDS -> CS : LayChinhSachDangApDung(homNay)
+    CS -> CSDB : LayChinhSachDangApDung(homNay)
+  end
+  LPDS -> HDON : LayDanhSachChuaThanhToan(maHoSo)
+  HDON -> HDONDB : GetDanhSachChuaThanhToanTheoHD(maHoSo)
+  LPDS -> PDS : TaoMoi(maPhieuCoc, maHoSo, null, thoiDiem)
+  LPDS -> PDS : TinhToanDoiSoat(tienCoc, tyLe, dsHoaDon)
 end
 
-DK -> MH : 2.11 hienThiChiTietTinhToan()
-
-deactivate DK
-deactivate MH
-
-
-'=====================
-' TẠO PHIẾU ĐỐI SOÁT
-'=====================
-
-KT -> MH : 3.0 btnTaoPhieuDoiSoat_Click()
-activate MH
-
-MH -> DK : 3.1 taoPhieuDoiSoat(maHoSo, ketQuaTinhToan)
-activate DK
-
-DK -> PDS : 3.2 luuPhieu()
-activate PDS
-
-PDS -> PDSDB : 3.3 insertPhieuDoiSoat()
-activate PDSDB
-deactivate PDSDB
-
-PDS -> PDSDB : 3.4 insertChiTietDoiSoat()
-activate PDSDB
-deactivate PDSDB
-
-deactivate PDS
-
-DK -> TB : 3.5 guiThongBaoQuanLy(maPDS)
-activate TB
-deactivate TB
-
-DK -> MH : 3.6 hienThiThongBaoThanhCong()
-
-deactivate DK
-deactivate MH
-
+KT -> MH : xac nhan tao phieu doi soat
+MH -> LPDS : TaoPhieuDoiSoat(maHoSo, loaiHoSo, ghiChu, maNhanVien)
+LPDS -> LPDS : LayChiTietVaTinhToanInternal(maHoSo, loaiHoSo)
+LPDS -> PDS : LuuPhieu()
+note right of PDS
+  PDS moi co TrangThai = ChoXacNhan
+end note
+PDS -> PDSDB : LuuPhieu(phieu)
+LPDS -> TB : GuiThongBaoQuanLy(maPDS)
 @enduml

@@ -1,0 +1,25 @@
+@startuml
+title SO DO TUAN TU - XAC NHAN PHIEU DOI SOAT
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+actor "Quan ly" as QL
+boundary ": MHXacNhanPhieuDoiSoat" as MH
+control ": XacNhanPhieuDoiSoat" as XN
+control ": PhieuDoiSoat" as PDS
+entity ": PhieuDoiSoatDB" as PDSDB
+QL -> MH : HienThi()
+MH -> XN : LayDanhSachChoXacNhan()
+XN -> PDS : LayDanhSachChoXacNhan()
+PDS -> PDSDB : GetDanhSachChoXacNhan()
+QL -> MH : grvChoXacNhan_CellClick(maPDS)
+MH -> XN : LayChiTiet(maPDS)
+XN -> PDS : LayChiTietPhieuDoiSoat(maPDS)
+PDS -> PDSDB : GetPhieuDoiSoatTheoMaPDS(maPDS)
+QL -> MH : btnXacNhan_Click()
+MH -> XN : XacNhan(maPDS, true, ghiChu, maNhanVien)
+XN -> PDS : LayChiTietChoCapNhat(maPDS)
+PDS -> PDSDB : GetPhieuDoiSoatChoCapNhat(maPDS)
+XN -> PDS : XacNhanKhachHangDongY(maNhanVien, thoiDiem, ghiChu)
+PDS -> PDSDB : XacNhan(phieu, trangThaiMoi)
+@enduml

@@ -38,6 +38,7 @@ import { Route as ManagerTraCuuPhieuCocRouteImport } from './routes/manager.tra-
 import { Route as ManagerTraCuuHopDongRouteImport } from './routes/manager.tra-cuu-hop-dong'
 import { Route as ManagerThuHoiTaiSanRouteImport } from './routes/manager.thu-hoi-tai-san'
 import { Route as ManagerTerminationRouteImport } from './routes/manager.termination'
+import { Route as ManagerReconciliationApprovalRouteImport } from './routes/manager.reconciliation-approval'
 import { Route as ManagerHandoverRouteImport } from './routes/manager.handover'
 import { Route as ManagerDashboardRouteImport } from './routes/manager.dashboard'
 import { Route as ManagerContractsRouteImport } from './routes/manager.contracts'
@@ -205,6 +206,12 @@ const ManagerTerminationRoute = ManagerTerminationRouteImport.update({
   path: '/termination',
   getParentRoute: () => ManagerRoute,
 } as any)
+const ManagerReconciliationApprovalRoute =
+  ManagerReconciliationApprovalRouteImport.update({
+    id: '/reconciliation-approval',
+    path: '/reconciliation-approval',
+    getParentRoute: () => ManagerRoute,
+  } as any)
 const ManagerHandoverRoute = ManagerHandoverRouteImport.update({
   id: '/handover',
   path: '/handover',
@@ -343,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/manager/contracts': typeof ManagerContractsRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
+  '/manager/reconciliation-approval': typeof ManagerReconciliationApprovalRoute
   '/manager/termination': typeof ManagerTerminationRoute
   '/manager/thu-hoi-tai-san': typeof ManagerThuHoiTaiSanRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
@@ -392,6 +400,7 @@ export interface FileRoutesByTo {
   '/manager/contracts': typeof ManagerContractsRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
+  '/manager/reconciliation-approval': typeof ManagerReconciliationApprovalRoute
   '/manager/termination': typeof ManagerTerminationRoute
   '/manager/thu-hoi-tai-san': typeof ManagerThuHoiTaiSanRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
@@ -445,6 +454,7 @@ export interface FileRoutesById {
   '/manager/contracts': typeof ManagerContractsRoute
   '/manager/dashboard': typeof ManagerDashboardRoute
   '/manager/handover': typeof ManagerHandoverRoute
+  '/manager/reconciliation-approval': typeof ManagerReconciliationApprovalRoute
   '/manager/termination': typeof ManagerTerminationRoute
   '/manager/thu-hoi-tai-san': typeof ManagerThuHoiTaiSanRoute
   '/manager/tra-cuu-hop-dong': typeof ManagerTraCuuHopDongRoute
@@ -499,6 +509,7 @@ export interface FileRouteTypes {
     | '/manager/contracts'
     | '/manager/dashboard'
     | '/manager/handover'
+    | '/manager/reconciliation-approval'
     | '/manager/termination'
     | '/manager/thu-hoi-tai-san'
     | '/manager/tra-cuu-hop-dong'
@@ -548,6 +559,7 @@ export interface FileRouteTypes {
     | '/manager/contracts'
     | '/manager/dashboard'
     | '/manager/handover'
+    | '/manager/reconciliation-approval'
     | '/manager/termination'
     | '/manager/thu-hoi-tai-san'
     | '/manager/tra-cuu-hop-dong'
@@ -600,6 +612,7 @@ export interface FileRouteTypes {
     | '/manager/contracts'
     | '/manager/dashboard'
     | '/manager/handover'
+    | '/manager/reconciliation-approval'
     | '/manager/termination'
     | '/manager/thu-hoi-tai-san'
     | '/manager/tra-cuu-hop-dong'
@@ -839,6 +852,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagerTerminationRouteImport
       parentRoute: typeof ManagerRoute
     }
+    '/manager/reconciliation-approval': {
+      id: '/manager/reconciliation-approval'
+      path: '/reconciliation-approval'
+      fullPath: '/manager/reconciliation-approval'
+      preLoaderRoute: typeof ManagerReconciliationApprovalRouteImport
+      parentRoute: typeof ManagerRoute
+    }
     '/manager/handover': {
       id: '/manager/handover'
       path: '/handover'
@@ -1049,6 +1069,7 @@ interface ManagerRouteChildren {
   ManagerContractsRoute: typeof ManagerContractsRoute
   ManagerDashboardRoute: typeof ManagerDashboardRoute
   ManagerHandoverRoute: typeof ManagerHandoverRoute
+  ManagerReconciliationApprovalRoute: typeof ManagerReconciliationApprovalRoute
   ManagerTerminationRoute: typeof ManagerTerminationRoute
   ManagerThuHoiTaiSanRoute: typeof ManagerThuHoiTaiSanRoute
   ManagerTraCuuHopDongRoute: typeof ManagerTraCuuHopDongRoute
@@ -1063,6 +1084,7 @@ const ManagerRouteChildren: ManagerRouteChildren = {
   ManagerContractsRoute: ManagerContractsRoute,
   ManagerDashboardRoute: ManagerDashboardRoute,
   ManagerHandoverRoute: ManagerHandoverRoute,
+  ManagerReconciliationApprovalRoute: ManagerReconciliationApprovalRoute,
   ManagerTerminationRoute: ManagerTerminationRoute,
   ManagerThuHoiTaiSanRoute: ManagerThuHoiTaiSanRoute,
   ManagerTraCuuHopDongRoute: ManagerTraCuuHopDongRoute,

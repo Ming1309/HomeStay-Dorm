@@ -55,18 +55,6 @@ public sealed class PhieuCoc
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaDuyet(string? text = null) =>
         PhieuCocDB.LayDanhSachDaDuyet(text);
 
-    // ==========================================================
-    // Methods from feat/lap-phieu-doi-soat branch
-    // ==========================================================
-    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyDaThanhToan() =>
-        PhieuCocDB.LayDanhSachDaHuyDaThanhToan();
-
-    public static Task<decimal> LaySoTienCoc(string maPhieuCoc) =>
-        PhieuCocDB.LaySoTienCoc(maPhieuCoc);
-
-    // ==========================================================
-    // Methods from develop branch
-    // ==========================================================
     public static Task<IReadOnlyList<PhieuCoc>> LayPhieuCocDaThanhToanNhanPhongHomNay(string? text = null) =>
         PhieuCocDB.LayPhieuCocDaThanhToanNhanPhongHomNay(text);
 
@@ -127,6 +115,14 @@ public sealed class PhieuCoc
 
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoat() =>
         PhieuCocDB.LayDanhSachDaHuyChoDoiSoat();
+
+    public void KiemTraCoTheDoiSoatHoanCoc()
+    {
+        if (TrangThai != "DaHuy")
+            throw new InvalidOperationException("Phiếu cọc phải ở trạng thái Đã hủy để đối soát hoàn cọc.");
+        if (ThoiDiemHuy is null)
+            throw new InvalidOperationException("Phiếu cọc chưa có thời điểm hủy hợp lệ.");
+    }
 
     public int TinhTienDuKien()
     {

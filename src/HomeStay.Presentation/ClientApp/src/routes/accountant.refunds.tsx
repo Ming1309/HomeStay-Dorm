@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, ClipboardList, Landmark, Search, Undo2, User } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -14,6 +17,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
 import { cn } from "@/shared/lib/utils";
 import { useAuth } from "@/features/auth/model/auth-store";
 
@@ -54,6 +66,51 @@ interface ChiTietDoiSoatChoHoan {
   policyCode: string;
   refundRate: number;
 }
+
+const refundFormSchema = z
+  .object({
+    method: z.enum(["cash", "bank-transfer"]),
+    bankAccount: z.string().trim().max(30, "Số tài khoản tối đa 30 ký tự."),
+    bankName: z.string().trim().max(80, "Tên ngân hàng tối đa 80 ký tự."),
+    accountHolder: z.string().trim().max(100, "Tên chủ tài khoản tối đa 100 ký tự."),
+    transactionCode: z.string().trim().max(100, "Mã giao dịch tối đa 100 ký tự."),
+    cashRecipient: z.string().trim().max(150, "Thông tin người nhận tối đa 150 ký tự."),
+    proof: z.custom<File>((value) => value instanceof File, "Vui lòng tải lên chứng từ đã hoàn tiền."),
+  })
+  .superRefine((values, context) => {
+    if (values.method !== "bank-transfer") return;
+    if (!/^\d{6,30}$/.test(values.bankAccount)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["bankAccount"],
+        message: "Số tài khoản phải gồm 6–30 chữ số.",
+      });
+    }
+    if (!values.bankName) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["bankName"],
+        message: "Vui lòng nhập ngân hàng nhận tiền.",
+      });
+    }
+    if (!values.accountHolder) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["accountHolder"],
+        message: "Vui lòng nhập chủ tài khoản.",
+      });
+    }
+    if (!values.transactionCode) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["transactionCode"], message: "Vui lòng nhập mã giao dịch." });
+    }
+  })
+  .superRefine((values, context) => {
+    if (values.method === "cash" && !values.cashRecipient) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["cashRecipient"], message: "Vui lòng nhập người nhận tiền mặt." });
+    }
+  });
+
+type RefundFormValues = z.infer<typeof refundFormSchema>;
 
 function AccountantRefundsPage() {
   const { user } = useAuth();
@@ -226,12 +283,8 @@ function RefundWorkspace({
   accountantLabel: string;
   onSuccess: () => void;
 }) {
-  const [method, setMethod] = useState<"cash" | "bank-transfer">("bank-transfer");
-  const [bankAccount, setBankAccount] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [accountHolder, setAccountHolder] = useState("");
-  const [note, setNote] = useState("");
   const [successOpen, setSuccessOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [issued, setIssued] = useState<{
     code: string;
     customerName: string;
@@ -241,33 +294,47 @@ function RefundWorkspace({
     executor: string;
   } | null>(null);
 
-  // Form validation
-  const isFormValid =
-    method === "cash" ||
-    (bankAccount.trim().length >= 6 && bankName.trim().length > 0 && accountHolder.trim().length > 0);
+  const form = useForm<RefundFormValues>({
+    resolver: zodResolver(refundFormSchema),
+    defaultValues: {
+      method: "bank-transfer",
+      bankAccount: "",
+      bankName: "",
+      accountHolder: "",
+      transactionCode: "",
+      cashRecipient: "",
+      proof: undefined as unknown as File,
+    },
+    mode: "onChange",
+  });
+  const method = form.watch("method");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!details || !isFormValid) return;
+  const handleSubmit = async (values: RefundFormValues) => {
+    if (!details || isSubmitting) return;
 
+    if (!window.confirm("Xác nhận tiền đã được giao/chuyển cho khách và lập phiếu hoàn cọc?")) return;
     const thongTinTaiKhoan =
-      method === "bank-transfer"
-        ? `Số TK: ${bankAccount} - Ngân hàng: ${bankName} - Chủ TK: ${accountHolder}`
-        : "Nhận tiền mặt tại quầy";
+      values.method === "bank-transfer"
+        ? `Số TK: ${values.bankAccount} - Ngân hàng: ${values.bankName} - Chủ TK: ${values.accountHolder}`
+        : values.cashRecipient;
 
+    setIsSubmitting(true);
     try {
+      const body = new FormData();
+      body.append("maPDS", details.maPDS);
+      body.append("phuongThucHoan", values.method === "bank-transfer" ? "ChuyenKhoan" : "TienMat");
+      body.append("thongTinNhanTien", thongTinTaiKhoan);
+      if (values.transactionCode) body.append("maGiaoDich", values.transactionCode);
+      body.append("chungTu", values.proof);
       const res = await fetch("/api/refunds/phieu-hoan-coc", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          maPDS: details.maPDS,
-          phuongThucHoan: method === "bank-transfer" ? "ChuyenKhoan" : "TienMat",
-          thongTinNhanTien: thongTinTaiKhoan,
-        }),
+        body,
       });
 
       if (!res.ok) {
-        throw new Error(await readApiError(res, "Lỗi lập phiếu hoàn cọc."));
+        const message = await readApiError(res, "Lỗi lập phiếu hoàn cọc.");
+        if (res.status === 409) onSuccess();
+        throw new Error(message);
       }
 
       const phc = await res.json();
@@ -289,19 +356,25 @@ function RefundWorkspace({
       toast.error("Lỗi lập phiếu hoàn cọc", {
         description: err instanceof Error ? err.message : undefined,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   useEffect(() => {
     // Reset form when selection changes
-    setMethod("bank-transfer");
-    setBankAccount("");
-    setBankName("");
-    setAccountHolder("");
-    setNote("");
+    form.reset({
+      method: "bank-transfer",
+      bankAccount: "",
+      bankName: "",
+      accountHolder: "",
+      transactionCode: "",
+      cashRecipient: "",
+      proof: undefined as unknown as File,
+    });
     setIssued(null);
     setSuccessOpen(false);
-  }, [details?.maPDS]);
+  }, [details?.maPDS, form]);
 
   if (isLoading) {
     return (
@@ -351,7 +424,8 @@ function RefundWorkspace({
       </div>
 
       {/* ── Scrollable content ── */}
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+      <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
         <div className="mx-auto max-w-3xl space-y-4">
 
           {/* 1. Thông tin khách hàng */}
@@ -376,7 +450,7 @@ function RefundWorkspace({
                 <ClipboardList className="size-4 text-blue-500" />
                 <h3 className="text-sm font-bold text-gray-900">Kết quả đối soát đã chốt</h3>
                 <span className="ml-auto font-mono text-[11px] text-gray-400">
-                  {details.policyCode} · Hoàn {details.refundRate}% cọc
+                  {details.policyCode ? `${details.policyCode} · ` : ""}Hoàn {details.refundRate}% cọc
                 </span>
               </div>
               <div className="space-y-2 text-sm">
@@ -420,17 +494,27 @@ function RefundWorkspace({
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-600">Hình thức hoàn cọc *</label>
-                  <select
-                    value={method}
-                    onChange={(e) => setMethod(e.target.value as any)}
-                    className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-400 focus:ring-1"
-                  >
-                    <option value="bank-transfer">Chuyển khoản ngân hàng</option>
-                    <option value="cash">Tiền mặt</option>
-                  </select>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="method"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-xs font-semibold text-gray-600">
+                        Hình thức hoàn cọc <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <select
+                          {...field}
+                          className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-400 focus:ring-1"
+                        >
+                          <option value="bank-transfer">Chuyển khoản ngân hàng</option>
+                          <option value="cash">Tiền mặt</option>
+                        </select>
+                      </FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Conditional bank account details */}
@@ -443,42 +527,106 @@ function RefundWorkspace({
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-600">Số tài khoản *</label>
-                      <input
-                        required
-                        type="text"
-                        value={bankAccount}
-                        onChange={(e) => setBankAccount(e.target.value)}
-                        placeholder="VD: 0123456789"
-                        className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 font-mono text-sm outline-none focus:border-blue-400"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-600">Ngân hàng *</label>
-                      <input
-                        required
-                        type="text"
-                        value={bankName}
-                        onChange={(e) => setBankName(e.target.value)}
-                        placeholder="VD: Vietcombank"
-                        className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-400"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-600">Chủ tài khoản *</label>
-                      <input
-                        required
-                        type="text"
-                        value={accountHolder}
-                        onChange={(e) => setAccountHolder(e.target.value)}
-                        placeholder="VD: NGUYEN VAN A"
-                        className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm outline-none focus:border-blue-400"
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="bankAccount"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs font-semibold text-gray-600">
+                            Số tài khoản <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input className="h-10 font-mono" placeholder="VD: 0123456789" {...field} />
+                          </FormControl>
+                          <FormMessage className="text-[11px]" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="bankName"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs font-semibold text-gray-600">
+                            Ngân hàng <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input className="h-10" placeholder="VD: Vietcombank" {...field} />
+                          </FormControl>
+                          <FormMessage className="text-[11px]" />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="accountHolder"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs font-semibold text-gray-600">
+                            Chủ tài khoản <span className="text-red-500">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input className="h-10" placeholder="VD: NGUYEN VAN A" {...field} />
+                          </FormControl>
+                          <FormMessage className="text-[11px]" />
+                        </FormItem>
+                      )}
+                    />
                   </div>
+                  <FormField
+                    control={form.control}
+                    name="transactionCode"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs font-semibold text-gray-600">
+                          Mã giao dịch <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <FormControl><Input className="h-10 font-mono" placeholder="VD: FT24123456789" {...field} /></FormControl>
+                        <FormMessage className="text-[11px]" />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               )}
+
+              {method === "cash" && (
+                <FormField
+                  control={form.control}
+                  name="cashRecipient"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-xs font-semibold text-gray-600">
+                        Người nhận tiền mặt <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl><Input className="h-10" placeholder="Họ tên/CCCD người nhận" {...field} /></FormControl>
+                      <FormMessage className="text-[11px]" />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              <FormField
+                control={form.control}
+                name="proof"
+                render={({ field: { onChange, value: _value, ...field } }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs font-semibold text-gray-600">
+                      Chứng từ đã hoàn tiền <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="file"
+                        accept="image/png,image/jpeg,application/pdf"
+                        className="h-10 cursor-pointer pt-2 text-xs"
+                        onChange={(event) => onChange(event.target.files?.[0])}
+                      />
+                    </FormControl>
+                    <p className="text-[11px] text-gray-500">Ảnh/PDF tối đa 5 MB; tiền mặt dùng biên nhận có chữ ký.</p>
+                    <FormMessage className="text-[11px]" />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -501,16 +649,6 @@ function RefundWorkspace({
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-600">Ghi chú hoàn cọc</label>
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Nhập lý do hoặc mô tả..."
-                  rows={2}
-                  className="w-full rounded-md border border-gray-200 bg-white p-3 text-sm outline-none focus:border-blue-400 focus:ring-1"
-                />
-              </div>
             </CardContent>
           </Card>
 
@@ -520,12 +658,11 @@ function RefundWorkspace({
         <footer className="sticky bottom-0 flex items-center justify-end border-t border-gray-200 bg-white px-5 py-3">
           <Button
             type="submit"
-            onClick={handleSubmit}
             className="h-9 bg-blue-600 hover:bg-blue-700"
-            disabled={!isFormValid || details.tienHoan <= 0}
+            disabled={!form.formState.isValid || details.tienHoan <= 0 || isSubmitting}
           >
             <Undo2 className="size-4" />
-            Lập phiếu hoàn cọc
+            {isSubmitting ? "Đang xử lý..." : "Xác nhận đã hoàn và lập phiếu"}
           </Button>
         </footer>
 
@@ -542,6 +679,7 @@ function RefundWorkspace({
           pdsCode={details.maPDS}
         />
       </form>
+      </Form>
     </section>
   );
 }

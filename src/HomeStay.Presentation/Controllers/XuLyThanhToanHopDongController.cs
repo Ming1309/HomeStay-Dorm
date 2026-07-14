@@ -3,14 +3,17 @@ namespace HomeStay.Presentation.Controllers;
 using System.Security.Claims;
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Presentation.Contracts;
+using HomeStay.Application.DataAccess.FileStorage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 
 [ApiController]
 [Route("api/contract-payments")]
 [Authorize(Roles = "KeToan")]
 public sealed class XuLyThanhToanHopDongController(
     XuLyThanhToanHopDong xuLyThanhToanHopDong,
+    IChungTuTaiChinhStorage chungTuStorage,
     ILogger<XuLyThanhToanHopDongController> logger) : ControllerBase
 {
     [HttpGet("queue")]
@@ -71,7 +74,8 @@ public sealed class XuLyThanhToanHopDongController(
     }
 
     [HttpPost("collect")]
-    public async Task<IActionResult> TienHanhThuTien([FromBody] TienHanhThuTienHttpRequest request)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> TienHanhThuTien([FromForm] TienHanhThuTienHttpRequest request, CancellationToken cancellationToken)
     {
         var maNV = User.FindFirstValue("MaNV");
         if (string.IsNullOrWhiteSpace(maNV))
@@ -83,13 +87,21 @@ public sealed class XuLyThanhToanHopDongController(
         if (string.IsNullOrWhiteSpace(request.PhuongThucThanhToan))
             return BadRequest(new { Message = "Phương thức thanh toán không được để trống." });
 
+        string? minhChung = null;
+        var daLuu = false;
         try
         {
+            if (request.ChungTu is null)
+                return BadRequest(new { Message = "Phải tải lên chứng từ xác nhận đã thu tiền." });
+            await using var noiDung = request.ChungTu.OpenReadStream();
+            minhChung = await chungTuStorage.Luu("thu",
+                new TepChungTuTaiChinh(request.ChungTu.FileName, request.ChungTu.Length, noiDung), cancellationToken);
             var pt = await xuLyThanhToanHopDong.TienHanhThuTien(
                 request.MaHD.Trim(),
                 request.PhuongThucThanhToan,
-                request.AnhMinhChung,
+                minhChung,
                 maNV);
+            daLuu = true;
 
             return Ok(new TienHanhThuTienHttpResponse(
                 pt.MaPT,
@@ -97,6 +109,7 @@ public sealed class XuLyThanhToanHopDongController(
                 pt.PhuongThucThanhToan ?? request.PhuongThucThanhToan,
                 pt.ThoiGian));
         }
+        catch (InvalidDataException ex) { return BadRequest(new { Message = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { Message = ex.Message }); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
         catch (InvalidOperationException ex)
@@ -104,10 +117,19 @@ public sealed class XuLyThanhToanHopDongController(
             logger.LogWarning(ex, "Conflict khi thu tiền hợp đồng {MaHD}: {Message}", request.MaHD, ex.Message);
             return Conflict(new { Message = ex.Message });
         }
+        catch (SqlException ex) when (ex.Number is 2601 or 2627 or 1205)
+        {
+            return Conflict(new { Message = "Giao dịch đã được xử lý bởi yêu cầu khác. Vui lòng tải lại." });
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Không thể xử lý thanh toán hợp đồng {MaHD}", request.MaHD);
             return StatusCode(500, new { Message = "Không thể xử lý thanh toán lúc này." });
+        }
+        finally
+        {
+            if (minhChung is not null && !daLuu)
+                await chungTuStorage.Xoa(minhChung, cancellationToken);
         }
     }
 }

@@ -4,7 +4,8 @@ using HomeStay.Application.DataAccess.DbConnections;
 
 public sealed class HuyPhieuCoc(
     Func<PhienDuLieu> taoPhienDuLieu,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    DichVuThongBao dichVuThongBao)
 {
     public async Task<PhieuCoc> Huy(string maPhieuCoc, string maNhanVien)
     {
@@ -25,6 +26,15 @@ public sealed class HuyPhieuCoc(
             phong.GiaiPhongDatCoc(maGiuongs);
             await phieu.CapNhatHuy();
             await phong.CapNhatGiaiPhongDatCoc();
+            if (phieu.DaDongTien)
+            {
+                await dichVuThongBao.GuiThongBaoKeToan(
+                    "Phiếu cọc đã thu tiền vừa bị hủy",
+                    $"Phiếu cọc {phieu.MaPhieuCoc} đã bị hủy và cần được đối soát hoàn cọc.",
+                    "/accountant/doi-soat",
+                    maNhanVien,
+                    phieu.MaPhieuCoc);
+            }
             phien.Commit();
             phieu.Phong = phong;
             phieu.Giuongs = phong.Giuongs.Where(g => maGiuongs.Contains(g.MaGiuong)).ToList();

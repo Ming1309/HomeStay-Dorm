@@ -137,6 +137,98 @@ IF EXISTS (
     THROW 51010, 'Phieu coc cho doi chieu khong duoc co PhieuThu.', 1;
 GO
 
+-- Phiếu đã thanh toán phải có đúng một phiếu thu dương và khớp toàn bộ tiền cọc.
+IF EXISTS (
+    SELECT 1
+    FROM PhieuCoc pc
+    LEFT JOIN PhieuThu pt ON pt.MaPhieuCoc = pc.MaPhieuCoc
+    WHERE pc.TrangThai = N'DaThanhToan'
+      AND (pt.MaPT IS NULL OR pt.SoTienThu <= 0 OR pt.SoTienThu <> pc.TongTien)
+)
+    THROW 51018, 'Phieu coc da thanh toan thieu PhieuThu hoac so tien thuc thu khong khop.', 1;
+GO
+
+-- Phiếu cọc demo đã thu tiền và bị hủy phải sẵn sàng cho hàng đợi đối soát.
+IF NOT EXISTS (
+    SELECT 1
+    FROM PhieuCoc pc
+    INNER JOIN PhieuThu pt ON pt.MaPhieuCoc = pc.MaPhieuCoc
+    WHERE pc.MaPhieuCoc = 'PC0007'
+      AND pc.TrangThai = N'DaHuy'
+      AND pc.ThoiDiemHuy IS NOT NULL
+      AND pt.SoTienThu = pc.TongTien
+      AND pt.SoTienThu > 0
+      AND NOT EXISTS (SELECT 1 FROM HopDong hd WHERE hd.MaPhieuCoc = pc.MaPhieuCoc)
+      AND NOT EXISTS (SELECT 1 FROM PhieuDoiSoat pds WHERE pds.MaPhieuCoc = pc.MaPhieuCoc)
+)
+    THROW 51013, 'Thieu kich ban phieu coc da thu tien bi huy cho doi soat.', 1;
+GO
+
+-- PĐS của phiếu cọc chưa ký chỉ được tạo cho phiếu đã hủy và có số tiền thực thu khớp.
+IF EXISTS (
+    SELECT 1
+    FROM PhieuDoiSoat pds
+    INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc = pds.MaPhieuCoc
+    LEFT JOIN PhieuThu pt ON pt.MaPhieuCoc = pc.MaPhieuCoc
+    WHERE pds.MaHD IS NULL
+      AND (
+          pc.TrangThai <> N'DaHuy'
+          OR pc.ThoiDiemHuy IS NULL
+          OR pt.MaPT IS NULL
+          OR pt.SoTienThu <= 0
+          OR pt.SoTienThu <> pc.TongTien
+          OR EXISTS (SELECT 1 FROM HopDong hd WHERE hd.MaPhieuCoc = pc.MaPhieuCoc)
+      )
+)
+    THROW 51014, 'Phieu doi soat chua ky khong du dieu kien hoan coc.', 1;
+GO
+
+IF EXISTS (
+    SELECT MaPhieuCoc
+    FROM PhieuDoiSoat
+    WHERE MaHD IS NULL
+    GROUP BY MaPhieuCoc
+    HAVING COUNT(*) > 1
+)
+    THROW 51015, 'Mot phieu coc chua ky co nhieu phieu doi soat.', 1;
+GO
+
+-- Phiếu hoàn cọc đã phát hành phải đi cùng PĐS đã tất toán.
+IF EXISTS (
+    SELECT 1
+    FROM PhieuHoanCoc phc
+    INNER JOIN PhieuDoiSoat pds ON pds.MaPDS = phc.MaPDS
+    WHERE pds.TrangThai <> N'DaTatToan'
+)
+    THROW 51016, 'Phieu hoan coc ton tai nhung phieu doi soat chua tat toan.', 1;
+GO
+
+-- PĐS chỉ được chốt/tất toán sau khi có đủ dấu vết Quản lý xác nhận khách đồng ý.
+IF EXISTS (
+    SELECT 1 FROM PhieuDoiSoat
+    WHERE (TrangThai = N'ChoXacNhan' AND (KhachHangDongY <> 0 OR MaNVChot IS NOT NULL OR ThoiDiemChot IS NOT NULL))
+       OR (TrangThai IN (N'DaChot', N'DaTatToan') AND (KhachHangDongY <> 1 OR MaNVChot IS NULL OR ThoiDiemChot IS NULL))
+)
+    THROW 51019, 'Trang thai phieu doi soat khong khop dau vet xac nhan.', 1;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM PhieuDoiSoat WHERE TrangThai = N'ChoXacNhan')
+    THROW 51020, 'Thieu kich ban phieu doi soat cho Quan ly xac nhan.', 1;
+GO
+
+IF EXISTS (SELECT 1 FROM PhieuThu WHERE AnhMinhChung IS NULL OR LEN(LTRIM(RTRIM(AnhMinhChung))) = 0)
+    THROW 51021, 'Phieu thu thieu chung tu xac nhan da thu tien.', 1;
+GO
+
+IF EXISTS (
+    SELECT 1 FROM PhieuHoanCoc
+    WHERE MinhChung IS NULL OR LEN(LTRIM(RTRIM(MinhChung))) = 0
+       OR ThongTinNhanTien IS NULL OR LEN(LTRIM(RTRIM(ThongTinNhanTien))) = 0
+       OR (PhuongThucHoan = N'ChuyenKhoan' AND (MaGiaoDich IS NULL OR LEN(LTRIM(RTRIM(MaGiaoDich))) = 0))
+)
+    THROW 51022, 'Phieu hoan coc thieu chung tu, nguoi nhan hoac ma giao dich.', 1;
+GO
+
 -- Phiếu chờ đối chiếu phải có chứng từ, phương thức và toàn bộ giường còn giữ chỗ.
 IF EXISTS (
     SELECT 1
@@ -156,6 +248,19 @@ IF EXISTS (
       )
 )
     THROW 51012, 'Phieu coc cho doi chieu chua san sang de xac nhan.', 1;
+GO
+
+-- Phiếu đã thanh toán nhưng chưa có hợp đồng phải còn giữ các giường để có thể hủy an toàn.
+IF EXISTS (
+    SELECT 1
+    FROM PhieuCoc pc
+    INNER JOIN ChiTietPhieuCoc ct ON ct.MaPhieuCoc = pc.MaPhieuCoc
+    INNER JOIN Giuong g ON g.MaGiuong = ct.MaGiuong
+    WHERE pc.TrangThai = N'DaThanhToan'
+      AND NOT EXISTS (SELECT 1 FROM HopDong hd WHERE hd.MaPhieuCoc = pc.MaPhieuCoc)
+      AND g.TrangThai NOT IN (N'GiuCho', N'DaCoc')
+)
+    THROW 51017, 'Phieu coc da thanh toan co giuong khong con duoc giu coc.', 1;
 GO
 
 -- Giường trong hợp đồng phải thuộc phòng của phiếu cọc tương ứng.

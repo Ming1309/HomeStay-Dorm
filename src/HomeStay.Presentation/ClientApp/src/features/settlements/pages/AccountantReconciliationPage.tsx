@@ -52,6 +52,7 @@ export function AccountantReconciliationPage() {
   const [issuedCode, setIssuedCode] = useState<string | null>(null);
   const [loadingList, setLoadingList] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadHoSoList = async (searchQuery: string = "") => {
     setLoadingList(true);
@@ -99,10 +100,16 @@ export function AccountantReconciliationPage() {
             selected.maHoSo,
           )}&loaiHoSo=${encodeURIComponent(selected.loaiHoSo)}`,
         );
-        if (res.ok) {
-          const data = await res.json();
-          setCalculation(data);
+        if (!res.ok) {
+          const message = await readApiError(res, "Hồ sơ không còn đủ điều kiện đối soát.");
+          toast.error(message);
+          setSelected(null);
+          setCalculation(null);
+          await loadHoSoList(query);
+          return;
         }
+        const data = await res.json();
+        setCalculation(data);
       } catch (e) {
         toast.error("Không thể tải chi tiết tính toán đối soát.");
       } finally {
@@ -113,7 +120,8 @@ export function AccountantReconciliationPage() {
   }, [selected]);
 
   const handleCreate = async () => {
-    if (!selected || !calculation) return;
+    if (!selected || !calculation || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const response = await fetch("/api/reconciliations", {
         method: "POST",
@@ -134,11 +142,18 @@ export function AccountantReconciliationPage() {
         });
         loadHoSoList(query);
       } else {
-        const err = await response.json();
-        toast.error(err.message ?? "Lập phiếu đối soát thất bại.");
+        const message = await readApiError(response, "Lập phiếu đối soát thất bại.");
+        toast.error(message);
+        if (response.status === 409) {
+          setSelected(null);
+          setCalculation(null);
+          await loadHoSoList(query);
+        }
       }
     } catch (e) {
       toast.error("Có lỗi xảy ra khi gửi yêu cầu lập phiếu.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -274,27 +289,22 @@ export function AccountantReconciliationPage() {
                 title="Chính sách hoàn cọc áp dụng"
                 icon={<FileText className="size-4 text-blue-600" />}
               >
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-                  <div className="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm text-gray-700">
-                    <PolicyLine label="Đã đặt cọc nhưng chưa ký hợp đồng" value={80} />
-                    <PolicyLine label="Đã ký hợp đồng, lưu trú dưới 6 tháng" value={50} />
-                    <PolicyLine label="Đã ký hợp đồng, lưu trú trên 6 tháng" value={70} />
-                    <PolicyLine label="Hết hạn hợp đồng" value={100} />
-                  </div>
-                  <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
-                    <Info label="Chính sách" value="CS01 - Tiêu Chuẩn 2024" />
-                    <div className="mt-3 grid gap-2">
-                      <SummaryLine label="Tiền cọc ban đầu" value={calculation.soTienCoc} />
-                      <SummaryLine
-                        label="Tỷ lệ hoàn cọc"
-                        textValue={`${calculation.tyLeHoanCoc * 100}%`}
-                      />
-                      <SummaryLine
-                        label="Số tiền hoàn cọc cơ bản"
-                        value={baseRefund}
-                        highlight
-                      />
-                    </div>
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
+                  <p className="text-xs text-blue-800">
+                    Tỷ lệ dưới đây được máy chủ xác định từ chính sách có hiệu lực tại thời điểm
+                    đối soát.
+                  </p>
+                  <div className="mt-3 grid gap-2 md:grid-cols-3">
+                    <SummaryLine label="Tiền cọc thực thu" value={calculation.soTienCoc} />
+                    <SummaryLine
+                      label="Tỷ lệ hoàn cọc áp dụng"
+                      textValue={`${calculation.tyLeHoanCoc * 100}%`}
+                    />
+                    <SummaryLine
+                      label="Số tiền hoàn cọc cơ bản"
+                      value={baseRefund}
+                      highlight
+                    />
                   </div>
                 </div>
               </Card>
@@ -369,10 +379,10 @@ export function AccountantReconciliationPage() {
                 type="button"
                 className="h-9 bg-blue-600 hover:bg-blue-700"
                 onClick={handleCreate}
-                disabled={!!issuedCode}
+                disabled={!!issuedCode || isSubmitting}
               >
                 <CheckCircle2 className="size-4" />
-                Tạo phiếu đối soát
+                {isSubmitting ? "Đang tạo..." : "Tạo phiếu đối soát"}
               </Button>
               {issuedCode && finalAmount > 0 && (
                 <Button type="button" variant="outline" className="h-9" asChild>
@@ -398,6 +408,15 @@ export function AccountantReconciliationPage() {
   );
 }
 
+async function readApiError(response: Response, fallback: string) {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    const body = (await response.json().catch(() => null)) as { message?: string } | null;
+    return body?.message ?? fallback;
+  }
+  return (await response.text()) || fallback;
+}
+
 function Card({ title, icon, children }: { title: string; icon?: ReactNode; children: ReactNode }) {
   return (
     <section className="rounded-lg border border-gray-200 bg-white p-4">
@@ -415,15 +434,6 @@ function Info({ label, value, mono }: { label: string; value: string; mono?: boo
     <div>
       <p className="text-[11px] font-medium text-gray-500">{label}</p>
       <p className={cn("mt-0.5 text-sm text-gray-900", mono && "font-mono")}>{value}</p>
-    </div>
-  );
-}
-
-function PolicyLine({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span>{label}</span>
-      <span className="font-mono font-bold text-gray-900">{value}%</span>
     </div>
   );
 }

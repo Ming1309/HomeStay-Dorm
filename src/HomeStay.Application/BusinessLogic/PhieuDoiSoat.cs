@@ -10,10 +10,14 @@ public sealed class PhieuDoiSoat
     public decimal TongKhauTru { get; set; }
     public decimal TienHoan { get; set; }
     public decimal TienThuThem { get; set; }
-    public string TrangThai { get; set; } = "DaChot";
+    public string TrangThai { get; set; } = "ChoXacNhan";
     public string? GhiChu { get; set; }
     public string? MaHD { get; set; }
     public string? MaNV { get; set; }
+    public bool KhachHangDongY { get; set; }
+    public string? MaNVChot { get; set; }
+    public DateTime? ThoiDiemChot { get; set; }
+    public string? GhiChuXacNhan { get; set; }
     public string MaPhieuCoc { get; set; } = string.Empty;
     public string? MaGiuong { get; set; }
 
@@ -28,7 +32,7 @@ public sealed class PhieuDoiSoat
             MaPhieuCoc = maPhieuCoc,
             MaHD = maHD,
             MaNV = maNhanVien,
-            TrangThai = "DaChot"
+            TrangThai = "ChoXacNhan"
         };
     }
 
@@ -77,6 +81,34 @@ public sealed class PhieuDoiSoat
     public static Task<PhieuDoiSoat?> LayChiTietPhieuDoiSoat(string maPDS)
         => PhieuDoiSoatDB.GetPhieuDoiSoatTheoMaPDS(maPDS);
 
+    public static Task<PhieuDoiSoat?> LayChiTietChoCapNhat(string maPDS)
+        => PhieuDoiSoatDB.GetPhieuDoiSoatChoCapNhat(maPDS);
+
+    public static Task<IReadOnlyList<PhieuDoiSoat>> LayDanhSachChoXacNhan()
+        => PhieuDoiSoatDB.GetDanhSachChoXacNhan();
+
+    public async Task XacNhanKhachHangDongY(string maNhanVien, DateTime thoiDiem, string? ghiChu)
+    {
+        if (TrangThai != "ChoXacNhan")
+            throw new InvalidOperationException("Phiếu đối soát đã được xác nhận hoặc không còn hợp lệ.");
+        if (string.IsNullOrWhiteSpace(maNhanVien))
+            throw new ArgumentException("Không xác định được Quản lý xác nhận.", nameof(maNhanVien));
+        if (ghiChu?.Length > 500)
+            throw new ArgumentException("Ghi chú xác nhận không được vượt quá 500 ký tự.", nameof(ghiChu));
+
+        KhachHangDongY = true;
+        MaNVChot = maNhanVien.Trim();
+        ThoiDiemChot = thoiDiem;
+        GhiChuXacNhan = string.IsNullOrWhiteSpace(ghiChu) ? null : ghiChu.Trim();
+        var trangThaiMoi = TienHoan == 0 && TienThuThem == 0 ? "DaTatToan" : "DaChot";
+        if (!await PhieuDoiSoatDB.XacNhan(this, trangThaiMoi))
+            throw new InvalidOperationException("Phiếu đối soát vừa được xử lý bởi người khác. Vui lòng tải lại.");
+        TrangThai = trangThaiMoi;
+    }
+
+    public static Task<bool> TonTaiChoPhieuCocChuaKy(string maPhieuCoc)
+        => PhieuDoiSoatDB.TonTaiChoPhieuCocChuaKy(maPhieuCoc);
+
     public static async Task<decimal> TinhToanKetQua(string maPDS)
     {
         var pds = await LayChiTietPhieuDoiSoat(maPDS);
@@ -99,6 +131,7 @@ public sealed class PhieuDoiSoat
     public static bool KiemTraCongNo(PhieuDoiSoat pds)
     {
         if (pds is null) throw new ArgumentNullException(nameof(pds));
+        if (string.Equals(pds.TrangThai, "ChoXacNhan", StringComparison.OrdinalIgnoreCase)) return false;
         if (pds.TienThuThem <= 0) return true;
         return string.Equals(pds.TrangThai, "DaTatToan", StringComparison.OrdinalIgnoreCase);
     }
