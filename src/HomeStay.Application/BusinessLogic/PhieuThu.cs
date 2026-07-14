@@ -44,6 +44,33 @@ public sealed class PhieuThu
         };
     }
 
+    // UC 1.4.14 Xử lý thanh toán hợp đồng
+    public static PhieuThu TaoPhieuThuTienHoaDon(
+        string maHoaDon, decimal soTienThu, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
+    {
+        if (string.IsNullOrWhiteSpace(maHoaDon))
+            throw new ArgumentException("Mã hóa đơn không được để trống.", nameof(maHoaDon));
+        if (soTienThu <= 0)
+            throw new ArgumentException("Số tiền thu phải lớn hơn 0.");
+        if (phuongThuc is not ("TienMat" or "ChuyenKhoan"))
+            throw new ArgumentException("Phương thức thanh toán không hợp lệ.", nameof(phuongThuc));
+        if (phuongThuc == "ChuyenKhoan" && string.IsNullOrWhiteSpace(anhMinhChung))
+            throw new ArgumentException("Chuyển khoản phải có thông tin chứng từ.", nameof(anhMinhChung));
+        if (string.IsNullOrWhiteSpace(maNV))
+            throw new ArgumentException("Không xác định được Kế toán thực hiện.", nameof(maNV));
+
+        return new PhieuThu
+        {
+            MaPT = $"PT{thoiDiem:yyyyMMddHHmmssfff}",
+            SoTienThu = soTienThu,
+            ThoiGian = thoiDiem,
+            PhuongThucThanhToan = phuongThuc,
+            AnhMinhChung = anhMinhChung,
+            MaHoaDon = maHoaDon,
+            MaNV = maNV
+        };
+    }
+
     public Task LuuPhieu() => PhieuThuDB.InsertPhieuThu(this);
 
     public static Task<bool> DaTonTaiChoPhieuDoiSoat(string maPDS) =>
