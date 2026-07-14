@@ -58,12 +58,6 @@ import {
 } from "@/features/contracts/services/contract-service";
 import { Label } from "@/shared/ui/label";
 
-const servicesList = [
-  { id: "parking", label: "Gửi xe máy", price: 150000 },
-  { id: "cleaning", label: "Dọn phòng (2 lần/tuần)", price: 300000 },
-  { id: "laundry", label: "Giặt ủi (5kg/tuần)", price: 200000 },
-];
-
 const contractSchema = z
   .object({
     startDate: z.string().min(1, "Vui lòng nhập ngày bắt đầu (DD/MM/YYYY)"),
@@ -112,6 +106,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
   const [quyDinhs, setQuyDinhs] = useState<ChiTietPhieuCocResponse["quyDinhs"]>([]);
   const [chinhSach, setChinhSach] = useState<ChiTietPhieuCocResponse["chinhSachHoanCoc"]>(null);
   const [createdMaHD, setCreatedMaHD] = useState<string | null>(null);
+  const [availableDichVus, setAvailableDichVus] = useState<ChiTietPhieuCocResponse["dichVus"]>([]);
 
   const form = useForm<ContractFormValues>({
     resolver: zodResolver(contractSchema),
@@ -131,6 +126,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
     setQuyDinhs([]);
     setChinhSach(null);
     setCreatedMaHD(null);
+    setAvailableDichVus([]);
     form.reset({
       startDate: "",
       endDate: "",
@@ -144,6 +140,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
         .then((res) => {
           setQuyDinhs(res.quyDinhs);
           setChinhSach(res.chinhSachHoanCoc);
+          setAvailableDichVus(res.dichVus);
         })
         .catch(() => {});
       return () => ctrl.abort();
@@ -384,25 +381,27 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
           <div className="pt-2">
             <Label className="text-xs font-medium text-gray-600 mb-3 block">Dịch vụ đi kèm</Label>
             <div className="space-y-3 rounded-lg border border-gray-100 bg-gray-50/50 p-4">
-              {servicesList.map((service) => (
+                            {availableDichVus.length === 0
+              ? null
+              : availableDichVus.map((service) => (
                 <FormField
-                  key={service.id}
+                  key={service.maDV}
                   control={form.control}
                   name="services"
                   render={({ field }) => {
                     return (
                       <FormItem
-                        key={service.id}
+                        key={service.maDV}
                         className="flex flex-row items-start space-x-3 space-y-0"
                       >
                         <FormControl>
                           <Checkbox
-                            checked={field.value?.includes(service.id)}
+                            checked={field.value?.includes(service.maDV)}
                             onCheckedChange={(checked) => {
                               return checked
-                                ? field.onChange([...field.value, service.id])
+                                ? field.onChange([...field.value, service.maDV])
                                 : field.onChange(
-                                    field.value?.filter((value) => value !== service.id),
+                                    field.value?.filter((value) => value !== service.maDV),
                                   );
                             }}
                             className="border-gray-300 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600"
@@ -410,17 +409,16 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                         </FormControl>
                         <div className="space-y-1 leading-none flex-1 flex justify-between">
                           <FormLabel className="text-sm font-medium text-gray-700 cursor-pointer">
-                            {service.label}
+                            {service.tenDV}
                           </FormLabel>
                           <span className="text-sm text-gray-500 font-mono">
-                            {formatCurrency(service.price)}
+                            {formatCurrency(service.donGia)}
                           </span>
                         </div>
                       </FormItem>
                     );
                   }}
-                />
-              ))}
+                />))}
             </div>
           </div>
 
@@ -488,7 +486,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
 
   const renderPhase2 = () => {
     const values = form.getValues();
-    const selectedServices = servicesList.filter((s) => values.services.includes(s.id));
+    const selectedServices = availableDichVus.filter((s) => values.services.includes(s.maDV));
 
     return (
       <div className="mx-auto max-w-2xl">
@@ -549,9 +547,9 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
               ) : (
                 <ul className="space-y-2">
                   {selectedServices.map((s) => (
-                    <li key={s.id} className="flex justify-between">
-                      <span>{s.label}</span>
-                      <span className="font-mono">{formatCurrency(s.price)}</span>
+                    <li key={s.maDV} className="flex justify-between">
+                      <span>{s.tenDV}</span>
+                      <span className="font-mono">{formatCurrency(s.donGia)}</span>
                     </li>
                   ))}
                 </ul>
