@@ -10,6 +10,12 @@ public sealed class QuanLyNguoiDung(Func<PhienDuLieu> taoPhien, MatKhauHasher ha
         return await TaiKhoan.LayDanhSach();
     }
 
+    public async Task<IReadOnlyList<ChiNhanh>> LayDanhSachChiNhanh()
+    {
+        using var phien = taoPhien();
+        return await ChiNhanh.LayDanhSach();
+    }
+
     public async Task<TaiKhoan> Tao(TaiKhoan taiKhoan, NhanVien nhanVien, string matKhauTam)
     {
         if (matKhauTam.Length < 8) throw new ArgumentException("Mật khẩu tạm phải có ít nhất 8 ký tự.");

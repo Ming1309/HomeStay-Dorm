@@ -13,4 +13,11 @@ public static class LoaiPhongDB
             sql, transaction: PhienDuLieu.Session.Transaction);
         return result.ToList();
     }
+
+    public static async Task<LoaiPhong?> LayTheoMa(string maLP)
+    {
+        const string sql = "SELECT MaLP, TenLoaiPhong, SucChua, GiaThue FROM LoaiPhong WHERE MaLP=@MaLP";
+        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<LoaiPhong>(
+            sql, new { MaLP = maLP }, PhienDuLieu.Session.Transaction);
+    }
 }

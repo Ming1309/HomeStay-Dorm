@@ -6,12 +6,17 @@ boundary MHQuanLyNguoiDung
 control QuanLyNguoiDung
 control TaiKhoan
 control NhanVien
+control ChiNhanh
 entity TaiKhoanDB
 entity NhanVienDB
+entity ChiNhanhDB
 
 MHQuanLyNguoiDung -> QuanLyNguoiDung: LayDanhSach()
 QuanLyNguoiDung -> TaiKhoan: LayDanhSach()
 TaiKhoan -> TaiKhoanDB: LayDanhSach()
+MHQuanLyNguoiDung -> QuanLyNguoiDung: LayDanhSachChiNhanh()
+QuanLyNguoiDung -> ChiNhanh: LayDanhSach()
+ChiNhanh -> ChiNhanhDB: LayDanhSach()
 MHQuanLyNguoiDung -> QuanLyNguoiDung: Tao()
 QuanLyNguoiDung -> NhanVien: Them()
 NhanVien -> NhanVienDB: Them()
@@ -23,6 +28,8 @@ TaiKhoan -> TaiKhoanDB: Doc()
 QuanLyNguoiDung -> TaiKhoan: Khoa() / MoKhoa() / VoHieuHoa()
 TaiKhoan -> TaiKhoanDB: CapNhatTrangThai()
 MHQuanLyNguoiDung -> QuanLyNguoiDung: DatLaiMatKhau()
+QuanLyNguoiDung -> TaiKhoan: Doc()
+TaiKhoan -> TaiKhoanDB: Doc()
 QuanLyNguoiDung -> TaiKhoan: DoiMatKhau()
 TaiKhoan -> TaiKhoanDB: DatMatKhau()
 @enduml

@@ -40,6 +40,7 @@ package "TANG GIAO DIEN" #EAF2F8 {
 package "TANG NGHIEP VU" #FCF3CF {
   class QuanLyNguoiDung {
     + LayDanhSach(): IReadOnlyList<TaiKhoan>
+    + LayDanhSachChiNhanh(): IReadOnlyList<ChiNhanh>
     + Tao(taiKhoan: TaiKhoan, nhanVien: NhanVien, matKhauTam: String): TaiKhoan
     + CapNhat(taiKhoan: TaiKhoan, nhanVien: NhanVien)
     + DoiTrangThai(maTK: String, trangThai: String, maTKThucHien: String)
@@ -52,7 +53,6 @@ package "TANG NGHIEP VU" #FCF3CF {
     - MatKhauHash: String
     - TrangThai: String
     - Email: String
-    - PhongBan: String
     - MaNV: String
     --
     + DangHoatDong(): Boolean
@@ -78,6 +78,13 @@ package "TANG NGHIEP VU" #FCF3CF {
     + Them()
     + CapNhat()
   }
+
+  class ChiNhanh {
+    - MaCN: String
+    - TenChiNhanh: String
+    --
+    + LayDanhSach(): IReadOnlyList<ChiNhanh>
+  }
 }
 
 package "TANG TRUY CAP DU LIEU" #FDEDEC {
@@ -94,6 +101,10 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + Them(nhanVien: NhanVien)
     + CapNhat(nhanVien: NhanVien)
   }
+
+  class ChiNhanhDB {
+    + LayDanhSach(): IReadOnlyList<ChiNhanh>
+  }
 }
 
 ' Giao dien su dung use case.
@@ -102,9 +113,11 @@ MHQuanLyNguoiDung o-- QuanLyNguoiDung
 ' Lop dieu phoi tap hop cac lop nghiep vu lien quan.
 QuanLyNguoiDung o-- TaiKhoan : quan ly
 QuanLyNguoiDung o-- NhanVien : quan ly
+QuanLyNguoiDung o-- ChiNhanh : tra cuu
 TaiKhoan "0..*" -- "1" NhanVien : thuoc
 
 ' Aggregation giua business va data access.
 TaiKhoan o-- TaiKhoanDB
 NhanVien o-- NhanVienDB
+ChiNhanh o-- ChiNhanhDB
 @enduml

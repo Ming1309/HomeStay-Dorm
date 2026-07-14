@@ -72,7 +72,6 @@ CREATE TABLE TaiKhoan (
     TrangThai            NVARCHAR(20)   NOT NULL,
     LanDangNhapCuoi      DATETIME       NULL,
     Email                VARCHAR(100)   NULL,
-    PhongBan             NVARCHAR(100)  NULL,
     MaNV                 VARCHAR(20)    NOT NULL
 );
 GO
