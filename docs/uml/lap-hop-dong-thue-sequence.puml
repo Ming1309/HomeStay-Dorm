@@ -1,0 +1,146 @@
+@startuml
+title SO DO TUAN TU - LAP HOP DONG THUE
+
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+
+actor "Nhan vien Sale" as NV
+boundary ": MHLapHopDongThue" as MH
+control ": LapHopDongThue" as UC
+control ": PhieuCoc" as PC
+entity ": PhieuCocDB" as PCDB
+control ": ThanhVienDangKy" as TVDK
+entity ": ThanhVienDangKyDB" as TVDKDB
+control ": DichVu" as DV
+entity ": DichVuDB" as DVDB
+control ": QuyDinh" as QD
+entity ": QuyDinhDB" as QDDB
+control ": ChinhSachHoanCoc" as CS
+entity ": ChinhSachHoanCocDB" as CSDB
+entity ": HopDongDB" as HDDB
+entity ": DichVuHopDongDB" as HDDVDB
+
+'==================================================
+' 1. MO CHUC NANG / LOAD DS PHIEU COC DA DUYET
+'==================================================
+NV -> MH : hienThiForm()
+activate MH
+MH -> UC : LayDanhSachPhieuCocDaDuyet(text)
+activate UC
+UC -> PC : LayDanhSachDaDuyet(text)
+activate PC
+PC -> PCDB : LayDanhSachDaDuyet(text)
+activate PCDB
+deactivate PCDB
+deactivate PC
+deactivate UC
+
+'==================================================
+' 2. CHON PHIEU COC / LOAD CHI TIET PHIEU COC
+'==================================================
+NV -> MH : chonPhieuCoc(maPhieuCoc)
+MH -> UC : LayThongTinPhieuCoc(maPhieuCoc)
+activate UC
+
+UC -> PC : DocChiTiet(maPhieuCoc)
+activate PC
+PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
+deactivate PCDB
+deactivate PC
+
+UC -> TVDK : LayDanhSachThanhVien(maPhieuCoc)
+activate TVDK
+TVDK -> TVDKDB : LayTheoMaPhieuCoc(maPhieuCoc)
+activate TVDKDB
+deactivate TVDKDB
+deactivate TVDK
+
+UC -> DV : LayDanhSach()
+activate DV
+DV -> DVDB : LayDanhSach()
+activate DVDB
+deactivate DVDB
+deactivate DV
+
+UC -> QD : LayDanhSach()
+activate QD
+QD -> QDDB : LayDanhSach()
+activate QDDB
+deactivate QDDB
+deactivate QD
+
+UC -> CS : LayChinhSachDangApDung(ngay)
+activate CS
+CS -> CSDB : LayChinhSachDangApDung(ngay)
+activate CSDB
+deactivate CSDB
+deactivate CS
+
+deactivate UC
+
+'==================================================
+' 3. NHAP THONG TIN & XEM TRUOC HOP DONG
+'==================================================
+NV -> MH : nhapThongTinHopDong()
+NV -> MH : clickLuuXemTruocHopDong()
+MH -> UC : TaoHopDong(maPhieuCoc, maNV, ngayBatDau, ngayKetThuc, kyThanhToan, giaThue, maQD, dsMaDV)
+activate UC
+
+UC -> PC : DocChiTiet(maPhieuCoc)
+activate PC
+PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
+deactivate PCDB
+deactivate PC
+
+UC -> HDDB : TonTaiTheoPhieuCoc(maPhieuCoc)
+activate HDDB
+deactivate HDDB
+
+UC -> HDDB : Them(hopDong)
+activate HDDB
+deactivate HDDB
+
+opt Co dich vu duoc chon
+  UC -> DV : LayDanhSach()
+  activate DV
+  DV -> DVDB : LayDanhSach()
+  activate DVDB
+  deactivate DVDB
+  deactivate DV
+  
+  loop dsMaDV
+    UC -> HDDVDB : Them(maHD, maDV, donGia)
+    activate HDDVDB
+    deactivate HDDVDB
+  end
+end
+
+deactivate UC
+
+'==================================================
+' 4. XAC NHAN KHACH DA KY
+'==================================================
+NV -> MH : clickXacNhanKhachDaKy()
+MH -> UC : XacNhanKhachDaKy(maHD)
+activate UC
+UC -> HDDB : UpdateTrangThai(maHD, "ChoThanhToan")
+activate HDDB
+deactivate HDDB
+deactivate UC
+
+'==================================================
+' 5. HUY HOP DONG
+'==================================================
+NV -> MH : clickHuyHopDong()
+MH -> UC : HuyHopDong(maHD)
+activate UC
+UC -> HDDB : UpdateTrangThai(maHD, "DaHuy")
+activate HDDB
+deactivate HDDB
+deactivate UC
+
+deactivate MH
+@enduml

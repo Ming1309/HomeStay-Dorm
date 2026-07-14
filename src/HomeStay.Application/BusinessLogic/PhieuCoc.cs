@@ -52,6 +52,9 @@ public sealed class PhieuCoc
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null) =>
         PhieuCocDB.LayDanhSachKhoiTao(text);
 
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaDuyet(string? text = null) =>
+        PhieuCocDB.LayDanhSachDaDuyet(text);
+
     // ==========================================================
     // Methods from feat/lap-phieu-doi-soat branch
     // ==========================================================
