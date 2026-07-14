@@ -28,6 +28,8 @@ builder.Services.AddSingleton<IChungTuCocStorage>(new ChungTuCocFileStorage(
     Path.Combine(builder.Environment.ContentRootPath, "App_Data", "ChungTuCoc")));
 builder.Services.AddSingleton<IMinhChungThuHoiStorage>(new MinhChungThuHoiFileStorage(
     Path.Combine(builder.Environment.ContentRootPath, "App_Data", "MinhChungThuHoi")));
+builder.Services.AddSingleton<IChungTuTaiChinhStorage>(new ChungTuTaiChinhFileStorage(
+    Path.Combine(builder.Environment.ContentRootPath, "App_Data", "ChungTuTaiChinh")));
 var thuMucQuyDinh = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "QuyDinh");
 var thuMucQuyDinhMau = Path.Combine(builder.Environment.ContentRootPath, "SeedData");
 builder.Services.AddSingleton<IQuyDinhFileStorage>(
@@ -43,6 +45,7 @@ builder.Services.AddScoped<DichVuThongBao>();
 
 // Đối soát / trả phòng / hoàn cọc / thanh toán hợp đồng
 builder.Services.AddScoped<LapPhieuDoiSoat>();
+builder.Services.AddScoped<XacNhanPhieuDoiSoat>();
 builder.Services.AddScoped<ThanhToanTraPhong>();
 builder.Services.AddScoped<LapPhieuHoanCoc>();
 builder.Services.AddScoped<XuLyThanhToanHopDong>();

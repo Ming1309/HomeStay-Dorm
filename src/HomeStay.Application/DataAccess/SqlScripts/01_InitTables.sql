@@ -18,9 +18,14 @@ GO
 USE HomeStay;
 GO
 
--- Cần bật để tạo computed column / filtered index (ChiTietHoaDon.ThanhTien, UX_PhieuThu_MaPhieuCoc)
+-- Các SET option bắt buộc cho computed column và filtered unique index.
 SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
+SET ANSI_PADDING ON;
+SET ANSI_WARNINGS ON;
+SET CONCAT_NULL_YIELDS_NULL ON;
+SET ARITHABORT ON;
+SET NUMERIC_ROUNDABORT OFF;
 GO
 
 -- Sequence sinh mã khách hàng tuần tự (NEXT VALUE FOR dbo.Seq_KhachHang)
@@ -314,7 +319,11 @@ CREATE TABLE PhieuDoiSoat (
     MaHD        VARCHAR(20)    NULL,
     MaNV        VARCHAR(20)    NULL,
     MaPhieuCoc  VARCHAR(20)    NOT NULL,
-    MaGiuong    VARCHAR(20)    NULL
+    MaGiuong    VARCHAR(20)    NULL,
+    KhachHangDongY BIT         NOT NULL,
+    MaNVChot    VARCHAR(20)    NULL,
+    ThoiDiemChot DATETIME      NULL,
+    GhiChuXacNhan NVARCHAR(500) NULL
 );
 GO
 
@@ -329,7 +338,7 @@ CREATE TABLE PhieuThu (
     SoTienThu           DECIMAL(18,2)  NOT NULL,
     ThoiGian            DATETIME       NOT NULL,
     PhuongThucThanhToan NVARCHAR(50)   NULL,
-    AnhMinhChung        NVARCHAR(500)  NULL,
+    AnhMinhChung        NVARCHAR(500)  NOT NULL,
     MaHoaDon            VARCHAR(20)    NULL,
     MaPhieuCoc          VARCHAR(20)    NULL,
     MaPDS               VARCHAR(20)    NULL,
@@ -342,6 +351,8 @@ CREATE TABLE PhieuHoanCoc (
     SoTienHoan       DECIMAL(18,2)  NOT NULL,
     PhuongThucHoan   NVARCHAR(50)   NULL,
     ThongTinNhanTien NVARCHAR(300)  NULL,
+    MaGiaoDich       NVARCHAR(100)  NULL,
+    MinhChung        NVARCHAR(500)  NOT NULL,
     ThoiGian         DATETIME       NOT NULL,
     MaPDS            VARCHAR(20)    NOT NULL,
     MaNV             VARCHAR(20)    NULL
@@ -426,6 +437,9 @@ CREATE UNIQUE INDEX UX_PhieuThu_MaPDS
     WHERE MaPDS IS NOT NULL;
 CREATE UNIQUE INDEX UX_PhieuHoanCoc_MaPDS
     ON PhieuHoanCoc (MaPDS);
+CREATE UNIQUE INDEX UX_PhieuDoiSoat_PhieuCocChuaKy
+    ON PhieuDoiSoat (MaPhieuCoc)
+    WHERE MaHD IS NULL;
 CREATE UNIQUE INDEX UX_ChinhSachHoanCoc_NgayApDung
     ON ChinhSachHoanCoc (NgayApDung);
 CREATE INDEX IX_HopDong_QuyDinh_MaQD
@@ -454,7 +468,8 @@ ALTER TABLE PhieuDoiSoat ADD CONSTRAINT DF_PhieuDoiSoat_NgayDoiSoat DEFAULT CAST
 ALTER TABLE PhieuDoiSoat ADD CONSTRAINT DF_PhieuDoiSoat_TongKhauTru DEFAULT 0             FOR TongKhauTru;
 ALTER TABLE PhieuDoiSoat ADD CONSTRAINT DF_PhieuDoiSoat_TienHoan   DEFAULT 0              FOR TienHoan;
 ALTER TABLE PhieuDoiSoat ADD CONSTRAINT DF_PhieuDoiSoat_TienThuThem DEFAULT 0             FOR TienThuThem;
-ALTER TABLE PhieuDoiSoat ADD CONSTRAINT DF_PhieuDoiSoat_TrangThai  DEFAULT N'DaChot'     FOR TrangThai;
+ALTER TABLE PhieuDoiSoat ADD CONSTRAINT DF_PhieuDoiSoat_TrangThai  DEFAULT N'ChoXacNhan' FOR TrangThai;
+ALTER TABLE PhieuDoiSoat ADD CONSTRAINT DF_PhieuDoiSoat_KhachHangDongY DEFAULT 0 FOR KhachHangDongY;
 ALTER TABLE PhieuThu     ADD CONSTRAINT DF_PhieuThu_ThoiGian       DEFAULT GETDATE()      FOR ThoiGian;
 ALTER TABLE PhieuHoanCoc ADD CONSTRAINT DF_PhieuHoanCoc_ThoiGian   DEFAULT GETDATE()      FOR ThoiGian;
 GO
@@ -601,11 +616,18 @@ ALTER TABLE PhieuDoiSoat ADD CONSTRAINT CK_PhieuDoiSoat_TienHoan
 ALTER TABLE PhieuDoiSoat ADD CONSTRAINT CK_PhieuDoiSoat_TienThuThem
     CHECK (TienThuThem >= 0);
 ALTER TABLE PhieuDoiSoat ADD CONSTRAINT CK_PhieuDoiSoat_TrangThai
-    CHECK (TrangThai IN (N'DaChot', N'DaTatToan'));
+    CHECK (TrangThai IN (N'ChoXacNhan', N'DaChot', N'DaTatToan'));
+ALTER TABLE PhieuDoiSoat ADD CONSTRAINT CK_PhieuDoiSoat_XacNhan
+    CHECK (
+        (TrangThai = N'ChoXacNhan' AND KhachHangDongY = 0 AND MaNVChot IS NULL AND ThoiDiemChot IS NULL) OR
+        (TrangThai IN (N'DaChot', N'DaTatToan') AND KhachHangDongY = 1 AND MaNVChot IS NOT NULL AND ThoiDiemChot IS NOT NULL)
+    );
 
 -- PhieuThu
 ALTER TABLE PhieuThu ADD CONSTRAINT CK_PhieuThu_SoTienThu
     CHECK (SoTienThu > 0);
+ALTER TABLE PhieuThu ADD CONSTRAINT CK_PhieuThu_ChungTu
+    CHECK (PhuongThucThanhToan IN (N'TienMat', N'ChuyenKhoan') AND LEN(LTRIM(RTRIM(AnhMinhChung))) > 0);
 ALTER TABLE PhieuThu ADD CONSTRAINT CK_PhieuThu_MucDich
     CHECK (
         (MaHoaDon IS NOT NULL AND MaPhieuCoc IS NULL AND MaPDS IS NULL) OR
@@ -616,6 +638,11 @@ ALTER TABLE PhieuThu ADD CONSTRAINT CK_PhieuThu_MucDich
 -- PhieuHoanCoc
 ALTER TABLE PhieuHoanCoc ADD CONSTRAINT CK_PhieuHoanCoc_SoTienHoan
     CHECK (SoTienHoan > 0);
+ALTER TABLE PhieuHoanCoc ADD CONSTRAINT CK_PhieuHoanCoc_ChungTu
+    CHECK (PhuongThucHoan IN (N'TienMat', N'ChuyenKhoan') AND
+           LEN(LTRIM(RTRIM(MinhChung))) > 0 AND
+           LEN(LTRIM(RTRIM(ThongTinNhanTien))) > 0 AND
+           (PhuongThucHoan <> N'ChuyenKhoan' OR LEN(LTRIM(RTRIM(MaGiaoDich))) > 0));
 GO
 
 
@@ -754,6 +781,8 @@ ALTER TABLE PhieuDoiSoat ADD CONSTRAINT FK_PhieuDoiSoat_HopDong
     FOREIGN KEY (MaHD) REFERENCES HopDong(MaHD);
 ALTER TABLE PhieuDoiSoat ADD CONSTRAINT FK_PhieuDoiSoat_NhanVien
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
+ALTER TABLE PhieuDoiSoat ADD CONSTRAINT FK_PhieuDoiSoat_NhanVienChot
+    FOREIGN KEY (MaNVChot) REFERENCES NhanVien(MaNV);
 ALTER TABLE PhieuDoiSoat ADD CONSTRAINT FK_PhieuDoiSoat_PhieuCoc
     FOREIGN KEY (MaPhieuCoc) REFERENCES PhieuCoc(MaPhieuCoc);
 ALTER TABLE PhieuDoiSoat ADD CONSTRAINT FK_PhieuDoiSoat_Giuong

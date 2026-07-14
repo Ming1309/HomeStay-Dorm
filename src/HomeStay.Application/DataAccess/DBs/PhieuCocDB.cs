@@ -58,15 +58,20 @@ public static class PhieuCocDB
     public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoat()
     {
         const string sql = """
-            SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
+            SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,
+                   pt.SoTienThu AS TongTien,
                    pc.ThoiDiemCoc,pc.ThoiDiemHuy,pc.MaNVHuy,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
                    CAST(1 AS bit) AS DaDongTien,kh.HoTen AS TenKhachHang,kh.SDT,kh.Email,kh.SoGiayTo,
                    p.SoPhong,p.ToaNha
             FROM PhieuCoc pc
             INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
             INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
+            INNER JOIN PhieuThu pt ON pt.MaPhieuCoc=pc.MaPhieuCoc
             WHERE pc.TrangThai=N'DaHuy'
-              AND EXISTS (SELECT 1 FROM PhieuThu pt WHERE pt.MaPhieuCoc=pc.MaPhieuCoc)
+              AND pc.ThoiDiemHuy IS NOT NULL
+              AND pt.SoTienThu>0
+              AND pt.SoTienThu=pc.TongTien
+              AND NOT EXISTS (SELECT 1 FROM HopDong hd WHERE hd.MaPhieuCoc=pc.MaPhieuCoc)
               AND NOT EXISTS (SELECT 1 FROM PhieuDoiSoat pds WHERE pds.MaPhieuCoc=pc.MaPhieuCoc)
             ORDER BY pc.ThoiDiemHuy,pc.MaPhieuCoc
             """;
@@ -112,49 +117,6 @@ public static class PhieuCocDB
         }).ToList();
     }
 
-    // ==========================================================
-    // Methods from feat/lap-phieu-doi-soat branch
-    // ==========================================================
-    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyDaThanhToan()
-    {
-        const string sql = """
-            SELECT pc.MaPhieuCoc, pc.HinhThucThue, pc.SoGiuongThue, pc.TongTien, pc.ThoiDiemCoc, pc.TrangThai, pc.MaKH, pc.MaPhong, pc.MaNV,
-                   kh.HoTen AS TenKhachHang, p.SoPhong, p.ToaNha
-            FROM PhieuCoc pc
-            INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
-            INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
-            WHERE pc.TrangThai IN (N'DaHuy', N'DaThanhToan')
-              AND NOT EXISTS (SELECT 1 FROM PhieuDoiSoat pds WHERE pds.MaPhieuCoc = pc.MaPhieuCoc)
-            ORDER BY pc.ThoiDiemCoc, pc.MaPhieuCoc
-            """;
-        var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql,
-            null, PhienDuLieu.Session.Transaction);
-        return rows.Select(x => new PhieuCoc
-        {
-            MaPhieuCoc = x.MaPhieuCoc,
-            HinhThucThue = x.HinhThucThue,
-            SoGiuongThue = x.SoGiuongThue,
-            TongTien = x.TongTien,
-            ThoiDiemCoc = x.ThoiDiemCoc,
-            TrangThai = x.TrangThai,
-            MaKH = x.MaKH,
-            MaPhong = x.MaPhong,
-            MaNV = x.MaNV,
-            KhachHang = new KhachHang { MaKH = x.MaKH, HoTen = x.TenKhachHang },
-            Phong = new Phong { MaPhong = x.MaPhong, SoPhong = x.SoPhong, ToaNha = x.ToaNha },
-        }).ToList();
-    }
-
-    public static async Task<decimal> LaySoTienCoc(string maPhieuCoc)
-    {
-        const string sql = "SELECT TongTien FROM PhieuCoc WHERE MaPhieuCoc = @MaPhieuCoc";
-        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<decimal>(sql,
-            new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction);
-    }
-
-    // ==========================================================
-    // Methods from develop branch
-    // ==========================================================
     public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(string? text = null)
     {
         const string sql = """
@@ -617,7 +579,6 @@ public static class PhieuCocDB
     };
 
     private static string? ChuanHoa(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-
     public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaDuyet(string? text = null)
     {
         const string sql = """

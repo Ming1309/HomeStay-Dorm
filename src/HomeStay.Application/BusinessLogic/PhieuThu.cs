@@ -27,8 +27,8 @@ public sealed class PhieuThu
             throw new ArgumentException("Số tiền thu phải lớn hơn 0.");
         if (phuongThuc is not ("TienMat" or "ChuyenKhoan"))
             throw new ArgumentException("Phương thức thanh toán không hợp lệ.", nameof(phuongThuc));
-        if (phuongThuc == "ChuyenKhoan" && string.IsNullOrWhiteSpace(anhMinhChung))
-            throw new ArgumentException("Chuyển khoản phải có thông tin chứng từ.", nameof(anhMinhChung));
+        if (string.IsNullOrWhiteSpace(anhMinhChung))
+            throw new ArgumentException("Phải có chứng từ xác nhận đã thu tiền.", nameof(anhMinhChung));
         if (string.IsNullOrWhiteSpace(maNV))
             throw new ArgumentException("Không xác định được Kế toán thực hiện.", nameof(maNV));
 
@@ -54,8 +54,8 @@ public sealed class PhieuThu
             throw new ArgumentException("Số tiền thu phải lớn hơn 0.");
         if (phuongThuc is not ("TienMat" or "ChuyenKhoan"))
             throw new ArgumentException("Phương thức thanh toán không hợp lệ.", nameof(phuongThuc));
-        if (phuongThuc == "ChuyenKhoan" && string.IsNullOrWhiteSpace(anhMinhChung))
-            throw new ArgumentException("Chuyển khoản phải có thông tin chứng từ.", nameof(anhMinhChung));
+        if (string.IsNullOrWhiteSpace(anhMinhChung))
+            throw new ArgumentException("Phải có chứng từ xác nhận đã thu tiền.", nameof(anhMinhChung));
         if (string.IsNullOrWhiteSpace(maNV))
             throw new ArgumentException("Không xác định được Kế toán thực hiện.", nameof(maNV));
 
@@ -75,6 +75,19 @@ public sealed class PhieuThu
 
     public static Task<bool> DaTonTaiChoPhieuDoiSoat(string maPDS) =>
         PhieuThuDB.TonTaiTheoMaPhieuDoiSoat(maPDS);
+
+    public static Task<PhieuThu?> LayTheoPhieuCoc(string maPhieuCoc) =>
+        PhieuThuDB.LayTheoPhieuCoc(maPhieuCoc);
+
+    public void KiemTraKhopTienCoc(PhieuCoc phieuCoc)
+    {
+        if (!string.Equals(MaPhieuCoc, phieuCoc.MaPhieuCoc, StringComparison.Ordinal))
+            throw new InvalidOperationException("Phiếu thu không thuộc phiếu cọc cần đối soát.");
+        if (SoTienThu <= 0)
+            throw new InvalidOperationException("Phiếu thu tiền cọc không có số tiền hợp lệ.");
+        if (SoTienThu != phieuCoc.TongTien)
+            throw new InvalidOperationException("Số tiền thực thu không khớp tổng tiền trên phiếu cọc.");
+    }
 
     // ==========================================================
     // Methods from develop branch

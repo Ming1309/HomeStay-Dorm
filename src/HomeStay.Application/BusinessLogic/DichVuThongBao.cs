@@ -36,9 +36,9 @@ public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvide
     {
         var tb = ThongBao.Tao(
             tieuDe: "Phiếu đối soát mới",
-            noiDung: $"Phiếu đối soát {maPDS} đã được lập. Vui lòng kiểm tra kết quả và tiến hành thanh lý hợp đồng nếu đủ điều kiện.",
+            noiDung: $"Phiếu đối soát {maPDS} đã được lập. Vui lòng xác nhận khách hàng đã đồng ý kết quả.",
             vaiTroNhan: "QuanLy",
-            lienKet: "/manager/termination",
+            lienKet: "/manager/reconciliation-approval",
             tone: "blue",
             maNVGui: null,
             maThamChieu: maPDS,

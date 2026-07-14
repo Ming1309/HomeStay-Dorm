@@ -56,6 +56,9 @@ public sealed class KhachHang
         return email.Contains('@') && email.Contains('.');
     }
 
+    public bool CoKenhLienHe() =>
+        !string.IsNullOrWhiteSpace(SDT) || !string.IsNullOrWhiteSpace(Email);
+
     public static bool KiemTraSoGiayTo(string? soGiayTo, string? loaiGiayTo)
     {
         if (string.IsNullOrWhiteSpace(soGiayTo)) return false;

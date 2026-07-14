@@ -11,6 +11,11 @@ public sealed class TaoPhieuHoanCocHttpRequest
     public string PhuongThucHoan { get; set; } = string.Empty;
 
     public string ThongTinNhanTien { get; set; } = string.Empty;
+
+    public string? MaGiaoDich { get; set; }
+
+    [Required]
+    public IFormFile? ChungTu { get; set; }
 }
 
 public sealed record TaoPhieuHoanCocHttpResponse(

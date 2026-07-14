@@ -300,7 +300,7 @@ function PaymentsWorkspace({
           className="bg-blue-600 hover:bg-blue-700"
         >
           {submitting ? <Loader2 className="size-4 animate-spin" /> : <CreditCard className="size-4" />}
-          {submitting ? "Đang xử lý..." : "Tiến hành thu tiền"}
+          {submitting ? "Đang xử lý..." : "Xác nhận đã thu và lập phiếu"}
         </Button>
       </footer>
 
@@ -320,7 +320,7 @@ function PaymentsWorkspace({
             const result = await submit({
               maHD: contract.maHD,
               phuongThucThanhToan: phuongThuc,
-              anhMinhChung: data.evidenceName || null,
+              chungTu: data.evidenceFile,
             });
             if (result) {
               setIssuedPT(result);

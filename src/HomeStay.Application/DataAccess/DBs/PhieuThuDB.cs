@@ -29,6 +29,18 @@ public static class PhieuThuDB
             sql, new { MaPDS = maPDS }, PhienDuLieu.Session.Transaction);
     }
 
+    public static async Task<PhieuThu?> LayTheoPhieuCoc(string maPhieuCoc)
+    {
+        const string sql = """
+            SELECT MaPT, SoTienThu, ThoiGian, PhuongThucThanhToan, AnhMinhChung,
+                   MaHoaDon, MaPhieuCoc, MaPDS, MaNV
+            FROM PhieuThu
+            WHERE MaPhieuCoc=@MaPhieuCoc
+            """;
+        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<PhieuThu>(
+            sql, new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction);
+    }
+
     // ==========================================================
     // Methods from develop branch
     // ==========================================================
