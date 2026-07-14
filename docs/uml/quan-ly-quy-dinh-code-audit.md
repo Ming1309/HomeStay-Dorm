@@ -13,7 +13,7 @@
 | Xem danh sách | `AdminRegulationsPage` | `LayDanhSach` | `QuyDinh.LayDanhSach` | `QuyDinhDB.LayDanhSach` |
 | Thêm | Form multipart | `Them` | Chuẩn hóa, kiểm tra, sinh mã, `Them` | `QuyDinhDB.Them`, `QuyDinhFileStorage.Luu` |
 | Sửa | Form multipart | `CapNhat` | `Doc`, kiểm tra, `CapNhat` | `QuyDinhDB.CapNhat`, thay PDF khi có |
-| Xóa | Dialog xác nhận | `Xoa` | `DangDuocThamChieu`, `Xoa` | Kiểm tra `HopDong.MaQD`, xóa DB rồi dọn PDF |
+| Xóa | Dialog xác nhận | `Xoa` | `DangDuocThamChieu`, `Xoa` | Kiểm tra `HopDong_QuyDinh.MaQD`, xóa DB rồi dọn PDF |
 | Xem PDF | Nút `PDF` | `DocVanBan` | Không thay đổi nghiệp vụ | `QuyDinhFileStorage.Doc` |
 
 ## Quy tắc dữ liệu
@@ -21,5 +21,6 @@
 - `LoaiQD` chỉ nhận sáu mã được mô tả trong tài liệu nghiệp vụ và CHECK constraint.
 - PDF bắt buộc khi tạo, tối đa 10 MB, đúng phần mở rộng `.pdf` và chữ ký `%PDF-`.
 - `NgayKetThuc` phải lớn hơn `NgayApDung`; ngày kết thúc vẫn được tính là còn hiệu lực.
-- Không xóa bất kỳ quy định nào đã được `HopDong` tham chiếu để bảo toàn lịch sử hợp đồng.
+- Quan hệ `HopDong` - `QuyDinh` là nhiều-nhiều qua khóa kép `HopDong_QuyDinh(MaHD, MaQD)`.
+- Không xóa bất kỳ quy định nào đã được `HopDong_QuyDinh` tham chiếu để bảo toàn lịch sử hợp đồng.
 - Tạo mới sinh mã tuần tự dưới khóa `UPDLOCK, HOLDLOCK` trong transaction.

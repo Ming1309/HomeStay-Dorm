@@ -47,7 +47,7 @@ public static class HopDongDB
     {
         const string sql = """
             SELECT DISTINCT hd.MaHD, hd.NgayKy, hd.NgayBatDau, hd.NgayKetThuc, hd.KyThanhToan,
-                   hd.GiaThue, hd.TrangThai, hd.MaNV, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQD, hd.MaQLDuyet,
+                   hd.GiaThue, hd.TrangThai, hd.MaNV, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQLDuyet,
                    pc.MaKH, kh.HoTen AS TenKhachHang, kh.SDT, kh.SoGiayTo,
                    p.MaPhong, p.SoPhong, p.ToaNha,
                    lp.MaLP, lp.TenLoaiPhong, lp.SucChua, lp.GiaThue AS GiaThueLoaiPhong,
@@ -79,7 +79,7 @@ public static class HopDongDB
     {
         const string sql = """
             SELECT hd.MaHD, hd.NgayKy, hd.NgayBatDau, hd.NgayKetThuc, hd.KyThanhToan,
-                   hd.GiaThue, hd.TrangThai, hd.MaNV, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQD, hd.MaQLDuyet,
+                   hd.GiaThue, hd.TrangThai, hd.MaNV, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQLDuyet,
                    pc.MaKH, kh.HoTen AS TenKhachHang, kh.SDT, kh.SoGiayTo,
                    p.MaPhong, p.SoPhong, p.ToaNha,
                    lp.MaLP, lp.TenLoaiPhong, lp.SucChua, lp.GiaThue AS GiaThueLoaiPhong,
@@ -147,7 +147,7 @@ public static class HopDongDB
         const string sql = """
             SELECT hd.MaHD, hd.NgayKy, hd.NgayBatDau, hd.NgayKetThuc, hd.KyThanhToan,
                    hd.GiaThue, hd.DieuKhoan, hd.TrangThai, hd.MaNV, hd.MaPhieuCoc,
-                   hd.MaChinhSach, hd.MaQD, hd.MaQLDuyet,
+                   hd.MaChinhSach, hd.MaQLDuyet,
                    pc.MaKH, kh.HoTen AS TenKhachHang, kh.SDT, kh.Email, kh.LoaiGiayTo, kh.SoGiayTo,
                    kh.NgaySinh, kh.GioiTinh, kh.QuocTich, kh.DiaChiThuongTru,
                    p.MaPhong, p.SoPhong, p.ToaNha, p.Tang,
@@ -172,7 +172,7 @@ public static class HopDongDB
     {
         // UC 1.4.18: HĐ đang hiệu lực + đã thu hồi tài sản + chưa có phiếu đối soát
         const string sql = """
-            SELECT hd.MaHD, hd.NgayBatDau, hd.NgayKetThuc, hd.GiaThue, hd.TrangThai, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQD,
+            SELECT hd.MaHD, hd.NgayBatDau, hd.NgayKetThuc, hd.GiaThue, hd.TrangThai, hd.MaPhieuCoc, hd.MaChinhSach,
                    kh.MaKH, kh.HoTen AS TenKhachHang,
                    pc.MaPhieuCoc, pc.TongTien AS TienCoc,
                    p.MaPhong, p.SoPhong, p.ToaNha
@@ -199,7 +199,6 @@ public static class HopDongDB
             TrangThai = x.TrangThai,
             MaPhieuCoc = x.MaPhieuCoc,
             MaChinhSach = x.MaChinhSach,
-            MaQD = x.MaQD,
             KhachHang = new KhachHang { MaKH = x.MaKH, HoTen = x.TenKhachHang },
             PhieuCoc = new PhieuCoc
             {
@@ -252,7 +251,7 @@ public static class HopDongDB
     public static async Task<HopDong?> LayThongTinLuuTru(string maHD)
     {
         const string sql = """
-            SELECT hd.MaHD, hd.NgayBatDau, hd.NgayKetThuc, hd.GiaThue, hd.TrangThai, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQD,
+            SELECT hd.MaHD, hd.NgayBatDau, hd.NgayKetThuc, hd.GiaThue, hd.TrangThai, hd.MaPhieuCoc, hd.MaChinhSach,
                    kh.MaKH, kh.HoTen AS TenKhachHang,
                    pc.MaPhieuCoc, pc.TongTien AS TienCoc,
                    p.MaPhong, p.SoPhong, p.ToaNha
@@ -275,7 +274,6 @@ public static class HopDongDB
             TrangThai = row.TrangThai,
             MaPhieuCoc = row.MaPhieuCoc,
             MaChinhSach = row.MaChinhSach,
-            MaQD = row.MaQD,
             KhachHang = new KhachHang { MaKH = row.MaKH, HoTen = row.TenKhachHang },
             PhieuCoc = new PhieuCoc
             {
@@ -298,7 +296,6 @@ public static class HopDongDB
         public string TrangThai { get; set; } = string.Empty;
         public string MaPhieuCoc { get; set; } = string.Empty;
         public string? MaChinhSach { get; set; }
-        public string? MaQD { get; set; }
         public string MaKH { get; set; } = string.Empty;
         public string TenKhachHang { get; set; } = string.Empty;
         public string MaPhong { get; set; } = string.Empty;
@@ -320,7 +317,6 @@ public static class HopDongDB
         public string? MaNV { get; set; }
         public string MaPhieuCoc { get; set; } = string.Empty;
         public string? MaChinhSach { get; set; }
-        public string? MaQD { get; set; }
         public string? MaQLDuyet { get; set; }
         public string MaKH { get; set; } = string.Empty;
         public string TenKhachHang { get; set; } = string.Empty;
@@ -360,7 +356,6 @@ public static class HopDongDB
         MaNV = x.MaNV,
         MaPhieuCoc = x.MaPhieuCoc,
         MaChinhSach = x.MaChinhSach,
-        MaQD = x.MaQD,
         MaQLDuyet = x.MaQLDuyet,
         KhachHang = new KhachHang
         {
@@ -398,7 +393,6 @@ public static class HopDongDB
         MaNV = x.MaNV,
         MaPhieuCoc = x.MaPhieuCoc,
         MaChinhSach = x.MaChinhSach,
-        MaQD = x.MaQD,
         MaQLDuyet = x.MaQLDuyet,
         KhachHang = new KhachHang
         {
@@ -462,7 +456,7 @@ public static class HopDongDB
     {
         const string sql = """
             SELECT hd.MaHD, hd.NgayKy, hd.NgayBatDau, hd.NgayKetThuc, hd.KyThanhToan,
-                   hd.GiaThue, hd.TrangThai, hd.MaNV, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQD, hd.MaQLDuyet,
+                   hd.GiaThue, hd.TrangThai, hd.MaNV, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQLDuyet,
                    pc.MaKH, kh.HoTen AS TenKhachHang, kh.SDT, kh.SoGiayTo,
                    p.MaPhong, p.SoPhong, p.ToaNha,
                    lp.MaLP, lp.TenLoaiPhong, lp.SucChua, lp.GiaThue AS GiaThueLoaiPhong,

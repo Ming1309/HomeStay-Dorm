@@ -132,7 +132,11 @@ GO
 INSERT INTO QuyDinh (MaQD, TenQD, LoaiQD, DuongDanFile, NgayApDung, NgayKetThuc)
 VALUES 
 ('QD01', N'Nội quy Ký túc xá / Homestay Năm 2024', N'NoiQuySinhHoat',
- '/api/admin/regulations/documents/noi-quy-2024.pdf', '2024-01-01', NULL);
+ '/api/admin/regulations/documents/noi-quy-2024.pdf', '2024-01-01', NULL),
+('QD02', N'Điều khoản thuê v1.0', N'DieuKienLuuTru',
+ '/api/admin/regulations/documents/dieu-khoan-thue-v1.pdf', '2024-01-01', NULL),
+('QD03', N'Quy định xử lý vi phạm v1.1', N'ViPhamBoiThuong',
+ '/api/admin/regulations/documents/quy-dinh-xu-ly-vi-pham-v1-1.pdf', '2024-01-01', NULL);
 GO
 
 -- 10. Chính Sách Hoàn Cọc

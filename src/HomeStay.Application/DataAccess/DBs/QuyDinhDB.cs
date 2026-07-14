@@ -41,7 +41,7 @@ public static class QuyDinhDB
 
     public static Task<bool> DangDuocThamChieu(string maQD) =>
         PhienDuLieu.Session.Connection.ExecuteScalarAsync<bool>(
-            "SELECT CASE WHEN EXISTS (SELECT 1 FROM HopDong WHERE MaQD=@MaQD) THEN 1 ELSE 0 END",
+            "SELECT CASE WHEN EXISTS (SELECT 1 FROM HopDong_QuyDinh WHERE MaQD=@MaQD) THEN 1 ELSE 0 END",
             new { MaQD = maQD }, PhienDuLieu.Session.Transaction);
 
     public static async Task Them(QuyDinh quyDinh)

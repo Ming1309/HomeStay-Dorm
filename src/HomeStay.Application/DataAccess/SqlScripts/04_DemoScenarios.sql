@@ -177,16 +177,22 @@ GO
 -- ============================================================
 -- 5. Hợp đồng, lịch hẹn và chi tiết hợp đồng
 -- ============================================================
-INSERT INTO HopDong (MaHD, NgayKy, NgayBatDau, NgayKetThuc, KyThanhToan, GiaThue, DieuKhoan, TrangThai, MaNV, MaPhieuCoc, MaChinhSach, MaQD, MaQLDuyet)
+INSERT INTO HopDong (MaHD, NgayKy, NgayBatDau, NgayKetThuc, KyThanhToan, GiaThue, DieuKhoan, TrangThai, MaNV, MaPhieuCoc, MaChinhSach, MaQLDuyet)
 VALUES
-('HD0001', NULL, '2026-08-01', '2027-01-31', 1, 950000, N'Chờ ký hợp đồng', N'ChoKy', 'NV03', 'PC0001', 'CS01', 'QD01', NULL),
-('HD0002', '2026-07-26', '2026-08-01', '2027-01-31', 1, 1900000, N'Chờ thanh toán kỳ đầu', N'ChoThanhToan', 'NV03', 'PC0002', 'CS01', 'QD01', 'NV01'),
-('HD0003', '2026-07-27', '2026-08-01', '2027-01-31', 1, 1900000, N'Đã thanh toán, chờ bàn giao', N'ChoBanGiao', 'NV03', 'PC0003', 'CS01', 'QD01', 'NV01'),
-('HD0004', '2026-07-28', '2026-08-01', '2027-01-31', 1, 1900000, N'Đang lưu trú', N'DangHieuLuc', 'NV04', 'PC0004', 'CS01', 'QD01', 'NV01'),
-('HD0005', '2026-07-29', '2026-02-01', '2026-07-31', 1, 1860000, N'Đã thanh lý, chờ hoàn tất đối soát', N'DaThanhLy', 'NV03', 'PC0005', 'CS01', 'QD01', 'NV01'),
-('HD0006', '2026-07-29', '2026-08-01', '2027-01-31', 1, 3800000, N'Hợp đồng bị hủy', N'DaHuy', 'NV04', 'PC0006', 'CS01', 'QD01', 'NV01'),
+('HD0001', NULL, '2026-08-01', '2027-01-31', 1, 950000, N'Chờ ký hợp đồng', N'ChoKy', 'NV03', 'PC0001', 'CS01', NULL),
+('HD0002', '2026-07-26', '2026-08-01', '2027-01-31', 1, 1900000, N'Chờ thanh toán kỳ đầu', N'ChoThanhToan', 'NV03', 'PC0002', 'CS01', 'NV01'),
+('HD0003', '2026-07-27', '2026-08-01', '2027-01-31', 1, 1900000, N'Đã thanh toán, chờ bàn giao', N'ChoBanGiao', 'NV03', 'PC0003', 'CS01', 'NV01'),
+('HD0004', '2026-07-28', '2026-08-01', '2027-01-31', 1, 1900000, N'Đang lưu trú', N'DangHieuLuc', 'NV04', 'PC0004', 'CS01', 'NV01'),
+('HD0005', '2026-07-29', '2026-02-01', '2026-07-31', 1, 1860000, N'Đã thanh lý, chờ hoàn tất đối soát', N'DaThanhLy', 'NV03', 'PC0005', 'CS01', 'NV01'),
+('HD0006', '2026-07-29', '2026-08-01', '2027-01-31', 1, 3800000, N'Hợp đồng bị hủy', N'DaHuy', 'NV04', 'PC0006', 'CS01', 'NV01'),
 -- UC 1.4.23: đang hiệu lực, đã có phiếu đối soát (hoàn cọc, không nợ) — chờ thanh lý
-('HD0007', '2026-02-01', '2026-02-01', '2026-07-31', 1, 1900000, N'Đã đối soát, chờ thanh lý', N'DangHieuLuc', 'NV03', 'PC0010', 'CS01', 'QD01', 'NV01');
+('HD0007', '2026-02-01', '2026-02-01', '2026-07-31', 1, 1900000, N'Đã đối soát, chờ thanh lý', N'DangHieuLuc', 'NV03', 'PC0010', 'CS01', 'NV01');
+GO
+
+INSERT INTO HopDong_QuyDinh (MaHD, MaQD)
+SELECT hd.MaHD, qd.MaQD
+FROM (VALUES ('HD0001'), ('HD0002'), ('HD0003'), ('HD0004'), ('HD0005'), ('HD0006'), ('HD0007')) hd(MaHD)
+CROSS JOIN (VALUES ('QD01'), ('QD02'), ('QD03')) qd(MaQD);
 GO
 
 INSERT INTO LichHen (MaLH, NgayHen, GioHen, LoaiLichHen, TrangThai, MaPDK, MaPhieuCoc, MaHD, MaNV, MaCN)

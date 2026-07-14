@@ -190,8 +190,13 @@ CREATE TABLE HopDong (
     MaNV        VARCHAR(20)    NULL,
     MaPhieuCoc  VARCHAR(20)    NOT NULL,
     MaChinhSach VARCHAR(20)    NULL,
-    MaQD        VARCHAR(20)    NULL,
     MaQLDuyet   VARCHAR(20)    NULL
+);
+GO
+
+CREATE TABLE HopDong_QuyDinh (
+    MaHD VARCHAR(20) NOT NULL,
+    MaQD VARCHAR(20) NOT NULL
 );
 GO
 
@@ -383,6 +388,7 @@ ALTER TABLE PhieuCoc         ADD CONSTRAINT PK_PhieuCoc         PRIMARY KEY (MaP
 ALTER TABLE ThanhVienDangKy  ADD CONSTRAINT PK_ThanhVienDangKy  PRIMARY KEY (MaPhieuCoc, MaKH);
 ALTER TABLE ChiTietPhieuCoc  ADD CONSTRAINT PK_ChiTietPhieuCoc  PRIMARY KEY (MaPhieuCoc, MaGiuong);
 ALTER TABLE HopDong          ADD CONSTRAINT PK_HopDong          PRIMARY KEY (MaHD);
+ALTER TABLE HopDong_QuyDinh  ADD CONSTRAINT PK_HopDong_QuyDinh  PRIMARY KEY (MaHD, MaQD);
 ALTER TABLE LichHen          ADD CONSTRAINT PK_LichHen          PRIMARY KEY (MaLH);
 ALTER TABLE ChiTietHopDong   ADD CONSTRAINT PK_ChiTietHopDong   PRIMARY KEY (MaHD, MaGiuong);
 ALTER TABLE DichVu           ADD CONSTRAINT PK_DichVu           PRIMARY KEY (MaDV);
@@ -422,6 +428,8 @@ CREATE UNIQUE INDEX UX_PhieuHoanCoc_MaPDS
     ON PhieuHoanCoc (MaPDS);
 CREATE UNIQUE INDEX UX_ChinhSachHoanCoc_NgayApDung
     ON ChinhSachHoanCoc (NgayApDung);
+CREATE INDEX IX_HopDong_QuyDinh_MaQD
+    ON HopDong_QuyDinh (MaQD);
 GO
 
 
@@ -672,7 +680,11 @@ ALTER TABLE HopDong ADD CONSTRAINT FK_HopDong_PhieuCoc
     FOREIGN KEY (MaPhieuCoc) REFERENCES PhieuCoc(MaPhieuCoc);
 ALTER TABLE HopDong ADD CONSTRAINT FK_HopDong_ChinhSach
     FOREIGN KEY (MaChinhSach) REFERENCES ChinhSachHoanCoc(MaChinhSach);
-ALTER TABLE HopDong ADD CONSTRAINT FK_HopDong_QuyDinh
+
+-- HopDong_QuyDinh
+ALTER TABLE HopDong_QuyDinh ADD CONSTRAINT FK_HopDong_QuyDinh_HopDong
+    FOREIGN KEY (MaHD) REFERENCES HopDong(MaHD);
+ALTER TABLE HopDong_QuyDinh ADD CONSTRAINT FK_HopDong_QuyDinh_QuyDinh
     FOREIGN KEY (MaQD) REFERENCES QuyDinh(MaQD);
 
 -- LichHen
