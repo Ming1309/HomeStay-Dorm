@@ -107,7 +107,8 @@ GO
 CREATE TABLE QuyDinh (
     MaQD         VARCHAR(20)    NOT NULL,
     TenQD        NVARCHAR(200)  NOT NULL,
-    DuongDanFile NVARCHAR(500)  NULL,
+    LoaiQD       NVARCHAR(30)   NOT NULL,
+    DuongDanFile NVARCHAR(500)  NOT NULL,
     NgayApDung   DATE           NOT NULL,
     NgayKetThuc  DATE           NULL
 );
@@ -471,6 +472,13 @@ ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_TiLe_TruocHan_DaiHan
     CHECK (TiLe_TruocHan_DaiHan BETWEEN 0 AND 1);
 ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_TiLe_DungHan
     CHECK (TiLe_DungHan BETWEEN 0 AND 1);
+
+-- QuyDinh
+ALTER TABLE QuyDinh ADD CONSTRAINT CK_QuyDinh_LoaiQD
+    CHECK (LoaiQD IN (N'DieuKienLuuTru', N'NoiQuySinhHoat', N'HoSoPhapLyCuTru',
+                      N'TaiChinhThanhToan', N'TaiSanTienIchAnToan', N'ViPhamBoiThuong'));
+ALTER TABLE QuyDinh ADD CONSTRAINT CK_QuyDinh_NgayKetThuc
+    CHECK (NgayKetThuc IS NULL OR NgayKetThuc > NgayApDung);
 
 -- PhieuDangKy
 ALTER TABLE PhieuDangKy ADD CONSTRAINT CK_PhieuDangKy_SoLuongNguoi

@@ -129,9 +129,10 @@ VALUES
 GO
 
 -- 9. Quy Định
-INSERT INTO QuyDinh (MaQD, TenQD, DuongDanFile, NgayApDung, NgayKetThuc)
+INSERT INTO QuyDinh (MaQD, TenQD, LoaiQD, DuongDanFile, NgayApDung, NgayKetThuc)
 VALUES 
-('QD01', N'Nội quy Ký túc xá / Homestay Năm 2024', '/files/NoiQuy_2024.pdf', '2024-01-01', NULL);
+('QD01', N'Nội quy Ký túc xá / Homestay Năm 2024', N'NoiQuySinhHoat',
+ '/api/admin/regulations/documents/noi-quy-2024.pdf', '2024-01-01', NULL);
 GO
 
 -- 10. Chính Sách Hoàn Cọc
