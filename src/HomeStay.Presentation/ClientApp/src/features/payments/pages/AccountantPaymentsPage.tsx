@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, CreditCard, RefreshCw, Search, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -172,10 +172,16 @@ function PaymentsWorkspace({
   const { detail, loading: detailLoading, error: detailError } = useContractPaymentDetail(
     contract?.maHD ?? null,
   );
-  const { submit, submitting } = useSubmitContractPayment();
+  const { submit, submitting, error: submitError } = useSubmitContractPayment();
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [issuedPT, setIssuedPT] = useState<{ maPT: string; soTienThu: number } | null>(null);
+
+  useEffect(() => {
+    if (submitError) {
+      toast.error(submitError, { id: "submit-error" });
+    }
+  }, [submitError]);
 
   if (!contract) {
     return (
@@ -309,21 +315,25 @@ function PaymentsWorkspace({
         invoices={invoices}
         totalDebt={tongCong}
         onSubmit={async (data) => {
-          const phuongThuc = data.paymentMethod === "bank-transfer" ? "ChuyenKhoan" : "TienMat";
-          const result = await submit({
-            maHD: contract.maHD,
-            phuongThucThanhToan: phuongThuc,
-            anhMinhChung: data.evidenceName || null,
-          });
-          if (result) {
-            setIssuedPT(result);
-            setReceiptOpen(false);
-            setSuccessOpen(true);
-            toast.success("Thanh toán hợp đồng thành công", {
-              icon: <CheckCircle2 className="size-4 text-emerald-600" />,
-              description: `Mã phiếu thu: ${result.maPT}`,
+          try {
+            const phuongThuc = data.paymentMethod === "bank-transfer" ? "ChuyenKhoan" : "TienMat";
+            const result = await submit({
+              maHD: contract.maHD,
+              phuongThucThanhToan: phuongThuc,
+              anhMinhChung: data.evidenceName || null,
             });
-            onPaymentSuccess();
+            if (result) {
+              setIssuedPT(result);
+              setReceiptOpen(false);
+              setSuccessOpen(true);
+              toast.success("Thanh toán hợp đồng thành công", {
+                icon: <CheckCircle2 className="size-4 text-emerald-600" />,
+                description: `Mã phiếu thu: ${result.maPT}`,
+              });
+              onPaymentSuccess();
+            }
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Lỗi không xác định khi thu tiền.");
           }
         }}
       />

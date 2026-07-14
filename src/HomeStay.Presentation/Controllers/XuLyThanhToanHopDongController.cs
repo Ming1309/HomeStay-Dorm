@@ -99,7 +99,11 @@ public sealed class XuLyThanhToanHopDongController(
         }
         catch (ArgumentException ex) { return BadRequest(new { Message = ex.Message }); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
-        catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Conflict khi thu tiền hợp đồng {MaHD}: {Message}", request.MaHD, ex.Message);
+            return Conflict(new { Message = ex.Message });
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Không thể xử lý thanh toán hợp đồng {MaHD}", request.MaHD);
