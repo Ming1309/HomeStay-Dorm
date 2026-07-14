@@ -8,6 +8,25 @@ using HomeStay.Application.DataAccess.DbConnections;
 /// </summary>
 public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
 {
+    public async Task GuiThongBaoSale(
+        string tieuDe,
+        string noiDung,
+        string? lienKet,
+        string? maNVGui,
+        string? maThamChieu)
+    {
+        var tb = ThongBao.Tao(
+            tieuDe,
+            noiDung,
+            "Sale",
+            lienKet,
+            "orange",
+            maNVGui,
+            maThamChieu,
+            timeProvider.GetLocalNow().DateTime);
+        await tb.Luu();
+    }
+
     public async Task GuiThongBaoKeToan(
         string tieuDe,
         string noiDung,

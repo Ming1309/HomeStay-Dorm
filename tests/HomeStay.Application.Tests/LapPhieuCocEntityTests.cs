@@ -79,7 +79,7 @@ public sealed class LapPhieuCocEntityTests
         var phieu = PhieuCoc.TaoMoi("OGhep", new KhachHang { MaKH = "KH1" }, phong, giuongs, "NV1", new DateTime(2026, 6, 15));
 
         phieu.TinhTienDuKien();
-        phieu.XacNhanTinhTien(new DateTime(2026, 6, 16, 10, 0, 0));
+        phieu.XacNhanTinhTien(new DateTime(2026, 6, 16, 10, 0, 0), TimeSpan.FromHours(24));
 
         Assert.Equal(4_000_000m, phieu.TongTien);
         Assert.Equal(2, phieu.SoGiuongThue);
@@ -104,9 +104,10 @@ public sealed class LapPhieuCocEntityTests
     [Fact]
     public void PhieuCoc_GhiNhanThanhToanChuyenSangChoDoiChieu()
     {
-        var phieu = new PhieuCoc { MaPhieuCoc = "PC1", TrangThai = "ChoThanhToan" };
+        var now = new DateTime(2026, 6, 16, 10, 0, 0);
+        var phieu = TaoPhieuChoThanhToan(now.AddMinutes(1));
 
-        phieu.GhiNhanThanhToan("ChuyenKhoan", "/api/deposits/chung-tu/proof.png");
+        phieu.GhiNhanThanhToan("ChuyenKhoan", "/api/deposits/chung-tu/proof.png", now);
 
         Assert.Equal("ChuyenKhoan", phieu.PhuongThucThanhToan);
         Assert.Equal("/api/deposits/chung-tu/proof.png", phieu.AnhMinhChung);
@@ -119,7 +120,8 @@ public sealed class LapPhieuCocEntityTests
         var phieu = new PhieuCoc { MaPhieuCoc = "PC1", TrangThai = "ChoDoiChieu" };
 
         Assert.Throws<InvalidOperationException>(() =>
-            phieu.GhiNhanThanhToan("ChuyenKhoan", "/api/deposits/chung-tu/proof.png"));
+            phieu.GhiNhanThanhToan(
+                "ChuyenKhoan", "/api/deposits/chung-tu/proof.png", new DateTime(2026, 6, 16)));
     }
 
     [Theory]
@@ -127,18 +129,47 @@ public sealed class LapPhieuCocEntityTests
     [InlineData("TheTinDung")]
     public void PhieuCoc_TuChoiPhuongThucThanhToanKhongHopLe(string phuongThuc)
     {
-        var phieu = new PhieuCoc { MaPhieuCoc = "PC1", TrangThai = "ChoThanhToan" };
+        var now = new DateTime(2026, 6, 16, 10, 0, 0);
+        var phieu = TaoPhieuChoThanhToan(now.AddMinutes(1));
 
         Assert.Throws<ArgumentException>(() =>
-            phieu.GhiNhanThanhToan(phuongThuc, "/api/deposits/chung-tu/proof.png"));
+            phieu.GhiNhanThanhToan(phuongThuc, "/api/deposits/chung-tu/proof.png", now));
     }
 
     [Fact]
     public void PhieuCoc_TuChoiLienKetChungTuRong()
     {
-        var phieu = new PhieuCoc { MaPhieuCoc = "PC1", TrangThai = "ChoThanhToan" };
+        var now = new DateTime(2026, 6, 16, 10, 0, 0);
+        var phieu = TaoPhieuChoThanhToan(now.AddMinutes(1));
 
-        Assert.Throws<ArgumentException>(() => phieu.GhiNhanThanhToan("TienMat", " "));
+        Assert.Throws<ArgumentException>(() => phieu.GhiNhanThanhToan("TienMat", " ", now));
+    }
+
+    [Fact]
+    public void PhieuCoc_HetHanDungTaiMocKhongChoGuiChungTu()
+    {
+        var deadline = new DateTime(2026, 6, 16, 10, 1, 0);
+        var phieu = TaoPhieuChoThanhToan(deadline);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            phieu.GhiNhanThanhToan("TienMat", "/api/deposits/chung-tu/proof.png", deadline));
+        Assert.True(phieu.CoTheTuDongHuy(deadline));
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(1440)]
+    public void PhieuCoc_XacNhanTinhTien_DungThoiHanCauHinh(int soPhut)
+    {
+        var phong = TaoPhong();
+        var now = new DateTime(2026, 6, 16, 10, 0, 0);
+        var phieu = PhieuCoc.TaoMoi(
+            "OGhep", new KhachHang { MaKH = "KH1" }, phong,
+            phong.GiuGiuong(["G1"]), "NV1", now.AddDays(-1));
+
+        phieu.XacNhanTinhTien(now, TimeSpan.FromMinutes(soPhut));
+
+        Assert.Equal(now.AddMinutes(soPhut), phieu.HanThanhToan);
     }
 
 
@@ -189,5 +220,12 @@ public sealed class LapPhieuCocEntityTests
             new Giuong { MaGiuong = "G1", MaPhong = "P1", TrangThai = "Trong" },
             new Giuong { MaGiuong = "G2", MaPhong = "P1", TrangThai = "Trong" }
         ]
+    };
+
+    private static PhieuCoc TaoPhieuChoThanhToan(DateTime deadline) => new()
+    {
+        MaPhieuCoc = "PC1",
+        TrangThai = "ChoThanhToan",
+        HanThanhToan = deadline,
     };
 }

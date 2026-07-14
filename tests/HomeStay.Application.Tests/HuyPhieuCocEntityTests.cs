@@ -27,6 +27,43 @@ public sealed class HuyPhieuCocEntityTests
     }
 
     [Fact]
+    public void PhieuCoc_QuaHanChuaThuTien_TuDongHuyVaDanhDauHeThong()
+    {
+        var deadline = new DateTime(2026, 7, 13, 11, 40, 0);
+        var phieu = new PhieuCoc
+        {
+            MaPhieuCoc = "PC001",
+            TrangThai = "ChoThanhToan",
+            HanThanhToan = deadline,
+            DaDongTien = false,
+        };
+
+        phieu.TuDongHuyQuaHan(deadline);
+
+        Assert.Equal("DaHuy", phieu.TrangThai);
+        Assert.Equal(deadline, phieu.ThoiDiemHuy);
+        Assert.Null(phieu.MaNVHuy);
+    }
+
+    [Theory]
+    [InlineData("ChoDoiChieu", false)]
+    [InlineData("ChoThanhToan", true)]
+    public void PhieuCoc_KhongTuDongHuyKhiDangDoiChieuHoacDaThuTien(
+        string trangThai, bool daDongTien)
+    {
+        var deadline = new DateTime(2026, 7, 13, 11, 40, 0);
+        var phieu = new PhieuCoc
+        {
+            MaPhieuCoc = "PC001",
+            TrangThai = trangThai,
+            HanThanhToan = deadline,
+            DaDongTien = daDongTien,
+        };
+
+        Assert.False(phieu.CoTheTuDongHuy(deadline.AddMinutes(1)));
+    }
+
+    [Fact]
     public void PhieuCoc_DaHuyCoThoiDiem_DuDieuKienKiemTraDoiSoat()
     {
         var phieu = new PhieuCoc

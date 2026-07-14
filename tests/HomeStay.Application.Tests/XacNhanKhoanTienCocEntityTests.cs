@@ -30,10 +30,13 @@ public sealed class XacNhanKhoanTienCocEntityTests
     {
         var phieu = TaoPhieuChoDoiChieu();
 
-        phieu.YeuCauBoSung("  Số tiền trên chứng từ không khớp.  ");
+        var now = new DateTime(2026, 7, 13, 10, 0, 0);
+        phieu.YeuCauBoSung(
+            "  Số tiền trên chứng từ không khớp.  ", now, TimeSpan.FromHours(24));
 
         Assert.Equal("ChoThanhToan", phieu.TrangThai);
         Assert.Equal("Số tiền trên chứng từ không khớp.", phieu.LyDoYeuCauBoSung);
+        Assert.Equal(now.AddHours(24), phieu.HanThanhToan);
         Assert.NotNull(phieu.AnhMinhChung);
     }
 
@@ -42,16 +45,19 @@ public sealed class XacNhanKhoanTienCocEntityTests
     [InlineData("   ")]
     public void PhieuCoc_TuChoiYeuCauBoSungKhiLyDoRong(string lyDo)
     {
-        Assert.Throws<ArgumentException>(() => TaoPhieuChoDoiChieu().YeuCauBoSung(lyDo));
+        Assert.Throws<ArgumentException>(() => TaoPhieuChoDoiChieu().YeuCauBoSung(
+            lyDo, new DateTime(2026, 7, 13), TimeSpan.FromHours(24)));
     }
 
     [Fact]
     public void PhieuCoc_GuiLaiChungTu_XoaLyDoBoSung()
     {
         var phieu = TaoPhieuChoDoiChieu();
-        phieu.YeuCauBoSung("Ảnh bị mờ.");
+        var now = new DateTime(2026, 7, 13, 10, 0, 0);
+        phieu.YeuCauBoSung("Ảnh bị mờ.", now, TimeSpan.FromMinutes(1));
 
-        phieu.GhiNhanThanhToan("TienMat", "/api/deposits/chung-tu/new-proof.png");
+        phieu.GhiNhanThanhToan(
+            "TienMat", "/api/deposits/chung-tu/new-proof.png", now.AddSeconds(30));
 
         Assert.Equal("ChoDoiChieu", phieu.TrangThai);
         Assert.Null(phieu.LyDoYeuCauBoSung);

@@ -18,6 +18,8 @@ package "TANG GIAO DIEN" #EAF2F8 {
 package "TANG NGHIEP VU" #FCF3CF {
   class HuyPhieuCoc {
     + Huy(maPhieuCoc: String, maNhanVien: String): PhieuCoc
+    + LayDanhSachMaQuaHan(thoiDiemHienTai: DateTime, batchSize: Integer): IReadOnlyList<String>
+    + TuDongHuyQuaHan(maPhieuCoc: String, thoiDiemHienTai: DateTime): Boolean
   }
   class HopDong {
     + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean
@@ -28,8 +30,13 @@ package "TANG NGHIEP VU" #FCF3CF {
     - ThoiDiemHuy: DateTime
     - MaNVHuy: String
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + DocChiTietChoCapNhat(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachMaQuaHan(thoiDiemHienTai: DateTime, batchSize: Integer): IReadOnlyList<String>
     + Huy(maNhanVien: String, thoiDiem: DateTime)
+    + CoTheTuDongHuy(thoiDiemHienTai: DateTime): Boolean
+    + TuDongHuyQuaHan(thoiDiemHienTai: DateTime)
     + CapNhatHuy()
+    + CapNhatTuDongHuy(thoiDiemHienTai: DateTime)
   }
   class Phong {
     + DocChiTiet(maPhong: String): Phong
@@ -38,6 +45,7 @@ package "TANG NGHIEP VU" #FCF3CF {
   }
   class DichVuThongBao {
     + GuiThongBaoKeToan(tieuDe: String, noiDung: String, lienKet: String, maNVGui: String, maThamChieu: String)
+    + GuiThongBaoSale(tieuDe: String, noiDung: String, lienKet: String, maNVGui: String, maThamChieu: String)
   }
   class ThongBao {
     + Tao(tieuDe: String, noiDung: String, vaiTroNhan: String, lienKet: String, tone: String, maNVGui: String, maThamChieu: String, thoiGianTao: DateTime): ThongBao
@@ -48,7 +56,10 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
   class HopDongDB { + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean }
   class PhieuCocDB {
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + DocChiTietChoCapNhat(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachMaQuaHan(thoiDiemHienTai: DateTime, batchSize: Integer): IReadOnlyList<String>
     + CapNhatHuy(phieu: PhieuCoc)
+    + CapNhatTuDongHuy(phieu: PhieuCoc, thoiDiemHienTai: DateTime)
   }
   class PhongDB {
     + DocChiTiet(maPhong: String): Phong

@@ -6,7 +6,8 @@ public sealed record KetQuaXacNhanKhoanTienCoc(PhieuCoc PhieuCoc, PhieuThu Phieu
 
 public sealed class XacNhanKhoanTienCoc(
     Func<PhienDuLieu> taoPhienDuLieu,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    CauHinhHetHanPhieuCoc cauHinhHetHan)
 {
     public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string? text = null)
     {
@@ -62,7 +63,10 @@ public sealed class XacNhanKhoanTienCoc(
         {
             var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
                 ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
-            phieu.YeuCauBoSung(lyDo);
+            phieu.YeuCauBoSung(
+                lyDo,
+                timeProvider.GetLocalNow().DateTime,
+                cauHinhHetHan.ThoiHanThanhToan);
             await phieu.CapNhatYeuCauBoSung();
             phien.Commit();
             return phieu;

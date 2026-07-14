@@ -54,6 +54,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     - AnhMinhChung: String
     - PhuongThucThanhToan: String
     - LyDoYeuCauBoSung: String
+    - HanThanhToan: DateTime
     - TrangThai: String
     - Giuongs: List<Giuong>
     --
@@ -61,7 +62,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
     + KiemTraCoTheXacNhanThanhToan()
     + XacNhanThanhToan()
-    + YeuCauBoSung(lyDo: String)
+    + YeuCauBoSung(lyDo: String, thoiDiemYeuCau: DateTime, thoiHanThanhToan: TimeSpan)
     + CapNhatXacNhanThanhToan()
     + CapNhatYeuCauBoSung()
   }

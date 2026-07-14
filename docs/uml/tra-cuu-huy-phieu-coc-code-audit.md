@@ -16,6 +16,13 @@
 - Hàng đợi Kế toán chỉ đọc phiếu `DaHuy`, có thời điểm hủy, chưa có hợp đồng, có `PhieuThu.SoTienThu > 0` khớp `PhieuCoc.TongTien` và chưa có `PhieuDoiSoat` trước hợp đồng.
 - Phiếu chưa thu tiền vẫn được hủy và giải phóng chỗ nhưng không có thông báo đối soát và không lọt hàng đợi.
 
+## Tu dong huy qua han
+
+- Worker quet theo `DepositExpiry.ScanIntervalSeconds`, lay tung batch phiếu `ChoThanhToan` da den `HanThanhToan`, chua co `PhieuThu` va chua co `HopDong`.
+- Tung phiếu duoc doc lai voi khoa cap nhat va kiem tra dieu kien trong mot transaction rieng. Mot phiếu loi khong lam rollback cac phiếu da xu ly trong cung luot quet.
+- He thong dat `DaHuy`, `ThoiDiemHuy`, de `MaNVHuy=NULL`, giai phong giuong/phong va gui thong bao cho vai tro `Sale`. Tra cuu hien `He thong (qua han thanh toan)` khi khong co nhan vien huy.
+- Tu dong huy khong tao `PhieuDoiSoat` hay thong bao Ke toan vi phiếu chua co `PhieuThu`.
+
 ## Ranh giới HTTP
 
 - Tra cứu cho `Sale`, `QuanLy`, `KeToan`; hủy chỉ cho `Sale` và lấy `MaNV` từ claim đăng nhập.

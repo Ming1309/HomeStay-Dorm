@@ -20,13 +20,24 @@ export type DepositPaymentDetail = PendingDeposit & {
   anhMinhChung: string | null;
 };
 
+export class DepositPaymentApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "DepositPaymentApiError";
+  }
+}
+
 async function readResponse<T>(response: Response): Promise<T> {
   const payload = (await response.json().catch(() => null)) as { message?: string } | T | null;
   if (!response.ok) {
-    throw new Error(
+    throw new DepositPaymentApiError(
       payload && typeof payload === "object" && "message" in payload && payload.message
         ? payload.message
         : "Không thể xử lý yêu cầu. Vui lòng thử lại.",
+      response.status,
     );
   }
   return payload as T;

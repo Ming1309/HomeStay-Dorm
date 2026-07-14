@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { PaymentProofForm } from "@/features/deposits/components/PaymentProofForm";
@@ -20,6 +20,11 @@ function SalePaymentProofPage() {
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const reloadQueue = useCallback(() => {
+    setSelected(null);
+    setRefreshKey((value) => value + 1);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -78,10 +83,8 @@ function SalePaymentProofPage() {
         <PaymentProofForm
           key={selected.maPhieuCoc}
           deposit={selected}
-          onDone={() => {
-            setSelected(null);
-            setRefreshKey((value) => value + 1);
-          }}
+          onDone={reloadQueue}
+          onExpired={reloadQueue}
         />
       )}
     </div>

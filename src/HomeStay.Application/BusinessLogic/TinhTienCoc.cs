@@ -6,11 +6,16 @@ public sealed class TinhTienCoc
 {
     private readonly Func<PhienDuLieu> _taoPhienDuLieu;
     private readonly TimeProvider _timeProvider;
+    private readonly CauHinhHetHanPhieuCoc _cauHinhHetHan;
 
-    public TinhTienCoc(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
+    public TinhTienCoc(
+        Func<PhienDuLieu> taoPhienDuLieu,
+        TimeProvider timeProvider,
+        CauHinhHetHanPhieuCoc cauHinhHetHan)
     {
         _taoPhienDuLieu = taoPhienDuLieu;
         _timeProvider = timeProvider;
+        _cauHinhHetHan = cauHinhHetHan;
     }
 
     public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null)
@@ -36,7 +41,9 @@ public sealed class TinhTienCoc
         {
             var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
                 ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
-            phieu.XacNhanTinhTien(_timeProvider.GetLocalNow().DateTime);
+            phieu.XacNhanTinhTien(
+                _timeProvider.GetLocalNow().DateTime,
+                _cauHinhHetHan.ThoiHanThanhToan);
             await phieu.CapNhatTinhTien();
             phien.Commit();
             return phieu;

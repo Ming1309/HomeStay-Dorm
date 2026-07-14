@@ -29,6 +29,15 @@ GO
 
 IF EXISTS (
     SELECT 1
+    FROM PhieuCoc
+    WHERE TrangThai = N'ChoThanhToan'
+      AND HanThanhToan IS NULL
+)
+    THROW 51023, 'Phieu coc cho thanh toan phai co han thanh toan.', 1;
+GO
+
+IF EXISTS (
+    SELECT 1
     FROM (VALUES
         (N'DaXacNhan'), (N'DaHuy'), (N'VangMat'), (N'DaCheckin'), (N'DaHoanThanh')
     ) AS required(TrangThai)
@@ -36,6 +45,19 @@ IF EXISTS (
     WHERE actual.TrangThai IS NULL
 )
     THROW 51002, 'Thieu trang thai lich hen can kiem thu.', 1;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM LichHen lh
+    INNER JOIN PhieuDangKy pdk ON pdk.MaPDK = lh.MaPDK
+    INNER JOIN KhachHang kh ON kh.MaKH = pdk.MaKH
+    WHERE lh.MaLH = 'LH0011'
+      AND lh.LoaiLichHen = N'XemPhong'
+      AND lh.TrangThai = N'DaHoanThanh'
+      AND lh.MaPhieuCoc IS NULL
+)
+    THROW 51024, 'Thieu lich hen du dieu kien lap phieu coc.', 1;
 GO
 
 IF EXISTS (

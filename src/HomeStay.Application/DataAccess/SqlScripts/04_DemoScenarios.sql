@@ -217,7 +217,9 @@ VALUES
 ('LH0008', '2026-07-27', '14:00:00', N'TraPhong', N'DaHoanThanh', 'PDK0008', 'PC0005', 'HD0005', 'NV03', 'CN01'),
 ('LH0009', '2026-07-28', '14:30:00', N'TraPhong', N'DaHoanThanh', 'PDK0009', 'PC0006', 'HD0006', 'NV04', 'CN02'),
 -- Lịch trả phòng trong ngày (phục vụ UC 1.4.17 Lập biên bản thu hồi tài sản)
-('LH0010', CAST(GETDATE() AS DATE), '09:00:00', N'TraPhong', N'DaXacNhan', NULL, 'PC0004', 'HD0004', 'NV03', 'CN01');
+('LH0010', CAST(GETDATE() AS DATE), '09:00:00', N'TraPhong', N'DaXacNhan', NULL, 'PC0004', 'HD0004', 'NV03', 'CN01'),
+-- Lịch xem phòng đã hoàn thành, chưa có phiếu cọc: xuất hiện tại màn Sale/Lập phiếu cọc.
+('LH0011', CAST(GETDATE() AS DATE), '08:30:00', N'XemPhong', N'DaHoanThanh', 'PDK0002', NULL, NULL, 'NV03', 'CN01');
 GO
 
 INSERT INTO ChiTietHopDong (MaHD, MaGiuong, MaKH, TrangThaiThue, NgayTra)
