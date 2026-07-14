@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, X, Edit2 } from "lucide-react";
 
+import { useAuth } from "@/features/auth/model/auth-store";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -9,23 +10,26 @@ import { ScrollArea } from "@/shared/ui/scroll-area";
 import { 
   APPOINTMENT_TYPES,
   AppointmentRecord,
-  loadAppointments,
-  seedMockAppointments,
-  saveAppointments,
+  appointmentService
 } from "@/features/appointments/services/appointment-service";
+import { toast } from "sonner";
 
 const getTypeLabel = (type: string) =>
   APPOINTMENT_TYPES.find((item) => item.value === type)?.label ?? "Không xác định";
 
 const APPOINTMENT_STATUSES = [
-  "Đã xác nhận",
-  "Đã huỷ",
-  "Đã Check-in",
-  "Vắng mặt",
-  "Hoàn thành",
+  { value: "DaXacNhan", label: "Đã xác nhận" },
+  { value: "DaHuy", label: "Đã huỷ" },
+  { value: "DaCheckin", label: "Đã Check-in" },
+  { value: "VangMat", label: "Vắng mặt" },
+  { value: "DaHoanThanh", label: "Hoàn thành" },
 ];
 
+const getStatusLabel = (status: string) =>
+  APPOINTMENT_STATUSES.find((item) => item.value === status)?.label ?? status;
+
 export function AppointmentLookupWorkspace() {
+  const { user } = useAuth();
   const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -38,8 +42,7 @@ export function AppointmentLookupWorkspace() {
   const [editedAppointment, setEditedAppointment] = useState<AppointmentRecord | null>(null);
 
   useEffect(() => {
-    seedMockAppointments();
-    setAppointments(loadAppointments());
+    appointmentService.list().then(setAppointments).catch(console.error);
   }, []);
 
   const uniqueDates = useMemo(() => {
@@ -64,7 +67,7 @@ export function AppointmentLookupWorkspace() {
         item.branch,
         item.date,
         item.time,
-        item.status,
+        getStatusLabel(item.status),
         getTypeLabel(item.appointmentType),
       ].some((value) => value.toLowerCase().includes(query));
     });
@@ -95,9 +98,11 @@ export function AppointmentLookupWorkspace() {
 
   function getStatusBadgeClass(status: string) {
     const s = status?.toLowerCase() ?? "";
-    if (s.includes("hủy")) return "h-6 rounded bg-red-100 px-2 text-[11px] text-red-700";
-    if (s.includes("chờ") || s.includes("chờ xác")) return "h-6 rounded bg-amber-100 px-2 text-[11px] text-amber-700";
-    if (s.includes("xác")) return "h-6 rounded bg-emerald-100 px-2 text-[11px] text-emerald-700";
+    if (s === "dahuy" || s.includes("huỷ")) return "h-6 rounded bg-red-100 px-2 text-[11px] text-red-700";
+    if (s === "vangmat" || s.includes("vắng")) return "h-6 rounded bg-amber-100 px-2 text-[11px] text-amber-700";
+    if (s === "daxacnhan" || s.includes("xác")) return "h-6 rounded bg-emerald-100 px-2 text-[11px] text-emerald-700";
+    if (s === "dacheckin") return "h-6 rounded bg-blue-100 px-2 text-[11px] text-blue-700";
+    if (s === "dahoanthanh") return "h-6 rounded bg-purple-100 px-2 text-[11px] text-purple-700";
     return "h-6 rounded bg-slate-100 px-2 text-[11px] text-slate-700";
   }
 
@@ -112,13 +117,22 @@ export function AppointmentLookupWorkspace() {
     setEditedAppointment(null);
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     if (!editedAppointment) return;
-    const updated = appointments.map((a) => (a.id === editedAppointment.id ? editedAppointment : a));
-    saveAppointments(updated);
-    setAppointments(updated);
-    setIsEditing(false);
-    setEditedAppointment(null);
+    try {
+      const updated = await appointmentService.update(editedAppointment.id, {
+        ngayHen: editedAppointment.date,
+        gioHen: editedAppointment.time + (editedAppointment.time.length === 5 ? ':00' : ''),
+        maNV: user?.maNV || 'NV01',
+        trangThai: editedAppointment.status
+      });
+      setAppointments(appointments.map((a) => (a.id === updated.id ? updated : a)));
+      setIsEditing(false);
+      setEditedAppointment(null);
+      toast.success("Cập nhật lịch hẹn thành công");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Lỗi cập nhật');
+    }
   }
   return (
     <div className="flex h-full overflow-hidden bg-gray-50">
@@ -151,29 +165,52 @@ export function AppointmentLookupWorkspace() {
           </div>
 
           <div className="mt-3 flex items-center gap-2">
-            <Input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="h-9 text-sm"
-            />
-            <Input
-              type="time"
-              value={timeFilter}
-              onChange={(e) => setTimeFilter(e.target.value)}
-              className="h-9 text-sm"
-            />
-            <Button
-              onClick={() => {
-                setAppliedSearch(search);
-                setAppliedDate(dateFilter);
-                setAppliedTime(timeFilter);
-              }}
-              className="ml-2 h-9"
-            >
-              Tra cứu
-            </Button>
+            <div className="relative flex-1">
+              <Input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="h-9 w-full text-sm"
+              />
+            </div>
+            <div className="relative flex-1">
+              <Input
+                type="time"
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value)}
+                className="h-9 w-full text-sm"
+              />
+            </div>
+            {(dateFilter || timeFilter) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDateFilter("");
+                  setTimeFilter("");
+                }}
+                className="shrink-0 p-1.5 text-gray-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors"
+                title="Xóa bộ lọc thời gian"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
+          <Button
+            onClick={async () => {
+              setAppliedSearch(search);
+              setAppliedDate(dateFilter);
+              setAppliedTime(timeFilter);
+              try {
+                const data = await appointmentService.list(search, dateFilter, timeFilter);
+                setAppointments(data);
+              } catch(e) {
+                console.error(e);
+              }
+            }}
+            className="mt-3 w-full h-9 bg-blue-600 hover:bg-blue-700"
+          >
+            Tra cứu
+          </Button>
           <div className="mt-3 rounded-lg border border-gray-200 bg-slate-50 p-3 text-xs text-gray-600">
             {filteredAppointments.length === 0 ? (
               appliedSearch ? (
@@ -285,8 +322,8 @@ export function AppointmentLookupWorkspace() {
                           className="mt-2 w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm"
                         >
                           {APPOINTMENT_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
+                            <option key={s.value} value={s.value}>
+                              {s.label}
                             </option>
                           ))}
                         </select>
@@ -357,7 +394,7 @@ export function AppointmentLookupWorkspace() {
                         <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Trạng thái</p>
                         <div className="mt-2">
                           <Badge className={getStatusBadgeClass(selectedAppointment.status)}>
-                            {selectedAppointment.status}
+                            {getStatusLabel(selectedAppointment.status)}
                           </Badge>
                         </div>
                       </div>

@@ -17,11 +17,11 @@ public sealed class PhieuDangKy
     public string? MaNV { get; set; }
     public KhachHang? KhachHang { get; set; }
 
-    public static PhieuDangKy TaoMoi(string maKH, string? maNV, string? khuVuc, int? soLuongNguoi,
+    public static PhieuDangKy TaoMoi(string maPDK, string maKH, string? maNV, string? khuVuc, int? soLuongNguoi,
         string? loaiDichVu, decimal? mucGia, DateTime? thoiGianDuKienVao, int? thoiHanThue,
         string? yeuCauKhac, DateTime thoiDiem) => new()
     {
-        MaPDK = $"PDK{thoiDiem:yyyyMMddHHmmssfff}",
+        MaPDK = maPDK,
         MaKH = maKH,
         MaNV = maNV,
         KhuVuc = khuVuc,
@@ -34,16 +34,20 @@ public sealed class PhieuDangKy
         TrangThai = "DangXuLy"
     };
 
-    public void KiemTraDieuKien()
+    public void KiemTraDieuKien(DateTime thoiDiemHienTai)
     {
         if (string.IsNullOrWhiteSpace(MaKH))
             throw new InvalidOperationException("Thông tin khách hàng không hợp lệ.");
+        if (ThoiGianDuKienVao.HasValue && ThoiGianDuKienVao.Value.Date < thoiDiemHienTai.Date)
+            throw new InvalidOperationException("Thời gian dự kiến vào ở không được trong quá khứ.");
     }
 
     public static Task<PhieuDangKy?> DocChiTiet(string maPDK) => PhieuDangKyDB.LayTheoMa(maPDK);
 
-    public static Task<IReadOnlyList<PhieuDangKy>> TimKiem(string? sdt, string? soGiayTo, string? email) =>
-        PhieuDangKyDB.TimKiem(sdt, soGiayTo, email);
+    public static async Task<IReadOnlyList<PhieuDangKy>> TimKiem(string? sdt, string? soGiayTo, string? email, string? hoTen = null, string? maPDK = null)
+    {
+        return await PhieuDangKyDB.TimKiem(sdt, soGiayTo, email, hoTen, maPDK);
+    }
 
     public Task Them() => PhieuDangKyDB.Them(this);
 }

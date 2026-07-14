@@ -42,8 +42,14 @@ public sealed class Giuong
 
     public void GiaiPhong(string maPhong)
     {
-        if (MaPhong != maPhong || TrangThai is not ("GiuCho" or "DaCoc"))
+        if (MaPhong != maPhong)
+            throw new InvalidOperationException($"Giường {MaGiuong} không thuộc phòng {maPhong}.");
+            
+        if (TrangThai == "Trong") return;
+
+        if (TrangThai is not ("GiuCho" or "DaCoc"))
             throw new InvalidOperationException($"Giường {MaGiuong} không còn hợp lệ để giải phóng.");
+            
         TrangThai = "Trong";
     }
 }

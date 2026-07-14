@@ -118,8 +118,9 @@ public sealed class XuLyThanhToanHopDong
 
             await ChiTietHoaDon.LuuDanhSachChiTietHoaDon(chiTietList);
 
+            var maPT = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuThu", "MaPT", "PT");
             var phieuThu = PhieuThu.TaoPhieuThuTienHoaDon(
-                hoaDon.MaHoaDon, tongCong, phuongThuc, anhMinhChung, maNVTrimmed, now);
+                maPT, hoaDon.MaHoaDon, tongCong, phuongThuc, anhMinhChung, maNVTrimmed, now);
             await phieuThu.LuuPhieu();
 
             await HopDong.CapNhatTrangThaiChoBanGiao(maHD);

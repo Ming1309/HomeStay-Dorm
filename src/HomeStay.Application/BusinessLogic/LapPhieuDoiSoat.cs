@@ -80,7 +80,8 @@ public sealed class LapPhieuDoiSoat
         if (loaiHoSo == "PhieuCoc")
         {
             decimal tienCoc = await PhieuCoc.LaySoTienCoc(maHoSo);
-            var pds = PhieuDoiSoat.TaoMoi(maHoSo, null, null, _timeProvider.GetLocalNow().DateTime);
+            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuDoiSoat", "MaPDS", "PDS");
+            var pds = PhieuDoiSoat.TaoMoi(maMoi, maHoSo, null, null, _timeProvider.GetLocalNow().DateTime);
             pds.ApDungChinhSachHoanCoc(cs.TiLe_ChuaKy);
             pds.TinhTongKhauTru(0);
             pds.ChotKetQua(tienCoc);
@@ -109,7 +110,8 @@ public sealed class LapPhieuDoiSoat
             decimal tyLe = cs.XacDinhTyLeHoan(soThangThucTe, soThangHopDong);
             var dsHoaDon = await HoaDon.LayDanhSachChuaThanhToan(maHoSo);
 
-            var pds = PhieuDoiSoat.TaoMoi(hd.MaPhieuCoc, maHoSo, null, _timeProvider.GetLocalNow().DateTime);
+            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuDoiSoat", "MaPDS", "PDS");
+            var pds = PhieuDoiSoat.TaoMoi(maMoi, hd.MaPhieuCoc, maHoSo, null, _timeProvider.GetLocalNow().DateTime);
             pds.TinhToanDoiSoat(tienCoc, tyLe, dsHoaDon);
 
             return new ChiTietDoiSoatDto
@@ -161,7 +163,8 @@ public sealed class LapPhieuDoiSoat
             }
             string? maHD = loaiHoSo == "HopDong" ? maHoSo : null;
 
-            var pds = PhieuDoiSoat.TaoMoi(maPhieuCoc, maHD, maNhanVien, now);
+            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuDoiSoat", "MaPDS", "PDS");
+            var pds = PhieuDoiSoat.TaoMoi(maMoi, maPhieuCoc, maHD, maNhanVien, now);
             pds.TyLeHoanCoc = detail.TyLeHoanCoc;
             pds.TongKhauTru = detail.TongKhauTru;
             pds.TienHoan = detail.TienHoan;

@@ -19,13 +19,13 @@ public sealed class PhieuDoiSoat
 
     public List<HoaDon> HoaDons { get; set; } = [];
 
-    public static PhieuDoiSoat TaoMoi(string maPhieuCoc, string? maHD, string? maNhanVien, DateTime thoiDiem)
+    public static PhieuDoiSoat TaoMoi(string maPDS, string? maPhieuCoc, string? maHD, string? maNhanVien, DateTime thoiDiem)
     {
         return new PhieuDoiSoat
         {
-            MaPDS = $"PDS{thoiDiem:yyyyMMddHHmmssfff}",
+            MaPDS = maPDS,
             NgayDoiSoat = thoiDiem.Date,
-            MaPhieuCoc = maPhieuCoc,
+            MaPhieuCoc = maPhieuCoc ?? string.Empty,
             MaHD = maHD,
             MaNV = maNhanVien,
             TrangThai = "DaChot"

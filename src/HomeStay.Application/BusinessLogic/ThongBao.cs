@@ -16,6 +16,7 @@ public sealed class ThongBao
     public bool DaDoc { get; set; }
 
     public static ThongBao Tao(
+        string maTB,
         string tieuDe,
         string noiDung,
         string vaiTroNhan,
@@ -34,7 +35,7 @@ public sealed class ThongBao
 
         return new ThongBao
         {
-            MaTB = $"TB{thoiGianTao:yyyyMMddHHmmss}{Random.Shared.Next(100, 999)}",
+            MaTB = maTB,
             TieuDe = tieuDe.Trim(),
             NoiDung = noiDung.Trim(),
             VaiTroNhan = vaiTroNhan.Trim(),

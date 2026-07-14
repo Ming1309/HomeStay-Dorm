@@ -79,7 +79,7 @@ public static class PhongDB
 
     public static async Task CapNhatGiaiPhongDatCoc(Phong phong)
     {
-        const string updateBed = "UPDATE Giuong SET TrangThai=N'Trong' WHERE MaGiuong=@MaGiuong AND MaPhong=@MaPhong AND TrangThai IN (N'GiuCho',N'DaCoc')";
+        const string updateBed = "UPDATE Giuong SET TrangThai=N'Trong' WHERE MaGiuong=@MaGiuong AND MaPhong=@MaPhong AND TrangThai IN (N'GiuCho',N'DaCoc',N'Trong')";
         foreach (var giuong in phong.GiuongsVuaGiaiPhong)
             if (await PhienDuLieu.Session.Connection.ExecuteAsync(updateBed, giuong, PhienDuLieu.Session.Transaction) != 1)
                 throw new InvalidOperationException($"Giường {giuong.MaGiuong} đã được xử lý bởi người khác hoặc không còn thuộc phiếu cọc.");

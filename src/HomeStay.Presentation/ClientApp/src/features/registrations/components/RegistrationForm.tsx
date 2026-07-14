@@ -15,6 +15,8 @@ import {
 import { Checkbox } from "@/shared/ui/checkbox";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { registrationService } from "../services/registration-service";
+import { useAuth } from "@/features/auth/model/auth-store";
 
 // Zod validation schema
 const registrationSchema = z.object({
@@ -115,7 +117,9 @@ const PRICE_RANGES = [
   { value: "10m+", label: "> 10 triệu VNĐ" },
 ];
 
-export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps) {
+export function RegistrationForm({ initialData, onSuccess, onCancel }: RegistrationFormProps) {
+  const { user } = useAuth();
+  
   const {
     control,
     handleSubmit,
@@ -152,11 +156,10 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
 
   const onSubmit: SubmitHandler<RegistrationFormData> = async (data) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const response = await registrationService.create(data, user?.maNV);
 
       toast.success("Phiếu đăng ký được tạo thành công!", {
-        description: `Mã đăng ký: REG-${Date.now()}`,
+        description: `Mã đăng ký: ${response.registrationNumber}`,
       });
 
       if (onSuccess) {
@@ -165,10 +168,11 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
       reset();
     } catch (error) {
       toast.error("Lỗi khi tạo phiếu đăng ký", {
-        description: "Vui lòng thử lại sau",
+        description: error instanceof Error ? error.message : "Vui lòng thử lại sau",
       });
     }
   };
+
 
   const submitForm = handleSubmit((data: RegistrationFormData) => {
     void onSubmit(data);

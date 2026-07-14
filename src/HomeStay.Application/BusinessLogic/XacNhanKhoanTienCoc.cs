@@ -37,8 +37,9 @@ public sealed class XacNhanKhoanTienCoc(
                 ?? throw new KeyNotFoundException("Không tìm thấy phòng của phiếu cọc.");
             phong.XacNhanDatCoc(phieu.Giuongs.Select(g => g.MaGiuong));
 
+            var maPT = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuThu", "MaPT", "PT");
             var phieuThu = PhieuThu.TaoChoTienCoc(
-                phieu, maNhanVienQuanLy, timeProvider.GetLocalNow().DateTime);
+                maPT, phieu, maNhanVienQuanLy, timeProvider.GetLocalNow().DateTime);
             phieu.XacNhanThanhToan();
 
             await phieu.CapNhatXacNhanThanhToan();

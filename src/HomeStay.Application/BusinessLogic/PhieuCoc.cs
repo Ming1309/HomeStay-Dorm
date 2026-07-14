@@ -25,12 +25,12 @@ public sealed class PhieuCoc
     public List<Giuong> Giuongs { get; set; } = [];
     public List<ThanhVienDangKy> ThanhViens { get; set; } = [];
 
-    public static PhieuCoc TaoMoi(string hinhThucThue, KhachHang khachHang, Phong phong,
+    public static PhieuCoc TaoMoi(string maPhieu, string hinhThucThue, KhachHang khachHang, Phong phong,
         IReadOnlyList<Giuong> giuongs, string? maNhanVien, DateTime thoiDiem)
     {
         if (hinhThucThue is not ("NguyenCan" or "OGhep"))
             throw new InvalidOperationException("Hình thức thuê không hợp lệ.");
-        var maPhieu = $"PC{thoiDiem:yyyyMMddHHmmssfff}";
+        
         return new PhieuCoc
         {
             MaPhieuCoc = maPhieu,

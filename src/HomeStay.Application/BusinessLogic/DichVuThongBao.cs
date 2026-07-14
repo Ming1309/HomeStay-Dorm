@@ -16,7 +16,9 @@ public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvide
         string? maThamChieu)
     {
         // Gọi trong transaction đã mở của use-case (không tạo session mới).
+        var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("ThongBao", "MaTB", "TB");
         var tb = ThongBao.Tao(
+            maMoi,
             tieuDe,
             noiDung,
             "KeToan",
@@ -34,7 +36,9 @@ public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvide
     /// </summary>
     public async Task GuiThongBaoQuanLy(string maPDS)
     {
+        var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("ThongBao", "MaTB", "TB");
         var tb = ThongBao.Tao(
+            maTB: maMoi,
             tieuDe: "Phiếu đối soát mới",
             noiDung: $"Phiếu đối soát {maPDS} đã được lập. Vui lòng kiểm tra kết quả và tiến hành thanh lý hợp đồng nếu đủ điều kiện.",
             vaiTroNhan: "QuanLy",
@@ -59,7 +63,9 @@ public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvide
         phien.BatDauGiaoDich();
         try
         {
+            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("ThongBao", "MaTB", "TB");
             var tb = ThongBao.Tao(
+                maMoi,
                 tieuDe,
                 noiDung,
                 vaiTroNhan,

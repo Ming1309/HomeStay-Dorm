@@ -19,7 +19,7 @@ public sealed class PhieuThu
     // ==========================================================
     // Methods from feat/thanh-toan-tra-phong branch
     // ==========================================================
-    public static PhieuThu TaoPhieuThu(string maPDS, decimal soTien, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
+    public static PhieuThu TaoPhieuThu(string maPT, string maPDS, decimal soTien, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
     {
         if (string.IsNullOrWhiteSpace(maPDS))
             throw new ArgumentException("Mã phiếu đối soát không được để trống.", nameof(maPDS));
@@ -34,7 +34,7 @@ public sealed class PhieuThu
 
         return new PhieuThu
         {
-            MaPT = $"PT{thoiDiem:yyyyMMddHHmmssfff}",
+            MaPT = maPT,
             SoTienThu = soTien,
             ThoiGian = thoiDiem,
             PhuongThucThanhToan = phuongThuc,
@@ -46,6 +46,7 @@ public sealed class PhieuThu
 
     // UC 1.4.14 Xử lý thanh toán hợp đồng
     public static PhieuThu TaoPhieuThuTienHoaDon(
+        string maPT,
         string maHoaDon, decimal soTienThu, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
     {
         if (string.IsNullOrWhiteSpace(maHoaDon))
@@ -61,7 +62,7 @@ public sealed class PhieuThu
 
         return new PhieuThu
         {
-            MaPT = $"PT{thoiDiem:yyyyMMddHHmmssfff}",
+            MaPT = maPT,
             SoTienThu = soTienThu,
             ThoiGian = thoiDiem,
             PhuongThucThanhToan = phuongThuc,
@@ -79,7 +80,7 @@ public sealed class PhieuThu
     // ==========================================================
     // Methods from develop branch
     // ==========================================================
-    public static PhieuThu TaoChoTienCoc(PhieuCoc phieuCoc, string maNhanVien, DateTime thoiGian)
+    public static PhieuThu TaoChoTienCoc(string maPT, PhieuCoc phieuCoc, string maNhanVien, DateTime thoiGian)
     {
         phieuCoc.KiemTraCoTheXacNhanThanhToan();
         if (string.IsNullOrWhiteSpace(maNhanVien))
@@ -87,7 +88,7 @@ public sealed class PhieuThu
 
         return new PhieuThu
         {
-            MaPT = $"PT{thoiGian:yyyyMMddHHmmssfff}",
+            MaPT = maPT,
             SoTienThu = phieuCoc.TongTien,
             ThoiGian = thoiGian,
             PhuongThucThanhToan = phieuCoc.PhuongThucThanhToan,

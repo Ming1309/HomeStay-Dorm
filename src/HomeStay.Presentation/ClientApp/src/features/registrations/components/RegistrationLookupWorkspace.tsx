@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { toast } from "sonner";
+import { registrationService } from "@/features/registrations/services/registration-service";
 
 type RegistrationStatus = "draft" | "pending" | "approved" | "rejected";
 
@@ -15,7 +16,7 @@ type RegistrationLookupItem = {
   customerName: string;
   phone: string;
   email: string;
-  idType: "CCCD" | "Hộ chiếu" | "Giấy tờ khác";
+  idType: string;
   idNumber: string;
   desiredArea: string;
   priceRange: string;
@@ -24,76 +25,21 @@ type RegistrationLookupItem = {
   roomType: string;
   people: number;
   submittedAt: string;
-  status: RegistrationStatus;
+  status: string;
   notes: string;
 };
 
-const MOCK_REGISTRATIONS: RegistrationLookupItem[] = [
-  {
-    id: "1",
-    registrationNumber: "REG-1",
-    customerName: "Nguyễn Văn A",
-    phone: "0912345678",
-    email: "nguyenvana@example.com",
-    idType: "CCCD",
-    idNumber: "079200123456",
-    desiredArea: "Khu vực A",
-    priceRange: "3-5m",
-    moveInDate: "15/06/2026",
-    rentalDuration: "6 tháng",
-    roomType: "Thuê nguyên phòng",
-    people: 2,
-    submittedAt: "01/06/2026",
-    status: "pending",
-    notes: "Ưu tiên phòng có ban công, có chỗ để xe máy.",
-  },
-  {
-    id: "2",
-    registrationNumber: "REG-2",
-    customerName: "Trần Thị B",
-    phone: "0987654321",
-    email: "tranthib@gmail.com",
-    idType: "CCCD",
-    idNumber: "079201234567",
-    desiredArea: "Khu vực B",
-    priceRange: "5-7m",
-    moveInDate: "05/07/2026",
-    rentalDuration: "12 tháng",
-    roomType: "Thuê giường ở ghép",
-    people: 1,
-    submittedAt: "29/05/2026",
-    status: "approved",
-    notes: "Muốn ở gần khu vực bếp chung và phòng tập gym.",
-  },
-  {
-    id: "3",
-    registrationNumber: "REG-3",
-    customerName: "Phạm Hoàng C",
-    phone: "0968887777",
-    email: "phamhoangc@company.vn",
-    idType: "Hộ chiếu",
-    idNumber: "E123456789",
-    desiredArea: "Khu vực C",
-    priceRange: "1-3m",
-    moveInDate: "20/06/2026",
-    rentalDuration: "3 tháng",
-    roomType: "Thuê nguyên phòng",
-    people: 3,
-    submittedAt: "28/05/2026",
-    status: "draft",
-    notes: "Khách hàng cần có hồ sơ tạm trú để được hỗ trợ thủ tục.",
-  },
-];
-
-const statusStyles: Record<RegistrationStatus, { label: string; className: string }> = {
+const statusStyles: Record<string, { label: string; className: string }> = {
   draft: { label: "Nháp", className: "bg-gray-100 text-gray-800" },
   pending: { label: "Chờ duyệt", className: "bg-amber-100 text-amber-800" },
   approved: { label: "Đã duyệt", className: "bg-emerald-100 text-emerald-700" },
   rejected: { label: "Từ chối", className: "bg-red-100 text-red-700" },
+  DangXuLy: { label: "Đang xử lý", className: "bg-amber-100 text-amber-800" },
+  DaDuyet: { label: "Đã duyệt", className: "bg-emerald-100 text-emerald-700" },
 };
 
-const getStatusBadge = (status: RegistrationStatus) => {
-  const config = statusStyles[status];
+const getStatusBadge = (status: string) => {
+  const config = statusStyles[status] || { label: status, className: "bg-gray-100 text-gray-800" };
   return <Badge className={`${config.className} border-0 text-[11px]`}>{config.label}</Badge>;
 };
 
@@ -102,22 +48,7 @@ export function RegistrationLookupWorkspace() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchKey, setSearchKey] = useState("");
-
-  const results = useMemo(() => {
-    if (!hasSearched) return [];
-
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-
-    return MOCK_REGISTRATIONS.filter((item) => {
-      const matchPhone = item.phone.includes(q) || item.phone.includes(query.trim());
-      const matchId = item.idNumber.toLowerCase().includes(q);
-      const matchEmail = item.email.toLowerCase().includes(q);
-      const matchNumber = item.registrationNumber.toLowerCase().includes(q);
-      const matchName = item.customerName.toLowerCase().includes(q);
-      return matchPhone || matchId || matchEmail || matchNumber || matchName;
-    });
-  }, [hasSearched, query]);
+  const [results, setResults] = useState<RegistrationLookupItem[]>([]);
 
   const selectedRegistration = selectedId
     ? (results.find((item) => item.id === selectedId) ?? null)
@@ -129,26 +60,56 @@ export function RegistrationLookupWorkspace() {
     }
   }, [results, selectedId]);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!query.trim()) {
       toast.error("Vui lòng nhập ít nhất một tiêu chí tìm kiếm");
       return;
     }
 
-    const q = query.trim().toLowerCase();
-    const nextResults = MOCK_REGISTRATIONS.filter((item) => {
-      const matchPhone = item.phone.includes(q) || item.phone.includes(query.trim());
-      const matchId = item.idNumber.toLowerCase().includes(q);
-      const matchEmail = item.email.toLowerCase().includes(q);
-      const matchNumber = item.registrationNumber.toLowerCase().includes(q);
-      const matchName = item.customerName.toLowerCase().includes(q);
-      return matchPhone || matchId || matchEmail || matchNumber || matchName;
-    });
+    const q = query.trim();
+    let sdt = '';
+    let soGiayTo = '';
+    let email = '';
+    let hoTen = '';
+    let maPDK = '';
 
-    setSearchKey(query.trim());
-    setHasSearched(true);
-    if (selectedId && !nextResults.some((item) => item.id === selectedId)) {
-      setSelectedId(null);
+    if (q.includes('@')) { email = q; }
+    else { 
+      sdt = q; 
+      soGiayTo = q; 
+      hoTen = q;
+      maPDK = q;
+    }
+
+    try {
+      const apiResults = await registrationService.search({ sdt, soGiayTo, email, hoTen, maPDK });
+      const mapped = apiResults.map((item: any) => ({
+        id: item.maPDK,
+        registrationNumber: item.maPDK,
+        customerName: item.khachHang?.hoTen || '',
+        phone: item.khachHang?.sdt || '',
+        email: item.khachHang?.email || '',
+        idType: item.khachHang?.loaiGiayTo || '',
+        idNumber: item.khachHang?.soGiayTo || '',
+        desiredArea: item.khuVuc || '',
+        priceRange: item.mucGia + 'đ' || '',
+        moveInDate: item.thoiGianDuKienVao?.split('T')[0] || '',
+        rentalDuration: item.thoiHanThue + ' tháng',
+        roomType: item.loaiDichVu || '',
+        people: item.soLuongNguoi || 1,
+        submittedAt: item.thoiGianDuKienVao?.split('T')[0] || '',
+        status: item.trangThai || 'DangXuLy',
+        notes: item.yeuCauKhac || ''
+      }));
+      setResults(mapped);
+      setSearchKey(query.trim());
+      setHasSearched(true);
+      if (selectedId && !mapped.some((item: any) => item.id === selectedId)) {
+        setSelectedId(null);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra khi tìm kiếm");
+      setResults([]);
     }
   };
 

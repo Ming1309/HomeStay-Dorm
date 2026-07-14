@@ -226,11 +226,13 @@ export function getPreferenceLabel(id: string): string {
   return preferences[id] || id;
 }
 
-export async function searchRegistrations(sdt?: string, soGiayTo?: string, email?: string): Promise<any[]> {
+export async function searchRegistrations(paramsObj: {sdt?: string, soGiayTo?: string, email?: string, hoTen?: string, maPDK?: string}): Promise<any[]> {
   const params = new URLSearchParams();
-  if (sdt) params.append('sdt', sdt);
-  if (soGiayTo) params.append('soGiayTo', soGiayTo);
-  if (email) params.append('email', email);
+  if (paramsObj.sdt) params.append('sdt', paramsObj.sdt);
+  if (paramsObj.soGiayTo) params.append('soGiayTo', paramsObj.soGiayTo);
+  if (paramsObj.email) params.append('email', paramsObj.email);
+  if (paramsObj.hoTen) params.append('hoTen', paramsObj.hoTen);
+  if (paramsObj.maPDK) params.append('maPDK', paramsObj.maPDK);
   
   const res = await fetch(`/api/registrations/search?${params.toString()}`);
   if (!res.ok) {
@@ -245,7 +247,7 @@ export interface RegistrationService {
   saveDraft(data: RegistrationData): Promise<RegistrationResponse>;
   loadDraft(): Promise<RegistrationData | null>;
   clearDraft(): Promise<void>;
-  search(sdt?: string, soGiayTo?: string, email?: string): Promise<any[]>;
+  search(params: {sdt?: string, soGiayTo?: string, email?: string, hoTen?: string, maPDK?: string}): Promise<any[]>;
 }
 
 export const registrationService: RegistrationService = {

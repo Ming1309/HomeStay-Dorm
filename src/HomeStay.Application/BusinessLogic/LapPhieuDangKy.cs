@@ -40,9 +40,10 @@ public sealed class LapPhieuDangKy
                 await khachHang.Them();
             }
 
-            var phieuDangKy = PhieuDangKy.TaoMoi(khachHang.MaKH, maNV, khuVuc, soLuongNguoi,
-                loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem);
-            phieuDangKy.KiemTraDieuKien();
+            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuDangKy", "MaPDK", "PDK");
+            var phieuDangKy = PhieuDangKy.TaoMoi(maMoi, khachHang.MaKH, maNV, khuVuc, soLuongNguoi,
+                loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, _timeProvider.GetLocalNow().DateTime);
+            phieuDangKy.KiemTraDieuKien(thoiDiem);
             await phieuDangKy.Them();
 
             phien.Commit();
@@ -57,10 +58,10 @@ public sealed class LapPhieuDangKy
     }
 
     public async Task<IReadOnlyList<PhieuDangKy>> TimKiemPhieuDangKy(
-        string? sdt, string? soGiayTo, string? email)
+        string? sdt, string? soGiayTo, string? email, string? hoTen = null, string? maPDK = null)
     {
         using var phien = _taoPhienDuLieu();
-        return await PhieuDangKy.TimKiem(sdt, soGiayTo, email);
+        return await PhieuDangKy.TimKiem(sdt, soGiayTo, email, hoTen, maPDK);
     }
 
     public async Task<PhieuDangKy?> LayChiTietPhieuDangKy(string maPDK)

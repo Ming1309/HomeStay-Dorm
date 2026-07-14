@@ -135,8 +135,9 @@ public sealed class LapPhieuHoanCoc
             if (await PhieuHoanCoc.DaTonTaiChoPhieuDoiSoat(maPDS))
                 throw new InvalidOperationException("Phiếu đối soát đã có phiếu hoàn cọc.");
 
-            var phieuHoanCoc = PhieuHoanCoc.TaoPhieuHoanCoc(
-                maPDS, pds.TienHoan, phuongThuc, thongTinNhanTien, maNV,
+            var maPHC = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuHoanCoc", "MaPHC", "PHC");
+            var phieuHoanCoc = PhieuHoanCoc.TaoMoi(
+                maPHC, maPDS, pds.TienHoan, phuongThuc, thongTinNhanTien, maNV,
                 _timeProvider.GetLocalNow().DateTime);
 
             await phieuHoanCoc.LuuPhieu();

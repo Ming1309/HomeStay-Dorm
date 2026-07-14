@@ -29,8 +29,10 @@ public sealed class TaoLichHen
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
 
-        var lichHen = LichHen.TaoMoi(loai, maChungTu, maCN, ngayHen, gioHen, maNV);
+        var maMoi = await MaTuDongDB.TaoMaMoi("LichHen", "MaLH", "LH");
+        var lichHen = LichHen.TaoMoi(maMoi, loai, maChungTu, maCN, ngayHen, gioHen, maNV);
 
+        lichHen.KiemTraThoiGianHopLe(DateTime.Now);
         await lichHen.KiemTraHopLe();
         await lichHen.KiemTraTrungLich();
         await lichHen.Them();

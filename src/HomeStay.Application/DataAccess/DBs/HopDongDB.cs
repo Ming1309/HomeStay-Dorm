@@ -28,7 +28,7 @@ public static class HopDongDB
             JOIN PhieuCoc pc ON hd.MaPhieuCoc = pc.MaPhieuCoc
             JOIN KhachHang kh ON pc.MaKH = kh.MaKH
             WHERE hd.TrangThai = N'DangHieuLuc'
-              AND (@TuKhoa IS NULL OR hd.MaHD LIKE '%' + @TuKhoa + '%' OR kh.HoTen LIKE '%' + @TuKhoa + '%' OR kh.SDT LIKE '%' + @TuKhoa + '%')
+              AND (@TuKhoa IS NULL OR hd.MaHD LIKE '%' + @TuKhoa + '%' OR kh.HoTen COLLATE SQL_Latin1_General_CP1_CI_AI LIKE '%' + @TuKhoa + '%' OR kh.SDT LIKE '%' + @TuKhoa + '%' OR kh.SoGiayTo LIKE '%' + @TuKhoa + '%')
             ORDER BY hd.NgayBatDau DESC
             """;
         var rows = await PhienDuLieu.Session.Connection.QueryAsync(

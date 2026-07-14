@@ -17,9 +17,8 @@ export const APPOINTMENT_TYPES = [
 ] as const;
 
 export const BRANCHES = [
-  { value: "CN-A", label: "Chi nhánh A" },
-  { value: "CN-B", label: "Chi nhánh B" },
-  { value: "CN-C", label: "Chi nhánh C" },
+  { value: "CN01", label: "Chi nhánh Trung Tâm" },
+  { value: "CN02", label: "Chi nhánh Làng Đại Học" },
 ] as const;
 
 export const MOCK_APPOINTMENTS: AppointmentRecord[] = [
@@ -99,16 +98,104 @@ export function saveAppointments(appointments: AppointmentRecord[]) {
 }
 
 export interface AppointmentService {
-  list(): Promise<AppointmentRecord[]>;
-  save(appointments: AppointmentRecord[]): Promise<void>;
+  list(keyword?: string, date?: string, time?: string): Promise<AppointmentRecord[]>;
+  create(data: {
+    loaiLichHen: string;
+    maChungTu: string;
+    maCN: string;
+    ngayHen: string;
+    gioHen: string;
+    maNV: string;
+  }): Promise<AppointmentRecord>;
+  getBranches(): Promise<{value: string, label: string}[]>;
+  fetchDocuments(type: string, keyword?: string): Promise<any[]>;
+  update(id: string, data: {
+    ngayHen: string;
+    gioHen: string;
+    maNV: string;
+    trangThai: string;
+  }): Promise<AppointmentRecord>;
 }
 
-export const mockAppointmentService: AppointmentService = {
-  async list() {
-    seedMockAppointments();
-    return loadAppointments();
+export const appointmentService: AppointmentService = {
+  async list(keyword?: string, date?: string, time?: string) {
+    const params = new URLSearchParams();
+    if (keyword) params.append('keyword', keyword);
+    if (date) params.append('date', date);
+    if (time) params.append('time', time);
+    
+    const res = await fetch(`/api/appointments/all?${params.toString()}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.map((item: any) => ({
+      id: item.maLH || item.maLichHen,
+      appointmentType: item.loaiLichHen === 'NhanPhong' ? 'checkin' : item.loaiLichHen === 'TraPhong' ? 'checkout' : 'view-room',
+      referenceLabel: item.khachHang ? `${item.khachHang.hoTen} - ${item.khachHang.soGiayTo}` : item.chiTiet || item.maLH || item.maLichHen,
+      branch: item.maCN,
+      date: item.ngayHen ? item.ngayHen.split('T')[0] : '',
+      time: item.gioHen || '',
+      status: item.trangThai || 'Chờ xác nhận',
+    }));
   },
-  async save(appointments) {
-    saveAppointments(appointments);
+  async create(data) {
+    const res = await fetch('/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Lỗi tạo lịch hẹn');
+    }
+    const item = await res.json();
+    return {
+      id: item.maLH || item.maLichHen,
+      appointmentType: item.loaiLichHen === 'NhanPhong' ? 'checkin' : item.loaiLichHen === 'TraPhong' ? 'checkout' : 'view-room',
+      referenceLabel: item.khachHang ? `${item.khachHang.hoTen} - ${item.khachHang.soGiayTo}` : item.chiTiet || item.maLH || item.maLichHen,
+      branch: item.maCN,
+      date: item.ngayHen ? item.ngayHen.split('T')[0] : '',
+      time: item.gioHen || '',
+      status: item.trangThai || 'Chờ xác nhận',
+    };
   },
+  async fetchDocuments(type: string, keyword: string = '') {
+    const res = await fetch(`/api/appointments/documents?type=${type}&keyword=${encodeURIComponent(keyword)}`);
+    if (!res.ok) return [];
+    return await res.json();
+  },
+  async getBranches() {
+    try {
+      const res = await fetch('/api/branches');
+      if (!res.ok) return Array.from(BRANCHES);
+      const data = await res.json();
+      return data.map((b: any) => ({
+        value: b.maCN || b.MaCN,
+        label: b.tenChiNhanh || b.TenChiNhanh
+      }));
+    } catch {
+      return Array.from(BRANCHES);
+    }
+  },
+  async update(id, data) {
+    const res = await fetch(`/api/appointments/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Lỗi cập nhật lịch hẹn');
+    }
+    const item = await res.json();
+    return {
+      id: item.maLH || item.maLichHen,
+      appointmentType: item.loaiLichHen === 'NhanPhong' ? 'checkin' : item.loaiLichHen === 'TraPhong' ? 'checkout' : 'view-room',
+      referenceLabel: item.khachHang ? `${item.khachHang.hoTen} - ${item.khachHang.soGiayTo}` : item.chiTiet || item.maLH || item.maLichHen,
+      branch: item.maCN,
+      date: item.ngayHen ? item.ngayHen.split('T')[0] : '',
+      time: item.gioHen || '',
+      status: item.trangThai || 'Chờ xác nhận',
+    };
+  }
 };
+

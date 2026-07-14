@@ -14,8 +14,10 @@ public sealed class PhieuHoanCoc
     public string MaPDS { get; set; } = string.Empty;
     public string? MaNV { get; set; }
 
-    public static PhieuHoanCoc TaoPhieuHoanCoc(string maPDS, decimal soTien, string phuongThuc, string thongTinNhanTien, string maNV, DateTime thoiDiem)
+    public static PhieuHoanCoc TaoMoi(string maPHC, string maPDS, decimal soTien, string phuongThuc, string? thongTinNhanTien, string maNV, DateTime thoiDiem)
     {
+        if (string.IsNullOrWhiteSpace(maPHC))
+            throw new ArgumentException("Mã phiếu hoàn cọc không được để trống.", nameof(maPHC));
         if (string.IsNullOrWhiteSpace(maPDS))
             throw new ArgumentException("Mã phiếu đối soát không được để trống.", nameof(maPDS));
         if (soTien <= 0)
@@ -29,7 +31,7 @@ public sealed class PhieuHoanCoc
 
         return new PhieuHoanCoc
         {
-            MaPHC = $"PHC{thoiDiem:yyyyMMddHHmmssfff}",
+            MaPHC = maPHC,
             SoTienHoan = soTien,
             PhuongThucHoan = phuongThuc,
             ThongTinNhanTien = thongTinNhanTien,

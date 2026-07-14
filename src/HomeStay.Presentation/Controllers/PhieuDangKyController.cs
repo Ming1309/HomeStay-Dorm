@@ -30,11 +30,13 @@ public sealed class PhieuDangKyController(LapPhieuDangKy lapPhieuDangKy) : Contr
     public async Task<IActionResult> TimKiemPhieuDangKy(
         [FromQuery] string? sdt,
         [FromQuery] string? soGiayTo,
-        [FromQuery] string? email)
+        [FromQuery] string? email,
+        [FromQuery] string? hoTen,
+        [FromQuery] string? maPDK)
     {
         try
         {
-            var phieus = await lapPhieuDangKy.TimKiemPhieuDangKy(sdt, soGiayTo, email);
+            var phieus = await lapPhieuDangKy.TimKiemPhieuDangKy(sdt, soGiayTo, email, hoTen, maPDK);
             return Ok(phieus);
         }
         catch (InvalidOperationException ex) { return BadRequest(new { Message = ex.Message }); }

@@ -111,10 +111,11 @@ class KhachHangDB{
 
 }
 
-MHLapPhieuDangKy --> PhieuDangKy
-MHLapPhieuDangKy --> KhachHang
+' GUI -> BUS
+MHLapPhieuDangKy o-- PhieuDangKy
+MHLapPhieuDangKy o-- KhachHang
 
-PhieuDangKy --> PhieuDangKyDB
-KhachHang --> KhachHangDB
-
+' DB -> BUS (từ dưới lên)
+PhieuDangKy o-down- PhieuDangKyDB
+KhachHang o-down- KhachHangDB
 @enduml

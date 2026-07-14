@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { User, X } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -12,7 +12,7 @@ import {
 } from "@/shared/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useWorkflowStore, type Room, type BedStatus } from "@/app/providers/workflow-store";
-import { roomAreas, roomTypes } from "@/features/rooms/model/mock-rooms";
+import { roomAreas } from "@/features/rooms/model/mock-rooms";
 
 const bedColor: Record<BedStatus, string> = {
   available: "text-emerald-500",
@@ -44,7 +44,53 @@ function normalizeAmountInput(value: string): string {
 }
 
 export function RoomLookupWorkspace() {
-  const { rooms } = useWorkflowStore();
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomTypes, setRoomTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    fetch('/api/room-types')
+      .then(res => res.json())
+      .then(data => {
+        if (!isMounted) return;
+        setRoomTypes(data.map((t: any) => t.tenLoaiPhong));
+      })
+      .catch(console.error);
+
+    fetch('/api/rooms/search')
+      .then(res => res.json())
+      .then(data => {
+        if (!isMounted) return;
+        const mapped: Room[] = data.map((item: any) => ({
+          id: item.maPhong,
+          roomNumber: item.soPhong,
+          type: item.loaiPhong?.tenLoaiPhong || '',
+          area: item.tang || '',
+          status: item.trangThai === 'Trong' ? 'available' 
+                : item.trangThai === 'ConGiuongTrong' ? 'partially_available' 
+                : item.trangThai === 'GiuCho' ? 'partially_available' 
+                : item.trangThai === 'DaCoc' || item.trangThai === 'DangSuDung' ? 'full' 
+                : 'maintenance',
+          basePrice: item.loaiPhong?.giaThue || 0,
+          totalBeds: item.loaiPhong?.sucChua || item.giuongs?.length || 0,
+          availableBeds: item.soGiuongTrong || 0,
+          beds: (item.giuongs || []).map((g: any) => ({
+            id: g.maGiuong,
+            name: g.maGiuong,
+            status: g.trangThai === 'Trong' ? 'available' 
+                  : g.trangThai === 'DaCoc' ? 'deposited' 
+                  : g.trangThai === 'DangSuDung' ? 'occupied' 
+                  : 'maintenance'
+          })),
+          assets: [],
+          features: []
+        }));
+        setRooms(mapped);
+      })
+      .catch(console.error);
+    return () => { isMounted = false; };
+  }, []);
 
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [areaFilter, setAreaFilter] = useState("Tầng 1");
@@ -268,6 +314,31 @@ export function RoomLookupWorkspace() {
 
 function RoomCard({ room }: { room: Room }) {
   const [showDetail, setShowDetail] = useState(false);
+  const [assets, setAssets] = useState<{ id: string; name: string; quantity: number }[]>([]);
+  const [loadingAssets, setLoadingAssets] = useState(false);
+
+  useEffect(() => {
+    if (showDetail && assets.length === 0) {
+      let isMounted = true;
+      setLoadingAssets(true);
+      fetch(`/api/rooms/${room.id}/assets`)
+        .then(res => res.json())
+        .then(data => {
+          if (!isMounted) return;
+          const fetchedAssets = (data || []).map((ts: any) => ({
+            id: ts.maTS,
+            name: ts.taiSan?.tenTaiSan || ts.maTS,
+            quantity: ts.soLuongTieuChuan || 1
+          }));
+          setAssets(fetchedAssets);
+        })
+        .catch(console.error)
+        .finally(() => {
+          if (isMounted) setLoadingAssets(false);
+        });
+      return () => { isMounted = false; };
+    }
+  }, [showDetail, room.id, assets.length]);
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white transition-all">
@@ -302,14 +373,20 @@ function RoomCard({ room }: { room: Room }) {
       {showDetail && (
         <div className="border-t border-gray-100 px-4 py-3">
           <p className="mb-2 text-xs font-semibold text-gray-700">Tài sản</p>
-          <ul className="space-y-1">
-            {room.assets.map((asset) => (
-              <li key={asset.id} className="flex justify-between text-xs text-gray-600">
-                <span>{asset.name}</span>
-                <span className="text-gray-400">x{asset.quantity}</span>
-              </li>
-            ))}
-          </ul>
+          {loadingAssets ? (
+            <p className="text-xs text-gray-400">Đang tải...</p>
+          ) : assets.length === 0 ? (
+            <p className="text-xs text-gray-400">Không có tài sản</p>
+          ) : (
+            <ul className="space-y-1">
+              {assets.map((asset) => (
+                <li key={asset.id} className="flex justify-between text-xs text-gray-600">
+                  <span>{asset.name}</span>
+                  <span className="text-gray-400">x{asset.quantity}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
