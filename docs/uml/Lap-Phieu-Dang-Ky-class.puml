@@ -1,0 +1,56 @@
+@startuml
+title LAP PHIEU DANG KY - SO DO LOP 3 TANG
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package "TANG GIAO DIEN" {
+  class RegistrationForm <<boundary>> {
+    +onSubmit(data)
+  }
+  class PhieuDangKyController <<controller>> {
+    +TaoPhieuDangKy(request)
+    +TimKiemPhieuDangKy(...)
+    +LayChiTietPhieuDangKy(id)
+  }
+}
+
+package "TANG NGHIEP VU" {
+  class LapPhieuDangKy <<control>> {
+    +TaoPhieuDangKy(..., maNV) : Task<PhieuDangKy>
+    +TimKiemPhieuDangKy(...) : Task<IReadOnlyList<PhieuDangKy>>
+    +LayChiTietPhieuDangKy(maPDK) : Task<PhieuDangKy>
+  }
+  class PhieuDangKy <<entity>> {
+    +TaoMoi(..., thoiDiem) : PhieuDangKy
+    +KiemTraDieuKien(thoiDiemHienTai)
+    +Them() : Task
+  }
+  class KhachHang <<entity>> {
+    +KiemTraTonTai(soGiayTo) : Task<KhachHang>
+    +TaoMoi(...) : KhachHang
+    +Them() : Task
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" {
+  class PhieuDangKyDB <<database>> {
+    +Them(phieu) : Task
+    +TimKiem(...) : Task<IReadOnlyList<PhieuDangKy>>
+    +LayTheoMa(maPDK) : Task<PhieuDangKy>
+  }
+  class KhachHangDB <<database>>
+  class PhienDuLieu <<database>> {
+    +BatDauGiaoDich()
+    +Commit()
+    +Rollback()
+  }
+}
+
+RegistrationForm --> PhieuDangKyController : HTTP /api/registrations
+PhieuDangKyController --> LapPhieuDangKy : maNV tu JWT claim
+LapPhieuDangKy --> PhienDuLieu
+LapPhieuDangKy --> KhachHang
+LapPhieuDangKy --> PhieuDangKy
+KhachHang --> KhachHangDB
+PhieuDangKy --> PhieuDangKyDB
+@enduml

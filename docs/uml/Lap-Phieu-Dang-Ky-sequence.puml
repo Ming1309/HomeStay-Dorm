@@ -1,59 +1,37 @@
 @startuml
-title Sequence Diagram - Tạo Phiếu Đăng Ký
+title LAP PHIEU DANG KY - SO DO TUAN TU
+hide footbox
+autonumber
+actor "Nhan vien Sale" as Sale
+boundary RegistrationForm as UI
+control PhieuDangKyController as API
+control LapPhieuDangKy as UC
+entity KhachHang as KH
+entity PhieuDangKy as PDK
+database PhienDuLieu as DB
 
-skinparam dpi 180
-skinparam shadowing false
-skinparam sequence {
-    ArrowThickness 1
-    LifeLineBorderColor Black
-    LifeLineBackgroundColor White
-    ParticipantBorderColor Black
-    ParticipantBackgroundColor White
-    ParticipantFontStyle bold
-}
-
-actor "NhânViênSale" as NV
-
-box "GUI" #D5F5D3
-boundary "MHTaoPhieuDangKy" as GUI
-end box
-
-box "BUS" #FDE9A9
-control "PhieuDangKy" as PDK
-control "KhachHang" as KH
-end box
-
-box "DB" #D6EAF8
-database "PhieuDangKyDB" as PDKDB
-database "KhachHangDB" as KHDB
-end box
-
-NV -> GUI : 1.0 Chọn chức năng tạo phiếu đăng ký
-
-NV -> GUI : 2.0 Nhập thông tin
-
-NV -> GUI : 3.0 btnTaoPhieuDangKy_Click()
-
-GUI -> KH : 3.1 kiemTraTonTai(soGiayTo)
-
-KH -> KHDB : 3.2 TimKhachHangTheoSoGiayTo(soGiayTo)
-
-alt Khách hàng chưa tồn tại
-
-    KH -> KH : 3.3 TaoKhachHang(ThongTinKH)
-
-    KH -> KHDB : 3.4 themKhachHang(KhachHang)
-
+Sale -> UI : Nhap va gui phieu dang ky
+UI -> API : POST /api/registrations
+API -> API : Lay MaNV tu JWT claim
+alt Khong co MaNV claim
+  API --> UI : 401 Unauthorized
+else Co MaNV claim
+  API -> UC : TaoPhieuDangKy(..., maNV)
+  UC -> DB : BatDauGiaoDich()
+  UC -> KH : KiemTraTonTai(soGiayTo)
+  alt Khach hang chua ton tai
+    UC -> KH : TaoMoi(...) + Them()
+  end
+  UC -> PDK : TaoMoi(..., thoiDiem)
+  UC -> PDK : KiemTraDieuKien(thoiDiem)
+  alt Du lieu hop le
+    UC -> PDK : Them()
+    UC -> DB : Commit()
+    UC --> API : phieuDangKy
+    API --> UI : 200 OK
+  else Du lieu khong hop le / loi ghi
+    UC -> DB : Rollback()
+    API --> UI : 409 / 500
+  end
 end
-
-GUI -> PDK : 4.0 TaoPhieuDangKy(ThongTinPDK)
-
-PDK -> PDK : 4.1 KiemTraDieuKien()
-
-alt Thông tin hợp lệ
-
-    PDK -> PDKDB : 4.2 themPhieuDangKy(PhieuDangKy)
-
-end
-
 @enduml

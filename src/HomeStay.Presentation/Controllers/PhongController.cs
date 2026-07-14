@@ -2,10 +2,12 @@ namespace HomeStay.Presentation.Controllers;
 
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Application.DataAccess.DbConnections;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/rooms")]
+[Authorize(Roles = "Sale,QuanLy,KeToan")]
 public sealed class PhongController(LapPhieuCoc lapPhieuCoc, Func<PhienDuLieu> taoPhienDuLieu) : ControllerBase
 {
     [HttpGet("available-with-beds")]

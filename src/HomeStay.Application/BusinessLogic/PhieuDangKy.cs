@@ -34,16 +34,19 @@ public sealed class PhieuDangKy
         TrangThai = "DangXuLy"
     };
 
-    public void KiemTraDieuKien()
+    public void KiemTraDieuKien(DateTime thoiDiemHienTai)
     {
         if (string.IsNullOrWhiteSpace(MaKH))
             throw new InvalidOperationException("Thông tin khách hàng không hợp lệ.");
+        if (ThoiGianDuKienVao.HasValue && ThoiGianDuKienVao.Value.Date < thoiDiemHienTai.Date)
+            throw new InvalidOperationException("Thời gian dự kiến vào ở không được trong quá khứ.");
     }
 
     public static Task<PhieuDangKy?> DocChiTiet(string maPDK) => PhieuDangKyDB.LayTheoMa(maPDK);
 
-    public static Task<IReadOnlyList<PhieuDangKy>> TimKiem(string? sdt, string? soGiayTo, string? email) =>
-        PhieuDangKyDB.TimKiem(sdt, soGiayTo, email);
+    public static Task<IReadOnlyList<PhieuDangKy>> TimKiem(
+        string? sdt, string? soGiayTo, string? email, string? hoTen = null, string? maPDK = null) =>
+        PhieuDangKyDB.TimKiem(sdt, soGiayTo, email, hoTen, maPDK);
 
     public Task Them() => PhieuDangKyDB.Them(this);
 }

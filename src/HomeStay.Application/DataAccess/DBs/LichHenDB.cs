@@ -119,7 +119,7 @@ public static class LichHenDB
             LEFT JOIN HopDong hd ON lh.MaHD = hd.MaHD
             LEFT JOIN KhachHang kh ON 
                 kh.MaKH = pdk.MaKH OR kh.MaKH = pc.MaKH OR kh.MaKH = (SELECT MaKH FROM PhieuCoc WHERE MaPhieuCoc = hd.MaPhieuCoc)
-            WHERE (@Keyword IS NULL OR lh.MaLH LIKE '%' + @Keyword + '%' OR kh.HoTen LIKE '%' + @Keyword + '%' OR kh.SDT LIKE '%' + @Keyword + '%' OR lh.MaCN LIKE '%' + @Keyword + '%' OR lh.TrangThai LIKE '%' + @Keyword + '%')
+            WHERE (@Keyword IS NULL OR lh.MaLH LIKE '%' + @Keyword + '%' OR kh.HoTen LIKE '%' + @Keyword + '%' OR kh.SDT LIKE '%' + @Keyword + '%' OR kh.SoGiayTo LIKE '%' + @Keyword + '%' OR lh.MaCN LIKE '%' + @Keyword + '%' OR lh.TrangThai LIKE '%' + @Keyword + '%')
               AND (@Date IS NULL OR CAST(lh.NgayHen AS DATE) = CAST(@Date AS DATE))
               AND (@Time IS NULL OR lh.GioHen = @Time)
             ORDER BY lh.NgayHen DESC, lh.GioHen DESC

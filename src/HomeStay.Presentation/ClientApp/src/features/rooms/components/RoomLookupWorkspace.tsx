@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { User, X } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -12,7 +12,9 @@ import {
 } from "@/shared/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useWorkflowStore, type Room, type BedStatus } from "@/app/providers/workflow-store";
-import { roomAreas, roomTypes } from "@/features/rooms/model/mock-rooms";
+import { roomAreas } from "@/features/rooms/model/mock-rooms";
+import { roomLookupService } from "@/features/rooms/services/room-lookup-service";
+import { toast } from "sonner";
 
 const bedColor: Record<BedStatus, string> = {
   available: "text-emerald-500",
@@ -44,7 +46,27 @@ function normalizeAmountInput(value: string): string {
 }
 
 export function RoomLookupWorkspace() {
-  const { rooms } = useWorkflowStore();
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [roomTypes, setRoomTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    roomLookupService.listRoomTypes()
+      .then(data => {
+        if (!isMounted) return;
+        setRoomTypes(data);
+      })
+      .catch((error) => toast.error(error instanceof Error ? error.message : "Không thể tải loại phòng."));
+
+    roomLookupService.search()
+      .then(data => {
+        if (!isMounted) return;
+        setRooms(data);
+      })
+      .catch((error) => toast.error(error instanceof Error ? error.message : "Không thể tải danh sách phòng."));
+    return () => { isMounted = false; };
+  }, []);
 
   const [buildingFilter, setBuildingFilter] = useState("all");
   const [areaFilter, setAreaFilter] = useState("Tầng 1");
@@ -268,6 +290,25 @@ export function RoomLookupWorkspace() {
 
 function RoomCard({ room }: { room: Room }) {
   const [showDetail, setShowDetail] = useState(false);
+  const [assets, setAssets] = useState<{ id: string; name: string; quantity: number }[]>([]);
+  const [loadingAssets, setLoadingAssets] = useState(false);
+
+  useEffect(() => {
+    if (showDetail && assets.length === 0) {
+      let isMounted = true;
+      setLoadingAssets(true);
+      roomLookupService.listAssets(room.id)
+        .then(data => {
+          if (!isMounted) return;
+          setAssets(data);
+        })
+        .catch((error) => toast.error(error instanceof Error ? error.message : "Không thể tải tài sản phòng."))
+        .finally(() => {
+          if (isMounted) setLoadingAssets(false);
+        });
+      return () => { isMounted = false; };
+    }
+  }, [showDetail, room.id, assets.length]);
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white transition-all">
@@ -302,14 +343,20 @@ function RoomCard({ room }: { room: Room }) {
       {showDetail && (
         <div className="border-t border-gray-100 px-4 py-3">
           <p className="mb-2 text-xs font-semibold text-gray-700">Tài sản</p>
-          <ul className="space-y-1">
-            {room.assets.map((asset) => (
-              <li key={asset.id} className="flex justify-between text-xs text-gray-600">
-                <span>{asset.name}</span>
-                <span className="text-gray-400">x{asset.quantity}</span>
-              </li>
-            ))}
-          </ul>
+          {loadingAssets ? (
+            <p className="text-xs text-gray-400">Đang tải...</p>
+          ) : assets.length === 0 ? (
+            <p className="text-xs text-gray-400">Không có tài sản</p>
+          ) : (
+            <ul className="space-y-1">
+              {assets.map((asset) => (
+                <li key={asset.id} className="flex justify-between text-xs text-gray-600">
+                  <span>{asset.name}</span>
+                  <span className="text-gray-400">x{asset.quantity}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 

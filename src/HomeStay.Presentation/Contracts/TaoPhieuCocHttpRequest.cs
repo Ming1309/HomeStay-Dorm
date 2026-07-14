@@ -10,5 +10,4 @@ public sealed class TaoPhieuCocHttpRequest
     public string MaPhong { get; set; } = string.Empty;
     public List<string> DanhSachGiuong { get; set; } = [];
     public string HinhThucThue { get; set; } = string.Empty;
-    public string? MaNV { get; set; }
 }

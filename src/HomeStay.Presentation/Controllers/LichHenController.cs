@@ -1,11 +1,14 @@
 namespace HomeStay.Presentation.Controllers;
 
+using System.Security.Claims;
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Presentation.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/appointments")]
+[Authorize(Roles = "Sale")]
 public sealed class LichHenController(LapPhieuCoc lapPhieuCoc, TaoLichHen taoLichHen, TraCuuLichHen traCuuLichHen, SuaLichHen suaLichHen) : ControllerBase
 {
     [HttpGet("documents")]
@@ -24,6 +27,10 @@ public sealed class LichHenController(LapPhieuCoc lapPhieuCoc, TaoLichHen taoLic
     [HttpPost]
     public async Task<IActionResult> TaoLichHen([FromBody] TaoLichHenHttpRequest request)
     {
+        var maNV = User.FindFirstValue("MaNV");
+        if (string.IsNullOrWhiteSpace(maNV))
+            return Unauthorized(new { Message = "Không xác định được Nhân viên Sale đang đăng nhập." });
+
         try
         {
             var lichHen = await taoLichHen.LuuLichHen(
@@ -32,7 +39,7 @@ public sealed class LichHenController(LapPhieuCoc lapPhieuCoc, TaoLichHen taoLic
                 request.MaCN,
                 request.NgayHen,
                 request.GioHen,
-                request.MaNV);
+                maNV);
             return Ok(lichHen);
         }
         catch (Exception ex) when (ex is InvalidOperationException || ex is ArgumentException)
@@ -64,9 +71,13 @@ public sealed class LichHenController(LapPhieuCoc lapPhieuCoc, TaoLichHen taoLic
     [HttpPut("{id}")]
     public async Task<IActionResult> SuaLichHen(string id, [FromBody] SuaLichHenHttpRequest request)
     {
+        var maNV = User.FindFirstValue("MaNV");
+        if (string.IsNullOrWhiteSpace(maNV))
+            return Unauthorized(new { Message = "Không xác định được Nhân viên Sale đang đăng nhập." });
+
         try
         {
-            var lichHen = await suaLichHen.ThucHien(id, request.NgayHen, request.GioHen, request.MaNV, request.TrangThai);
+            var lichHen = await suaLichHen.ThucHien(id, request.NgayHen, request.GioHen, maNV, request.TrangThai);
             return Ok(lichHen);
         }
         catch (InvalidOperationException ex)

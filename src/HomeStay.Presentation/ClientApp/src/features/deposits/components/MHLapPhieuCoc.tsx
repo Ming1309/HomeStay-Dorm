@@ -448,7 +448,6 @@ function FormLapPhieuCoc({
           MaPhong: phongDaChon.id,
           DanhSachGiuong: danhSachGiuongDaChon,
           HinhThucThue: hinhThucThue === "shared" ? "OGhep" : "NguyenCan",
-          MaNV: "NV03",
         }),
       });
 

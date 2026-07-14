@@ -22,11 +22,11 @@ import { toast } from "sonner";
 import { cn } from "@/shared/lib/utils";
 import {
   APPOINTMENT_TYPES,
-  AppointmentRecord,
+  type AppointmentDocument,
+  type AppointmentRecord,
   AppointmentType,
-  BRANCHES,
-  loadAppointments,
-  saveAppointments,
+  type BranchOption,
+  appointmentService,
 } from "@/features/appointments/services/appointment-service";
 
 const appointmentSchema = z.object({
@@ -55,114 +55,15 @@ function getStatusBadgeClass(status: string) {
 
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
-type RegistrationItem = {
-  id: string;
-  registrationNumber: string;
-  customerName: string;
-  phone: string;
-  email: string;
-  status: string;
-};
-
-type DepositItem = {
-  id: string;
-  code: string;
-  customerName: string;
-  phone: string;
-  room: string;
-};
-
-type ContractItem = {
-  id: string;
-  contractNumber: string;
-  customerName: string;
-  phone: string;
-  room: string;
-};
-
-const mockRegistrations: RegistrationItem[] = [
-  {
-    id: "reg-1",
-    registrationNumber: "REG-1",
-    customerName: "Nguyễn Văn A",
-    phone: "0912345678",
-    email: "nguyenvana@example.com",
-    status: "Đã duyệt",
-  },
-  {
-    id: "reg-2",
-    registrationNumber: "REG-2",
-    customerName: "Trần Thị B",
-    phone: "0987654321",
-    email: "tranthib@gmail.com",
-    status: "Chờ duyệt",
-  },
-  {
-    id: "reg-3",
-    registrationNumber: "REG-3",
-    customerName: "Phạm Hoàng C",
-    phone: "0968887777",
-    email: "phamhoangc@company.vn",
-    status: "Nháp",
-  },
-];
-
-const mockApprovedDeposits: DepositItem[] = [
-  {
-    id: "dep-1",
-    code: "PC001",
-    customerName: "Nguyễn Văn An",
-    phone: "0901234567",
-    room: "P.101",
-  },
-  {
-    id: "dep-2",
-    code: "PC002",
-    customerName: "Trần Thị Bình",
-    phone: "0912345678",
-    room: "P.203",
-  },
-  {
-    id: "dep-3",
-    code: "PC003",
-    customerName: "Lê Hoàng Cường",
-    phone: "0987654321",
-    room: "P.305",
-  },
-];
-
-const mockActiveContracts: ContractItem[] = [
-  {
-    id: "ctr-1",
-    contractNumber: "HD-20260601-001",
-    customerName: "Lê Gia Bảo",
-    phone: "0938000456",
-    room: "P.206",
-  },
-  {
-    id: "ctr-2",
-    contractNumber: "HD-20260601-002",
-    customerName: "Trần Hoàng Nam",
-    phone: "0938456789",
-    room: "P.203",
-  },
-  {
-    id: "ctr-3",
-    contractNumber: "HD-20260601-003",
-    customerName: "Ngô Quốc Anh",
-    phone: "0977111222",
-    room: "P.410",
-  },
-];
-
-
-
 export function SaleAppointmentPage() {
   const [appointmentType, setAppointmentType] = useState<AppointmentType>("view-room");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("Đã xác nhận");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [appointments, setAppointments] = useState<AppointmentRecord[]>(() => loadAppointments());
+  const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
+  const [documentList, setDocumentList] = useState<AppointmentDocument[]>([]);
+  const [branchOptions, setBranchOptions] = useState<BranchOption[]>([]);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
 
   const {
     register,
@@ -170,11 +71,11 @@ export function SaleAppointmentPage() {
     watch,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: {
-      branch: BRANCHES[0].value,
+      branch: "",
       date: "",
       time: "",
     },
@@ -188,47 +89,44 @@ export function SaleAppointmentPage() {
   }, [appointmentType]);
 
   useEffect(() => {
-    saveAppointments(appointments);
-  }, [appointments]);
+    appointmentService.list().then(setAppointments).catch((error) => {
+      toast.error(error instanceof Error ? error.message : "Không thể tải lịch hẹn.");
+    });
+    appointmentService.getBranches().then(branches => {
+      setBranchOptions(branches);
+      if (branches.length > 0) {
+        setValue("branch", branches[0].value);
+      }
+    }).catch((error) => {
+      toast.error(error instanceof Error ? error.message : "Không thể tải chi nhánh.");
+    });
+  }, [setValue]);
 
-  const { allowedResults, excludedResults } = useMemo(() => {
-    const query = search.toLowerCase().trim();
-
-    const filterByQuery = <T extends Record<string, string>>(arr: T[], fields: Array<keyof T>) =>
-      arr.filter((item) => {
-        if (!query) return true;
-        return fields.some((f) =>
-          String(item[f] ?? "")
-            .toLowerCase()
-            .includes(query),
-        );
-      });
-
-    if (appointmentType === "view-room") {
-      const raw = filterByQuery(mockRegistrations, [
-        "registrationNumber",
-        "customerName",
-        "phone",
-        "email",
-      ]);
-      const allowed = raw.filter((r) => r.status === "Đã duyệt");
-      const excluded = raw.filter((r) => r.status !== "Đã duyệt");
-      return { allowedResults: allowed, excludedResults: excluded };
-    }
-
-    if (appointmentType === "checkin") {
-      const raw = filterByQuery(mockApprovedDeposits, ["code", "customerName", "phone", "room"]);
-      return { allowedResults: raw, excludedResults: [] };
-    }
-
-    const raw = filterByQuery(mockActiveContracts, [
-      "contractNumber",
-      "customerName",
-      "phone",
-      "room",
-    ]);
-    return { allowedResults: raw, excludedResults: [] };
+  useEffect(() => {
+    let isMounted = true;
+    const loadDocs = async () => {
+      try {
+        setIsLoadingDocuments(true);
+        const typeStr = appointmentType === 'view-room' ? 'XemPhong' : appointmentType === 'checkin' ? 'NhanPhong' : 'TraPhong';
+        const raw = await appointmentService.fetchDocuments(typeStr, search);
+        if (!isMounted) return;
+        
+        setDocumentList(raw);
+      } catch (e) {
+        if (isMounted) {
+          setDocumentList([]);
+          toast.error(e instanceof Error ? e.message : "Không thể tải chứng từ.");
+        }
+      } finally {
+        if (isMounted) setIsLoadingDocuments(false);
+      }
+    };
+    const timer = setTimeout(loadDocs, 300);
+    return () => { isMounted = false; clearTimeout(timer); };
   }, [appointmentType, search]);
+
+  const allowedResults = documentList;
+  const excludedResults: AppointmentDocument[] = [];
 
   const selectedReference = useMemo(() => {
     return allowedResults.find((item) => item.id === selectedId) ?? null;
@@ -236,41 +134,26 @@ export function SaleAppointmentPage() {
 
   const currentTypeInfo = APPOINTMENT_TYPES.find((item) => item.value === appointmentType)!;
 
-  const handleSave = handleSubmit((formData) => {
+  const handleSave = handleSubmit(async (formData) => {
     if (!selectedReference) {
       toast.error("Vui lòng chọn chứng từ liên kết cho lịch hẹn.");
       return;
     }
 
-    const conflict = appointments.some(
-      (item) => item.date === formData.date && item.time === formData.time,
-    );
-
-    if (conflict) {
-      toast.error("Nhân viên đã bận vào thời điểm này. Vui lòng chọn lại giờ hoặc ngày.");
-      return;
+    try {
+      const record = await appointmentService.create({
+        loaiLichHen: appointmentType === 'checkin' ? 'NhanPhong' : appointmentType === 'checkout' ? 'TraPhong' : 'XemPhong',
+        maChungTu: selectedReference.id,
+        maCN: formData.branch,
+        ngayHen: formData.date,
+        gioHen: formData.time + ':00'
+      });
+      setAppointments((prev) => [record, ...prev]);
+      toast.success("Tạo lịch hẹn thành công");
+      reset({ branch: branchOptions[0]?.value ?? "", date: "", time: "" });
+      } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Lỗi tạo lịch hẹn');
     }
-
-    const record: AppointmentRecord = {
-      id: `appt-${Date.now()}`,
-      appointmentType,
-      referenceLabel:
-        appointmentType === "view-room"
-          ? `${(selectedReference as RegistrationItem).registrationNumber} • ${(selectedReference as RegistrationItem).customerName}`
-          : appointmentType === "checkin"
-            ? `${(selectedReference as DepositItem).code} • ${(selectedReference as DepositItem).customerName}`
-            : `${(selectedReference as ContractItem).contractNumber} • ${(selectedReference as ContractItem).customerName}`,
-      branch: formData.branch,
-      date: formData.date,
-      time: formData.time,
-      status,
-    };
-
-    setAppointments((prev) => [record, ...prev]);
-    toast.success("Tạo lịch hẹn thành công", {
-      description: "Email/SMS thông báo đã được gửi đến khách hàng.",
-    });
-    reset({ branch: BRANCHES[0].value, date: "", time: "" });
   });
 
   return (
@@ -340,25 +223,15 @@ export function SaleAppointmentPage() {
                       {allowedResults.length} chứng từ phù hợp với loại {currentTypeInfo.label}.
                     </>
                   ) : (
-                    "Không tìm thấy chứng từ phù hợp. Thử lại với tiêu chí khác."
+                    isLoadingDocuments ? "Đang tải chứng từ..." : "Không tìm thấy chứng từ phù hợp. Thử lại với tiêu chí khác."
                   )}
                 </div>
 
                 <div className="space-y-2">
                   {allowedResults.map((item) => {
                     const active = item.id === selectedId;
-                    const label =
-                      appointmentType === "view-room"
-                        ? `${(item as RegistrationItem).registrationNumber} · ${(item as RegistrationItem).customerName}`
-                        : appointmentType === "checkin"
-                          ? `${(item as DepositItem).code} · ${(item as DepositItem).customerName}`
-                          : `${(item as ContractItem).contractNumber} · ${(item as ContractItem).customerName}`;
-                    const subtitle =
-                      appointmentType === "view-room"
-                        ? `${(item as RegistrationItem).phone} • ${(item as RegistrationItem).email}`
-                        : appointmentType === "checkin"
-                          ? `${(item as DepositItem).phone} • ${(item as DepositItem).room}`
-                          : `${(item as ContractItem).phone} • ${(item as ContractItem).room}`;
+                    const label = `${item.code} · ${item.customerName}`;
+                    const subtitle = `${item.phone}`;
 
                     return (
                       <button
@@ -376,7 +249,7 @@ export function SaleAppointmentPage() {
                           <p className="truncate text-sm font-semibold text-gray-900">{label}</p>
                           {appointmentType === "view-room" && (
                             <Badge className="h-6 rounded bg-emerald-100 px-2 text-[11px] text-emerald-700">
-                              {(item as RegistrationItem).status}
+                              {item.status}
                             </Badge>
                           )}
                         </div>
@@ -385,56 +258,7 @@ export function SaleAppointmentPage() {
                     );
                   })}
 
-                  {excludedResults.length > 0 && (
-                    <div className="pt-2">
-                      <div className="mb-2 text-xs font-semibold text-gray-500">
-                        Chứng từ không phù hợp (không thể chọn)
-                      </div>
-                      <div className="space-y-2">
-                        {appointmentType === "view-room" &&
-                          (excludedResults as RegistrationItem[]).map((item) => (
-                            <div
-                              key={item.id}
-                              className="group w-full overflow-hidden rounded-lg border border-gray-100 bg-gray-50 px-3 py-3 text-left opacity-60"
-                            >
-                              <div className="flex items-center justify-between gap-3">
-                                <p className="truncate text-sm font-semibold text-gray-700">{`${item.registrationNumber} · ${item.customerName}`}</p>
-                                <Badge className="h-6 rounded bg-amber-100 px-2 text-[11px] text-amber-700">
-                                  {item.status}
-                                </Badge>
-                              </div>
-                              <p className="mt-2 text-xs text-gray-500">{`${item.phone} • ${item.email}`}</p>
-                            </div>
-                          ))}
 
-                        {appointmentType === "checkin" &&
-                          (excludedResults as DepositItem[]).map((item) => (
-                            <div
-                              key={item.id}
-                              className="group w-full overflow-hidden rounded-lg border border-gray-100 bg-gray-50 px-3 py-3 text-left opacity-60"
-                            >
-                              <div className="flex items-center justify-between gap-3">
-                                <p className="truncate text-sm font-semibold text-gray-700">{`${item.code} · ${item.customerName}`}</p>
-                              </div>
-                              <p className="mt-2 text-xs text-gray-500">{`${item.phone} • ${item.room}`}</p>
-                            </div>
-                          ))}
-
-                        {appointmentType === "checkout" &&
-                          (excludedResults as ContractItem[]).map((item) => (
-                            <div
-                              key={item.id}
-                              className="group w-full overflow-hidden rounded-lg border border-gray-100 bg-gray-50 px-3 py-3 text-left opacity-60"
-                            >
-                              <div className="flex items-center justify-between gap-3">
-                                <p className="truncate text-sm font-semibold text-gray-700">{`${item.contractNumber} · ${item.customerName}`}</p>
-                              </div>
-                              <p className="mt-2 text-xs text-gray-500">{`${item.phone} • ${item.room}`}</p>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </ScrollArea>
@@ -468,11 +292,7 @@ export function SaleAppointmentPage() {
                 </p>
                 <p className="mt-1 truncate text-sm font-semibold text-gray-900">
                   {selectedReference
-                    ? appointmentType === "view-room"
-                      ? `${(selectedReference as RegistrationItem).registrationNumber} • ${(selectedReference as RegistrationItem).customerName}`
-                      : appointmentType === "checkin"
-                        ? `${(selectedReference as DepositItem).code} • ${(selectedReference as DepositItem).customerName}`
-                        : `${(selectedReference as ContractItem).contractNumber} • ${(selectedReference as ContractItem).customerName}`
+                    ? `${selectedReference.code} • ${selectedReference.customerName}`
                     : "Chưa chọn chứng từ"}
                 </p>
               </div>
@@ -495,13 +315,13 @@ export function SaleAppointmentPage() {
                         <SelectTrigger id="branch" className="h-10 text-sm">
                           <SelectValue placeholder="Chọn chi nhánh" />
                         </SelectTrigger>
-                        <SelectContent>
-                          {BRANCHES.map((branchOption) => (
-                            <SelectItem key={branchOption.value} value={branchOption.value}>
-                              {branchOption.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
+                          <SelectContent>
+                            {branchOptions.map((branchOption) => (
+                              <SelectItem key={branchOption.value} value={branchOption.value}>
+                                {branchOption.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                       </Select>
                       {errors.branch && (
                         <p className="text-sm text-red-500">{errors.branch.message}</p>

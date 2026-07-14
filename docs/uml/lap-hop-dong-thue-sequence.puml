@@ -110,7 +110,7 @@ opt Co dich vu duoc chon
   activate DVDB
   deactivate DVDB
   deactivate DV
-  
+
   loop dsMaDV
     UC -> HDDVDB : Them(maHD, maDV, donGia)
     activate HDDVDB

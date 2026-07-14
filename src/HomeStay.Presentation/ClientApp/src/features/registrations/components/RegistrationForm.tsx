@@ -15,6 +15,7 @@ import {
 import { Checkbox } from "@/shared/ui/checkbox";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { registrationService } from "../services/registration-service";
 
 // Zod validation schema
 const registrationSchema = z.object({
@@ -46,18 +47,18 @@ const registrationSchema = z.object({
   moveInDate: z.string().min(1, "Ngày dự kiến vào ở là bắt buộc"),
 
   // Tiêu chí
-  parkingRequired: z.boolean().default(false),
-  acRequired: z.boolean().default(false),
-  wifiRequired: z.boolean().default(false),
-  kitchenRequired: z.boolean().default(false),
-  gymRequired: z.boolean().default(false),
-  laundryRequired: z.boolean().default(false),
-  securityRequired: z.boolean().default(false),
-  quietHours: z.boolean().default(false),
+  parkingRequired: z.boolean(),
+  acRequired: z.boolean(),
+  wifiRequired: z.boolean(),
+  kitchenRequired: z.boolean(),
+  gymRequired: z.boolean(),
+  laundryRequired: z.boolean(),
+  securityRequired: z.boolean(),
+  quietHours: z.boolean(),
   quietHoursStart: z.string().optional(),
   quietHoursEnd: z.string().optional(),
-  petFriendly: z.boolean().default(false),
-  smokingAllowed: z.boolean().default(false),
+  petFriendly: z.boolean(),
+  smokingAllowed: z.boolean(),
   notes: z.string().optional(),
 });
 
@@ -152,11 +153,10 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
 
   const onSubmit: SubmitHandler<RegistrationFormData> = async (data) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const response = await registrationService.create(data);
 
       toast.success("Phiếu đăng ký được tạo thành công!", {
-        description: `Mã đăng ký: REG-${Date.now()}`,
+        description: `Mã đăng ký: ${response.registrationNumber}`,
       });
 
       if (onSuccess) {
@@ -165,10 +165,11 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
       reset();
     } catch (error) {
       toast.error("Lỗi khi tạo phiếu đăng ký", {
-        description: "Vui lòng thử lại sau",
+        description: error instanceof Error ? error.message : "Vui lòng thử lại sau",
       });
     }
   };
+
 
   const submitForm = handleSubmit((data: RegistrationFormData) => {
     void onSubmit(data);

@@ -6,10 +6,12 @@ using HomeStay.Application.DataAccess.DbConnections;
 public sealed class TaoLichHen
 {
     private readonly Func<PhienDuLieu> _taoPhienDuLieu;
+    private readonly TimeProvider _timeProvider;
 
-    public TaoLichHen(Func<PhienDuLieu> taoPhienDuLieu)
+    public TaoLichHen(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
     {
         _taoPhienDuLieu = taoPhienDuLieu;
+        _timeProvider = timeProvider;
     }
 
     public async Task<IReadOnlyList<dynamic>> TaiDanhSachChungTu(string loaiLichHen, string? tuKhoa)
@@ -28,17 +30,23 @@ public sealed class TaoLichHen
     {
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
+        try
+        {
+            var thoiDiem = _timeProvider.GetLocalNow().DateTime;
+            var lichHen = LichHen.TaoMoi(loai, maChungTu, maCN, ngayHen, gioHen, maNV, thoiDiem);
 
-        var lichHen = LichHen.TaoMoi(loai, maChungTu, maCN, ngayHen, gioHen, maNV);
+            lichHen.KiemTraThoiGianHopLe(thoiDiem);
+            await lichHen.KiemTraHopLe();
+            await lichHen.KiemTraTrungLich();
+            await lichHen.Them();
 
-        await lichHen.KiemTraHopLe();
-        await lichHen.KiemTraTrungLich();
-        await lichHen.Them();
-
-        // (Tùy chọn) Gửi thông báo
-        // DichVuThongBao.GuiThongBaoLichHen(lichHen);
-
-        phien.Commit();
-        return lichHen;
+            phien.Commit();
+            return lichHen;
+        }
+        catch
+        {
+            phien.Rollback();
+            throw;
+        }
     }
 }

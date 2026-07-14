@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export type AppointmentType = "view-room" | "checkin" | "checkout";
 
 export type AppointmentRecord = {
@@ -10,105 +12,169 @@ export type AppointmentRecord = {
   status: string;
 };
 
+export type AppointmentDocument = {
+  id: string;
+  code: string;
+  customerName: string;
+  phone: string;
+  status: string;
+};
+
+export type BranchOption = { value: string; label: string };
+
 export const APPOINTMENT_TYPES = [
   { value: "view-room", label: "Xem phòng", helper: "Cho phép tìm kiếm Phiếu đăng ký." },
   { value: "checkin", label: "Nhận phòng", helper: "Cho phép tìm kiếm Phiếu cọc đã duyệt." },
   { value: "checkout", label: "Trả phòng", helper: "Cho phép tìm kiếm Hợp đồng đang hiệu lực." },
 ] as const;
 
-export const BRANCHES = [
-  { value: "CN-A", label: "Chi nhánh A" },
-  { value: "CN-B", label: "Chi nhánh B" },
-  { value: "CN-C", label: "Chi nhánh C" },
-] as const;
+const customerSchema = z.object({
+  hoTen: z.string(),
+  soGiayTo: z.string().nullish(),
+});
 
-export const MOCK_APPOINTMENTS: AppointmentRecord[] = [
-  {
-    id: "appt-001",
-    appointmentType: "view-room",
-    referenceLabel: "KH-001 - Nguyễn Văn A",
-    branch: "CN-A",
-    date: "2026-06-05",
-    time: "09:00",
-    status: "Chờ xác nhận",
-  },
-  {
-    id: "appt-002",
-    appointmentType: "checkin",
-    referenceLabel: "KH-002 - Trần Thị B",
-    branch: "CN-B",
-    date: "2026-06-06",
-    time: "14:30",
-    status: "Đã xác nhận",
-  },
-  {
-    id: "appt-003",
-    appointmentType: "checkout",
-    referenceLabel: "KH-003 - Lê Văn C",
-    branch: "CN-C",
-    date: "2026-06-10",
-    time: "10:00",
-    status: "Đã hủy",
-  },
-  {
-    id: "appt-004",
-    appointmentType: "view-room",
-    referenceLabel: "KH-004 - Phạm Thị D",
-    branch: "CN-A",
-    date: "2026-06-12",
-    time: "16:00",
-    status: "Đã xác nhận",
-  },
-  {
-    id: "appt-005",
-    appointmentType: "checkin",
-    referenceLabel: "KH-005 - Hoàng Văn E",
-    branch: "CN-B",
-    date: "2026-06-14",
-    time: "08:30",
-    status: "Đang chờ",
-  },
-] as const;
+const appointmentSchema = z.object({
+  maLH: z.string().min(1),
+  ngayHen: z.string().min(1),
+  gioHen: z.string().min(1),
+  loaiLichHen: z.enum(["XemPhong", "NhanPhong", "TraPhong"]),
+  trangThai: z.string().min(1),
+  maPDK: z.string().nullish(),
+  maPhieuCoc: z.string().nullish(),
+  maHD: z.string().nullish(),
+  maCN: z.string().nullish(),
+  khachHang: customerSchema.nullish(),
+});
 
-export function seedMockAppointments() {
-  if (typeof window === "undefined") return;
+const documentSchema = z.object({
+  maPDK: z.string().nullish(),
+  maPhieuCoc: z.string().nullish(),
+  maHD: z.string().nullish(),
+  hoTen: z.string().nullish(),
+  sdt: z.string().nullish(),
+  trangThai: z.string().min(1),
+});
 
-  const existing = loadAppointments();
-  if (existing.length > 0) return;
+const branchSchema = z.object({
+  maCN: z.string().min(1),
+  tenChiNhanh: z.string().min(1),
+});
 
-  saveAppointments(MOCK_APPOINTMENTS);
+const errorSchema = z.object({
+  message: z.string().optional(),
+  Message: z.string().optional(),
+});
+
+function mapType(type: z.infer<typeof appointmentSchema>["loaiLichHen"]): AppointmentType {
+  if (type === "NhanPhong") return "checkin";
+  if (type === "TraPhong") return "checkout";
+  return "view-room";
 }
 
-const APPOINTMENT_STORAGE_KEY = "homestay-appointments-v1";
-
-export function loadAppointments(): AppointmentRecord[] {
-  if (typeof window === "undefined") return [];
-
-  try {
-    const raw = localStorage.getItem(APPOINTMENT_STORAGE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as AppointmentRecord[];
-  } catch {
-    return [];
-  }
+function mapAppointment(value: z.infer<typeof appointmentSchema>): AppointmentRecord {
+  const reference = value.maPDK ?? value.maPhieuCoc ?? value.maHD ?? value.maLH;
+  const customer = value.khachHang?.hoTen?.trim();
+  return {
+    id: value.maLH,
+    appointmentType: mapType(value.loaiLichHen),
+    referenceLabel: customer ? `${reference} - ${customer}` : reference,
+    branch: value.maCN ?? "",
+    date: value.ngayHen.slice(0, 10),
+    time: value.gioHen.slice(0, 5),
+    status: value.trangThai,
+  };
 }
 
-export function saveAppointments(appointments: AppointmentRecord[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(APPOINTMENT_STORAGE_KEY, JSON.stringify(appointments));
+async function readError(response: Response, fallback: string): Promise<Error> {
+  const payload = errorSchema.safeParse(await response.json().catch(() => null));
+  return new Error(payload.success ? payload.data.message ?? payload.data.Message ?? fallback : fallback);
 }
 
-export interface AppointmentService {
-  list(): Promise<AppointmentRecord[]>;
-  save(appointments: AppointmentRecord[]): Promise<void>;
+async function readJson<T>(response: Response, schema: z.ZodType<T>, fallback: string): Promise<T> {
+  if (!response.ok) throw await readError(response, fallback);
+  const parsed = schema.safeParse(await response.json());
+  if (!parsed.success) throw new Error("Dữ liệu lịch hẹn từ máy chủ không đúng định dạng.");
+  return parsed.data;
 }
 
-export const mockAppointmentService: AppointmentService = {
-  async list() {
-    seedMockAppointments();
-    return loadAppointments();
+export const appointmentService = {
+  async list(keyword?: string, date?: string, time?: string): Promise<AppointmentRecord[]> {
+    const params = new URLSearchParams();
+    if (keyword?.trim()) params.set("keyword", keyword.trim());
+    if (date) params.set("date", date);
+    if (time) params.set("time", time);
+    const values = await readJson(
+      await fetch(`/api/appointments/all?${params.toString()}`),
+      z.array(appointmentSchema),
+      "Không thể tải danh sách lịch hẹn.",
+    );
+    return values.map(mapAppointment);
   },
-  async save(appointments) {
-    saveAppointments(appointments);
+
+  async create(data: {
+    loaiLichHen: "XemPhong" | "NhanPhong" | "TraPhong";
+    maChungTu: string;
+    maCN: string;
+    ngayHen: string;
+    gioHen: string;
+  }): Promise<AppointmentRecord> {
+    const value = await readJson(
+      await fetch("/api/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+      appointmentSchema,
+      "Không thể tạo lịch hẹn.",
+    );
+    return mapAppointment(value);
+  },
+
+  async fetchDocuments(type: "XemPhong" | "NhanPhong" | "TraPhong", keyword = ""):
+    Promise<AppointmentDocument[]> {
+    const params = new URLSearchParams({ type });
+    if (keyword.trim()) params.set("keyword", keyword.trim());
+    const values = await readJson(
+      await fetch(`/api/appointments/documents?${params.toString()}`),
+      z.array(documentSchema),
+      "Không thể tải chứng từ đủ điều kiện.",
+    );
+    return values.map((value) => {
+      const code = value.maPDK ?? value.maPhieuCoc ?? value.maHD;
+      if (!code) throw new Error("Chứng từ lịch hẹn thiếu mã tham chiếu.");
+      return {
+        id: code,
+        code,
+        customerName: value.hoTen?.trim() || "Chưa có tên khách",
+        phone: value.sdt?.trim() || "Chưa có SĐT",
+        status: value.trangThai,
+      };
+    });
+  },
+
+  async getBranches(): Promise<BranchOption[]> {
+    const values = await readJson(
+      await fetch("/api/branches"),
+      z.array(branchSchema),
+      "Không thể tải danh sách chi nhánh.",
+    );
+    return values.map((value) => ({ value: value.maCN, label: value.tenChiNhanh }));
+  },
+
+  async update(id: string, data: {
+    ngayHen: string;
+    gioHen: string;
+    trangThai: string;
+  }): Promise<AppointmentRecord> {
+    const value = await readJson(
+      await fetch(`/api/appointments/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+      appointmentSchema,
+      "Không thể cập nhật lịch hẹn.",
+    );
+    return mapAppointment(value);
   },
 };
