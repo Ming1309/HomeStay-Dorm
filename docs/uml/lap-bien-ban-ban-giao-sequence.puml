@@ -1,0 +1,181 @@
+@startuml LapBienBanBanGiao_Sequence
+title SO DO TUAN TU - LAP BIEN BAN BAN GIAO
+
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+
+actor "Quản lý" as QL
+boundary ": MHLapBienBanBanGiao" as MH
+control ": LapBienBanBanGiao" as LBB
+control ": HopDong" as HD
+control ": BienBanGiaoNhan" as BB
+control ": ChiTietGiaoNhan" as CT
+control ": PhongTaiSan" as PTS
+control ": Giuong" as G
+entity ": HopDongDB" as HDDB
+entity ": BienBanGiaoNhanDB" as BBDB
+entity ": ChiTietGiaoNhanDB" as CTDB
+entity ": PhongTaiSanDB" as PTSDB
+entity ": GiuongDB" as GDB
+
+'=====================
+' TẢI DANH SÁCH HỢP ĐỒNG
+'=====================
+
+QL -> MH : hienThiForm()
+activate MH
+MH -> LBB : LayDanhSachChoBanGiao()
+activate LBB
+LBB -> HD : LayDanhSachChoBanGiao()
+activate HD
+HD -> HDDB : LayDanhSachChoBanGiao()
+activate HDDB
+deactivate HDDB
+deactivate HD
+deactivate LBB
+deactivate MH
+
+QL -> MH : nhapTuKhoaTimKiem(tuKhoa)
+activate MH
+MH -> LBB : LayDanhSachChoBanGiao(tuKhoa)
+activate LBB
+LBB -> HD : LayDanhSachChoBanGiao(tuKhoa)
+activate HD
+HD -> HDDB : LayDanhSachChoBanGiao(tuKhoa)
+activate HDDB
+deactivate HDDB
+deactivate HD
+deactivate LBB
+deactivate MH
+
+'=====================
+' CHỌN HỢP ĐỒNG VÀ TẢI TÀI SẢN
+'=====================
+
+QL -> MH : chonHopDong(maHD)
+activate MH
+MH -> LBB : LayChiTietBanGiao(maHD)
+activate LBB
+
+LBB -> HD : DocChiTiet(maHD)
+activate HD
+HD -> HDDB : DocChiTiet(maHD)
+activate HDDB
+deactivate HDDB
+deactivate HD
+
+LBB -> HD : KiemTraChoBanGiao()
+activate HD
+deactivate HD
+
+LBB -> BB : TonTaiBanGiaoTheoHD(maHD)
+activate BB
+BB -> BBDB : TonTaiBanGiaoTheoHD(maHD)
+activate BBDB
+deactivate BBDB
+deactivate BB
+
+LBB -> PTS : LayTaiSanTheoPhong(maPhong)
+activate PTS
+PTS -> PTSDB : LayTaiSanTheoPhong(maPhong)
+activate PTSDB
+deactivate PTSDB
+deactivate PTS
+deactivate LBB
+deactivate MH
+
+'=====================
+' NHẬP HIỆN TRẠNG VÀ CHỐT
+'=====================
+
+QL -> MH : nhapSoLuongVaTinhTrang()
+QL -> MH : btnChotBanGiao_Click()
+activate MH
+
+MH -> LBB : ChotBienBan(maHD, maNV, taiSan)
+activate LBB
+
+LBB -> HD : DocChiTiet(maHD)
+activate HD
+HD -> HDDB : DocChiTiet(maHD)
+activate HDDB
+deactivate HDDB
+deactivate HD
+
+LBB -> HD : KiemTraChoBanGiao()
+activate HD
+deactivate HD
+
+LBB -> BB : TonTaiBanGiaoTheoHD(maHD)
+activate BB
+BB -> BBDB : TonTaiBanGiaoTheoHD(maHD)
+activate BBDB
+deactivate BBDB
+deactivate BB
+
+LBB -> PTS : LayTaiSanTheoPhong(maPhong)
+activate PTS
+PTS -> PTSDB : LayTaiSanTheoPhong(maPhong)
+activate PTSDB
+deactivate PTSDB
+deactivate PTS
+
+note over LBB
+  LBB thực hiện kiểm tra dữ liệu đầu vào
+  và khởi tạo các đối tượng ChiTietGiaoNhan
+end note
+
+LBB -> CT : KiemTraHopLe()
+activate CT
+deactivate CT
+
+LBB -> BB : KhoiTaoBanGiao(maHD, maNV, ngayBanGiao, chiTiet)
+activate BB
+deactivate BB
+
+LBB -> BB : KiemTraDuLieuTaiSan()
+activate BB
+deactivate BB
+
+LBB -> BB : LuuBienBan()
+activate BB
+BB -> BBDB : Them(bienBan)
+activate BBDB
+deactivate BBDB
+deactivate BB
+
+LBB -> CT : ThemNhieu(chiTiet)
+activate CT
+CT -> CTDB : ThemNhieu(chiTiet)
+activate CTDB
+deactivate CTDB
+deactivate CT
+
+LBB -> G : CapNhatDangSuDungTheoHD(maHD)
+activate G
+G -> GDB : UpdateTrangThaiTheoHopDong(maHD, "DangSuDung")
+activate GDB
+deactivate GDB
+deactivate G
+
+LBB -> HD : ChuyenTrangThaiDangHieuLuc()
+activate HD
+HD -> HDDB : UpdateTrangThai(maHD, "DangHieuLuc")
+activate HDDB
+deactivate HDDB
+deactivate HD
+
+deactivate LBB
+deactivate MH
+
+'=====================
+' HỦY BÀN GIAO
+'=====================
+
+QL -> MH : btnHuyBanGiao_Click()
+activate MH
+MH -> MH : hienThiThongBaoHuy()
+deactivate MH
+
+@enduml

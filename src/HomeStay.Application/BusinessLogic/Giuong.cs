@@ -37,6 +37,9 @@ public sealed class Giuong
             throw new InvalidOperationException($"Giường {maGiuong} không thể cập nhật trạng thái Trống.");
     }
 
+    public static Task CapNhatDangSuDungTheoHD(string maHD) =>
+        GiuongDB.UpdateTrangThaiTheoHopDong(maHD, "DangSuDung");
+
     public void GiaiPhong(string maPhong)
     {
         if (MaPhong != maPhong || TrangThai is not ("GiuCho" or "DaCoc"))

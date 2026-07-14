@@ -17,6 +17,28 @@ public sealed class BienBanGiaoNhan
     public string? ToaNha { get; set; }
     public string? TenNguoiLap { get; set; }
 
+    public static BienBanGiaoNhan KhoiTaoBanGiao(
+        string maHD,
+        string? maNV,
+        DateTime ngayBanGiao,
+        IEnumerable<ChiTietGiaoNhan> chiTiet)
+    {
+        var bienBan = new BienBanGiaoNhan
+        {
+            MaBienBan = $"BBBG{DateTime.Now:yyyyMMddHHmmss}",
+            NgayBanGiao = ngayBanGiao.Date,
+            LoaiBienBan = "BanGiao",
+            MaHD = maHD,
+            MaNV = maNV,
+            ChiTiet = chiTiet.ToList(),
+        };
+
+        foreach (var item in bienBan.ChiTiet)
+            item.MaBienBan = bienBan.MaBienBan;
+
+        return bienBan;
+    }
+
     public static BienBanGiaoNhan KhoiTaoThuHoi(
         string maHD,
         string? maNV,
@@ -50,6 +72,9 @@ public sealed class BienBanGiaoNhan
 
     public static Task<bool> TonTaiThuHoiTheoHD(string maHD) =>
         BienBanGiaoNhanDB.TonTaiThuHoiTheoHD(maHD);
+
+    public static Task<bool> TonTaiBanGiaoTheoHD(string maHD) =>
+        BienBanGiaoNhanDB.TonTaiBanGiaoTheoHD(maHD);
 
     public Task LuuBienBan() => BienBanGiaoNhanDB.Them(this);
 
