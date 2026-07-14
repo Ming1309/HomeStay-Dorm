@@ -1,309 +1,216 @@
 @startuml
-title 3 Layers - UC Xử lý thanh toán hợp đồng - Bố cục gọn
-
-skinparam dpi 220
-skinparam packageStyle rectangle
-skinparam classAttributeIconSize 0
-skinparam nodesep 35
-skinparam ranksep 65
-skinparam linetype ortho
-skinparam shadowing false
-
-skinparam defaultFontSize 15
-skinparam classFontSize 15
-skinparam classAttributeFontSize 13
-skinparam packageFontSize 17
-skinparam titleFontSize 20
+title SO DO LOP 3 TANG - XU LY THANH TOAN HOP DONG
 
 top to bottom direction
-
-package "Presentation Layer\n(Tầng giao diện)" as PL {
-
-    class "MH_XuLyThanhToanHopDong" as MH <<boundary>> {
-        ' ===== Danh sách hợp đồng bên trái =====
-        - lblTieuDeHangDoiThuTien: Label
-        - lblSoHopDongCanXuLy: Label
-        - txtTimKiemHopDong: TextBox
-        - pnlDanhSachHopDong: Panel
-        - cardHopDong: Panel
-        - lblMaHopDongCard: Label
-        - lblTenKhachCard: Label
-        - lblPhongCard: Label
-        - lblTongTienCard: Label
-        - badgeChoThanhToanCard: Label
-
-        ' ===== Thanh thông tin hợp đồng đang chọn =====
-        - lblMaHopDongDangChon: Label
-        - badgeChoThanhToan: Label
-        - lblTenKhachDangChon: Label
-        - lblPhongDangChon: Label
-        - lblTongCanThanhToanTitle: Label
-        - lblTongCanThanhToan: Label
-
-        ' ===== Bảng chi tiết khoản thu =====
-        - dgvKhoanThu: DataGridView
-        - colKhoanThu: DataGridViewColumn
-        - colSoLuongKy: DataGridViewColumn
-        - colThanhTien: DataGridViewColumn
-
-        ' ===== Khu vực tổng tiền =====
-        - lblTongCongHoaDonTitle: Label
-        - lblTongCongHoaDon: Label
-        - lblDaThanhToanTruocTitle: Label
-        - lblDaThanhToanTruoc: Label
-        - lblTongConLaiCanThuTitle: Label
-        - lblTongConLaiCanThu: Label
-
-        ' ===== Nút xử lý =====
-        - btnTienHanhThuTien: Button
-        - errThongTin: ErrorProvider
-
-        + loadHangDoiThuTien(): void
-        + timKiemHopDong(): void
-        + clickChonHopDong(): void
-        + hienThiChiTietThanhToan(): void
-        + hienThiBangKhoanThu(): void
-        + hienThiTongTien(): void
-        + clickTienHanhThuTien(): void
-        + hienThiThongBao(): void
-    }
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
 }
 
-package "Business Layer\n(Tầng nghiệp vụ)" as BL {
-
-    class "HopDong" as HD <<entity>> {
-        - maHD: String
-        - ngayKy: Date
-        - ngayBatDau: Date
-        - ngayKetThuc: Date
-        - kyThanhToan: String
-        - giaThue: Decimal
-        - dieuKhoan: String
-        - trangThai: String
-        - maNV: String
-        - maPhieuCoc: String
-        - maChinhSach: String
-        - maQD: String
-        - maQLDuyet: String
-
-        + layHopDongChoThanhToan(): List<HopDong>
-        + layThongTinHopDong(maHD: String): HopDong
-        + kiemTraChoThanhToan(): boolean
-        + capNhatTrangThaiChoBanGiao(): boolean
-    }
-
-    class "HoaDon" as HDon <<entity>> {
-        - maHoaDon: String
-        - ngayLap: Date
-        - hanThanhToan: Date
-        - loaiHoaDon: String
-        - tongTien: Decimal
-        - trangThai: String
-        - ghiChu: String
-        - maHD: String
-        - maNV: String
-
-        + tinhTongTienKyDau(dsChiTiet: List<ChiTietHoaDon>): Decimal
-        + taoHoaDonKyDauDaThanhToan(): String
-        + kiemTraChuaCoHoaDonKyDau(maHD: String): boolean
-    }
-
-    class "ChiTietHoaDon" as CTHDon <<entity>> {
-        - maHoaDon: String
-        - stt: int
-        - loaiKhoanThu: String
-        - maDV: String
-        - maTS: String
-        - maGiuong: String
-        - soLuong: int
-        - donViTinh: String
-        - donGia: Decimal
-        - thanhTien: Decimal
-
-        + taoDongTienThueKyDau(): ChiTietHoaDon
-        + taoDongDichVu(): List<ChiTietHoaDon>
-        + tinhThanhTien(): Decimal
-        + luuDanhSachChiTietHoaDon(): boolean
-    }
-
-    class "PhieuThu" as PT <<entity>> {
-        - maPT: String
-        - soTienThu: Decimal
-        - thoiGian: DateTime
-        - phuongThucThanhToan: String
-        - anhMinhChung: String
-        - maHoaDon: String
-        - maPhieuCoc: String
-        - maPDS: String
-        - maNV: String
-
-        + lapPhieuThuTienHoaDon(maHoaDon: String, soTienThu: Decimal): String
-    }
-
-    class "HopDong_DichVu" as HDDV <<entity>> {
-        - maHD: String
-        - maDV: String
-        - donGiaKyKet: Decimal
-
-        + layDichVuTheoHopDong(maHD: String): List<HopDong_DichVu>
-    }
-
-    class "DichVu" as DV <<entity>> {
-        - maDV: String
-        - tenDV: String
-        - donGia: Decimal
-        - donViTinh: String
-
-        + layThongTinDichVu(dsMaDV: List<String>): List<DichVu>
-    }
-
-    class "KhachHang" as KH <<entity>> {
-        - maKH: String
-        - hoTen: String
-        - ngaySinh: Date
-        - gioiTinh: String
-        - quocTich: String
-        - loaiGiayTo: String
-        - soGiayTo: String
-        - diaChiThuongTru: String
-        - sdt: String
-        - email: String
-
-        + layNguoiDaiDienTheoHopDong(maHD: String): KhachHang
-    }
-
-    class "Phong" as PH <<entity>> {
-        - maPhong: String
-        - soPhong: String
-        - toaNha: String
-        - tang: int
-        - gioiTinhChoPhep: String
-        - trangThai: String
-        - maLP: String
-        - maCN: String
-
-        + layPhongTheoHopDong(maHD: String): Phong
-    }
-
-    class "ChiTietHopDong" as CTHD <<entity>> {
-        - maHD: String
-        - maGiuong: String
-        - maKH: String
-        - trangThaiThue: String
-        - ngayTra: Date
-
-        + demSoNguoiTheoHopDong(maHD: String): int
-    }
-
-    ' ===== Hàng 1: hóa đơn và khoản thu =====
-    HD -[hidden]right- HDon
-    HDon -[hidden]right- CTHDon
-
-    ' ===== Hàng 2: phiếu thu và dịch vụ =====
-    PT -[hidden]right- HDDV
-    HDDV -[hidden]right- DV
-
-    ' ===== Hàng 3: thông tin hiển thị phụ =====
-    KH -[hidden]right- PH
-    PH -[hidden]right- CTHD
-
-    ' ===== Ép xuống hàng, không kéo ngang quá dài =====
-    HD -[hidden]down- PT
-    PT -[hidden]down- KH
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHXuLyThanhToanHopDong {
+    - txtTimKiemHopDong: TextBox
+    - pnlDanhSachHopDong: Panel
+    - cardHopDong: Panel
+    - lblMaHopDongCard: Label
+    - lblTenKhachCard: Label
+    - lblPhongCard: Label
+    - lblTongTienCard: Label
+    - badgeChoThanhToanCard: Label
+    - lblMaHopDongDangChon: Label
+    - badgeChoThanhToan: Label
+    - lblTenKhachDangChon: Label
+    - lblPhongDangChon: Label
+    - lblTongCanThanhToan: Label
+    - dgvKhoanThu: DataGridView
+    - colKhoanThu: DataGridViewColumn
+    - colSoLuongKy: DataGridViewColumn
+    - colThanhTien: DataGridViewColumn
+    - lblTongCongHoaDon: Label
+    - lblTongConLaiCanThu: Label
+    - btnTienHanhThuTien: Button
+    --
+    + loadHangDoiThuTien()
+    + timKiemHopDong()
+    + clickChonHopDong()
+    + hienThiChiTietThanhToan()
+    + hienThiBangKhoanThu()
+    + hienThiTongTien()
+    + clickTienHanhThuTien()
+    + hienThiThongBao()
+  }
 }
 
-package "Data Access Layer\n(Tầng truy xuất dữ liệu)" as DAL {
+package "TANG NGHIEP VU" #FCF3CF {
+  class XuLyThanhToanHopDong {
+    + LayDSChoThanhToan(): IReadOnlyList<HopDongDto>
+    + LayChiTietThanhToan(maHD: String): ChiTietThanhToanDto
+    + TienHanhThuTien(maHD: String, phuongThuc: String, anhMinhChung: String, maNV: String): PhieuThu
+  }
 
-    class "HopDongDB" as HDDB <<database>> {
-        + getHopDongChoThanhToan(): List<HopDong>
-        + getByMaHD(maHD: String): HopDong
-        + updateTrangThai(maHD: String, trangThai: String): boolean
-    }
+  class HopDong {
+    - MaHD: String
+    - NgayKy: DateTime
+    - NgayBatDau: DateTime
+    - NgayKetThuc: DateTime
+    - KyThanhToan: Integer
+    - GiaThue: Decimal
+    - DieuKhoan: String
+    - TrangThai: String
+    - MaNV: String
+    - MaPhieuCoc: String
+    - MaChinhSach: String
+    - MaQD: String
+    - MaQLDuyet: String
+    --
+    + LayDanhSachChoThanhToan(): IReadOnlyList<HopDong>
+    + DocChiTiet(maHD: String): HopDong
+    + KiemTraChoThanhToan()
+    + CapNhatTrangThaiChoBanGiao(maHD: String)
+  }
 
-    class "HoaDonDB" as HDonDB <<database>> {
-        + existsHoaDonKyDau(maHD: String): boolean
-        + insert(hoaDon: HoaDon): String
-        + updateTrangThai(maHoaDon: String, trangThai: String): boolean
-    }
+  class HoaDon {
+    - MaHoaDon: String
+    - NgayLap: DateTime
+    - HanThanhToan: DateTime
+    - LoaiHoaDon: String
+    - TongTien: Decimal
+    - TrangThai: String
+    - GhiChu: String
+    - MaHD: String
+    - MaNV: String
+    --
+    + TinhTongTienKyDau(dsChiTiet: IReadOnlyList<ChiTietHoaDon>): Decimal
+    + TaoHoaDonKyDauDaThanhToan(maHD: String, tongTien: Decimal, maNV: String, ngayLap: DateTime, dsChiTiet: IReadOnlyList<ChiTietHoaDon>): HoaDon
+    + KiemTraChuaCoHoaDonKyDau(maHD: String): Boolean
+  }
 
-    class "ChiTietHoaDonDB" as CTHDonDB <<database>> {
-        + insertBatch(dsChiTietHoaDon: List<ChiTietHoaDon>): boolean
-    }
+  class ChiTietHoaDon {
+    - MaHoaDon: String
+    - STT: Integer
+    - LoaiKhoanThu: String
+    - MaDV: String
+    - MaTS: String
+    - MaGiuong: String
+    - SoLuong: Decimal
+    - DonViTinh: String
+    - DonGia: Decimal
+    - ThanhTien: Decimal
+    --
+    + TaoDongTienThueKyDau(maHoaDon: String, stt: Integer, donGia: Decimal, soLuong: Integer): ChiTietHoaDon
+    + TaoDongDichVu(maHoaDon: String, dichVus: IReadOnlyList<DichVuHopDong>, sttBatDau: Integer): List<ChiTietHoaDon>
+    + LuuDanhSachChiTietHoaDon(dsChiTiet: IReadOnlyList<ChiTietHoaDon>)
+  }
 
-    class "PhieuThuDB" as PTDB <<database>> {
-        + insert(phieuThu: PhieuThu): String
-        + sumDaThanhToan(maHoaDon: String): Decimal
-    }
+  class PhieuThu {
+    - MaPT: String
+    - SoTienThu: Decimal
+    - ThoiGian: DateTime
+    - PhuongThucThanhToan: String
+    - AnhMinhChung: String
+    - MaHoaDon: String
+    - MaPhieuCoc: String
+    - MaPDS: String
+    - MaNV: String
+    --
+    + TaoPhieuThuTienHoaDon(maHoaDon: String, soTienThu: Decimal, phuongThuc: String, anhMinhChung: String, maNV: String, thoiDiem: DateTime): PhieuThu
+    + LuuPhieu()
+  }
 
-    class "HopDong_DichVuDB" as HDDVDB <<database>> {
-        + getByMaHD(maHD: String): List<HopDong_DichVu>
-    }
+  class DichVuHopDong {
+    - MaHD: String
+    - MaDV: String
+    - DonGiaKyKet: Decimal
+    - DichVu: DichVu
+    --
+    + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<DichVuHopDong>
+  }
 
-    class "DichVuDB" as DVDB <<database>> {
-        + getByIds(dsMaDV: List<String>): List<DichVu>
-    }
+  class DichVu {
+    - MaDV: String
+    - TenDV: String
+    - DonGia: Decimal
+    - DonViTinh: String
+  }
 
-    class "KhachHangDB" as KHDB <<database>> {
-        + getDaiDienByMaHD(maHD: String): KhachHang
-    }
+  class KhachHang {
+    - MaKH: String
+    - HoTen: String
+    - NgaySinh: DateTime
+    - GioiTinh: String
+    - QuocTich: String
+    - LoaiGiayTo: String
+    - SoGiayTo: String
+    - DiaChiThuongTru: String
+    - SDT: String
+    - Email: String
+  }
 
-    class "PhongDB" as PHDB <<database>> {
-        + getPhongByMaHD(maHD: String): Phong
-    }
-
-    class "ChiTietHopDongDB" as CTHDDB <<database>> {
-        + countKhachByMaHD(maHD: String): int
-    }
-
-    ' ===== Hàng 1 DB =====
-    HDDB -[hidden]right- HDonDB
-    HDonDB -[hidden]right- CTHDonDB
-
-    ' ===== Hàng 2 DB =====
-    PTDB -[hidden]right- HDDVDB
-    HDDVDB -[hidden]right- DVDB
-
-    ' ===== Hàng 3 DB =====
-    KHDB -[hidden]right- PHDB
-    PHDB -[hidden]right- CTHDDB
-
-    ' ===== Ép xuống hàng =====
-    HDDB -[hidden]down- PTDB
-    PTDB -[hidden]down- KHDB
+  class Phong {
+    - MaPhong: String
+    - SoPhong: String
+    - ToaNha: String
+    - Tang: String
+    - GioiTinhChoPhep: String
+    - TrangThai: String
+    - MaLP: String
+    - MaCN: String
+  }
 }
 
-' =====================================================
-' ÉP 3 TẦNG THEO CHIỀU DỌC
-' =====================================================
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class HopDongDB {
+    + LayDanhSachChoThanhToan(): IReadOnlyList<HopDong>
+    + DocChiTiet(maHD: String): HopDong
+    + UpdateTrangThai(maHD: String, trangThai: String): Boolean
+  }
 
-MH -[hidden]down- HDon
-HDon -[hidden]down- HDonDB
+  class HoaDonDB {
+    + ExistsHoaDonKyDau(maHD: String): Boolean
+    + Insert(hoaDon: HoaDon): String
+  }
 
-' =====================================================
-' LIÊN KẾT PRESENTATION -> BUSINESS
-' Hạn chế số đường nối để đỡ rối
-' =====================================================
+  class ChiTietHoaDonDB {
+    + InsertBatch(dsChiTiet: IReadOnlyList<ChiTietHoaDon>)
+  }
 
-MH o-- HD : chọn hợp đồng chờ thanh toán
-MH o-- HDon : tính / lập hóa đơn kỳ đầu
-MH o-- CTHDon : hiển thị khoản thu
-MH o-- PT : tiến hành thu tiền
-MH o-- KH : hiển thị khách
-MH o-- PH : hiển thị phòng
-MH o-- HDDV : lấy dịch vụ hợp đồng
+  class PhieuThuDB {
+    + InsertPhieuThu(phieuThu: PhieuThu)
+  }
 
-' =====================================================
-' LIÊN KẾT BUSINESS -> DATA ACCESS
-' =====================================================
+  class DichVuHopDongDB {
+    + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<DichVuHopDong>
+  }
+}
 
-HD o-- HDDB : đọc / cập nhật hợp đồng
-HDon o-- HDonDB : thêm hóa đơn
-CTHDon o-- CTHDonDB : lưu chi tiết hóa đơn
-PT o-- PTDB : lập phiếu thu
-HDDV o-- HDDVDB : đọc dịch vụ hợp đồng
-DV o-- DVDB : đọc dịch vụ
-KH o-- KHDB : đọc khách đại diện
-PH o-- PHDB : đọc phòng
-CTHD o-- CTHDDB : đếm người thuê
+' Boundary dieu khien use case xu ly thanh toan hop dong.
+MHXuLyThanhToanHopDong o-- XuLyThanhToanHopDong
+
+' Trong BLL: UseCase dieu phoi cac entity.
+XuLyThanhToanHopDong "1" -- "0..*" HopDong : doc / kiem tra
+XuLyThanhToanHopDong "1" -- "0..*" HoaDon : tao hoa don ky dau
+XuLyThanhToanHopDong "1" -- "0..*" ChiTietHoaDon : tao chi tiet
+XuLyThanhToanHopDong "1" -- "0..*" PhieuThu : lap phieu thu
+XuLyThanhToanHopDong "1" -- "0..*" DichVuHopDong : lay dich vu
+
+' Quan he giua cac entity.
+HopDong "0..*" -- "1" KhachHang : dai dien
+HopDong "0..*" -- "1" Phong : phong thue
+HopDong "1" -- "0..*" DichVuHopDong : dich vu ky ket
+DichVuHopDong "0..*" -- "1" DichVu : tham chieu
+HoaDon "0..*" -- "1" HopDong : thuoc
+HoaDon "1" -- "1..*" ChiTietHoaDon : gom
+PhieuThu "0..*" -- "1" HoaDon : thu tien
+
+' Aggregation giua business va data access.
+HopDong o-- HopDongDB
+HoaDon o-- HoaDonDB
+ChiTietHoaDon o-- ChiTietHoaDonDB
+PhieuThu o-- PhieuThuDB
+DichVuHopDong o-- DichVuHopDongDB
 
 @enduml
