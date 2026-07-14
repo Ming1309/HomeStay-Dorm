@@ -70,6 +70,13 @@ public sealed class PhieuDoiSoat
         }
     }
 
+    public (string LoaiKetQua, decimal SoTienKetQua) XacDinhKetQua()
+    {
+        if (TienHoan > 0) return ("Hoan", TienHoan);
+        if (TienThuThem > 0) return ("ThuThem", TienThuThem);
+        return ("HoaVon", 0);
+    }
+
     public Task LuuPhieu() => PhieuDoiSoatDB.LuuPhieu(this);
 
     public static Task<IReadOnlyList<PhieuDoiSoat>> LayDSPhieuDoiSoatDaChot()
@@ -87,19 +94,16 @@ public sealed class PhieuDoiSoat
     public static Task<IReadOnlyList<PhieuDoiSoat>> LayDanhSachChoXacNhan()
         => PhieuDoiSoatDB.GetDanhSachChoXacNhan();
 
-    public async Task XacNhanKhachHangDongY(string maNhanVien, DateTime thoiDiem, string? ghiChu)
+    public async Task XacNhanKhachHangDongY(string maNhanVien, DateTime thoiDiem)
     {
         if (TrangThai != "ChoXacNhan")
             throw new InvalidOperationException("Phiếu đối soát đã được xác nhận hoặc không còn hợp lệ.");
         if (string.IsNullOrWhiteSpace(maNhanVien))
             throw new ArgumentException("Không xác định được Quản lý xác nhận.", nameof(maNhanVien));
-        if (ghiChu?.Length > 500)
-            throw new ArgumentException("Ghi chú xác nhận không được vượt quá 500 ký tự.", nameof(ghiChu));
-
         KhachHangDongY = true;
         MaNVChot = maNhanVien.Trim();
         ThoiDiemChot = thoiDiem;
-        GhiChuXacNhan = string.IsNullOrWhiteSpace(ghiChu) ? null : ghiChu.Trim();
+        GhiChuXacNhan = null;
         var trangThaiMoi = TienHoan == 0 && TienThuThem == 0 ? "DaTatToan" : "DaChot";
         if (!await PhieuDoiSoatDB.XacNhan(this, trangThaiMoi))
             throw new InvalidOperationException("Phiếu đối soát vừa được xử lý bởi người khác. Vui lòng tải lại.");

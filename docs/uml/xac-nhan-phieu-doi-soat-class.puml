@@ -7,23 +7,41 @@ skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 skinparam class { BackgroundColor #FFFACD BorderColor #9B7B7B }
 package "TANG GIAO DIEN" #EAF2F8 {
-  class MHXacNhanPhieuDoiSoat { + HienThi() + grvChoXacNhan_CellClick(maPDS: String) + btnXacNhan_Click() }
+  class MHXacNhanPhieuDoiSoat {
+    + HienThi()
+    + grvChoXacNhan_CellClick(maPDS: String)
+    + btnXacNhan_Click()
+  }
 }
 package "TANG NGHIEP VU" #FCF3CF {
   class XacNhanPhieuDoiSoat {
-    + LayDanhSachChoXacNhan(): IReadOnlyList<PhieuDoiSoat>
-    + LayChiTiet(maPDS: String): PhieuDoiSoat
-    + XacNhan(maPDS: String, khachHangDongY: Boolean, ghiChu: String, maNhanVien: String): PhieuDoiSoat
+    + LayDanhSachChoXacNhan(): IReadOnlyList<DoiSoatChoXacNhanItemDto>
+    + LayChiTiet(maPDS: String): ChiTietDoiSoatChoXacNhanDto
+    + XacNhan(maPDS: String, khachHangDongY: Boolean, maNhanVien: String): PhieuDoiSoat
   }
   class PhieuDoiSoat {
     - TrangThai: String
-    - KhachHangDongY: Boolean
-    - MaNVChot: String
-    - ThoiDiemChot: DateTime
-    - GhiChuXacNhan: String
+    - TienHoan: Decimal
+    - TienThuThem: Decimal
     + LayDanhSachChoXacNhan(): IReadOnlyList<PhieuDoiSoat>
     + LayChiTietChoCapNhat(maPDS: String): PhieuDoiSoat
-    + XacNhanKhachHangDongY(maNhanVien: String, thoiDiem: DateTime, ghiChu: String)
+    + XacDinhKetQua(): ValueTuple
+    + XacNhanKhachHangDongY(maNhanVien: String, thoiDiem: DateTime)
+  }
+  class PhieuCoc {
+    - TongTien: Decimal
+    - KhachHang: KhachHang
+    - Phong: Phong
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+  }
+  class KhachHang {
+    - SDT: String
+    - Email: String
+    + CoKenhLienHe(): Boolean
+  }
+  class HoaDon {
+    - TongTien: Decimal
+    + LayDSHoaDonTheoPhieuDoiSoat(maPDS: String): IReadOnlyList<HoaDon>
   }
 }
 package "TANG TRUY CAP DU LIEU" #FDEDEC {
@@ -32,8 +50,19 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + GetPhieuDoiSoatChoCapNhat(maPDS: String): PhieuDoiSoat
     + XacNhan(phieu: PhieuDoiSoat, trangThaiMoi: String): Boolean
   }
+  class PhieuCocDB {
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+  }
+  class HoaDonDB {
+    + GetDSHoaDonTheoMaPDS(maPDS: String): IReadOnlyList<HoaDon>
+  }
 }
 MHXacNhanPhieuDoiSoat o-- XacNhanPhieuDoiSoat
 XacNhanPhieuDoiSoat o-- PhieuDoiSoat
+XacNhanPhieuDoiSoat o-- PhieuCoc
+XacNhanPhieuDoiSoat o-- HoaDon
 PhieuDoiSoat o-- PhieuDoiSoatDB
+PhieuCoc o-- PhieuCocDB
+PhieuCoc -- KhachHang
+HoaDon o-- HoaDonDB
 @enduml

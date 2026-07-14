@@ -7,19 +7,39 @@ actor "Quan ly" as QL
 boundary ": MHXacNhanPhieuDoiSoat" as MH
 control ": XacNhanPhieuDoiSoat" as XN
 control ": PhieuDoiSoat" as PDS
+control ": PhieuCoc" as PC
+control ": KhachHang" as KH
+control ": HoaDon" as HDON
 entity ": PhieuDoiSoatDB" as PDSDB
+entity ": PhieuCocDB" as PCDB
+entity ": HoaDonDB" as HDONDB
+
 QL -> MH : HienThi()
 MH -> XN : LayDanhSachChoXacNhan()
 XN -> PDS : LayDanhSachChoXacNhan()
 PDS -> PDSDB : GetDanhSachChoXacNhan()
+XN -> PC : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTiet(maPhieuCoc)
+XN -> PDS : XacDinhKetQua()
+
 QL -> MH : grvChoXacNhan_CellClick(maPDS)
 MH -> XN : LayChiTiet(maPDS)
 XN -> PDS : LayChiTietPhieuDoiSoat(maPDS)
 PDS -> PDSDB : GetPhieuDoiSoatTheoMaPDS(maPDS)
+XN -> PC : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTiet(maPhieuCoc)
+XN -> HDON : LayDSHoaDonTheoPhieuDoiSoat(maPDS)
+HDON -> HDONDB : GetDSHoaDonTheoMaPDS(maPDS)
+XN -> KH : CoKenhLienHe()
+XN -> PDS : XacDinhKetQua()
+
 QL -> MH : btnXacNhan_Click()
-MH -> XN : XacNhan(maPDS, true, ghiChu, maNhanVien)
+MH -> XN : XacNhan(maPDS, true, maNhanVien)
 XN -> PDS : LayChiTietChoCapNhat(maPDS)
 PDS -> PDSDB : GetPhieuDoiSoatChoCapNhat(maPDS)
-XN -> PDS : XacNhanKhachHangDongY(maNhanVien, thoiDiem, ghiChu)
+XN -> PC : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTiet(maPhieuCoc)
+XN -> KH : CoKenhLienHe()
+XN -> PDS : XacNhanKhachHangDongY(maNhanVien, thoiDiem)
 PDS -> PDSDB : XacNhan(phieu, trangThaiMoi)
 @enduml
