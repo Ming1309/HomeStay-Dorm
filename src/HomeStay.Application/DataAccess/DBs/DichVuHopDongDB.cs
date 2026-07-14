@@ -46,4 +46,15 @@ public static class DichVuHopDongDB
             TrangThai = x.TrangThai,
         },
     };
+
+    public static async Task Them(string maHD, string maDV, decimal donGiaKyKet)
+    {
+        const string sql = """
+            INSERT INTO HopDong_DichVu (MaHD, MaDV, DonGiaKyKet)
+            VALUES (@MaHD, @MaDV, @DonGiaKyKet)
+            """;
+        await PhienDuLieu.Session.Connection.ExecuteAsync(sql,
+            new { MaHD = maHD, MaDV = maDV, DonGiaKyKet = donGiaKyKet },
+            PhienDuLieu.Session.Transaction);
+    }
 }

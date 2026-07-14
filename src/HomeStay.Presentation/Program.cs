@@ -69,6 +69,7 @@ builder.Services.AddScoped<TaoLichHen>();
 builder.Services.AddScoped<TraCuuLichHen>();
 builder.Services.AddScoped<SuaLichHen>();
 builder.Services.AddScoped<LapPhieuDangKy>();
+builder.Services.AddScoped<LapHopDongThue>();
 
 // UC 1.4.15 Lập biên bản bàn giao
 builder.Services.AddScoped<LapBienBanBanGiao>();

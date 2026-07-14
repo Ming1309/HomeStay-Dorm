@@ -474,6 +474,15 @@ public static class HopDongDB
         return rows.Select(TaoHopDongDanhSach).ToList();
     }
 
+    public static async Task Them(HopDong hd)
+    {
+        const string sql = """
+            INSERT INTO HopDong (MaHD, NgayKy, NgayBatDau, NgayKetThuc, KyThanhToan, GiaThue, TrangThai, MaNV, MaPhieuCoc, MaQLDuyet, MaQD, MaChinhSach)
+            VALUES (@MaHD, @NgayKy, @NgayBatDau, @NgayKetThuc, @KyThanhToan, @GiaThue, @TrangThai, @MaNV, @MaPhieuCoc, @MaQLDuyet, @MaQD, @MaChinhSach)
+            """;
+        await PhienDuLieu.Session.Connection.ExecuteAsync(sql, hd, PhienDuLieu.Session.Transaction);
+    }
+
     public static async Task<bool> UpdateTrangThai(string maHD, string trangThai)
     {
         const string sql = "UPDATE HopDong SET TrangThai = @TrangThai WHERE MaHD = @MaHD";

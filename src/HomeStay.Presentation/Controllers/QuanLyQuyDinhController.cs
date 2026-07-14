@@ -7,14 +7,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
-// UC 1.4.29 - Quan ly quy dinh luu tru (chi vai tro QuanTri).
+// UC 1.4.29 - Quan ly quy dinh luu tru.
 [ApiController]
 [Route("api/admin/regulations")]
-[Authorize(Roles = "QuanTri")]
 public sealed class QuanLyQuyDinhController(
     QuanLyQuyDinh quanLy,
     ILogger<QuanLyQuyDinhController> logger) : ControllerBase
 {
+    [Authorize(Roles = "QuanTri")]
     [HttpGet]
     public async Task<IActionResult> LayDanhSach()
     {
@@ -30,6 +30,7 @@ public sealed class QuanLyQuyDinhController(
         }
     }
 
+    [Authorize(Roles = "QuanTri")]
     [HttpPost]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(11 * 1024 * 1024)]
@@ -58,6 +59,7 @@ public sealed class QuanLyQuyDinhController(
         }
     }
 
+    [Authorize(Roles = "QuanTri")]
     [HttpPut("{id}")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(11 * 1024 * 1024)]
@@ -98,6 +100,7 @@ public sealed class QuanLyQuyDinhController(
         }
     }
 
+    [Authorize(Roles = "QuanTri")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Xoa(string id, CancellationToken cancellationToken)
     {
@@ -115,6 +118,7 @@ public sealed class QuanLyQuyDinhController(
         }
     }
 
+    [Authorize]
     [HttpGet("documents/{tenTep}")]
     public async Task<IActionResult> DocVanBan(
         string tenTep, CancellationToken cancellationToken)

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { format, parse } from "date-fns";
 import {
-  AlertCircle,
   CalendarIcon,
   CheckCircle2,
   FilePenLine,
@@ -49,7 +48,14 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
-import type { ContractDeposit } from "@/features/contracts/model/mock-contracts";
+import type { PhieuCocDaDuyet } from "@/features/contracts/services/contract-service";
+import {
+  taoHopDong,
+  xacNhanDaKy,
+  huyHopDong,
+  layChiTietPhieuCoc,
+  type ChiTietPhieuCocResponse,
+} from "@/features/contracts/services/contract-service";
 import { Label } from "@/shared/ui/label";
 
 const servicesList = [
@@ -57,12 +63,6 @@ const servicesList = [
   { id: "cleaning", label: "Dọn phòng (2 lần/tuần)", price: 300000 },
   { id: "laundry", label: "Giặt ủi (5kg/tuần)", price: 200000 },
 ];
-const applicableDocs = [
-  "Nội quy ký túc xá v2.0",
-  "Điều khoản thuê v1.0",
-  "Quy định xử lý vi phạm v1.1",
-  "Bảng phí dịch vụ v1.0",
-] as const;
 
 const contractSchema = z
   .object({
@@ -100,7 +100,7 @@ const formatCurrency = (amount: number) => {
 };
 
 type Props = {
-  deposit: ContractDeposit | null;
+  deposit: PhieuCocDaDuyet | null;
   onCancelContract: (id: string) => void;
   onConfirmSigned: (id: string) => void;
 };
@@ -108,13 +108,17 @@ type Props = {
 export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Props) {
   const [phase, setPhase] = useState<1 | 2>(1);
   const [agreedDocs, setAgreedDocs] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [quyDinhs, setQuyDinhs] = useState<ChiTietPhieuCocResponse["quyDinhs"]>([]);
+  const [chinhSach, setChinhSach] = useState<ChiTietPhieuCocResponse["chinhSachHoanCoc"]>(null);
+  const [createdMaHD, setCreatedMaHD] = useState<string | null>(null);
 
   const form = useForm<ContractFormValues>({
     resolver: zodResolver(contractSchema),
     defaultValues: {
       startDate: "",
       endDate: "",
-      baseRent: deposit ? formatCurrency(deposit.baseRent) : "",
+      baseRent: deposit ? formatCurrency(deposit.tongTien) : "",
       paymentCycle: "1",
       services: [],
     },
@@ -124,14 +128,27 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
   useEffect(() => {
     setPhase(1);
     setAgreedDocs(false);
+    setQuyDinhs([]);
+    setChinhSach(null);
+    setCreatedMaHD(null);
     form.reset({
       startDate: "",
       endDate: "",
-      baseRent: deposit ? formatCurrency(deposit.baseRent) : "",
+      baseRent: deposit ? formatCurrency(deposit.tongTien) : "",
       paymentCycle: "1",
       services: [],
     });
-  }, [deposit?.id, form, deposit]);
+    if (deposit) {
+      const ctrl = new AbortController();
+      layChiTietPhieuCoc(deposit.maPhieuCoc, ctrl.signal)
+        .then((res) => {
+          setQuyDinhs(res.quyDinhs);
+          setChinhSach(res.chinhSachHoanCoc);
+        })
+        .catch(() => {});
+      return () => ctrl.abort();
+    }
+  }, [deposit?.maPhieuCoc, form, deposit]);
 
   if (!deposit) {
     return (
@@ -148,16 +165,73 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
     );
   }
 
-  const onSubmit = (data: ContractFormValues) => {
+  const parseDateStr = (str: string): string => {
+    const d = parse(str, "dd/MM/yyyy", new Date());
+    return format(d, "yyyy-MM-dd");
+  };
+
+  const onSubmit = async (data: ContractFormValues) => {
     if (!agreedDocs) {
       toast.error("Vui lòng xác nhận khách hàng đã đồng ý với các tài liệu/quy định áp dụng.");
       return;
     }
-    // Phase 1 -> Phase 2 transition
-    setPhase(2);
-    toast.info("Đã chuyển sang chế độ Xem trước hợp đồng", {
-      icon: <FileSignature className="size-4 text-blue-500" />,
-    });
+    setSaving(true);
+    try {
+      const giaThue = parseInt(data.baseRent.replace(/[^0-9]/g, "")) || 0;
+      const kyThanhToan = parseInt(data.paymentCycle) || null;
+      const res = await taoHopDong({
+        maPhieuCoc: deposit.maPhieuCoc,
+        ngayBatDau: parseDateStr(data.startDate),
+        ngayKetThuc: parseDateStr(data.endDate),
+        kyThanhToan,
+        giaThue,
+        maQD: null,
+        maDichVus: data.services,
+      });
+      setCreatedMaHD(res.maHD);
+      setPhase(2);
+      toast.success("Hợp đồng đã được lưu", {
+        description: `Mã HĐ: ${res.maHD}`,
+        icon: <FileSignature className="size-4 text-blue-500" />,
+      });
+    } catch (err) {
+      toast.error("Lỗi lưu hợp đồng", {
+        description: err instanceof Error ? err.message : "Vui lòng thử lại",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleConfirmSigned = async () => {
+    if (!createdMaHD) return;
+    try {
+      const res = await xacNhanDaKy(createdMaHD);
+      toast.success("Lập hợp đồng thành công", {
+        description: `Hợp đồng ${res.maHD} đã chuyển sang Chờ thanh toán.`,
+        icon: <CheckCircle2 className="size-4 text-emerald-500" />,
+      });
+      onConfirmSigned(deposit.maPhieuCoc);
+    } catch (err) {
+      toast.error("Lỗi xác nhận", {
+        description: err instanceof Error ? err.message : "Vui lòng thử lại",
+      });
+    }
+  };
+
+  const handleCancelContract = async () => {
+    if (!createdMaHD) return;
+    try {
+      await huyHopDong(createdMaHD);
+      toast.error("Đã hủy", {
+        description: `Hợp đồng cho phiếu #${deposit.maPhieuCoc} đã bị hủy.`,
+      });
+      onCancelContract(deposit.maPhieuCoc);
+    } catch (err) {
+      toast.error("Lỗi hủy hợp đồng", {
+        description: err instanceof Error ? err.message : "Vui lòng thử lại",
+      });
+    }
   };
 
   const renderPhase1 = () => (
@@ -273,7 +347,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                 <Lock className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
                 <Input
                   readOnly
-                  value={deposit ? formatCurrency(deposit.depositPaid) : ""}
+                  value={deposit ? formatCurrency(deposit.tongTien) : ""}
                   className="h-9 border-gray-200 bg-gray-50 pl-8 text-sm font-mono text-gray-500"
                 />
               </div>
@@ -353,40 +427,47 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
           <div className="rounded-lg border border-gray-200 bg-white p-4">
             <h3 className="text-sm font-semibold text-gray-800">Tài liệu áp dụng</h3>
             <div className="mt-3 space-y-2">
-              {applicableDocs.map((doc) => (
-                <div
-                  key={doc}
-                  className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm"
-                >
-                  <span className="text-gray-700">{doc}</span>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 px-2 text-xs"
-                    onClick={() =>
-                      toast.success(`Đang mở tài liệu: ${doc}`, {
-                        icon: <FileText className="size-3.5 text-blue-600" />,
-                      })
-                    }
-                  >
-                    Xem
-                  </Button>
-                </div>
-              ))}
+              {quyDinhs.length === 0
+                ? null
+                : quyDinhs.map((doc) => (
+                    <div
+                      key={doc.maQD}
+                      className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm"
+                    >
+                      <span className="text-gray-700">{doc.tenQD}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() =>
+                          doc.duongDanFile
+                            ? window.open(doc.duongDanFile, "_blank")
+                            : toast.info("Tài liệu chưa có file đính kèm", {
+                                description: doc.tenQD,
+                                icon: <FileText className="size-3.5 text-blue-600" />,
+                              })
+                        }
+                      >
+                        Xem
+                      </Button>
+                    </div>
+                  ))}
             </div>
 
-            <div className="mt-4 rounded-md border border-emerald-100 bg-emerald-50 p-3 text-sm">
-              <p className="font-medium text-emerald-700">
-                Chính sách hoàn cọc: Chính sách hoàn cọc mặc định 2026
-              </p>
-              <ul className="mt-2 space-y-1 text-emerald-700/90">
-                <li>- Chưa ký hợp đồng: hoàn 80%</li>
-                <li>- Trước hạn dưới 6 tháng: hoàn 50%</li>
-                <li>- Trước hạn trên 6 tháng: hoàn 70%</li>
-                <li>- Đúng hạn: hoàn 100%</li>
-              </ul>
-            </div>
+            {chinhSach && (
+              <div className="mt-4 rounded-md border border-emerald-100 bg-emerald-50 p-3 text-sm">
+                <p className="font-medium text-emerald-700">
+                  Chính sách hoàn cọc: {chinhSach.tenChinhSach}
+                </p>
+                <ul className="mt-2 space-y-1 text-emerald-700/90">
+                  <li>- Chưa ký hợp đồng: hoàn {chinhSach.tiLe_ChuaKy * 100}%</li>
+                  <li>- Trước hạn dưới {chinhSach.mocLuuTru} tháng: hoàn {chinhSach.tiLe_TruocHan_NganHan * 100}%</li>
+                  <li>- Trước hạn trên {chinhSach.mocLuuTru} tháng: hoàn {chinhSach.tiLe_TruocHan_DaiHan * 100}%</li>
+                  <li>- Đúng hạn: hoàn {chinhSach.tiLe_DungHan * 100}%</li>
+                </ul>
+              </div>
+            )}
 
             <div className="mt-4 flex items-start gap-2">
               <Checkbox
@@ -415,7 +496,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
           {/* Header of document */}
           <div className="text-center space-y-2 border-b border-gray-200 pb-6">
             <h2 className="text-lg font-bold uppercase text-gray-800">Hợp đồng Thuê Phòng</h2>
-            <p className="text-sm text-gray-500 font-mono">Mã HĐ: HD-{deposit.code}</p>
+            <p className="text-sm text-gray-500 font-mono">Mã HĐ: HD-{deposit.maPhieuCoc}</p>
           </div>
 
           <div className="space-y-6 text-sm text-gray-700">
@@ -424,15 +505,13 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                 <strong className="block text-xs uppercase text-gray-400 mb-1">
                   Bên Thuê (Đại diện)
                 </strong>
-                {deposit.representativeName}
+                {deposit.hoTenKhachHang}
                 <br />
-                SĐT: <span className="font-mono">{deposit.representativePhone}</span>
-                <br />
-                Địa chỉ: {deposit.representativeAddress}
+                SĐT: <span className="font-mono">{deposit.sdt ?? "-"}</span>
               </div>
               <div>
                 <strong className="block text-xs uppercase text-gray-400 mb-1">Phòng Thuê</strong>
-                {deposit.room} ({deposit.membersCount} người)
+                {deposit.soPhong} ({deposit.soGiuongThue} người)
               </div>
             </div>
 
@@ -443,7 +522,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
                 </strong>
                 Giá thuê: <span className="font-mono">{values.baseRent}</span>
                 <br />
-                Đã cọc: <span className="font-mono">{formatCurrency(deposit.depositPaid)}</span>
+                Đã cọc: <span className="font-mono">{formatCurrency(deposit.tongTien)}</span>
               </div>
               <div>
                 <strong className="block text-xs uppercase text-gray-400 mb-1">
@@ -502,8 +581,8 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-sm font-bold text-blue-600">#{deposit.code}</span>
-              <h1 className="text-sm font-bold text-gray-800">{deposit.representativeName}</h1>
+              <span className="font-mono text-sm font-bold text-blue-600">#{deposit.maPhieuCoc}</span>
+              <h1 className="text-sm font-bold text-gray-800">{deposit.hoTenKhachHang}</h1>
               {phase === 1 ? (
                 <Badge className="h-5 border-transparent bg-emerald-100 px-2 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">
                   Đã duyệt
@@ -517,7 +596,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
           </div>
           <div className="shrink-0 text-right text-xs text-gray-400">
             <div>
-              Phòng: <span className="font-mono font-semibold text-gray-700">{deposit.room}</span>
+              Phòng: <span className="font-mono font-semibold text-gray-700">{deposit.soPhong}</span>
             </div>
           </div>
         </div>
@@ -531,16 +610,16 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
             <div className="flex items-center gap-2 text-gray-600">
               <Lock className="size-4 text-gray-400" />
               <span>
-                Đại diện: <strong>{deposit.representativeName}</strong>
+                Đại diện: <strong>{deposit.hoTenKhachHang}</strong>
               </span>
             </div>
             <div className="h-4 w-px bg-gray-300" />
             <div className="text-gray-600">
-              Phòng: <strong>{deposit.room}</strong>
+              Phòng: <strong>{deposit.soPhong}</strong>
             </div>
             <div className="h-4 w-px bg-gray-300" />
             <div className="text-gray-600">
-              Số lượng: <strong>{deposit.membersCount} người</strong>
+              Số lượng: <strong>{deposit.soGiuongThue} người</strong>
             </div>
           </div>
 
@@ -568,71 +647,61 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
 
           <div className="flex items-center gap-2.5">
             {phase === 1 ? (
-              <Button
-                type="submit"
-                form="contract-form"
-                size="sm"
-                className="h-8 gap-1.5 bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
-              >
-                <FilePenLine className="size-3.5" />
-                Lưu & Xem trước Hợp đồng
-              </Button>
-            ) : (
-              <>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 gap-1.5 border-red-200 px-4 text-sm font-medium text-red-600 hover:border-red-300 hover:bg-red-50 hover:text-red-700"
-                    >
-                      <XCircle className="size-3.5" />
-                      Hủy hợp đồng
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="flex items-center gap-2 text-red-600">
-                        <ShieldAlert className="size-5" />
-                        Hủy hợp đồng này?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-sm">
-                        Bạn có chắc chắn muốn hủy hợp đồng này? Hành động này không thể hoàn tác.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Quay lại</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => {
-                          toast.error("Đã hủy", {
-                            description: `Hợp đồng cho phiếu #${deposit.code} đã bị hủy.`,
-                          });
-                          onCancelContract(deposit.id);
-                        }}
-                        className="bg-red-600 text-white hover:bg-red-700"
-                      >
-                        Xác nhận hủy
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-
                 <Button
+                  type="submit"
+                  form="contract-form"
                   size="sm"
-                  onClick={() => {
-                    toast.success("Lập hợp đồng thành công", {
-                      description: `Hồ sơ #${deposit.code} đã chuyển sang Chờ thanh toán.`,
-                      icon: <CheckCircle2 className="size-4 text-emerald-500" />,
-                    });
-                    onConfirmSigned(deposit.id);
-                  }}
-                  className="h-8 gap-1.5 bg-emerald-600 px-5 text-sm font-semibold text-white hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1"
+                  disabled={saving}
+                  className="h-8 gap-1.5 bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
                 >
-                  <CheckCircle2 className="size-3.5" />
-                  Xác nhận khách đã ký
+                  <FilePenLine className="size-3.5" />
+                  {saving ? "Đang lưu..." : "Lưu & Xem trước Hợp đồng"}
                 </Button>
-              </>
-            )}
+              ) : (
+                <>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 border-red-200 px-4 text-sm font-medium text-red-600 hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <XCircle className="size-3.5" />
+                        Hủy hợp đồng
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                          <ShieldAlert className="size-5" />
+                          Hủy hợp đồng này?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-sm">
+                          Bạn có chắc chắn muốn hủy hợp đồng này? Hành động này không thể hoàn tác.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Quay lại</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleCancelContract}
+                          className="bg-red-600 text-white hover:bg-red-700"
+                        >
+                          Xác nhận hủy
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                  <Button
+                    size="sm"
+                    onClick={handleConfirmSigned}
+                    className="h-8 gap-1.5 bg-emerald-600 px-5 text-sm font-semibold text-white hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1"
+                  >
+                    <CheckCircle2 className="size-3.5" />
+                    Xác nhận khách đã ký
+                  </Button>
+                </>
+              )}
           </div>
         </div>
       </footer>

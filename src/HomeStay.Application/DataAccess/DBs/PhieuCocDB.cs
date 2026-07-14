@@ -617,4 +617,76 @@ public static class PhieuCocDB
     };
 
     private static string? ChuanHoa(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaDuyet(string? text = null)
+    {
+        const string sql = """
+            SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
+                   pc.ThoiDiemCoc,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   kh.HoTen AS TenKhachHang, kh.SDT, kh.SoGiayTo,
+                   p.SoPhong, p.ToaNha,
+                   lp.TenLoaiPhong, lp.GiaThue, lp.SucChua,
+                   CAST(CASE WHEN pt.MaPT IS NULL THEN 0 ELSE 1 END AS bit) AS DaDongTien
+            FROM PhieuCoc pc
+            INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
+            INNER JOIN LoaiPhong lp ON lp.MaLP=p.MaLP
+            LEFT JOIN PhieuThu pt ON pt.MaPhieuCoc=pc.MaPhieuCoc
+            WHERE pc.TrangThai=N'DaDuyet'
+              AND NOT EXISTS (SELECT 1 FROM HopDong hd WHERE hd.MaPhieuCoc=pc.MaPhieuCoc AND hd.TrangThai<>N'DaHuy')
+              AND (@Text IS NULL OR pc.MaPhieuCoc LIKE '%' + @Text + '%'
+                   OR kh.HoTen LIKE '%' + @Text + '%' OR kh.SDT LIKE '%' + @Text + '%'
+                   OR p.SoPhong LIKE '%' + @Text + '%')
+            ORDER BY pc.ThoiDiemCoc DESC, pc.MaPhieuCoc
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocDaDuyetRow>(sql,
+            new { Text = ChuanHoa(text) }, PhienDuLieu.Session.Transaction);
+        return rows.Select(x => new PhieuCoc
+        {
+            MaPhieuCoc = x.MaPhieuCoc,
+            HinhThucThue = x.HinhThucThue,
+            SoGiuongThue = x.SoGiuongThue,
+            TongTien = x.TongTien,
+            ThoiDiemCoc = x.ThoiDiemCoc,
+            TrangThai = x.TrangThai,
+            MaKH = x.MaKH,
+            MaPhong = x.MaPhong,
+            MaNV = x.MaNV,
+            DaDongTien = x.DaDongTien,
+            KhachHang = new KhachHang
+            {
+                MaKH = x.MaKH, HoTen = x.TenKhachHang, SDT = x.SDT, SoGiayTo = x.SoGiayTo,
+            },
+            Phong = new Phong
+            {
+                MaPhong = x.MaPhong, SoPhong = x.SoPhong, ToaNha = x.ToaNha,
+                LoaiPhong = new LoaiPhong
+                {
+                    TenLoaiPhong = x.TenLoaiPhong, GiaThue = x.GiaThue, SucChua = x.SucChua,
+                },
+            },
+        }).ToList();
+    }
+
+    private sealed class PhieuCocDaDuyetRow
+    {
+        public string MaPhieuCoc { get; set; } = string.Empty;
+        public string HinhThucThue { get; set; } = string.Empty;
+        public int SoGiuongThue { get; set; }
+        public decimal TongTien { get; set; }
+        public DateTime ThoiDiemCoc { get; set; }
+        public string TrangThai { get; set; } = string.Empty;
+        public string MaKH { get; set; } = string.Empty;
+        public string MaPhong { get; set; } = string.Empty;
+        public string? MaNV { get; set; }
+        public bool DaDongTien { get; set; }
+        public string TenKhachHang { get; set; } = string.Empty;
+        public string? SDT { get; set; }
+        public string? SoGiayTo { get; set; }
+        public string SoPhong { get; set; } = string.Empty;
+        public string? ToaNha { get; set; }
+        public string TenLoaiPhong { get; set; } = string.Empty;
+        public decimal GiaThue { get; set; }
+        public int SucChua { get; set; }
+    }
 }
