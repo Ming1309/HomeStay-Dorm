@@ -46,6 +46,46 @@ public sealed class HoaDon
         return true;
     }
 
+    // UC 1.4.14 Xử lý thanh toán hợp đồng
+    public static Task<bool> KiemTraChuaCoHoaDonKyDau(string maHD) =>
+        HoaDonDB.ExistsHoaDonKyDau(maHD);
+
+    public static decimal TinhTongTienKyDau(IReadOnlyList<ChiTietHoaDon> dsChiTiet) =>
+        dsChiTiet.Sum(x => x.ThanhTien);
+
+    public static async Task<HoaDon> TaoHoaDonKyDauDaThanhToan(
+        string maHD, decimal tongTien, string maNV, DateTime ngayLap,
+        IReadOnlyList<ChiTietHoaDon> dsChiTiet)
+    {
+        if (string.IsNullOrWhiteSpace(maHD))
+            throw new ArgumentException("Mã hợp đồng không được để trống.", nameof(maHD));
+        if (string.IsNullOrWhiteSpace(maNV))
+            throw new ArgumentException("Không xác định được Kế toán thực hiện.", nameof(maNV));
+        if (tongTien < 0)
+            throw new ArgumentException("Tổng tiền không hợp lệ.");
+        if (dsChiTiet is null || dsChiTiet.Count == 0)
+            throw new ArgumentException("Hóa đơn phải có ít nhất một dòng chi tiết.");
+
+        if (await KiemTraChuaCoHoaDonKyDau(maHD))
+            throw new InvalidOperationException("Hợp đồng này đã có hóa đơn kỳ đầu.");
+
+        var hoaDon = new HoaDon
+        {
+            MaHoaDon = $"HDON{ngayLap:yyMMddHHmmssfff}",
+            NgayLap = ngayLap.Date,
+            HanThanhToan = ngayLap.Date,
+            LoaiHoaDon = "KyDau",
+            TongTien = tongTien,
+            TrangThai = "DaThanhToan",
+            GhiChu = null,
+            MaHD = maHD,
+            MaNV = maNV,
+        };
+
+        await HoaDonDB.Insert(hoaDon);
+        return hoaDon;
+    }
+
     public static async Task<HoaDon> TaoHoaDonBoiThuong(
         string maBienBan,
         decimal tongTien,

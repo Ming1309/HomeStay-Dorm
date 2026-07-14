@@ -37,10 +37,11 @@ builder.Services.AddScoped<TinhTienCoc>();
 // Shared notification service (UC 1.4.17, 1.4.18, ...)
 builder.Services.AddScoped<DichVuThongBao>();
 
-// Đối soát / trả phòng / hoàn cọc
+// Đối soát / trả phòng / hoàn cọc / thanh toán hợp đồng
 builder.Services.AddScoped<LapPhieuDoiSoat>();
 builder.Services.AddScoped<ThanhToanTraPhong>();
 builder.Services.AddScoped<LapPhieuHoanCoc>();
+builder.Services.AddScoped<XuLyThanhToanHopDong>();
 
 // Cọc / hồ sơ / lịch hẹn
 builder.Services.AddScoped<NhapHoSoLuuTru>();

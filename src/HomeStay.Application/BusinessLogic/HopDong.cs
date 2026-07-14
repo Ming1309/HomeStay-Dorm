@@ -97,6 +97,22 @@ public sealed class HopDong
         return Math.Max(0, totalMonths);
     }
 
+    // UC 1.4.14 Xử lý thanh toán hợp đồng
+    public static Task<IReadOnlyList<HopDong>> LayDanhSachChoThanhToan() =>
+        HopDongDB.LayDanhSachChoThanhToan();
+
+    public void KiemTraChoThanhToan()
+    {
+        if (!string.Equals(TrangThai, "ChoThanhToan", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Hợp đồng không ở trạng thái Chờ thanh toán.");
+    }
+
+    public static async Task CapNhatTrangThaiChoBanGiao(string maHD)
+    {
+        if (!await HopDongDB.UpdateTrangThai(maHD, "ChoBanGiao"))
+            throw new InvalidOperationException("Không thể cập nhật trạng thái hợp đồng.");
+    }
+
     public int TinhSoThangHopDong()
     {
         int years = NgayKetThuc.Year - NgayBatDau.Year;
