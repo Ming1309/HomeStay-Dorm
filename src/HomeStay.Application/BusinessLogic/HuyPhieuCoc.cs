@@ -7,6 +7,58 @@ public sealed class HuyPhieuCoc(
     TimeProvider timeProvider,
     DichVuThongBao dichVuThongBao)
 {
+    public async Task<IReadOnlyList<string>> LayDanhSachMaQuaHan(
+        DateTime thoiDiemHienTai, int batchSize)
+    {
+        using var phien = taoPhienDuLieu();
+        return await PhieuCoc.LayDanhSachMaQuaHan(thoiDiemHienTai, batchSize);
+    }
+
+    public async Task<bool> TuDongHuyQuaHan(string maPhieuCoc, DateTime thoiDiemHienTai)
+    {
+        using var phien = taoPhienDuLieu();
+        phien.BatDauGiaoDich();
+        try
+        {
+            var phieu = await PhieuCoc.DocChiTietChoCapNhat(maPhieuCoc);
+            if (phieu is null || !phieu.CoTheTuDongHuy(thoiDiemHienTai))
+            {
+                phien.Rollback();
+                return false;
+            }
+
+            if (await HopDong.TonTaiTheoPhieuCoc(maPhieuCoc))
+            {
+                phien.Rollback();
+                return false;
+            }
+
+            var phong = await Phong.DocChiTiet(phieu.MaPhong)
+                ?? throw new KeyNotFoundException("Không tìm thấy phòng của phiếu cọc quá hạn.");
+            var maGiuongs = phieu.Giuongs.Select(g => g.MaGiuong).ToArray();
+
+            phieu.TuDongHuyQuaHan(thoiDiemHienTai);
+            phong.GiaiPhongDatCoc(maGiuongs);
+
+            await phieu.CapNhatTuDongHuy(thoiDiemHienTai);
+            await phong.CapNhatGiaiPhongDatCoc();
+            await dichVuThongBao.GuiThongBaoSale(
+                "Phiếu cọc quá hạn đã tự động hủy",
+                $"Phiếu cọc {phieu.MaPhieuCoc} của {phieu.KhachHang.HoTen} đã quá hạn thanh toán và được hệ thống giải phóng chỗ.",
+                "/sale/tra-cuu-phieu-coc",
+                null,
+                phieu.MaPhieuCoc);
+
+            phien.Commit();
+            return true;
+        }
+        catch
+        {
+            phien.Rollback();
+            throw;
+        }
+    }
+
     public async Task<PhieuCoc> Huy(string maPhieuCoc, string maNhanVien)
     {
         using var phien = taoPhienDuLieu();

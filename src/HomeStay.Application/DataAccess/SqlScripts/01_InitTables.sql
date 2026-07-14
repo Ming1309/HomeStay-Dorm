@@ -444,6 +444,9 @@ CREATE UNIQUE INDEX UX_ChinhSachHoanCoc_NgayApDung
     ON ChinhSachHoanCoc (NgayApDung);
 CREATE INDEX IX_HopDong_QuyDinh_MaQD
     ON HopDong_QuyDinh (MaQD);
+CREATE INDEX IX_PhieuCoc_ChoThanhToan_HanThanhToan
+    ON PhieuCoc (HanThanhToan, MaPhieuCoc)
+    WHERE TrangThai = N'ChoThanhToan';
 GO
 
 

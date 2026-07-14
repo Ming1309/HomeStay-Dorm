@@ -5,12 +5,14 @@ using HomeStay.Application.DataAccess.FileStorage;
 
 public sealed class GhiNhanThanhToanCoc(
     Func<PhienDuLieu> taoPhienDuLieu,
-    IChungTuCocStorage chungTuStorage)
+    IChungTuCocStorage chungTuStorage,
+    TimeProvider timeProvider)
 {
     public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(string? text = null)
     {
         using var phien = taoPhienDuLieu();
-        return await PhieuCoc.LayDanhSachChoThanhToan(text);
+        return await PhieuCoc.LayDanhSachChoThanhToan(
+            timeProvider.GetLocalNow().DateTime, text);
     }
 
     public async Task<PhieuCoc> LayChiTiet(string maPhieuCoc)
@@ -19,6 +21,7 @@ public sealed class GhiNhanThanhToanCoc(
         var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
             ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
         phieu.KiemTraTrangThaiChoGhiNhan();
+        phieu.KiemTraConHanThanhToan(timeProvider.GetLocalNow().DateTime);
         return phieu;
     }
 
@@ -37,12 +40,15 @@ public sealed class GhiNhanThanhToanCoc(
         {
             var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
                 ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
-            phieu.KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan);
+            phieu.KiemTraCoTheGhiNhanThanhToan(
+                phuongThucThanhToan, timeProvider.GetLocalNow().DateTime);
             duongDanChungTuCu = phieu.AnhMinhChung;
 
             duongDanChungTu = await chungTuStorage.Luu(tepChungTu, cancellationToken);
-            phieu.GhiNhanThanhToan(phuongThucThanhToan, duongDanChungTu);
-            await phieu.CapNhatThanhToan();
+            var thoiDiemGhiNhan = timeProvider.GetLocalNow().DateTime;
+            phieu.GhiNhanThanhToan(
+                phuongThucThanhToan, duongDanChungTu, thoiDiemGhiNhan);
+            await phieu.CapNhatThanhToan(thoiDiemGhiNhan);
             phien.Commit();
             phieuDaCapNhat = phieu;
         }

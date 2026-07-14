@@ -13,14 +13,15 @@ entity ": PhieuCocDB" as PCDB
 
 NV -> MH : loadPendingDeposits(text)
 MH -> GNTT : LayDanhSachChoThanhToan(text)
-GNTT -> PC : LayDanhSachChoThanhToan(text)
-PC -> PCDB : LayDanhSachChoThanhToan(text)
+GNTT -> PC : LayDanhSachChoThanhToan(thoiDiemHienTai, text)
+PC -> PCDB : LayDanhSachChoThanhToan(thoiDiemHienTai, text)
 
 NV -> MH : chonPhieuCoc(item)
 MH -> GNTT : LayChiTiet(maPhieuCoc)
 GNTT -> PC : DocChiTiet(maPhieuCoc)
 PC -> PCDB : DocChiTiet(maPhieuCoc)
 GNTT -> PC : KiemTraTrangThaiChoGhiNhan()
+GNTT -> PC : KiemTraConHanThanhToan(thoiDiemHienTai)
 
 alt Khach thanh toan tien mat
   note over NV,MH
@@ -41,11 +42,11 @@ else Du lieu hop le
   MH -> GNTT : GuiChungTuThanhToan(maPhieuCoc, phuongThucThanhToan, tepChungTu)
   GNTT -> PC : DocChiTiet(maPhieuCoc)
   PC -> PCDB : DocChiTiet(maPhieuCoc)
-  GNTT -> PC : KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan)
-  GNTT -> PC : GhiNhanThanhToan(phuongThucThanhToan, anhMinhChung)
-  GNTT -> PC : CapNhatThanhToan()
-  PC -> PCDB : CapNhatThanhToan(phieu)
-  alt Phieu khong con ChoThanhToan
+  GNTT -> PC : KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan, thoiDiemHienTai)
+  GNTT -> PC : GhiNhanThanhToan(phuongThucThanhToan, anhMinhChung, thoiDiemHienTai)
+  GNTT -> PC : CapNhatThanhToan(thoiDiemHienTai)
+  PC -> PCDB : CapNhatThanhToan(phieu, thoiDiemHienTai)
+  alt Phieu het han hoac khong con ChoThanhToan
     MH -> MH : hien thi loi tranh chap trang thai
   else Cap nhat thanh cong
     MH -> MH : hien thi thong bao thanh cong

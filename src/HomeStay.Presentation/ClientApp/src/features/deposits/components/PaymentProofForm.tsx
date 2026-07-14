@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, FileText, ImageIcon, Upload } from "lucide-react";
+import { CheckCircle2, Clock3, FileText, ImageIcon, TriangleAlert, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -11,6 +11,7 @@ import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
 import {
+  DepositPaymentApiError,
   submitDepositPayment,
   type DepositPaymentDetail,
   type DepositPaymentMethod,
@@ -43,15 +44,30 @@ function validFile(file: File) {
   return file.size > 0 && file.size <= MAX_SIZE && ALLOWED_EXTENSIONS.includes(extension);
 }
 
+function formatRemaining(milliseconds: number) {
+  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3_600);
+  const minutes = Math.floor((totalSeconds % 3_600) / 60);
+  const seconds = totalSeconds % 60;
+  if (days > 0) return `${days} ngày ${hours} giờ ${minutes} phút`;
+  if (hours > 0) return `${hours} giờ ${minutes} phút ${seconds} giây`;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
 export function PaymentProofForm({
   deposit,
   onDone,
+  onExpired,
 }: {
   deposit: DepositPaymentDetail;
   onDone: () => void;
+  onExpired: () => void;
 }) {
   const [dragging, setDragging] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const expiryHandled = useRef(false);
   const {
     control,
     handleSubmit,
@@ -70,6 +86,10 @@ export function PaymentProofForm({
 
   const paymentMethod = watch("paymentMethod");
   const proofFile = watch("proofFile");
+  const deadline = deposit.hanThanhToan ? new Date(deposit.hanThanhToan).getTime() : Number.NaN;
+  const deadlineValid = Number.isFinite(deadline);
+  const remaining = deadlineValid ? deadline - now : 0;
+  const expired = !deadlineValid || remaining <= 0;
   const previewUrl = useMemo(
     () => (proofFile ? URL.createObjectURL(proofFile) : null),
     [proofFile],
@@ -82,7 +102,24 @@ export function PaymentProofForm({
     [previewUrl],
   );
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!expired || expiryHandled.current) return;
+    expiryHandled.current = true;
+    toast.error(
+      deadlineValid
+        ? "Phiếu cọc đã hết hạn thanh toán và sẽ được hệ thống tự động hủy."
+        : "Phiếu cọc không có hạn thanh toán hợp lệ.",
+    );
+    onExpired();
+  }, [deadlineValid, expired, onExpired]);
+
   const chonTepChungTu = (file: File | null) => {
+    if (expired) return;
     if (!file) {
       setValue("proofFile", undefined as unknown as File);
       return;
@@ -98,25 +135,31 @@ export function PaymentProofForm({
   };
 
   const guiChungTu = handleSubmit(async (values) => {
+    if (expired) return;
     try {
       await submitDepositPayment(deposit.maPhieuCoc, values.paymentMethod, values.proofFile);
       toast.success("Đã gửi chứng từ cho Quản lý đối chiếu thành công.");
       onDone();
     } catch (error) {
+      if (error instanceof DepositPaymentApiError && error.status === 409) {
+        toast.error(error.message);
+        onDone();
+        return;
+      }
       toast.error(error instanceof Error ? error.message : "Không thể gửi chứng từ thanh toán.");
     }
   });
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === "Enter") {
+      if (event.ctrlKey && event.key === "Enter" && !expired && !isSubmitting) {
         event.preventDefault();
         void guiChungTu();
       }
     };
     document.addEventListener("keydown", handleShortcut);
     return () => document.removeEventListener("keydown", handleShortcut);
-  }, [guiChungTu]);
+  }, [expired, guiChungTu, isSubmitting]);
 
   const openPreview = () => {
     if (!previewUrl || !proofFile) return;
@@ -156,6 +199,27 @@ export function PaymentProofForm({
               </p>
             </section>
           )}
+          <section
+            className={cn(
+              "flex items-center justify-between rounded-lg border px-4 py-3",
+              remaining <= 60_000
+                ? "border-red-200 bg-red-50 text-red-700"
+                : "border-amber-200 bg-amber-50 text-amber-800",
+            )}
+          >
+            <div className="flex items-center gap-2">
+              {expired ? <TriangleAlert className="size-4" /> : <Clock3 className="size-4" />}
+              <div>
+                <p className="text-xs font-semibold">
+                  {expired ? "Đã hết hạn thanh toán" : "Thời gian còn lại"}
+                </p>
+                <p className="text-[11px] opacity-80">
+                  Hết hạn lúc {deadlineValid ? new Date(deadline).toLocaleString("vi-VN") : "—"}
+                </p>
+              </div>
+            </div>
+            {!expired && <strong className="font-mono text-sm">{formatRemaining(remaining)}</strong>}
+          </section>
           <section className="rounded-lg border border-gray-200 bg-white p-4">
             <h2 className="mb-3 text-xs font-semibold text-gray-700">Thông tin phiếu cọc</h2>
             <div className="grid grid-cols-2 gap-3 text-sm">
@@ -192,6 +256,7 @@ export function PaymentProofForm({
               name="paymentMethod"
               render={({ field }) => (
                 <Select
+                  disabled={expired}
                   value={field.value}
                   onValueChange={(value) => field.onChange(value as DepositPaymentMethod)}
                 >
@@ -330,7 +395,7 @@ export function PaymentProofForm({
           type="button"
           className="h-8 text-xs"
           onClick={() => void guiChungTu()}
-          disabled={isSubmitting}
+          disabled={isSubmitting || expired}
         >
           <CheckCircle2 className="mr-1 size-3.5" />
           {isSubmitting ? "Đang gửi..." : "Gửi"}

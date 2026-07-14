@@ -52,7 +52,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayDanhSachKhoiTao(text: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
     + TinhTienDuKien(): Integer
-    + XacNhanTinhTien(thoiDiemXacNhan: DateTime)
+    + XacNhanTinhTien(thoiDiemXacNhan: DateTime, thoiHanThanhToan: TimeSpan)
     + CapNhatTinhTien()
   }
 

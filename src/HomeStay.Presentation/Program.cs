@@ -1,10 +1,16 @@
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Application.DataAccess.DbConnections;
 using HomeStay.Application.DataAccess.FileStorage;
+using HomeStay.Presentation.HostedServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var cauHinhHetHanPhieuCoc = builder.Configuration
+    .GetSection(CauHinhHetHanPhieuCoc.TenSection)
+    .Get<CauHinhHetHanPhieuCoc>() ?? new CauHinhHetHanPhieuCoc();
+cauHinhHetHanPhieuCoc.KiemTraHopLe();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -37,6 +43,8 @@ builder.Services.AddSingleton<IQuyDinhFileStorage>(
 
 // Register Business Logic dependencies
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton(cauHinhHetHanPhieuCoc);
+builder.Services.AddHostedService<TuDongHuyPhieuCocQuaHanWorker>();
 builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
 
