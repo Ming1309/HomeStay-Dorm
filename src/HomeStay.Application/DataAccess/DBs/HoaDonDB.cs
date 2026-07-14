@@ -66,4 +66,43 @@ public static class HoaDonDB
             throw new InvalidOperationException("Không thể lưu hóa đơn bồi thường.");
         return hoaDon.MaHoaDon;
     }
+
+    // ==========================================================
+    // Methods from feat/xu-li-thanh-toan branch
+    // ==========================================================
+    public static async Task<bool> ExistsHoaDonKyDau(string maHD)
+    {
+        const string sql = """
+            SELECT CASE WHEN EXISTS (
+                SELECT 1 FROM HoaDon WHERE MaHD = @MaHD AND LoaiHoaDon = N'KyDau'
+            ) THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END
+            """;
+        return await PhienDuLieu.Session.Connection.QuerySingleAsync<bool>(
+            sql, new { MaHD = maHD }, PhienDuLieu.Session.Transaction);
+    }
+
+    public static async Task<string> Insert(HoaDon hoaDon)
+    {
+        const string sql = """
+            INSERT INTO HoaDon
+                (MaHoaDon, NgayLap, HanThanhToan, LoaiHoaDon, TongTien, TrangThai, GhiChu, MaHD, MaNV)
+            VALUES
+                (@MaHoaDon, @NgayLap, @HanThanhToan, @LoaiHoaDon, @TongTien, @TrangThai, @GhiChu, @MaHD, @MaNV)
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, hoaDon, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Không thể lưu hóa đơn.");
+        return hoaDon.MaHoaDon;
+    }
+
+    public static async Task UpdateTrangThai(string maHoaDon, string trangThai)
+    {
+        const string sql = """
+            UPDATE HoaDon
+            SET TrangThai = @TrangThai
+            WHERE MaHoaDon = @MaHoaDon
+            """;
+        if (await PhienDuLieu.Session.Connection.ExecuteAsync(
+            sql, new { MaHoaDon = maHoaDon, TrangThai = trangThai }, PhienDuLieu.Session.Transaction) != 1)
+            throw new InvalidOperationException("Không thể cập nhật trạng thái hóa đơn.");
+    }
 }

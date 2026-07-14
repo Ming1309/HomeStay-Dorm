@@ -264,7 +264,6 @@ GO
 
 INSERT INTO HoaDon (MaHoaDon, NgayLap, HanThanhToan, LoaiHoaDon, TongTien, TrangThai, GhiChu, MaHD, MaNV)
 VALUES
-('HDON0001', '2026-07-26', '2026-07-30', N'KyDau', 1900000, N'ChuaThanhToan', N'Hóa đơn kỳ đầu', 'HD0002', 'NV02'),
 ('HDON0002', '2026-07-28', '2026-08-05', N'TienThue', 1900000, N'ThanhToanMotPhan', N'Còn công nợ', 'HD0004', 'NV02'),
 ('HDON0003', '2026-07-29', '2026-07-31', N'TienThue', 1860000, N'DaThanhToan', N'Đã thanh toán đủ', 'HD0005', 'NV02'),
 ('HDON0004', '2026-07-31', NULL, N'BoiThuong', 800000, N'ChuaThanhToan', N'Khấu trừ tài sản hư hỏng', 'HD0005', 'NV02');
@@ -272,7 +271,6 @@ GO
 
 INSERT INTO ChiTietHoaDon (MaHoaDon, STT, LoaiKhoanThu, MaDV, MaTS, MaGiuong, SoLuong, DonViTinh, DonGia)
 VALUES
-('HDON0001', 1, N'TienThue', NULL, NULL, 'G019', 2, N'giường', 950000),
 ('HDON0002', 1, N'TienThue', NULL, NULL, 'G027', 2, N'giường', 950000),
 ('HDON0003', 1, N'TienThue', NULL, NULL, 'G035', 6, N'giường', 310000),
 ('HDON0004', 1, N'BoiThuong', NULL, 'TS01', NULL, 1, N'món', 800000);

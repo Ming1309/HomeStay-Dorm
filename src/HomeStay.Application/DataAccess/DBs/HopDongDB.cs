@@ -456,9 +456,44 @@ public static class HopDongDB
         return rows.ToList();
     }
 
+    // Methods from feat/xu-li-thanh-toan branch
+    // ==========================================================
+    public static async Task<IReadOnlyList<HopDong>> LayDanhSachChoThanhToan()
+    {
+        const string sql = """
+            SELECT hd.MaHD, hd.NgayKy, hd.NgayBatDau, hd.NgayKetThuc, hd.KyThanhToan,
+                   hd.GiaThue, hd.TrangThai, hd.MaNV, hd.MaPhieuCoc, hd.MaChinhSach, hd.MaQD, hd.MaQLDuyet,
+                   pc.MaKH, kh.HoTen AS TenKhachHang, kh.SDT, kh.SoGiayTo,
+                   p.MaPhong, p.SoPhong, p.ToaNha,
+                   lp.MaLP, lp.TenLoaiPhong, lp.SucChua, lp.GiaThue AS GiaThueLoaiPhong,
+                   pc.TongTien AS TienCoc
+            FROM HopDong hd
+            INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc = hd.MaPhieuCoc
+            INNER JOIN KhachHang kh ON kh.MaKH = pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong = pc.MaPhong
+            INNER JOIN LoaiPhong lp ON lp.MaLP = p.MaLP
+            WHERE hd.TrangThai = N'ChoThanhToan'
+            ORDER BY hd.NgayBatDau DESC, hd.MaHD
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<HopDongListRow>(sql,
+            transaction: PhienDuLieu.Session.Transaction);
+        return rows.Select(TaoHopDongDanhSach).ToList();
+    }
+
     public static async Task<bool> UpdateTrangThai(string maHD, string trangThai)
     {
         const string sql = "UPDATE HopDong SET TrangThai = @TrangThai WHERE MaHD = @MaHD";
+        return await PhienDuLieu.Session.Connection.ExecuteAsync(
+            sql, new { MaHD = maHD, TrangThai = trangThai }, PhienDuLieu.Session.Transaction) == 1;
+    }
+
+    public static async Task<bool> UpdateTrangThaiChoThanhToan(string maHD, string trangThai)
+    {
+        const string sql = """
+            UPDATE HopDong
+            SET TrangThai = @TrangThai
+            WHERE MaHD = @MaHD AND TrangThai = N'ChoThanhToan'
+            """;
         return await PhienDuLieu.Session.Connection.ExecuteAsync(
             sql, new { MaHD = maHD, TrangThai = trangThai }, PhienDuLieu.Session.Transaction) == 1;
     }
