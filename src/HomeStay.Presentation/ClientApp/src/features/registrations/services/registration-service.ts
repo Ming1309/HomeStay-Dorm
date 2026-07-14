@@ -71,26 +71,44 @@ export function generateRegistrationNumber(): string {
  */
 export async function createRegistration(data: RegistrationData): Promise<RegistrationResponse> {
   try {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const payload = {
+      hoTen: data.customerName,
+      gioiTinh: data.gender === 'male' ? 'Nam' : data.gender === 'female' ? 'Nữ' : 'Khác',
+      sdt: data.phone,
+      email: data.email,
+      diaChiThuongTru: data.address,
+      loaiGiayTo: data.idType === 'cccd' ? 'CCCD' : data.idType === 'passport' ? 'Hộ chiếu' : 'Khác',
+      soGiayTo: data.idNumber,
+      khuVuc: formatArea(data.desiredArea),
+      soLuongNguoi: parseInt(data.numberOfPeople) || 1,
+      loaiDichVu: data.roomType === 'whole-room' ? 'NguyenCan' : 'OGhep',
+      mucGia: data.priceRange.includes('-') ? parseInt(data.priceRange.split('-')[1]) * 1000000 : 3000000,
+      thoiGianDuKienVao: data.moveInDate || new Date().toISOString(),
+      thoiHanThue: parseInt(data.rentalDuration) || 6,
+      yeuCauKhac: data.notes || '',
+      maNV: "NV001" // Hardcoded current user
+    };
 
-    const response: RegistrationResponse = {
-      id: Math.random().toString(36).substr(2, 9),
-      registrationNumber: generateRegistrationNumber(),
+    const res = await fetch('/api/registrations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || 'Lỗi hệ thống');
+    }
+
+    const response = await res.json();
+    return {
+      id: response.maPhieuDangKy || Math.random().toString(36).substr(2, 9),
+      registrationNumber: response.maPhieuDangKy || generateRegistrationNumber(),
       status: 'pending',
-      createdAt: new Date().toISOString(),
+      createdAt: response.ngayDangKy || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       data,
     };
-
-    // In real app:
-    // const response = await fetch('/api/registrations', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(data),
-    // }).then(res => res.json());
-
-    return response;
   } catch (error) {
     throw new Error('Failed to create registration: ' + (error instanceof Error ? error.message : 'Unknown error'));
   }
@@ -208,14 +226,29 @@ export function getPreferenceLabel(id: string): string {
   return preferences[id] || id;
 }
 
+export async function searchRegistrations(sdt?: string, soGiayTo?: string, email?: string): Promise<any[]> {
+  const params = new URLSearchParams();
+  if (sdt) params.append('sdt', sdt);
+  if (soGiayTo) params.append('soGiayTo', soGiayTo);
+  if (email) params.append('email', email);
+  
+  const res = await fetch(`/api/registrations/search?${params.toString()}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.Message || 'Lỗi tìm kiếm');
+  }
+  return await res.json();
+}
+
 export interface RegistrationService {
   create(data: RegistrationData): Promise<RegistrationResponse>;
   saveDraft(data: RegistrationData): Promise<RegistrationResponse>;
   loadDraft(): Promise<RegistrationData | null>;
   clearDraft(): Promise<void>;
+  search(sdt?: string, soGiayTo?: string, email?: string): Promise<any[]>;
 }
 
-export const mockRegistrationService: RegistrationService = {
+export const registrationService: RegistrationService = {
   create: createRegistration,
   saveDraft: saveRegistrationDraft,
   async loadDraft() {
@@ -224,4 +257,5 @@ export const mockRegistrationService: RegistrationService = {
   async clearDraft() {
     clearRegistrationDraft();
   },
+  search: searchRegistrations,
 };
