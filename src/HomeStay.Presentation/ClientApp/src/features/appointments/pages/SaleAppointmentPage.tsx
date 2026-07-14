@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarDays, Search } from "lucide-react";
 import * as z from "zod";
-import { useAuth } from "@/features/auth/model/auth-store";
 
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -23,9 +22,10 @@ import { toast } from "sonner";
 import { cn } from "@/shared/lib/utils";
 import {
   APPOINTMENT_TYPES,
-  AppointmentRecord,
+  type AppointmentDocument,
+  type AppointmentRecord,
   AppointmentType,
-  BRANCHES,
+  type BranchOption,
   appointmentService,
 } from "@/features/appointments/services/appointment-service";
 
@@ -55,22 +55,15 @@ function getStatusBadgeClass(status: string) {
 
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
-type DocumentItem = {
-  id: string;
-  code: string;
-  customerName: string;
-  phone: string;
-  status: string;
-};
 export function SaleAppointmentPage() {
-  const { user } = useAuth();
   const [appointmentType, setAppointmentType] = useState<AppointmentType>("view-room");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("Đã xác nhận");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
-  const [documentList, setDocumentList] = useState<DocumentItem[]>([]);
-  const [branchOptions, setBranchOptions] = useState<{value: string, label: string}[]>(Array.from(BRANCHES));
+  const [documentList, setDocumentList] = useState<AppointmentDocument[]>([]);
+  const [branchOptions, setBranchOptions] = useState<BranchOption[]>([]);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
 
   const {
     register,
@@ -78,11 +71,11 @@ export function SaleAppointmentPage() {
     watch,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: {
-      branch: BRANCHES[0].value,
+      branch: "",
       date: "",
       time: "",
     },
@@ -96,33 +89,36 @@ export function SaleAppointmentPage() {
   }, [appointmentType]);
 
   useEffect(() => {
-    appointmentService.list().then(setAppointments).catch(console.error);
+    appointmentService.list().then(setAppointments).catch((error) => {
+      toast.error(error instanceof Error ? error.message : "Không thể tải lịch hẹn.");
+    });
     appointmentService.getBranches().then(branches => {
       setBranchOptions(branches);
       if (branches.length > 0) {
         setValue("branch", branches[0].value);
       }
-    }).catch(console.error);
+    }).catch((error) => {
+      toast.error(error instanceof Error ? error.message : "Không thể tải chi nhánh.");
+    });
   }, [setValue]);
 
   useEffect(() => {
     let isMounted = true;
     const loadDocs = async () => {
       try {
+        setIsLoadingDocuments(true);
         const typeStr = appointmentType === 'view-room' ? 'XemPhong' : appointmentType === 'checkin' ? 'NhanPhong' : 'TraPhong';
         const raw = await appointmentService.fetchDocuments(typeStr, search);
         if (!isMounted) return;
         
-        const mapped = raw.map((item: any) => ({
-          id: item.maPDK || item.MaPDK || item.maPhieuCoc || item.MaPhieuCoc || item.maHD || item.MaHD,
-          code: item.maPDK || item.MaPDK || item.maPhieuCoc || item.MaPhieuCoc || item.maHD || item.MaHD,
-          customerName: item.hoTen || item.HoTen || "Không tên",
-          phone: item.sdt || item.SDT || "",
-          status: item.trangThai || item.TrangThai || ""
-        }));
-        setDocumentList(mapped);
+        setDocumentList(raw);
       } catch (e) {
-        console.error(e);
+        if (isMounted) {
+          setDocumentList([]);
+          toast.error(e instanceof Error ? e.message : "Không thể tải chứng từ.");
+        }
+      } finally {
+        if (isMounted) setIsLoadingDocuments(false);
       }
     };
     const timer = setTimeout(loadDocs, 300);
@@ -130,7 +126,7 @@ export function SaleAppointmentPage() {
   }, [appointmentType, search]);
 
   const allowedResults = documentList;
-  const excludedResults: DocumentItem[] = [];
+  const excludedResults: AppointmentDocument[] = [];
 
   const selectedReference = useMemo(() => {
     return allowedResults.find((item) => item.id === selectedId) ?? null;
@@ -150,14 +146,11 @@ export function SaleAppointmentPage() {
         maChungTu: selectedReference.id,
         maCN: formData.branch,
         ngayHen: formData.date,
-        gioHen: formData.time + ':00',
-        maNV: user?.maNV || 'NV01'
+        gioHen: formData.time + ':00'
       });
       setAppointments((prev) => [record, ...prev]);
-      toast.success("Tạo lịch hẹn thành công", {
-        description: "Email/SMS thông báo đã được gửi đến khách hàng.",
-      });
-      reset({ branch: branchOptions[0]?.value || BRANCHES[0].value, date: "", time: "" });
+      toast.success("Tạo lịch hẹn thành công");
+      reset({ branch: branchOptions[0]?.value ?? "", date: "", time: "" });
       } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Lỗi tạo lịch hẹn');
     }
@@ -230,7 +223,7 @@ export function SaleAppointmentPage() {
                       {allowedResults.length} chứng từ phù hợp với loại {currentTypeInfo.label}.
                     </>
                   ) : (
-                    "Không tìm thấy chứng từ phù hợp. Thử lại với tiêu chí khác."
+                    isLoadingDocuments ? "Đang tải chứng từ..." : "Không tìm thấy chứng từ phù hợp. Thử lại với tiêu chí khác."
                   )}
                 </div>
 

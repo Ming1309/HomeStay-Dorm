@@ -1,0 +1,37 @@
+@startuml
+title TAO LICH HEN - SO DO TUAN TU
+hide footbox
+autonumber
+actor "Nhan vien Sale" as Sale
+boundary SaleAppointmentPage as UI
+control LichHenController as API
+control TaoLichHen as UC
+entity LichHen as LH
+database PhienDuLieu as DB
+
+Sale -> UI : Chon loai va tim chung tu
+UI -> API : GET /api/appointments/documents
+API -> UC : TaiDanhSachChungTu(loai, tuKhoa)
+UC --> UI : Chung tu dung trang thai
+Sale -> UI : Chon chi nhanh, ngay, gio va luu
+UI -> API : POST /api/appointments
+API -> API : Lay MaNV tu JWT claim
+alt Khong co MaNV claim
+  API --> UI : 401 Unauthorized
+else Co MaNV claim
+  API -> UC : LuuLichHen(..., maNV)
+  UC -> DB : BatDauGiaoDich()
+  UC -> LH : TaoMoi(..., thoiDiemTao)
+  UC -> LH : KiemTraThoiGianHopLe(thoiDiem)
+  UC -> LH : KiemTraHopLe()
+  UC -> LH : KiemTraTrungLich()
+  alt Hop le
+    UC -> LH : Them()
+    UC -> DB : Commit()
+    API --> UI : 200 OK
+  else Khong hop le / trung lich / loi ghi
+    UC -> DB : Rollback()
+    API --> UI : 400 / 500
+  end
+end
+@enduml

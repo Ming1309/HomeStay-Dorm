@@ -1,29 +1,56 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ContractPanel } from "@/features/contracts/components/ContractPanel";
 import { ContractQueue } from "@/features/contracts/components/ContractQueue";
-import { mockApprovedDeposits, type ContractDeposit } from "@/features/contracts/model/mock-contracts";
+import {
+  layPhieuCocDaDuyet,
+  type PhieuCocDaDuyet,
+} from "@/features/contracts/services/contract-service";
 
 export const Route = createFileRoute("/sale/lap-hop-dong")({
   component: SaleContractWorkspacePage,
 });
 
 function SaleContractWorkspacePage() {
-  const [items, setItems] = useState<ContractDeposit[]>(mockApprovedDeposits);
-  const [selected, setSelected] = useState<ContractDeposit | null>(null);
+  const [items, setItems] = useState<PhieuCocDaDuyet[]>([]);
+  const [selected, setSelected] = useState<PhieuCocDaDuyet | null>(null);
+  const [searchText, setSearchText] = useState("");
+
+  const fetchItems = useCallback(
+    async (text?: string) => {
+      try {
+        const data = await layPhieuCocDaDuyet(text);
+        setItems(data);
+      } catch {
+        // ignore fetch error
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    fetchItems(searchText);
+  }, [fetchItems, searchText]);
 
   return (
     <div className="flex h-full overflow-hidden">
-      <ContractQueue items={items} selectedId={selected?.id ?? null} onSelect={setSelected} />
+      <ContractQueue
+        items={items}
+        selectedId={selected?.maPhieuCoc ?? null}
+        onSelect={setSelected}
+        onSearch={(text) => {
+          setSearchText(text);
+        }}
+      />
       <ContractPanel
         deposit={selected}
         onCancelContract={(id) => {
-          setItems((prev) => prev.filter((item) => item.id !== id));
+          setItems((prev) => prev.filter((item) => item.maPhieuCoc !== id));
           setSelected(null);
         }}
         onConfirmSigned={(id) => {
-          setItems((prev) => prev.filter((item) => item.id !== id));
+          setItems((prev) => prev.filter((item) => item.maPhieuCoc !== id));
           setSelected(null);
         }}
       />

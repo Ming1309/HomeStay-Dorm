@@ -8,7 +8,7 @@ public static class TaiKhoanDB
 {
     private const string Select = """
         SELECT tk.MaTK,tk.TenDangNhap,tk.MatKhauHash,tk.TrangThai,
-               tk.LanDangNhapCuoi,tk.Email,tk.PhongBan,tk.MaNV,
+               tk.LanDangNhapCuoi,tk.Email,tk.MaNV,
                nv.MaNV AS NhanVienMaNV,nv.HoTen,nv.SDT,nv.VaiTro,nv.MaCN,cn.TenChiNhanh
         FROM TaiKhoan tk INNER JOIN NhanVien nv ON tk.MaNV=nv.MaNV
         LEFT JOIN ChiNhanh cn ON nv.MaCN=cn.MaCN
@@ -43,14 +43,14 @@ public static class TaiKhoanDB
 
     public static async Task Them(TaiKhoan taiKhoan)
     {
-        const string sql = "INSERT INTO TaiKhoan (MaTK,TenDangNhap,MatKhauHash,TrangThai,Email,PhongBan,MaNV) VALUES (@MaTK,@TenDangNhap,@MatKhauHash,@TrangThai,@Email,@PhongBan,@MaNV)";
+        const string sql = "INSERT INTO TaiKhoan (MaTK,TenDangNhap,MatKhauHash,TrangThai,Email,MaNV) VALUES (@MaTK,@TenDangNhap,@MatKhauHash,@TrangThai,@Email,@MaNV)";
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, taiKhoan, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể tạo tài khoản.");
     }
 
     public static async Task CapNhat(TaiKhoan taiKhoan)
     {
-        const string sql = "UPDATE TaiKhoan SET TenDangNhap=@TenDangNhap,Email=@Email,PhongBan=@PhongBan WHERE MaTK=@MaTK";
+        const string sql = "UPDATE TaiKhoan SET TenDangNhap=@TenDangNhap,Email=@Email WHERE MaTK=@MaTK";
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, taiKhoan, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể cập nhật tài khoản.");
     }

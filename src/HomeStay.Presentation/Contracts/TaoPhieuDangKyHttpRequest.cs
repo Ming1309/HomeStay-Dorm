@@ -21,6 +21,4 @@ public sealed class TaoPhieuDangKyHttpRequest
     public int? ThoiHanThue { get; set; }
     public string? YeuCauKhac { get; set; }
 
-    // Nhân viên sale phụ trách
-    public string? MaNV { get; set; }
 }

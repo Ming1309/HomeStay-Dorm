@@ -16,7 +16,6 @@ import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
 import type { Appointment, Bed, Room } from "@/app/providers/workflow-store";
-import { useAuth } from "@/features/auth/model/auth-store";
 
 const khachHangSchema = z.object({
   hoTen: z.string().min(1, "Vui lòng nhập họ tên"),
@@ -300,8 +299,6 @@ function FormLapPhieuCoc({
     return () => window.removeEventListener("keydown", handler);
   });
 
-  const { user } = useAuth();
-
   const phongDaChon = useMemo(
     () => danhSachPhong.find((phong) => phong.id === maPhongDaChon) ?? null,
     [danhSachPhong, maPhongDaChon],
@@ -451,7 +448,6 @@ function FormLapPhieuCoc({
           MaPhong: phongDaChon.id,
           DanhSachGiuong: danhSachGiuongDaChon,
           HinhThucThue: hinhThucThue === "shared" ? "OGhep" : "NguyenCan",
-          MaNV: user?.maNV || "NV01",
         }),
       });
 

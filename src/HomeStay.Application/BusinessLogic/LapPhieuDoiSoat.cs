@@ -39,7 +39,7 @@ public sealed class LapPhieuDoiSoat
             });
         }
 
-        var phieuCocs = await PhieuCoc.LayDanhSachDaHuyDaThanhToan();
+        var phieuCocs = await PhieuCoc.LayDanhSachDaHuyChoDoiSoat();
         foreach (var pc in phieuCocs)
         {
             results.Add(new HoSoChoDoiSoat
@@ -49,7 +49,7 @@ public sealed class LapPhieuDoiSoat
                 TenKhachHang = pc.KhachHang?.HoTen ?? string.Empty,
                 Phong = pc.Phong != null ? $"{pc.Phong.ToaNha} - {pc.Phong.SoPhong}" : string.Empty,
                 SoTien = pc.TongTien,
-                NgayYeuCau = pc.ThoiDiemCoc,
+                NgayYeuCau = pc.ThoiDiemHuy!.Value,
                 TrangThai = pc.TrangThai
             });
         }
@@ -74,14 +74,14 @@ public sealed class LapPhieuDoiSoat
 
     private async Task<ChiTietDoiSoatDto> LayChiTietVaTinhToanInternal(string maHoSo, string loaiHoSo)
     {
-        var cs = await ChinhSachHoanCoc.LayChinhSachDangApDung()
-            ?? throw new InvalidOperationException("Không tìm thấy chính sách hoàn cọc đang áp dụng.");
-
         if (loaiHoSo == "PhieuCoc")
         {
-            decimal tienCoc = await PhieuCoc.LaySoTienCoc(maHoSo);
-            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuDoiSoat", "MaPDS", "PDS");
-            var pds = PhieuDoiSoat.TaoMoi(maMoi, maHoSo, null, null, _timeProvider.GetLocalNow().DateTime);
+            var (phieuCoc, phieuThu) = await LayPhieuCocDaHuyChoDoiSoat(maHoSo);
+            var homNay = DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
+            var cs = await ChinhSachHoanCoc.LayChinhSachDangApDung(homNay)
+                ?? throw new InvalidOperationException("Không tìm thấy chính sách hoàn cọc đang áp dụng.");
+            var tienCoc = phieuThu.SoTienThu;
+            var pds = PhieuDoiSoat.TaoMoi(phieuCoc.MaPhieuCoc, null, null, _timeProvider.GetLocalNow().DateTime);
             pds.ApDungChinhSachHoanCoc(cs.TiLe_ChuaKy);
             pds.TinhTongKhauTru(0);
             pds.ChotKetQua(tienCoc);
@@ -107,11 +107,16 @@ public sealed class LapPhieuDoiSoat
             int soThangThucTe = hd.TinhSoThangThucTe(_timeProvider.GetLocalNow().DateTime);
             int soThangHopDong = hd.TinhSoThangHopDong();
 
+            var homNay = DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
+            var cs = (hd.MaChinhSach is not null
+                ? await ChinhSachHoanCoc.LayChinhSachTheoMa(hd.MaChinhSach)
+                : await ChinhSachHoanCoc.LayChinhSachDangApDung(homNay))
+                ?? throw new InvalidOperationException(
+                    "Không tìm thấy chính sách hoàn cọc của hợp đồng.");
             decimal tyLe = cs.XacDinhTyLeHoan(soThangThucTe, soThangHopDong);
             var dsHoaDon = await HoaDon.LayDanhSachChuaThanhToan(maHoSo);
 
-            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuDoiSoat", "MaPDS", "PDS");
-            var pds = PhieuDoiSoat.TaoMoi(maMoi, hd.MaPhieuCoc, maHoSo, null, _timeProvider.GetLocalNow().DateTime);
+            var pds = PhieuDoiSoat.TaoMoi(hd.MaPhieuCoc, maHoSo, null, _timeProvider.GetLocalNow().DateTime);
             pds.TinhToanDoiSoat(tienCoc, tyLe, dsHoaDon);
 
             return new ChiTietDoiSoatDto
@@ -136,6 +141,26 @@ public sealed class LapPhieuDoiSoat
         {
             throw new ArgumentException("Loại hồ sơ không hợp lệ.");
         }
+    }
+
+    private static async Task<(PhieuCoc PhieuCoc, PhieuThu PhieuThu)> LayPhieuCocDaHuyChoDoiSoat(
+        string maPhieuCoc)
+    {
+        var phieuCoc = await PhieuCoc.DocChiTiet(maPhieuCoc)
+            ?? throw new InvalidOperationException("Không tìm thấy phiếu cọc cần đối soát.");
+        phieuCoc.KiemTraCoTheDoiSoatHoanCoc();
+
+        if (await HopDong.TonTaiTheoPhieuCoc(maPhieuCoc))
+            throw new InvalidOperationException("Phiếu cọc đã có hợp đồng và không thể hoàn theo luồng hủy trước hợp đồng.");
+
+        var phieuThu = await PhieuThu.LayTheoPhieuCoc(maPhieuCoc)
+            ?? throw new InvalidOperationException("Phiếu cọc chưa có phiếu thu xác nhận đã đóng tiền.");
+        phieuThu.KiemTraKhopTienCoc(phieuCoc);
+
+        if (await PhieuDoiSoat.TonTaiChoPhieuCocChuaKy(maPhieuCoc))
+            throw new InvalidOperationException("Phiếu cọc đã có phiếu đối soát.");
+
+        return (phieuCoc, phieuThu);
     }
 
     public async Task<PhieuDoiSoat> TaoPhieuDoiSoat(string maHoSo, string loaiHoSo, string? ghiChu, string? maNhanVien)
@@ -163,8 +188,7 @@ public sealed class LapPhieuDoiSoat
             }
             string? maHD = loaiHoSo == "HopDong" ? maHoSo : null;
 
-            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuDoiSoat", "MaPDS", "PDS");
-            var pds = PhieuDoiSoat.TaoMoi(maMoi, maPhieuCoc, maHD, maNhanVien, now);
+            var pds = PhieuDoiSoat.TaoMoi(maPhieuCoc, maHD, maNhanVien, now);
             pds.TyLeHoanCoc = detail.TyLeHoanCoc;
             pds.TongKhauTru = detail.TongKhauTru;
             pds.TienHoan = detail.TienHoan;

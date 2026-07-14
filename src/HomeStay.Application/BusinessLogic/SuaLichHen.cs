@@ -17,22 +17,26 @@ public sealed class SuaLichHen
     {
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
-
-        var lichHen = await LichHen.DocChiTiet(maLH) 
-            ?? throw new InvalidOperationException("Không tìm thấy lịch hẹn để cập nhật.");
-
-        lichHen.CapNhatThongTin(ngay, gio, maNV, trangThai);
-
-        if (lichHen.TrangThai == "DaXacNhan")
+        try
         {
-            lichHen.KiemTraThoiGianHopLe(_timeProvider.GetLocalNow().DateTime);
+            var lichHen = await LichHen.DocChiTiet(maLH)
+                ?? throw new InvalidOperationException("Không tìm thấy lịch hẹn để cập nhật.");
+
+            lichHen.CapNhatThongTin(ngay, gio, maNV, trangThai);
+
+            if (lichHen.TrangThai == "DaXacNhan")
+                lichHen.KiemTraThoiGianHopLe(_timeProvider.GetLocalNow().DateTime);
+
+            await lichHen.KiemTraTrungLichCapNhat();
+            await lichHen.LuuCapNhat();
+
+            phien.Commit();
+            return lichHen;
         }
-
-        await lichHen.KiemTraTrungLichCapNhat();
-        await lichHen.LuuCapNhat();
-
-        phien.Commit();
-        
-        return lichHen;
+        catch
+        {
+            phien.Rollback();
+            throw;
+        }
     }
 }

@@ -68,7 +68,13 @@ export function DepositDetailPanel({ deposit }: { deposit: DepositLookupDetail }
               {deposit.thoiDiemHuy && (
                 <Info label="Thời điểm hủy" value={formatDate(deposit.thoiDiemHuy)} />
               )}
-              {deposit.maNVHuy && <Info label="Nhân viên hủy" value={deposit.maNVHuy} mono />}
+              {deposit.thoiDiemHuy && (
+                <Info
+                  label="Người hủy"
+                  value={deposit.maNVHuy || "Hệ thống (quá hạn thanh toán)"}
+                  mono={Boolean(deposit.maNVHuy)}
+                />
+              )}
             </div>
           </section>
           <section className="rounded-lg border border-gray-200 bg-white p-4">

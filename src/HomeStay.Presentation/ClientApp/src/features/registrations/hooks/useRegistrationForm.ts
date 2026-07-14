@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import {
-  mockRegistrationService,
+  registrationService,
   type RegistrationData,
   type RegistrationResponse,
 } from "@/features/registrations/services/registration-service";
@@ -22,7 +22,7 @@ export function useRegistrationForm(options: UseRegistrationFormOptions = {}) {
         setIsLoading(true);
         setError(null);
 
-        const response = await mockRegistrationService.create(data);
+        const response = await registrationService.create(data);
 
         if (onSuccess) {
           onSuccess(response);

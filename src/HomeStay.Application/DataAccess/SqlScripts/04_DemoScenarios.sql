@@ -47,6 +47,16 @@ VALUES
 ('P012', '210', N'Tòa A', N'Tầng 2', N'Nam', N'DangSuDung', 'LP04', 'CN01');
 GO
 
+-- P003/G009-G010 có sẵn từ 02_Seeds.sql và được PC0008 giữ cọc.
+UPDATE Phong
+SET TrangThai = N'ConGiuongTrong'
+WHERE MaPhong = 'P003';
+
+UPDATE Giuong
+SET TrangThai = N'DaCoc'
+WHERE MaGiuong IN ('G009', 'G010');
+GO
+
 -- Tài sản chuẩn phòng P007 (HD0004) — phục vụ UC 1.4.17 Lập biên bản thu hồi
 INSERT INTO Phong_TaiSan (MaPhong, MaTS, SoLuongTieuChuan)
 VALUES
@@ -128,7 +138,7 @@ VALUES
 ('PC0004', '2026-07-27T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-26T10:00:00', N'/files/pc0004.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0007', 'P007', 'NV03'),
 ('PC0005', '2026-07-28T10:00:00', N'NguyenCan', 6, 3720000, '2026-07-27T10:00:00', N'/files/pc0005.png', N'ChuyenKhoan', NULL, NULL, NULL, N'ChoDuyet', 'KH0008', 'P010', 'NV03'),
 ('PC0006', '2026-07-29T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-28T10:00:00', N'/files/pc0006.png', N'TienMat', NULL, NULL, NULL, N'DaDuyet', 'KH0009', 'P011', 'NV04'),
-('PC0007', NULL, N'OGhep', 1, 1900000, '2026-07-20T10:00:00', NULL, NULL, NULL, '2026-07-21T09:00:00', 'NV03', N'DaHuy', 'KH0010', 'P002', 'NV03'),
+('PC0007', '2026-07-21T10:00:00', N'OGhep', 1, 1900000, '2026-07-20T10:00:00', N'/files/pc0007.png', N'ChuyenKhoan', NULL, '2026-07-21T09:00:00', 'NV03', N'DaHuy', 'KH0010', 'P002', 'NV03'),
 ('PC0008', '2026-07-30T10:00:00', N'OGhep', 2, 1240000, '2026-07-29T10:00:00', N'/files/pc0008.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0011', 'P003', 'NV04'),
 ('PC0009', '2026-07-31T10:00:00', N'OGhep', 1, 1900000, '2026-07-30T10:00:00', N'/files/pc0009.png', N'ChuyenKhoan', NULL, NULL, NULL, N'ChoDoiChieu', 'KH0001', 'P004', 'NV03'),
 -- UC 1.4.23: phiếu cọc gắn HD chờ thanh lý
@@ -177,16 +187,22 @@ GO
 -- ============================================================
 -- 5. Hợp đồng, lịch hẹn và chi tiết hợp đồng
 -- ============================================================
-INSERT INTO HopDong (MaHD, NgayKy, NgayBatDau, NgayKetThuc, KyThanhToan, GiaThue, DieuKhoan, TrangThai, MaNV, MaPhieuCoc, MaChinhSach, MaQD, MaQLDuyet)
+INSERT INTO HopDong (MaHD, NgayKy, NgayBatDau, NgayKetThuc, KyThanhToan, GiaThue, DieuKhoan, TrangThai, MaNV, MaPhieuCoc, MaChinhSach, MaQLDuyet)
 VALUES
-('HD0001', NULL, '2026-08-01', '2027-01-31', 1, 950000, N'Chờ ký hợp đồng', N'ChoKy', 'NV03', 'PC0001', 'CS01', 'QD01', NULL),
-('HD0002', '2026-07-26', '2026-08-01', '2027-01-31', 1, 1900000, N'Chờ thanh toán kỳ đầu', N'ChoThanhToan', 'NV03', 'PC0002', 'CS01', 'QD01', 'NV01'),
-('HD0003', '2026-07-27', '2026-08-01', '2027-01-31', 1, 1900000, N'Đã thanh toán, chờ bàn giao', N'ChoBanGiao', 'NV03', 'PC0003', 'CS01', 'QD01', 'NV01'),
-('HD0004', '2026-07-28', '2026-08-01', '2027-01-31', 1, 1900000, N'Đang lưu trú', N'DangHieuLuc', 'NV04', 'PC0004', 'CS01', 'QD01', 'NV01'),
-('HD0005', '2026-07-29', '2026-02-01', '2026-07-31', 1, 1860000, N'Đã thanh lý, chờ hoàn tất đối soát', N'DaThanhLy', 'NV03', 'PC0005', 'CS01', 'QD01', 'NV01'),
-('HD0006', '2026-07-29', '2026-08-01', '2027-01-31', 1, 3800000, N'Hợp đồng bị hủy', N'DaHuy', 'NV04', 'PC0006', 'CS01', 'QD01', 'NV01'),
+('HD0001', NULL, '2026-08-01', '2027-01-31', 1, 950000, N'Chờ ký hợp đồng', N'ChoKy', 'NV03', 'PC0001', 'CS01', NULL),
+('HD0002', '2026-07-26', '2026-08-01', '2027-01-31', 1, 1900000, N'Chờ thanh toán kỳ đầu', N'ChoThanhToan', 'NV03', 'PC0002', 'CS01', 'NV01'),
+('HD0003', '2026-07-27', '2026-08-01', '2027-01-31', 1, 1900000, N'Đã thanh toán, chờ bàn giao', N'ChoBanGiao', 'NV03', 'PC0003', 'CS01', 'NV01'),
+('HD0004', '2026-07-28', '2026-08-01', '2027-01-31', 1, 1900000, N'Đang lưu trú', N'DangHieuLuc', 'NV04', 'PC0004', 'CS01', 'NV01'),
+('HD0005', '2026-07-29', '2026-02-01', '2026-07-31', 1, 1860000, N'Đã thanh lý, chờ hoàn tất đối soát', N'DaThanhLy', 'NV03', 'PC0005', 'CS01', 'NV01'),
+('HD0006', '2026-07-29', '2026-08-01', '2027-01-31', 1, 3800000, N'Hợp đồng bị hủy', N'DaHuy', 'NV04', 'PC0006', 'CS01', 'NV01'),
 -- UC 1.4.23: đang hiệu lực, đã có phiếu đối soát (hoàn cọc, không nợ) — chờ thanh lý
-('HD0007', '2026-02-01', '2026-02-01', '2026-07-31', 1, 1900000, N'Đã đối soát, chờ thanh lý', N'DangHieuLuc', 'NV03', 'PC0010', 'CS01', 'QD01', 'NV01');
+('HD0007', '2026-02-01', '2026-02-01', '2026-07-31', 1, 1900000, N'Đã đối soát, chờ thanh lý', N'DangHieuLuc', 'NV03', 'PC0010', 'CS01', 'NV01');
+GO
+
+INSERT INTO HopDong_QuyDinh (MaHD, MaQD)
+SELECT hd.MaHD, qd.MaQD
+FROM (VALUES ('HD0001'), ('HD0002'), ('HD0003'), ('HD0004'), ('HD0005'), ('HD0006'), ('HD0007')) hd(MaHD)
+CROSS JOIN (VALUES ('QD01'), ('QD02'), ('QD03')) qd(MaQD);
 GO
 
 INSERT INTO LichHen (MaLH, NgayHen, GioHen, LoaiLichHen, TrangThai, MaPDK, MaPhieuCoc, MaHD, MaNV, MaCN)
@@ -201,7 +217,9 @@ VALUES
 ('LH0008', '2026-07-27', '14:00:00', N'TraPhong', N'DaHoanThanh', 'PDK0008', 'PC0005', 'HD0005', 'NV03', 'CN01'),
 ('LH0009', '2026-07-28', '14:30:00', N'TraPhong', N'DaHoanThanh', 'PDK0009', 'PC0006', 'HD0006', 'NV04', 'CN02'),
 -- Lịch trả phòng trong ngày (phục vụ UC 1.4.17 Lập biên bản thu hồi tài sản)
-('LH0010', CAST(GETDATE() AS DATE), '09:00:00', N'TraPhong', N'DaXacNhan', NULL, 'PC0004', 'HD0004', 'NV03', 'CN01');
+('LH0010', CAST(GETDATE() AS DATE), '09:00:00', N'TraPhong', N'DaXacNhan', NULL, 'PC0004', 'HD0004', 'NV03', 'CN01'),
+-- Lịch xem phòng đã hoàn thành, chưa có phiếu cọc: xuất hiện tại màn Sale/Lập phiếu cọc.
+('LH0011', CAST(GETDATE() AS DATE), '08:30:00', N'XemPhong', N'DaHoanThanh', 'PDK0002', NULL, NULL, 'NV03', 'CN01');
 GO
 
 INSERT INTO ChiTietHopDong (MaHD, MaGiuong, MaKH, TrangThaiThue, NgayTra)
@@ -279,12 +297,15 @@ GO
 -- ============================================================
 -- 7. Đối soát, phiếu thu và hoàn cọc
 -- ============================================================
-INSERT INTO PhieuDoiSoat (MaPDS, NgayDoiSoat, TyLeHoanCoc, TongKhauTru, TienHoan, TienThuThem, TrangThai, GhiChu, MaHD, MaNV, MaPhieuCoc, MaGiuong)
+INSERT INTO PhieuDoiSoat (MaPDS, NgayDoiSoat, TyLeHoanCoc, TongKhauTru, TienHoan, TienThuThem,
+ TrangThai, GhiChu, MaHD, MaNV, MaPhieuCoc, MaGiuong, KhachHangDongY, MaNVChot, ThoiDiemChot, GhiChuXacNhan)
 VALUES
-('PDS0001', '2026-07-31', 1.0000, 800000, 1060000, 0, N'DaChot', N'Đối soát đã chốt', 'HD0005', 'NV02', 'PC0005', 'G035'),
-('PDS0002', '2026-08-01', 0.8000, 0, 3040000, 0, N'DaTatToan', N'Đã tất toán hoàn cọc', 'HD0006', 'NV02', 'PC0006', 'G041'),
+('PDS0001', '2026-07-31', 1.0000, 800000, 1060000, 0, N'DaTatToan', N'Đã tất toán hoàn cọc', 'HD0005', 'NV02', 'PC0005', 'G035', 1, 'NV01', '2026-07-31T18:00:00', N'Khách đã đồng ý'),
+('PDS0002', '2026-08-01', 0.8000, 0, 3040000, 0, N'DaTatToan', N'Đã tất toán hoàn cọc', 'HD0006', 'NV02', 'PC0006', 'G041', 1, 'NV01', '2026-08-01T08:00:00', N'Khách đã đồng ý'),
 -- UC 1.4.23: đã chốt, hoàn cọc > 0, không thu thêm — mở khóa thanh lý
-('PDS0003', CAST(GETDATE() AS DATE), 1.0000, 0, 3800000, 0, N'DaChot', N'Đối soát chờ thanh lý HD0007', 'HD0007', 'NV02', 'PC0010', 'G043');
+('PDS0003', CAST(GETDATE() AS DATE), 1.0000, 0, 3800000, 0, N'DaChot', N'Đối soát chờ thanh lý HD0007', 'HD0007', 'NV02', 'PC0010', 'G043', 1, 'NV01', GETDATE(), N'Khách đã đồng ý'),
+-- Quản lý cần xác nhận khách đồng ý trước khi HD0004 được thanh lý.
+('PDS0004', CAST(GETDATE() AS DATE), 1.0000, 0, 7600000, 0, N'ChoXacNhan', N'Chờ Quản lý xác nhận', 'HD0004', 'NV02', 'PC0004', 'G027', 0, NULL, NULL, NULL);
 GO
 
 INSERT INTO ChiTietDoiSoat (MaPDS, MaHoaDon)
@@ -295,15 +316,20 @@ GO
 
 INSERT INTO PhieuThu (MaPT, SoTienThu, ThoiGian, PhuongThucThanhToan, AnhMinhChung, MaHoaDon, MaPhieuCoc, MaPDS, MaNV)
 VALUES
-('PT0001', 1900000, '2026-07-25T15:00:00', N'ChuyenKhoan', N'/files/pt0001.png', NULL, 'PC0003', NULL, 'NV02'),
-('PT0002', 950000, '2026-07-29T16:00:00', N'TienMat', NULL, 'HDON0002', NULL, NULL, 'NV02'),
-('PT0003', 1860000, '2026-07-31T17:00:00', N'ChuyenKhoan', N'/files/pt0003.png', NULL, NULL, 'PDS0001', 'NV02');
+('PT0001', 3800000, '2026-07-25T15:00:00', N'ChuyenKhoan', N'/files/pt0001.png', NULL, 'PC0003', NULL, 'NV02'),
+('PT0002', 950000, '2026-07-29T16:00:00', N'TienMat', N'/files/bien-nhan-pt0002.png', 'HDON0002', NULL, NULL, 'NV02'),
+('PT0003', 1860000, '2026-07-31T17:00:00', N'ChuyenKhoan', N'/files/pt0003.png', NULL, NULL, 'PDS0001', 'NV02'),
+-- PC0007: đã thu tiền, sau đó bị hủy trước khi ký hợp đồng; chờ Kế toán đối soát.
+('PT0004', 1900000, '2026-07-20T16:00:00', N'ChuyenKhoan', N'/files/pc0007.png', NULL, 'PC0007', NULL, 'NV02'),
+('PT0005', 7600000, '2026-07-26T16:00:00', N'ChuyenKhoan', N'/files/pc0004.png', NULL, 'PC0004', NULL, 'NV02'),
+('PT0006', 1240000, '2026-07-29T16:00:00', N'ChuyenKhoan', N'/files/pc0008.png', NULL, 'PC0008', NULL, 'NV02'),
+('PT0007', 3800000, '2026-07-19T16:00:00', N'ChuyenKhoan', N'/files/pc0010.png', NULL, 'PC0010', NULL, 'NV02');
 GO
 
-INSERT INTO PhieuHoanCoc (MaPHC, SoTienHoan, PhuongThucHoan, ThongTinNhanTien, ThoiGian, MaPDS, MaNV)
+INSERT INTO PhieuHoanCoc (MaPHC, SoTienHoan, PhuongThucHoan, ThongTinNhanTien, MaGiaoDich, MinhChung, ThoiGian, MaPDS, MaNV)
 VALUES
-('PHC0001', 1060000, N'ChuyenKhoan', N'Tài khoản nhận của KH0008', '2026-08-01T09:00:00', 'PDS0001', 'NV02'),
-('PHC0002', 3040000, N'TienMat', N'Khách nhận tại quầy', '2026-08-01T10:00:00', 'PDS0002', 'NV02');
+('PHC0001', 1060000, N'ChuyenKhoan', N'Tài khoản nhận của KH0008', N'GD-PHC0001', N'/files/phc0001.png', '2026-08-01T09:00:00', 'PDS0001', 'NV02'),
+('PHC0002', 3040000, N'TienMat', N'Khách nhận tại quầy', NULL, N'/files/bien-nhan-phc0002.png', '2026-08-01T10:00:00', 'PDS0002', 'NV02');
 GO
 
 PRINT N'Đã chèn dữ liệu kịch bản nghiệp vụ thành công.';

@@ -10,14 +10,14 @@ public sealed class ThanhToanTraPhongEntityTests
     public void TaoPhieuThu_ValidParameters_CreatesSuccessfully()
     {
         var now = new DateTime(2026, 7, 13, 12, 0, 0);
-        var phieuThu = PhieuThu.TaoPhieuThu("PDS0099", 500_000m, "TienMat", null, "NV02", now);
+        var phieuThu = PhieuThu.TaoPhieuThu("PDS0099", 500_000m, "TienMat", "/proof.png", "NV02", now);
 
         Assert.NotNull(phieuThu);
         Assert.StartsWith("PT20260713120000", phieuThu.MaPT);
         Assert.Equal(500_000m, phieuThu.SoTienThu);
         Assert.Equal("PDS0099", phieuThu.MaPDS);
         Assert.Equal("TienMat", phieuThu.PhuongThucThanhToan);
-        Assert.Null(phieuThu.AnhMinhChung);
+        Assert.Equal("/proof.png", phieuThu.AnhMinhChung);
         Assert.Equal("NV02", phieuThu.MaNV);
         Assert.Null(phieuThu.MaHoaDon);
         Assert.Null(phieuThu.MaPhieuCoc);
@@ -57,6 +57,6 @@ public sealed class ThanhToanTraPhongEntityTests
     public void TaoPhieuThu_MissingEmployee_ThrowsArgumentException()
     {
         Assert.Throws<ArgumentException>(() =>
-            PhieuThu.TaoPhieuThu("PDS0099", 100m, "TienMat", null, " ", DateTime.Now));
+            PhieuThu.TaoPhieuThu("PDS0099", 100m, "TienMat", "/proof.png", " ", DateTime.Now));
     }
 }

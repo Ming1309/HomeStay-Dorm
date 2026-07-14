@@ -66,8 +66,7 @@ public sealed class LapPhieuCoc
                 ? phong.GiuNguyenPhong()
                 : phong.GiuGiuong(danhSachGiuong);
 
-            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuCoc", "MaPhieuCoc", "PC");
-            var phieuCoc = PhieuCoc.TaoMoi(maMoi, hinhThucThue, khachHang, phong, giuongs,
+            var phieuCoc = PhieuCoc.TaoMoi(hinhThucThue, khachHang, phong, giuongs,
                 maNhanVien, _timeProvider.GetLocalNow().DateTime);
             lichHen.GanPhieuCoc(phieuCoc.MaPhieuCoc);
 

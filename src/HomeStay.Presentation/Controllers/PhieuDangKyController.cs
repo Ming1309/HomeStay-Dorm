@@ -1,17 +1,24 @@
 namespace HomeStay.Presentation.Controllers;
 
+using System.Security.Claims;
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Presentation.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/registrations")]
+[Authorize(Roles = "Sale")]
 public sealed class PhieuDangKyController(LapPhieuDangKy lapPhieuDangKy) : ControllerBase
 {
     // UC1 - Lập phiếu đăng ký
     [HttpPost]
     public async Task<IActionResult> TaoPhieuDangKy([FromBody] TaoPhieuDangKyHttpRequest request)
     {
+        var maNV = User.FindFirstValue("MaNV");
+        if (string.IsNullOrWhiteSpace(maNV))
+            return Unauthorized(new { Message = "Không xác định được Nhân viên Sale đang đăng nhập." });
+
         try
         {
             var phieu = await lapPhieuDangKy.TaoPhieuDangKy(
@@ -19,7 +26,7 @@ public sealed class PhieuDangKyController(LapPhieuDangKy lapPhieuDangKy) : Contr
                 request.DiaChiThuongTru, request.LoaiGiayTo, request.SoGiayTo,
                 request.KhuVuc, request.SoLuongNguoi, request.LoaiDichVu, request.MucGia,
                 request.ThoiGianDuKienVao, request.ThoiHanThue, request.YeuCauKhac,
-                request.MaNV);
+                maNV);
             return Ok(phieu);
         }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }

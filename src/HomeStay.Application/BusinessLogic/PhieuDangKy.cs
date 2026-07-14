@@ -17,11 +17,11 @@ public sealed class PhieuDangKy
     public string? MaNV { get; set; }
     public KhachHang? KhachHang { get; set; }
 
-    public static PhieuDangKy TaoMoi(string maPDK, string maKH, string? maNV, string? khuVuc, int? soLuongNguoi,
+    public static PhieuDangKy TaoMoi(string maKH, string? maNV, string? khuVuc, int? soLuongNguoi,
         string? loaiDichVu, decimal? mucGia, DateTime? thoiGianDuKienVao, int? thoiHanThue,
         string? yeuCauKhac, DateTime thoiDiem) => new()
     {
-        MaPDK = maPDK,
+        MaPDK = $"PDK{thoiDiem:yyyyMMddHHmmssfff}",
         MaKH = maKH,
         MaNV = maNV,
         KhuVuc = khuVuc,
@@ -44,10 +44,9 @@ public sealed class PhieuDangKy
 
     public static Task<PhieuDangKy?> DocChiTiet(string maPDK) => PhieuDangKyDB.LayTheoMa(maPDK);
 
-    public static async Task<IReadOnlyList<PhieuDangKy>> TimKiem(string? sdt, string? soGiayTo, string? email, string? hoTen = null, string? maPDK = null)
-    {
-        return await PhieuDangKyDB.TimKiem(sdt, soGiayTo, email, hoTen, maPDK);
-    }
+    public static Task<IReadOnlyList<PhieuDangKy>> TimKiem(
+        string? sdt, string? soGiayTo, string? email, string? hoTen = null, string? maPDK = null) =>
+        PhieuDangKyDB.TimKiem(sdt, soGiayTo, email, hoTen, maPDK);
 
     public Task Them() => PhieuDangKyDB.Them(this);
 }

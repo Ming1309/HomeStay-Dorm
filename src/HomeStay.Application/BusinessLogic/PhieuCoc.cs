@@ -25,12 +25,12 @@ public sealed class PhieuCoc
     public List<Giuong> Giuongs { get; set; } = [];
     public List<ThanhVienDangKy> ThanhViens { get; set; } = [];
 
-    public static PhieuCoc TaoMoi(string maPhieu, string hinhThucThue, KhachHang khachHang, Phong phong,
+    public static PhieuCoc TaoMoi(string hinhThucThue, KhachHang khachHang, Phong phong,
         IReadOnlyList<Giuong> giuongs, string? maNhanVien, DateTime thoiDiem)
     {
         if (hinhThucThue is not ("NguyenCan" or "OGhep"))
             throw new InvalidOperationException("Hình thức thuê không hợp lệ.");
-        
+        var maPhieu = $"PC{thoiDiem:yyyyMMddHHmmssfff}";
         return new PhieuCoc
         {
             MaPhieuCoc = maPhieu,
@@ -52,28 +52,27 @@ public sealed class PhieuCoc
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null) =>
         PhieuCocDB.LayDanhSachKhoiTao(text);
 
-    // ==========================================================
-    // Methods from feat/lap-phieu-doi-soat branch
-    // ==========================================================
-    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyDaThanhToan() =>
-        PhieuCocDB.LayDanhSachDaHuyDaThanhToan();
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaDuyet(string? text = null) =>
+        PhieuCocDB.LayDanhSachDaDuyet(text);
 
-    public static Task<decimal> LaySoTienCoc(string maPhieuCoc) =>
-        PhieuCocDB.LaySoTienCoc(maPhieuCoc);
-
-    // ==========================================================
-    // Methods from develop branch
-    // ==========================================================
     public static Task<IReadOnlyList<PhieuCoc>> LayPhieuCocDaThanhToanNhanPhongHomNay(string? text = null) =>
         PhieuCocDB.LayPhieuCocDaThanhToanNhanPhongHomNay(text);
 
-    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(string? text = null) =>
-        PhieuCocDB.LayDanhSachChoThanhToan(text);
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(
+        DateTime thoiDiemHienTai, string? text = null) =>
+        PhieuCocDB.LayDanhSachChoThanhToan(thoiDiemHienTai, text);
 
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string? text = null) =>
         PhieuCocDB.LayDanhSachChoDoiChieu(text);
 
     public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => PhieuCocDB.DocChiTiet(maPhieuCoc);
+
+    public static Task<PhieuCoc?> DocChiTietChoCapNhat(string maPhieuCoc) =>
+        PhieuCocDB.DocChiTietChoCapNhat(maPhieuCoc);
+
+    public static Task<IReadOnlyList<string>> LayDanhSachMaQuaHan(
+        DateTime thoiDiemHienTai, int batchSize) =>
+        PhieuCocDB.LayDanhSachMaQuaHan(thoiDiemHienTai, batchSize);
 
     // ==========================================================
     // Methods from feat/lap-phieu-hoan-coc branch
@@ -125,6 +124,14 @@ public sealed class PhieuCoc
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoat() =>
         PhieuCocDB.LayDanhSachDaHuyChoDoiSoat();
 
+    public void KiemTraCoTheDoiSoatHoanCoc()
+    {
+        if (TrangThai != "DaHuy")
+            throw new InvalidOperationException("Phiếu cọc phải ở trạng thái Đã hủy để đối soát hoàn cọc.");
+        if (ThoiDiemHuy is null)
+            throw new InvalidOperationException("Phiếu cọc chưa có thời điểm hủy hợp lệ.");
+    }
+
     public int TinhTienDuKien()
     {
         KiemTraCoTheTinhTien();
@@ -133,12 +140,14 @@ public sealed class PhieuCoc
         return SoGiuongThue;
     }
 
-    public void XacNhanTinhTien(DateTime thoiDiemXacNhan)
+    public void XacNhanTinhTien(DateTime thoiDiemXacNhan, TimeSpan thoiHanThanhToan)
     {
         if (TrangThai != "KhoiTao")
             throw new InvalidOperationException("Phiếu cọc không còn ở trạng thái khởi tạo.");
+        if (thoiHanThanhToan <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(thoiHanThanhToan), "Thời hạn thanh toán phải lớn hơn 0.");
         TinhTienDuKien();
-        HanThanhToan = thoiDiemXacNhan.AddHours(24);
+        HanThanhToan = thoiDiemXacNhan.Add(thoiHanThanhToan);
         TrangThai = "ChoThanhToan";
     }
 
@@ -148,16 +157,25 @@ public sealed class PhieuCoc
             throw new InvalidOperationException("Phiếu cọc không còn ở trạng thái chờ thanh toán.");
     }
 
-    public void KiemTraCoTheGhiNhanThanhToan(string phuongThucThanhToan)
+    public void KiemTraConHanThanhToan(DateTime thoiDiemHienTai)
+    {
+        if (HanThanhToan is null)
+            throw new InvalidOperationException("Phiếu cọc chưa có hạn thanh toán hợp lệ.");
+        if (thoiDiemHienTai >= HanThanhToan.Value)
+            throw new InvalidOperationException("Phiếu cọc đã quá hạn thanh toán và đang được hệ thống tự động hủy.");
+    }
+
+    public void KiemTraCoTheGhiNhanThanhToan(string phuongThucThanhToan, DateTime thoiDiemHienTai)
     {
         KiemTraTrangThaiChoGhiNhan();
+        KiemTraConHanThanhToan(thoiDiemHienTai);
         if (phuongThucThanhToan is not ("ChuyenKhoan" or "TienMat"))
             throw new ArgumentException("Phương thức thanh toán không hợp lệ.", nameof(phuongThucThanhToan));
     }
 
-    public void GhiNhanThanhToan(string phuongThucThanhToan, string anhMinhChung)
+    public void GhiNhanThanhToan(string phuongThucThanhToan, string anhMinhChung, DateTime thoiDiemHienTai)
     {
-        KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan);
+        KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan, thoiDiemHienTai);
         if (string.IsNullOrWhiteSpace(anhMinhChung))
             throw new ArgumentException("Vui lòng tải lên chứng từ thanh toán để tiếp tục.", nameof(anhMinhChung));
 
@@ -188,15 +206,34 @@ public sealed class PhieuCoc
         TrangThai = "DaThanhToan";
     }
 
-    public void YeuCauBoSung(string lyDo)
+    public void YeuCauBoSung(string lyDo, DateTime thoiDiemYeuCau, TimeSpan thoiHanThanhToan)
     {
         if (TrangThai != "ChoDoiChieu")
             throw new InvalidOperationException("Phiếu cọc không còn ở trạng thái chờ đối chiếu.");
+        if (thoiHanThanhToan <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(thoiHanThanhToan), "Thời hạn thanh toán phải lớn hơn 0.");
         var noiDung = lyDo?.Trim() ?? string.Empty;
         if (noiDung.Length is < 1 or > 500)
             throw new ArgumentException("Lý do yêu cầu bổ sung phải có từ 1 đến 500 ký tự.", nameof(lyDo));
         LyDoYeuCauBoSung = noiDung;
+        HanThanhToan = thoiDiemYeuCau.Add(thoiHanThanhToan);
         TrangThai = "ChoThanhToan";
+    }
+
+    public bool CoTheTuDongHuy(DateTime thoiDiemHienTai) =>
+        TrangThai == "ChoThanhToan"
+        && HanThanhToan is not null
+        && thoiDiemHienTai >= HanThanhToan.Value
+        && !DaDongTien;
+
+    public void TuDongHuyQuaHan(DateTime thoiDiemHienTai)
+    {
+        if (!CoTheTuDongHuy(thoiDiemHienTai))
+            throw new InvalidOperationException("Phiếu cọc không còn đủ điều kiện tự động hủy do quá hạn.");
+
+        TrangThai = "DaHuy";
+        ThoiDiemHuy = thoiDiemHienTai;
+        MaNVHuy = null;
     }
 
     public void KiemTraCoTheXetDuyet()
@@ -252,7 +289,8 @@ public sealed class PhieuCoc
 
     public Task CapNhatTinhTien() => PhieuCocDB.CapNhatTinhTien(this);
 
-    public Task CapNhatThanhToan() => PhieuCocDB.CapNhatThanhToan(this);
+    public Task CapNhatThanhToan(DateTime thoiDiemHienTai) =>
+        PhieuCocDB.CapNhatThanhToan(this, thoiDiemHienTai);
 
     public Task CapNhatXacNhanThanhToan() => PhieuCocDB.CapNhatXacNhanThanhToan(this);
 
@@ -265,6 +303,9 @@ public sealed class PhieuCoc
     public Task<bool> CapNhatTrangThaiKhongDieuKien(string trangThai) => PhieuCocDB.CapNhatTrangThaiKhongDieuKien(MaPhieuCoc, trangThai);
 
     public Task CapNhatHuy() => PhieuCocDB.CapNhatHuy(this);
+
+    public Task CapNhatTuDongHuy(DateTime thoiDiemHienTai) =>
+        PhieuCocDB.CapNhatTuDongHuy(this, thoiDiemHienTai);
 
     public Task Them() => PhieuCocDB.Them(this);
 }

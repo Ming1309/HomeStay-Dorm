@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Presentation.Contracts;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,6 +29,10 @@ public sealed class PhieuDoiSoatController(
         }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { Message = ex.Message }); }
+        catch (SqlException ex) when (ex.Number is 2601 or 2627 or 1205)
+        {
+            return Conflict(new { Message = "Hồ sơ đã được xử lý bởi yêu cầu khác. Vui lòng tải lại danh sách." });
+        }
         catch (Exception ex)
         {
             logger.LogError(ex, "Không thể tải chi tiết đối soát cho {MaHoSo}", maHoSo);

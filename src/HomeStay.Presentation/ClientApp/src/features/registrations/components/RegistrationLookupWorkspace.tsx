@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, X } from "lucide-react";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
@@ -7,8 +7,6 @@ import { Input } from "@/shared/ui/input";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { toast } from "sonner";
 import { registrationService } from "@/features/registrations/services/registration-service";
-
-type RegistrationStatus = "draft" | "pending" | "approved" | "rejected";
 
 type RegistrationLookupItem = {
   id: string;
@@ -49,6 +47,7 @@ export function RegistrationLookupWorkspace() {
   const [hasSearched, setHasSearched] = useState(false);
   const [searchKey, setSearchKey] = useState("");
   const [results, setResults] = useState<RegistrationLookupItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const selectedRegistration = selectedId
     ? (results.find((item) => item.id === selectedId) ?? null)
@@ -81,9 +80,10 @@ export function RegistrationLookupWorkspace() {
       maPDK = q;
     }
 
+    setIsLoading(true);
     try {
       const apiResults = await registrationService.search({ sdt, soGiayTo, email, hoTen, maPDK });
-      const mapped = apiResults.map((item: any) => ({
+      const mapped: RegistrationLookupItem[] = apiResults.map((item) => ({
         id: item.maPDK,
         registrationNumber: item.maPDK,
         customerName: item.khachHang?.hoTen || '',
@@ -92,24 +92,26 @@ export function RegistrationLookupWorkspace() {
         idType: item.khachHang?.loaiGiayTo || '',
         idNumber: item.khachHang?.soGiayTo || '',
         desiredArea: item.khuVuc || '',
-        priceRange: item.mucGia + 'đ' || '',
+        priceRange: item.mucGia == null ? "—" : `${new Intl.NumberFormat("vi-VN").format(item.mucGia)} VNĐ`,
         moveInDate: item.thoiGianDuKienVao?.split('T')[0] || '',
-        rentalDuration: item.thoiHanThue + ' tháng',
+        rentalDuration: item.thoiHanThue == null ? "—" : `${item.thoiHanThue} tháng`,
         roomType: item.loaiDichVu || '',
         people: item.soLuongNguoi || 1,
-        submittedAt: item.thoiGianDuKienVao?.split('T')[0] || '',
+        submittedAt: "—",
         status: item.trangThai || 'DangXuLy',
         notes: item.yeuCauKhac || ''
       }));
       setResults(mapped);
       setSearchKey(query.trim());
       setHasSearched(true);
-      if (selectedId && !mapped.some((item: any) => item.id === selectedId)) {
+      if (selectedId && !mapped.some((item) => item.id === selectedId)) {
         setSelectedId(null);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Có lỗi xảy ra khi tìm kiếm");
       setResults([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -153,9 +155,10 @@ export function RegistrationLookupWorkspace() {
               type="button"
               className="flex h-10 w-full items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700"
               onClick={handleSearch}
+              disabled={isLoading}
             >
               <Search className="size-4" />
-              Tìm kiếm
+              {isLoading ? "Đang tìm..." : "Tìm kiếm"}
             </Button>
           </div>
         </div>

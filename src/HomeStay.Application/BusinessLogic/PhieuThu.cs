@@ -19,7 +19,7 @@ public sealed class PhieuThu
     // ==========================================================
     // Methods from feat/thanh-toan-tra-phong branch
     // ==========================================================
-    public static PhieuThu TaoPhieuThu(string maPT, string maPDS, decimal soTien, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
+    public static PhieuThu TaoPhieuThu(string maPDS, decimal soTien, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
     {
         if (string.IsNullOrWhiteSpace(maPDS))
             throw new ArgumentException("Mã phiếu đối soát không được để trống.", nameof(maPDS));
@@ -27,14 +27,14 @@ public sealed class PhieuThu
             throw new ArgumentException("Số tiền thu phải lớn hơn 0.");
         if (phuongThuc is not ("TienMat" or "ChuyenKhoan"))
             throw new ArgumentException("Phương thức thanh toán không hợp lệ.", nameof(phuongThuc));
-        if (phuongThuc == "ChuyenKhoan" && string.IsNullOrWhiteSpace(anhMinhChung))
-            throw new ArgumentException("Chuyển khoản phải có thông tin chứng từ.", nameof(anhMinhChung));
+        if (string.IsNullOrWhiteSpace(anhMinhChung))
+            throw new ArgumentException("Phải có chứng từ xác nhận đã thu tiền.", nameof(anhMinhChung));
         if (string.IsNullOrWhiteSpace(maNV))
             throw new ArgumentException("Không xác định được Kế toán thực hiện.", nameof(maNV));
 
         return new PhieuThu
         {
-            MaPT = maPT,
+            MaPT = $"PT{thoiDiem:yyyyMMddHHmmssfff}",
             SoTienThu = soTien,
             ThoiGian = thoiDiem,
             PhuongThucThanhToan = phuongThuc,
@@ -46,7 +46,6 @@ public sealed class PhieuThu
 
     // UC 1.4.14 Xử lý thanh toán hợp đồng
     public static PhieuThu TaoPhieuThuTienHoaDon(
-        string maPT,
         string maHoaDon, decimal soTienThu, string phuongThuc, string? anhMinhChung, string maNV, DateTime thoiDiem)
     {
         if (string.IsNullOrWhiteSpace(maHoaDon))
@@ -55,14 +54,14 @@ public sealed class PhieuThu
             throw new ArgumentException("Số tiền thu phải lớn hơn 0.");
         if (phuongThuc is not ("TienMat" or "ChuyenKhoan"))
             throw new ArgumentException("Phương thức thanh toán không hợp lệ.", nameof(phuongThuc));
-        if (phuongThuc == "ChuyenKhoan" && string.IsNullOrWhiteSpace(anhMinhChung))
-            throw new ArgumentException("Chuyển khoản phải có thông tin chứng từ.", nameof(anhMinhChung));
+        if (string.IsNullOrWhiteSpace(anhMinhChung))
+            throw new ArgumentException("Phải có chứng từ xác nhận đã thu tiền.", nameof(anhMinhChung));
         if (string.IsNullOrWhiteSpace(maNV))
             throw new ArgumentException("Không xác định được Kế toán thực hiện.", nameof(maNV));
 
         return new PhieuThu
         {
-            MaPT = maPT,
+            MaPT = $"PT{thoiDiem:yyyyMMddHHmmssfff}",
             SoTienThu = soTienThu,
             ThoiGian = thoiDiem,
             PhuongThucThanhToan = phuongThuc,
@@ -77,10 +76,23 @@ public sealed class PhieuThu
     public static Task<bool> DaTonTaiChoPhieuDoiSoat(string maPDS) =>
         PhieuThuDB.TonTaiTheoMaPhieuDoiSoat(maPDS);
 
+    public static Task<PhieuThu?> LayTheoPhieuCoc(string maPhieuCoc) =>
+        PhieuThuDB.LayTheoPhieuCoc(maPhieuCoc);
+
+    public void KiemTraKhopTienCoc(PhieuCoc phieuCoc)
+    {
+        if (!string.Equals(MaPhieuCoc, phieuCoc.MaPhieuCoc, StringComparison.Ordinal))
+            throw new InvalidOperationException("Phiếu thu không thuộc phiếu cọc cần đối soát.");
+        if (SoTienThu <= 0)
+            throw new InvalidOperationException("Phiếu thu tiền cọc không có số tiền hợp lệ.");
+        if (SoTienThu != phieuCoc.TongTien)
+            throw new InvalidOperationException("Số tiền thực thu không khớp tổng tiền trên phiếu cọc.");
+    }
+
     // ==========================================================
     // Methods from develop branch
     // ==========================================================
-    public static PhieuThu TaoChoTienCoc(string maPT, PhieuCoc phieuCoc, string maNhanVien, DateTime thoiGian)
+    public static PhieuThu TaoChoTienCoc(PhieuCoc phieuCoc, string maNhanVien, DateTime thoiGian)
     {
         phieuCoc.KiemTraCoTheXacNhanThanhToan();
         if (string.IsNullOrWhiteSpace(maNhanVien))
@@ -88,7 +100,7 @@ public sealed class PhieuThu
 
         return new PhieuThu
         {
-            MaPT = maPT,
+            MaPT = $"PT{thoiGian:yyyyMMddHHmmssfff}",
             SoTienThu = phieuCoc.TongTien,
             ThoiGian = thoiGian,
             PhuongThucThanhToan = phieuCoc.PhuongThucThanhToan,

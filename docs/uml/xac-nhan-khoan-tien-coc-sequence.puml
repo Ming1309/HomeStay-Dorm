@@ -58,7 +58,7 @@ else Chung tu can bo sung
     MH -> XN : YeuCauBoSung(maPhieuCoc, lyDo)
     XN -> PC : DocChiTiet(maPhieuCoc)
     PC -> PCDB : DocChiTiet(maPhieuCoc)
-    XN -> PC : YeuCauBoSung(lyDo)
+    XN -> PC : YeuCauBoSung(lyDo, thoiDiemYeuCau, thoiHanThanhToan)
     XN -> PC : CapNhatYeuCauBoSung()
     PC -> PCDB : CapNhatYeuCauBoSung(phieu)
     MH -> MH : thong bao da gui yeu cau

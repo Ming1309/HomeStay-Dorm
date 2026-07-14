@@ -50,11 +50,12 @@ public sealed class LichHen
             throw new InvalidOperationException("Lịch hẹn không ở trạng thái hợp lệ để nhập hồ sơ.");
     }
 
-    public static LichHen TaoMoi(string maLH, string loai, string maChungTu, string maCN, DateTime ngay, TimeSpan gio, string maNV)
+    public static LichHen TaoMoi(
+        string loai, string maChungTu, string maCN, DateTime ngay, TimeSpan gio, string maNV, DateTime thoiDiemTao)
     {
         var lh = new LichHen
         {
-            MaLH = maLH,
+            MaLH = $"LH{thoiDiemTao:yyyyMMddHHmmssfff}",
             NgayHen = ngay,
             GioHen = gio,
             LoaiLichHen = loai,

@@ -1,10 +1,16 @@
 using HomeStay.Application.BusinessLogic;
 using HomeStay.Application.DataAccess.DbConnections;
 using HomeStay.Application.DataAccess.FileStorage;
+using HomeStay.Presentation.HostedServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var cauHinhHetHanPhieuCoc = builder.Configuration
+    .GetSection(CauHinhHetHanPhieuCoc.TenSection)
+    .Get<CauHinhHetHanPhieuCoc>() ?? new CauHinhHetHanPhieuCoc();
+cauHinhHetHanPhieuCoc.KiemTraHopLe();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -28,9 +34,17 @@ builder.Services.AddSingleton<IChungTuCocStorage>(new ChungTuCocFileStorage(
     Path.Combine(builder.Environment.ContentRootPath, "App_Data", "ChungTuCoc")));
 builder.Services.AddSingleton<IMinhChungThuHoiStorage>(new MinhChungThuHoiFileStorage(
     Path.Combine(builder.Environment.ContentRootPath, "App_Data", "MinhChungThuHoi")));
+builder.Services.AddSingleton<IChungTuTaiChinhStorage>(new ChungTuTaiChinhFileStorage(
+    Path.Combine(builder.Environment.ContentRootPath, "App_Data", "ChungTuTaiChinh")));
+var thuMucQuyDinh = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "QuyDinh");
+var thuMucQuyDinhMau = Path.Combine(builder.Environment.ContentRootPath, "SeedData");
+builder.Services.AddSingleton<IQuyDinhFileStorage>(
+    new QuyDinhFileStorage(thuMucQuyDinh, thuMucQuyDinhMau));
 
 // Register Business Logic dependencies
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton(cauHinhHetHanPhieuCoc);
+builder.Services.AddHostedService<TuDongHuyPhieuCocQuaHanWorker>();
 builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
 
@@ -39,6 +53,7 @@ builder.Services.AddScoped<DichVuThongBao>();
 
 // Đối soát / trả phòng / hoàn cọc / thanh toán hợp đồng
 builder.Services.AddScoped<LapPhieuDoiSoat>();
+builder.Services.AddScoped<XacNhanPhieuDoiSoat>();
 builder.Services.AddScoped<ThanhToanTraPhong>();
 builder.Services.AddScoped<LapPhieuHoanCoc>();
 builder.Services.AddScoped<XuLyThanhToanHopDong>();
@@ -56,10 +71,16 @@ builder.Services.AddScoped<LapBienBanThuHoiTaiSan>();
 builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();
+builder.Services.AddScoped<QuanLyPhongGiuong>();
+builder.Services.AddScoped<QuanLyDichVu>();
+builder.Services.AddScoped<QuanLyTaiSan>();
+builder.Services.AddScoped<QuanLyQuyDinh>();
+builder.Services.AddScoped<QuanLyChinhSachHoanCoc>();
 builder.Services.AddScoped<TaoLichHen>();
 builder.Services.AddScoped<TraCuuLichHen>();
 builder.Services.AddScoped<SuaLichHen>();
 builder.Services.AddScoped<LapPhieuDangKy>();
+builder.Services.AddScoped<LapHopDongThue>();
 
 // UC 1.4.15 Lập biên bản bàn giao
 builder.Services.AddScoped<LapBienBanBanGiao>();

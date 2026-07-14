@@ -8,6 +8,25 @@ using HomeStay.Application.DataAccess.DbConnections;
 /// </summary>
 public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
 {
+    public async Task GuiThongBaoSale(
+        string tieuDe,
+        string noiDung,
+        string? lienKet,
+        string? maNVGui,
+        string? maThamChieu)
+    {
+        var tb = ThongBao.Tao(
+            tieuDe,
+            noiDung,
+            "Sale",
+            lienKet,
+            "orange",
+            maNVGui,
+            maThamChieu,
+            timeProvider.GetLocalNow().DateTime);
+        await tb.Luu();
+    }
+
     public async Task GuiThongBaoKeToan(
         string tieuDe,
         string noiDung,
@@ -16,9 +35,7 @@ public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvide
         string? maThamChieu)
     {
         // Gọi trong transaction đã mở của use-case (không tạo session mới).
-        var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("ThongBao", "MaTB", "TB");
         var tb = ThongBao.Tao(
-            maMoi,
             tieuDe,
             noiDung,
             "KeToan",
@@ -36,13 +53,11 @@ public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvide
     /// </summary>
     public async Task GuiThongBaoQuanLy(string maPDS)
     {
-        var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("ThongBao", "MaTB", "TB");
         var tb = ThongBao.Tao(
-            maTB: maMoi,
             tieuDe: "Phiếu đối soát mới",
-            noiDung: $"Phiếu đối soát {maPDS} đã được lập. Vui lòng kiểm tra kết quả và tiến hành thanh lý hợp đồng nếu đủ điều kiện.",
+            noiDung: $"Phiếu đối soát {maPDS} đã được lập. Vui lòng xác nhận khách hàng đã đồng ý kết quả.",
             vaiTroNhan: "QuanLy",
-            lienKet: "/manager/termination",
+            lienKet: "/manager/reconciliation-approval",
             tone: "blue",
             maNVGui: null,
             maThamChieu: maPDS,
@@ -63,9 +78,7 @@ public sealed class DichVuThongBao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvide
         phien.BatDauGiaoDich();
         try
         {
-            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("ThongBao", "MaTB", "TB");
             var tb = ThongBao.Tao(
-                maMoi,
                 tieuDe,
                 noiDung,
                 vaiTroNhan,

@@ -127,6 +127,7 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
       items: [
         { to: "/manager/approval", label: "Xét duyệt hồ sơ", icon: ClipboardCheck },
         { to: "/manager/confirm-deposit", label: "Xác nhận tiền cọc", icon: ShieldCheck },
+        { to: "/manager/reconciliation-approval", label: "Xác nhận đối soát", icon: ClipboardCheck },
       ],
     },
     {

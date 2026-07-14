@@ -16,7 +16,6 @@ import { Checkbox } from "@/shared/ui/checkbox";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import { registrationService } from "../services/registration-service";
-import { useAuth } from "@/features/auth/model/auth-store";
 
 // Zod validation schema
 const registrationSchema = z.object({
@@ -48,18 +47,18 @@ const registrationSchema = z.object({
   moveInDate: z.string().min(1, "Ngày dự kiến vào ở là bắt buộc"),
 
   // Tiêu chí
-  parkingRequired: z.boolean().default(false),
-  acRequired: z.boolean().default(false),
-  wifiRequired: z.boolean().default(false),
-  kitchenRequired: z.boolean().default(false),
-  gymRequired: z.boolean().default(false),
-  laundryRequired: z.boolean().default(false),
-  securityRequired: z.boolean().default(false),
-  quietHours: z.boolean().default(false),
+  parkingRequired: z.boolean(),
+  acRequired: z.boolean(),
+  wifiRequired: z.boolean(),
+  kitchenRequired: z.boolean(),
+  gymRequired: z.boolean(),
+  laundryRequired: z.boolean(),
+  securityRequired: z.boolean(),
+  quietHours: z.boolean(),
   quietHoursStart: z.string().optional(),
   quietHoursEnd: z.string().optional(),
-  petFriendly: z.boolean().default(false),
-  smokingAllowed: z.boolean().default(false),
+  petFriendly: z.boolean(),
+  smokingAllowed: z.boolean(),
   notes: z.string().optional(),
 });
 
@@ -117,9 +116,7 @@ const PRICE_RANGES = [
   { value: "10m+", label: "> 10 triệu VNĐ" },
 ];
 
-export function RegistrationForm({ initialData, onSuccess, onCancel }: RegistrationFormProps) {
-  const { user } = useAuth();
-  
+export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps) {
   const {
     control,
     handleSubmit,
@@ -156,7 +153,7 @@ export function RegistrationForm({ initialData, onSuccess, onCancel }: Registrat
 
   const onSubmit: SubmitHandler<RegistrationFormData> = async (data) => {
     try {
-      const response = await registrationService.create(data, user?.maNV);
+      const response = await registrationService.create(data);
 
       toast.success("Phiếu đăng ký được tạo thành công!", {
         description: `Mã đăng ký: ${response.registrationNumber}`,

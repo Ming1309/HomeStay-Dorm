@@ -31,7 +31,7 @@ export type ChiTietThanhToanItem = {
 export type CollectPaymentRequest = {
   maHD: string;
   phuongThucThanhToan: "TienMat" | "ChuyenKhoan";
-  anhMinhChung?: string | null;
+  chungTu: File;
 };
 
 export type CollectPaymentResponse = {
@@ -66,11 +66,14 @@ export async function submitContractPayment(
   data: CollectPaymentRequest,
   signal?: AbortSignal,
 ): Promise<CollectPaymentResponse> {
+  const body = new FormData();
+  body.append("maHD", data.maHD);
+  body.append("phuongThucThanhToan", data.phuongThucThanhToan);
+  body.append("chungTu", data.chungTu);
   return readResponse<CollectPaymentResponse>(
     await fetch("/api/contract-payments/collect", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body,
       signal,
     }),
   );

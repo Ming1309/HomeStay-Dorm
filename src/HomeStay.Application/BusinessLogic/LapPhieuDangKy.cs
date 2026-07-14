@@ -40,9 +40,8 @@ public sealed class LapPhieuDangKy
                 await khachHang.Them();
             }
 
-            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuDangKy", "MaPDK", "PDK");
-            var phieuDangKy = PhieuDangKy.TaoMoi(maMoi, khachHang.MaKH, maNV, khuVuc, soLuongNguoi,
-                loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, _timeProvider.GetLocalNow().DateTime);
+            var phieuDangKy = PhieuDangKy.TaoMoi(khachHang.MaKH, maNV, khuVuc, soLuongNguoi,
+                loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem);
             phieuDangKy.KiemTraDieuKien(thoiDiem);
             await phieuDangKy.Them();
 

@@ -1,5 +1,7 @@
 # Code Audit Sheet - Lập phiếu thu (LapPhieuThu)
 
+`PhieuThu` là chứng từ xác nhận đã nhận tiền. Mọi phương thức đều bắt buộc file chứng từ; tiền mặt sử dụng biên nhận có chữ ký. API nhận `multipart/form-data`, lưu file trước transaction và xóa file nếu nghiệp vụ rollback.
+
 Bảng đối chiếu khớp chữ literal (literal string matching) giữa sơ đồ lớp UML, sơ đồ tuần tự và mã nguồn thực tế của tính năng **Lập phiếu thu**.
 
 ## 1. Lớp Giao Diện (Presentation)

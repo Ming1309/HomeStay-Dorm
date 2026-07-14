@@ -18,7 +18,6 @@ public sealed class BienBanGiaoNhan
     public string? TenNguoiLap { get; set; }
 
     public static BienBanGiaoNhan KhoiTaoBanGiao(
-        string maBienBan,
         string maHD,
         string? maNV,
         DateTime ngayBanGiao,
@@ -26,7 +25,7 @@ public sealed class BienBanGiaoNhan
     {
         var bienBan = new BienBanGiaoNhan
         {
-            MaBienBan = maBienBan,
+            MaBienBan = $"BBBG{DateTime.Now:yyyyMMddHHmmss}",
             NgayBanGiao = ngayBanGiao.Date,
             LoaiBienBan = "BanGiao",
             MaHD = maHD,
@@ -41,7 +40,6 @@ public sealed class BienBanGiaoNhan
     }
 
     public static BienBanGiaoNhan KhoiTaoThuHoi(
-        string maBienBan,
         string maHD,
         string? maNV,
         DateTime ngayBanGiao,
@@ -49,7 +47,7 @@ public sealed class BienBanGiaoNhan
     {
         var bienBan = new BienBanGiaoNhan
         {
-            MaBienBan = maBienBan,
+            MaBienBan = $"BBTH{DateTime.Now:yyyyMMddHHmmss}",
             NgayBanGiao = ngayBanGiao.Date,
             LoaiBienBan = "ThuHoi",
             MaHD = maHD,

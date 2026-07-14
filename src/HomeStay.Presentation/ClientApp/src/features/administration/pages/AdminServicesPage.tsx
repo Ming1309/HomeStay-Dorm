@@ -1,11 +1,20 @@
-import { Link, useNavigate } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { AlertTriangle, Pencil, Plus, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
+import { useWorkflowStore } from "@/app/providers/workflow-store";
+import {
+  capNhatDichVu,
+  layDanhSachDichVu,
+  themDichVu,
+  xoaDichVu,
+  type DichVuResponse,
+  type TrangThaiDanhMuc,
+} from "@/features/administration/services/service-catalog-service";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,119 +35,57 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/ui/table";
-import { useWorkflowStore } from "@/app/providers/workflow-store";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Skeleton } from "@/shared/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
 
-
-
-type ServiceStatus = "Đang áp dụng" | "Ngừng áp dụng";
-
-type Service = {
-  id: string;
-  code: string;
-  name: string;
-  unit: string;
-  price: number;
-  status: ServiceStatus;
-  usedInActiveContract: boolean;
+const STATUS_LABELS: Record<TrangThaiDanhMuc, string> = {
+  DangApDung: "Đang áp dụng",
+  NgungApDung: "Ngừng áp dụng",
 };
 
 const serviceSchema = z.object({
-  name: z.string().min(1, "Vui lòng nhập tên dịch vụ"),
-  unit: z.string().min(1, "Vui lòng nhập đơn vị tính"),
+  name: z.string().trim().min(1, "Vui lòng nhập tên dịch vụ").max(100),
+  unit: z.string().trim().min(1, "Vui lòng nhập đơn vị tính").max(50),
   price: z.string().min(1, "Vui lòng nhập đơn giá").regex(/^\d+$/, "Đơn giá chỉ chứa chữ số"),
-  status: z.enum(["Đang áp dụng", "Ngừng áp dụng"]),
+  status: z.enum(["DangApDung", "NgungApDung"]),
 });
 
-const initialServices: Service[] = [
-  {
-    id: "dv-001",
-    code: "DV001",
-    name: "Điện",
-    unit: "kWh",
-    price: 3500,
-    status: "Đang áp dụng",
-    usedInActiveContract: true,
-  },
-  {
-    id: "dv-002",
-    code: "DV002",
-    name: "Nước",
-    unit: "m³",
-    price: 22000,
-    status: "Đang áp dụng",
-    usedInActiveContract: true,
-  },
-  {
-    id: "dv-003",
-    code: "DV003",
-    name: "Phí gửi xe",
-    unit: "xe/tháng",
-    price: 150000,
-    status: "Đang áp dụng",
-    usedInActiveContract: true,
-  },
-  {
-    id: "dv-004",
-    code: "DV004",
-    name: "Phí dọn phòng",
-    unit: "người/tháng",
-    price: 300000,
-    status: "Đang áp dụng",
-    usedInActiveContract: true,
-  },
-  {
-    id: "dv-005",
-    code: "DV005",
-    name: "Internet premium",
-    unit: "phòng/tháng",
-    price: 120000,
-    status: "Ngừng áp dụng",
-    usedInActiveContract: false,
-  },
-];
+type ServiceValues = z.infer<typeof serviceSchema>;
 
-const formatVnd = (amount: number) => `${new Intl.NumberFormat("vi-VN").format(amount)} VND`;
+const emptyValues: ServiceValues = {
+  name: "",
+  unit: "",
+  price: "",
+  status: "DangApDung",
+};
+
+const formatVnd = (amount: number) => `${new Intl.NumberFormat("vi-VN").format(amount)} VNĐ`;
 const formatDigits = (value: string) =>
   value ? new Intl.NumberFormat("vi-VN").format(Number(value)) : "";
 const normalizeDigits = (value: string) => value.replace(/\D/g, "");
+const errorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
 
 export function AdminServicePage() {
   const navigate = useNavigate();
   const { role, isHydrated } = useWorkflowStore();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"Tất cả" | ServiceStatus>("Tất cả");
-  const [services, setServices] = useState<Service[]>(initialServices);
+  const [statusFilter, setStatusFilter] = useState<"all" | TrangThaiDanhMuc>("all");
+  const [services, setServices] = useState<DichVuResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editingService, setEditingService] = useState<DichVuResponse | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const form = useForm<z.infer<typeof serviceSchema>>({
+  const form = useForm<ServiceValues>({
     resolver: zodResolver(serviceSchema),
-    defaultValues: { name: "", unit: "", price: "", status: "Đang áp dụng" },
+    defaultValues: emptyValues,
   });
 
   useEffect(() => {
@@ -146,64 +93,94 @@ export function AdminServicePage() {
     if (role !== "admin") navigate({ to: "/" });
   }, [isHydrated, role, navigate]);
 
+  const loadServices = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      setServices(await layDanhSachDichVu());
+    } catch (error) {
+      setLoadError(errorMessage(error, "Không thể tải danh sách dịch vụ."));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated || role !== "admin") return;
+    void loadServices();
+  }, [isHydrated, role, loadServices]);
+
   const filteredServices = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = search.trim().toLocaleLowerCase("vi");
     return services.filter((service) => {
-      if (statusFilter !== "Tất cả" && service.status !== statusFilter) return false;
+      if (statusFilter !== "all" && service.trangThai !== statusFilter) return false;
       if (!q) return true;
-      return [service.name, service.unit, service.code].join(" ").toLowerCase().includes(q);
+      return [service.maDV, service.tenDV, service.donViTinh]
+        .join(" ")
+        .toLocaleLowerCase("vi")
+        .includes(q);
     });
   }, [services, search, statusFilter]);
 
-  const onSubmit = (values: z.infer<typeof serviceSchema>) => {
-    const parsedPrice = Number(values.price);
-    if (editingService) {
-      setServices((prev) =>
-        prev.map((service) =>
-          service.id === editingService.id
-            ? {
-                ...service,
-                name: values.name,
-                unit: values.unit,
-                price: parsedPrice,
-                status: values.status,
-              }
-            : service,
-        ),
-      );
-      toast.success("Cập nhật dịch vụ thành công.");
-    } else {
-      const nextIndex = services.length + 1;
-      setServices((prev) => [
-        ...prev,
-        {
-          id: `dv-${Date.now()}`,
-          code: `DV${String(nextIndex).padStart(3, "0")}`,
-          name: values.name,
-          unit: values.unit,
-          price: parsedPrice,
-          status: values.status,
-          usedInActiveContract: false,
-        },
-      ]);
-      toast.success("Thêm dịch vụ mới thành công.");
-    }
-    setDialogOpen(false);
-  };
+  function openCreateDialog() {
+    setEditingService(null);
+    form.reset(emptyValues);
+    setDialogOpen(true);
+  }
 
-  const confirmDelete = () => {
-    if (!deleteId) return;
-    const target = services.find((service) => service.id === deleteId);
-    if (!target) return;
-    if (target.usedInActiveContract) {
-      toast.error("Không thể xóa dịch vụ đang được áp dụng trong hợp đồng hiện hành.");
-      setDeleteId(null);
-      return;
+  function openEditDialog(service: DichVuResponse) {
+    setEditingService(service);
+    form.reset({
+      name: service.tenDV,
+      unit: service.donViTinh,
+      price: String(service.donGia),
+      status: service.trangThai,
+    });
+    setDialogOpen(true);
+  }
+
+  async function onSubmit(values: ServiceValues) {
+    setIsSaving(true);
+    try {
+      const payload = {
+        tenDV: values.name,
+        donViTinh: values.unit,
+        donGia: Number(values.price),
+        trangThai: values.status,
+      };
+      if (editingService) {
+        const updated = await capNhatDichVu(editingService.maDV, payload);
+        setServices((current) =>
+          current.map((service) => (service.maDV === updated.maDV ? updated : service)),
+        );
+        toast.success("Cập nhật dịch vụ thành công.");
+      } else {
+        const created = await themDichVu(payload);
+        setServices((current) => [...current, created]);
+        toast.success("Thêm dịch vụ mới thành công.");
+      }
+      setDialogOpen(false);
+    } catch (error) {
+      toast.error(errorMessage(error, "Không thể lưu dịch vụ."));
+    } finally {
+      setIsSaving(false);
     }
-    setServices((prev) => prev.filter((service) => service.id !== deleteId));
-    setDeleteId(null);
-    toast.success("Đã xóa dịch vụ.");
-  };
+  }
+
+  async function confirmDelete() {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    try {
+      await xoaDichVu(deleteId);
+      setServices((current) => current.filter((service) => service.maDV !== deleteId));
+      setDeleteId(null);
+      toast.success("Đã xóa dịch vụ.");
+    } catch (error) {
+      toast.error(errorMessage(error, "Không thể xóa dịch vụ."));
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   if (!isHydrated || role !== "admin") return null;
 
@@ -218,7 +195,6 @@ export function AdminServicePage() {
               </Link>{" "}
               / <span>Dịch vụ</span>
             </div>
-
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Quản lý dịch vụ</h1>
@@ -228,15 +204,10 @@ export function AdminServicePage() {
               </div>
               <Button
                 type="button"
-                onClick={() => {
-                  setEditingService(null);
-                  form.reset({ name: "", unit: "", price: "", status: "Đang áp dụng" });
-                  setDialogOpen(true);
-                }}
+                onClick={openCreateDialog}
                 className="bg-blue-600 hover:bg-blue-700"
               >
-                <Plus className="size-4" />
-                Thêm dịch vụ mới
+                <Plus className="size-4" /> Thêm dịch vụ mới
               </Button>
             </div>
           </div>
@@ -253,15 +224,15 @@ export function AdminServicePage() {
               <p className="mb-1 text-xs font-medium text-gray-600">Trạng thái</p>
               <Select
                 value={statusFilter}
-                onValueChange={(value) => setStatusFilter(value as "Tất cả" | ServiceStatus)}
+                onValueChange={(value) => setStatusFilter(value as "all" | TrangThaiDanhMuc)}
               >
                 <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Trạng thái" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Tất cả">Tất cả</SelectItem>
-                  <SelectItem value="Đang áp dụng">Đang áp dụng</SelectItem>
-                  <SelectItem value="Ngừng áp dụng">Ngừng áp dụng</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="DangApDung">Đang áp dụng</SelectItem>
+                  <SelectItem value="NgungApDung">Ngừng áp dụng</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -269,89 +240,99 @@ export function AdminServicePage() {
         </header>
 
         <main className="flex-1 overflow-hidden p-6">
-          <div className="h-full overflow-y-auto rounded-lg border border-gray-200 bg-white">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>STT</TableHead>
-                  <TableHead>Mã dịch vụ</TableHead>
-                  <TableHead>Tên dịch vụ</TableHead>
-                  <TableHead>Đơn vị tính</TableHead>
-                  <TableHead className="text-right">Đơn giá</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="text-right">Hành động</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredServices.map((service, index) => (
-                  <TableRow key={service.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell className="font-medium">{service.code}</TableCell>
-                    <TableCell>{service.name}</TableCell>
-                    <TableCell>{service.unit}</TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatVnd(service.price)}
-                    </TableCell>
-                    <TableCell>
-                      {service.status === "Đang áp dụng" ? (
-                        <Badge className="bg-emerald-100 text-emerald-700">Đang áp dụng</Badge>
-                      ) : (
-                        <Badge className="bg-gray-200 text-gray-700">Ngừng áp dụng</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => {
-                            setEditingService(service);
-                            form.reset({
-                              name: service.name,
-                              unit: service.unit,
-                              price: String(service.price),
-                              status: service.status,
-                            });
-                            setDialogOpen(true);
-                          }}
-                        >
-                          <Pencil className="size-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="text-red-600 hover:text-red-700"
-                          onClick={() => setDeleteId(service.id)}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+          {isLoading ? (
+            <div className="space-y-3 rounded-lg border bg-white p-4">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Skeleton key={index} className="h-10 w-full" />
+              ))}
+            </div>
+          ) : loadError ? (
+            <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              <span className="flex items-center gap-2">
+                <AlertTriangle className="size-4" />
+                {loadError}
+              </span>
+              <Button variant="outline" size="sm" onClick={() => void loadServices()}>
+                Thử lại
+              </Button>
+            </div>
+          ) : (
+            <div className="h-full overflow-y-auto rounded-lg border border-gray-200 bg-white">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>STT</TableHead>
+                    <TableHead>Mã dịch vụ</TableHead>
+                    <TableHead>Tên dịch vụ</TableHead>
+                    <TableHead>Đơn vị tính</TableHead>
+                    <TableHead className="text-right">Đơn giá</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead className="text-right">Hành động</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredServices.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-10 text-center text-gray-500">
+                        Không có dịch vụ phù hợp.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredServices.map((service, index) => (
+                      <TableRow key={service.maDV}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell className="font-medium">{service.maDV}</TableCell>
+                        <TableCell>{service.tenDV}</TableCell>
+                        <TableCell>{service.donViTinh}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatVnd(service.donGia)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={
+                              service.trangThai === "DangApDung"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-gray-200 text-gray-700"
+                            }
+                          >
+                            {STATUS_LABELS[service.trangThai]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="inline-flex gap-1">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => openEditDialog(service)}
+                            >
+                              <Pencil className="size-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="text-red-600"
+                              onClick={() => setDeleteId(service.maDV)}
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </main>
-
-        <footer className="flex h-12 items-center justify-between border-t border-gray-200 bg-white px-6 text-xs text-gray-500">
-          <span>
-            <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
-              Ctrl
-            </kbd>{" "}
-            +{" "}
-            <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
-              N
-            </kbd>{" "}
-            : Thêm dịch vụ
-          </span>
+        <footer className="flex h-12 items-center justify-end border-t border-gray-200 bg-white px-6 text-xs text-gray-500">
           <span>{filteredServices.length} bản ghi</span>
         </footer>
       </section>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => !isSaving && setDialogOpen(open)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingService ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ mới"}</DialogTitle>
@@ -366,7 +347,7 @@ export function AdminServicePage() {
                   <FormItem>
                     <FormLabel>Tên dịch vụ *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Ví dụ: Điện, Nước, Phí gửi xe" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -379,7 +360,7 @@ export function AdminServicePage() {
                   <FormItem>
                     <FormLabel>Đơn vị tính *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Ví dụ: kwh, m3, xe/tháng" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -396,7 +377,6 @@ export function AdminServicePage() {
                         inputMode="numeric"
                         value={formatDigits(field.value)}
                         onChange={(event) => field.onChange(normalizeDigits(event.target.value))}
-                        placeholder="Ví dụ: 150.000"
                       />
                     </FormControl>
                     <FormMessage />
@@ -416,8 +396,8 @@ export function AdminServicePage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Đang áp dụng">Đang áp dụng</SelectItem>
-                        <SelectItem value="Ngừng áp dụng">Ngừng áp dụng</SelectItem>
+                        <SelectItem value="DangApDung">Đang áp dụng</SelectItem>
+                        <SelectItem value="NgungApDung">Ngừng áp dụng</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -425,28 +405,45 @@ export function AdminServicePage() {
                 )}
               />
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isSaving}
+                  onClick={() => setDialogOpen(false)}
+                >
                   Hủy
                 </Button>
-                <Button type="submit">Lưu</Button>
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving ? "Đang lưu…" : "Lưu"}
+                </Button>
               </DialogFooter>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={Boolean(deleteId)} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialog
+        open={Boolean(deleteId)}
+        onOpenChange={(open) => !open && !isDeleting && setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa dịch vụ</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa dịch vụ này? Hành động này không thể hoàn tác.
+              Dịch vụ đã phát sinh hợp đồng hoặc hóa đơn sẽ không thể xóa.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Quay lại</AlertDialogCancel>
-            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={confirmDelete}>
-              Xóa
+            <AlertDialogCancel disabled={isDeleting}>Quay lại</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              disabled={isDeleting}
+              onClick={(event) => {
+                event.preventDefault();
+                void confirmDelete();
+              }}
+            >
+              {isDeleting ? "Đang xóa…" : "Xóa"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

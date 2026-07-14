@@ -11,4 +11,5 @@
 
 - `OGhep`: gia thue x 2 x so dong `ChiTietPhieuCoc`.
 - `NguyenCan`: gia thue x 2 x `LoaiPhong.SucChua`.
-- Xac nhan thanh cong chuyen `KhoiTao` sang `ChoThanhToan` va dat han thanh toan sau 24 gio.
+- Xac nhan thanh cong chuyen `KhoiTao` sang `ChoThanhToan` va dat `HanThanhToan` theo cau hinh `DepositExpiry.PaymentDeadlineMinutes`.
+- Tat ca moi truong hien dung 1.440 phut (24 gio). Thoi gian Quan ly doi chieu khong nam trong ky han nay.

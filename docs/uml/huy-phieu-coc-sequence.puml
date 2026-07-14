@@ -4,8 +4,8 @@ hide footbox
 autonumber 1 1
 skinparam shadowing false
 actor "Nhan vien Sale" as NV
+actor "He thong" as HT
 boundary ": MHHuyPhieuCoc" as MH
-control ": TraCuuPhieuCoc" as TC
 control ": HuyPhieuCoc" as HC
 control ": HopDong" as HD
 entity ": HopDongDB" as HDDB
@@ -13,33 +13,53 @@ control ": PhieuCoc" as PC
 entity ": PhieuCocDB" as PCDB
 control ": Phong" as P
 entity ": PhongDB" as PDB
-NV -> MH : HienThi()
-MH -> TC : LayDanhSachCoTheHuy(text)
-TC -> PC : LayDanhSachCoTheHuy(text)
-PC -> PCDB : LayDanhSachCoTheHuy(text)
-NV -> MH : grvPhieuCoTheHuy_CellClick(maPhieuCoc)
-MH -> TC : LayChiTiet(maPhieuCoc)
-TC -> PC : DocChiTiet(maPhieuCoc)
+control ": DichVuThongBao" as DV
+control ": ThongBao" as TB
+entity ": ThongBaoDB" as TBDB
+
+NV -> MH : chon phieu va xac nhan huy
+MH -> HC : Huy(maPhieuCoc, maNhanVien)
+HC -> PC : DocChiTiet(maPhieuCoc)
 PC -> PCDB : DocChiTiet(maPhieuCoc)
-NV -> MH : btnHuyDatCoc_Click()
-MH -> MH : hien thi bieu mau xac nhan
-alt Nhan vien chon Bo qua
-  NV -> MH : btnBoQua_Click()
-  MH -> MH : dong bieu mau va giu nguyen phieu coc
-else Nhan vien xac nhan huy
-  NV -> MH : btnXacNhanHuy_Click()
-  MH -> HC : Huy(maPhieuCoc, maNhanVien)
-  HC -> PC : DocChiTiet(maPhieuCoc)
-  PC -> PCDB : DocChiTiet(maPhieuCoc)
+HC -> HD : TonTaiTheoPhieuCoc(maPhieuCoc)
+HD -> HDDB : TonTaiTheoPhieuCoc(maPhieuCoc)
+HC -> P : DocChiTiet(maPhong)
+P -> PDB : DocChiTiet(maPhong)
+HC -> PC : Huy(maNhanVien, thoiDiem)
+HC -> P : GiaiPhongDatCoc(maGiuongs)
+HC -> PC : CapNhatHuy()
+PC -> PCDB : CapNhatHuy(phieu)
+HC -> P : CapNhatGiaiPhongDatCoc()
+P -> PDB : CapNhatGiaiPhongDatCoc(phong)
+alt phieu.DaDongTien
+  HC -> DV : GuiThongBaoKeToan(tieuDe, noiDung, lienKet, maNhanVien, maPhieuCoc)
+  DV -> TB : Tao(tieuDe, noiDung, KeToan, lienKet, orange, maNhanVien, maPhieuCoc, thoiDiem)
+  DV -> TB : Luu()
+  TB -> TBDB : Them(thongBao)
+end
+
+== Tu dong huy phieu qua han ==
+HT -> HC : LayDanhSachMaQuaHan(thoiDiemHienTai, batchSize)
+HC -> PC : LayDanhSachMaQuaHan(thoiDiemHienTai, batchSize)
+PC -> PCDB : LayDanhSachMaQuaHan(thoiDiemHienTai, batchSize)
+loop tung ma phieu coc qua han
+  HT -> HC : TuDongHuyQuaHan(maPhieuCoc, thoiDiemHienTai)
+  HC -> PC : DocChiTietChoCapNhat(maPhieuCoc)
+  PC -> PCDB : DocChiTietChoCapNhat(maPhieuCoc)
+  HC -> PC : CoTheTuDongHuy(thoiDiemHienTai)
   HC -> HD : TonTaiTheoPhieuCoc(maPhieuCoc)
   HD -> HDDB : TonTaiTheoPhieuCoc(maPhieuCoc)
   HC -> P : DocChiTiet(maPhong)
   P -> PDB : DocChiTiet(maPhong)
-  HC -> PC : Huy(maNhanVien, thoiDiem)
+  HC -> PC : TuDongHuyQuaHan(thoiDiemHienTai)
   HC -> P : GiaiPhongDatCoc(maGiuongs)
-  HC -> PC : CapNhatHuy()
-  PC -> PCDB : CapNhatHuy(phieu)
+  HC -> PC : CapNhatTuDongHuy(thoiDiemHienTai)
+  PC -> PCDB : CapNhatTuDongHuy(phieu, thoiDiemHienTai)
   HC -> P : CapNhatGiaiPhongDatCoc()
   P -> PDB : CapNhatGiaiPhongDatCoc(phong)
+  HC -> DV : GuiThongBaoSale(tieuDe, noiDung, lienKet, maNVGui, maPhieuCoc)
+  DV -> TB : Tao(tieuDe, noiDung, Sale, lienKet, orange, maNVGui, maPhieuCoc, thoiDiem)
+  DV -> TB : Luu()
+  TB -> TBDB : Them(thongBao)
 end
 @enduml

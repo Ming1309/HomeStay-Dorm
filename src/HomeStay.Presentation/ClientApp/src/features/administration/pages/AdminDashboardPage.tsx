@@ -12,10 +12,14 @@ import {
   ShieldCheck,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 
-import { cn } from "@/shared/lib/utils";
 import { useWorkflowStore } from "@/app/providers/workflow-store";
+import {
+  layChinhSachHienHanh,
+  type ChinhSachHoanCocResponse,
+} from "@/features/administration/services/deposit-policy-service";
+import { cn } from "@/shared/lib/utils";
 
 const adminWorkItems = [
   {
@@ -68,23 +72,62 @@ const assumedStaffSummary = {
   locked: 1,
 };
 
-
+type AdminRoute = (typeof adminWorkItems)[number]["to"];
+type DashboardTone = keyof typeof toneClass;
+type DashboardData = {
+  activePolicy: ChinhSachHoanCocResponse | null;
+  kpis: Array<{
+    label: string;
+    value: string;
+    subtext: string;
+    icon: ComponentType<{ className?: string }>;
+    tone: DashboardTone;
+  }>;
+  tasks: Array<{
+    text: string;
+    meta: string;
+    to: AdminRoute;
+    tone: DashboardTone;
+  }>;
+  configRows: Array<{
+    name: string;
+    status: string;
+    group: string;
+    to: AdminRoute;
+    tone: DashboardTone;
+  }>;
+};
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
-  const { role, isHydrated, rooms, depositPolicies, getActivePolicy } = useWorkflowStore();
+  const { role, isHydrated, rooms } = useWorkflowStore();
+  const [activePolicy, setActivePolicy] = useState<ChinhSachHoanCocResponse | null>(null);
 
   useEffect(() => {
     if (!isHydrated) return;
     if (role !== "admin") navigate({ to: "/" });
   }, [isHydrated, role, navigate]);
 
-  const dashboard = useMemo(() => {
+  useEffect(() => {
+    if (!isHydrated || role !== "admin") return;
+    let cancelled = false;
+    void layChinhSachHienHanh()
+      .then((policy) => {
+        if (!cancelled) setActivePolicy(policy);
+      })
+      .catch(() => {
+        if (!cancelled) setActivePolicy(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isHydrated, role]);
+
+  const dashboard = useMemo<DashboardData>(() => {
     const beds = rooms.flatMap((room) => room.beds);
     const availableBeds = beds.filter((bed) => bed.status === "available");
     const maintenanceBeds = beds.filter((bed) => bed.status === "maintenance");
     const maintenanceRooms = rooms.filter((room) => room.status === "maintenance");
-    const activePolicy = getActivePolicy();
     const activeConfigCount = adminWorkItems.length + (activePolicy ? 1 : 0);
 
     return {
@@ -135,7 +178,7 @@ export function AdminDashboardPage() {
             ? `Chính sách hoàn cọc hiệu lực: ${activePolicy.maChinhSach}`
             : "Chưa có chính sách hoàn cọc hiệu lực",
           meta: activePolicy
-            ? `${activePolicy.tenChinhSach} - áp dụng từ ${activePolicy.ngayApDung}`
+            ? `${activePolicy.tenChinhSach} - mốc lưu trú ${activePolicy.mocLuuTru ?? 6} tháng`
             : "Cần kiểm tra cấu hình chính sách hoàn cọc.",
           to: "/admin/deposit-policy",
           tone: activePolicy ? "blue" : "red",
@@ -177,7 +220,7 @@ export function AdminDashboardPage() {
         },
       ],
     };
-  }, [getActivePolicy, rooms]);
+  }, [activePolicy, rooms]);
 
   if (!isHydrated || role !== "admin") return null;
 
@@ -188,16 +231,16 @@ export function AdminDashboardPage() {
           <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4">
             <header className="flex flex-wrap items-end justify-between gap-3 border-b border-gray-200 pb-3">
               <div>
-                <h1 className="text-xl font-bold tracking-tight text-gray-900">
-                  Tổng quan Admin
-                </h1>
+                <h1 className="text-xl font-bold tracking-tight text-gray-900">Tổng quan Admin</h1>
                 <p className="mt-1 text-sm text-gray-500">
                   Theo dõi danh mục, người dùng và chính sách hệ thống.
                 </p>
               </div>
               <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-500">
                 <CheckCircle2 className="size-4 text-emerald-600" />
-                {depositPolicies.length} phiên bản chính sách
+                {activePolicy
+                  ? `${activePolicy.maChinhSach} đang áp dụng`
+                  : "Chưa tải được chính sách"}
               </div>
             </header>
 
@@ -213,7 +256,9 @@ export function AdminDashboardPage() {
                 <div className="mb-3 flex items-center justify-between">
                   <div>
                     <h2 className="text-base font-bold text-gray-900">Cấu hình nổi bật</h2>
-                    <p className="mt-1 text-sm text-gray-500">Các cấu hình ảnh hưởng trực tiếp vận hành</p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Các cấu hình ảnh hưởng trực tiếp vận hành
+                    </p>
                   </div>
                 </div>
 
@@ -230,13 +275,21 @@ export function AdminDashboardPage() {
                       {dashboard.configRows.map((item) => (
                         <tr key={item.name} className="align-top">
                           <td className="px-3 py-3">
-                            <Link to={item.to} className="font-semibold text-gray-900 hover:text-blue-700">
+                            <Link
+                              to={item.to}
+                              className="font-semibold text-gray-900 hover:text-blue-700"
+                            >
                               {item.name}
                             </Link>
                           </td>
                           <td className="px-3 py-3 text-gray-600">{item.group}</td>
                           <td className="px-3 py-3">
-                            <span className={cn("inline-flex rounded px-2 py-1 text-xs font-semibold", toneClass[item.tone].badge)}>
+                            <span
+                              className={cn(
+                                "inline-flex rounded px-2 py-1 text-xs font-semibold",
+                                toneClass[item.tone].badge,
+                              )}
+                            >
                               {item.status}
                             </span>
                           </td>
@@ -272,10 +325,17 @@ function KpiCard({
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="flex items-start justify-between gap-3">
-        <div className={cn("flex size-10 items-center justify-center rounded-lg", toneClass[tone].iconBg)}>
+        <div
+          className={cn(
+            "flex size-10 items-center justify-center rounded-lg",
+            toneClass[tone].iconBg,
+          )}
+        >
           <Icon className={cn("size-5", toneClass[tone].iconText)} />
         </div>
-        <span className={cn("text-right text-xs font-medium", toneClass[tone].text)}>{subtext}</span>
+        <span className={cn("text-right text-xs font-medium", toneClass[tone].text)}>
+          {subtext}
+        </span>
       </div>
       <div className="mt-4">
         <div className="text-3xl font-bold tracking-tight text-gray-900">{value}</div>
@@ -288,14 +348,21 @@ function KpiCard({
 function TaskPanel({
   tasks,
 }: {
-  tasks: Array<{ text: string; meta: string; to: (typeof adminWorkItems)[number]["to"]; tone: keyof typeof toneClass }>;
+  tasks: Array<{
+    text: string;
+    meta: string;
+    to: (typeof adminWorkItems)[number]["to"];
+    tone: keyof typeof toneClass;
+  }>;
 }) {
   return (
     <section className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-gray-900">Việc cần xử lý</h2>
-          <p className="mt-1 text-sm text-gray-500">Các cấu hình cần theo dõi để hệ thống ổn định</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Các cấu hình cần theo dõi để hệ thống ổn định
+          </p>
         </div>
       </div>
       <div className="space-y-3">
@@ -305,7 +372,12 @@ function TaskPanel({
             to={item.to}
             className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-3 transition-colors hover:bg-blue-50/40"
           >
-            <div className={cn("mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full", toneClass[item.tone].iconBg)}>
+            <div
+              className={cn(
+                "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full",
+                toneClass[item.tone].iconBg,
+              )}
+            >
               {item.tone === "red" ? (
                 <AlertCircle className={cn("size-4", toneClass[item.tone].iconText)} />
               ) : (

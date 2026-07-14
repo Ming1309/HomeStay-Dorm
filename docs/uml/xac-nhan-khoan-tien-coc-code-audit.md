@@ -18,6 +18,7 @@
 ## Yeu cau bo sung
 
 - Ly do bat buoc tu 1 den 500 ky tu. Phieu quay ve `ChoThanhToan` de xuat hien lai o man hinh Sales.
+- Moi lan Quan ly yeu cau bo sung, `HanThanhToan` duoc dat lai thanh mot ky han day du 24 gio theo cau hinh; thoi gian da cho Quan ly doi chieu khong bi tru vao ky han moi.
 - Chung tu va phuong thuc cu duoc giu de Sales tham chieu; ly do hien truc tiep tren form ghi nhan thanh toan.
 - Khi Sales gui chung tu moi thanh cong, ly do duoc xoa va tep cu duoc xoa sau khi DB commit.
 - Chua tao bang `ThongBao`; thong bao day den Sales duoc de lai cho use case thong bao rieng.

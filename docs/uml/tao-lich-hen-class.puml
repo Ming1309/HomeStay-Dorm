@@ -1,165 +1,46 @@
 @startuml
-title SO DO LOP 3 TANG - TAO LICH HEN
-
-top to bottom direction
-skinparam shadowing false
-skinparam linetype ortho
+title TAO LICH HEN - SO DO LOP 3 TANG
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
-skinparam class {
-    BackgroundColor #FFFACD
-    BorderColor #9B7B7B
+
+package "TANG GIAO DIEN" {
+  class SaleAppointmentPage <<boundary>>
+  class LichHenController <<controller>> {
+    +TaiDanhSachChungTu(type, keyword)
+    +TaoLichHen(request)
+    +SuaLichHen(id, request)
+  }
+}
+package "TANG NGHIEP VU" {
+  class TaoLichHen <<control>> {
+    +TaiDanhSachChungTu(loai, tuKhoa)
+    +LuuLichHen(loai, maChungTu, maCN, ngay, gio, maNV)
+  }
+  class LichHen <<entity>> {
+    +TaoMoi(..., thoiDiemTao) : LichHen
+    +KiemTraThoiGianHopLe(thoiDiemHienTai)
+    +KiemTraHopLe() : Task
+    +KiemTraTrungLich() : Task
+    +Them() : Task
+  }
+}
+package "TANG TRUY CAP DU LIEU" {
+  class LichHenDB <<database>> {
+    +Them(lichHen) : Task
+    +KiemTraLichTrungCaNhanVien(...) : Task<bool>
+  }
+  class PhieuDangKyDB <<database>>
+  class PhieuCocDB <<database>>
+  class HopDongDB <<database>>
+  class PhienDuLieu <<database>>
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-
-class MHTaoLichHen{
-
-+cboLoaiLichHen : ComboBox
-+txtTimKiem : TextBox
-+grdChungTu : GridView
-+cboChiNhanh : ComboBox
-+dtpNgayHen : DateTimePicker
-+dtpGioHen : DateTimePicker
-+lblChungTuLienKet : Label
-+lblTrangThai : Label
-+btnLuu : Button
-
---
-
-+hienThiForm()
-+chonLoaiLichHen()
-+nhapTuKhoaTimKiem()
-+chonChungTu()
-+chonChiNhanh()
-+nhapNgayGio()
-+nhanLuu()
-+hienThiDanhSachChungTu()
-+hienThiThongBao()
-+hienThiLoi()
-
-}
-
-}
-
-package "TANG NGHIEP VU" #FCF3CF {
-
-class LichHen{
-
-+maLH : string
-+ngayHen : Date
-+gioHen : string
-+loaiLichHen : LoaiLichHen
-+trangThai : TrangThaiLH
-+maPDK : string
-+maPhieuCoc : string
-+maHD : string
-+maNV : string
-+maCN : string
-
---
-
-+khoiTao(loai, chungTu, maCN, ngay, gio, maNV)
-+ganChungTu(loai, maChungTu)
-+ganTrangThaiMacDinh()
-+kiemTraHopLe()
-+kiemTraTrungLich()
-+luu()
-
-}
-
-class TaoLichHenController{
-
-+nvDangNhap : NhanVien
-
---
-
-+khoiTaoForm()
-+taiDanhSachChungTu(loai, tuKhoa)
-+kiemTraDuLieuDauVao(maCN, ngay, gio, chungTu)
-+luuLichHen(loai, chungTu, maCN, ngay, gio)
-
-}
-
-class DichVuThongBao{
-
-+guiEmail(email, noiDung)
-+guiSMS(sdt, noiDung)
-+guiThongBaoLichHen(lichHen, khachHang)
-
-}
-
-}
-
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-
-class LichHenDAO{
-
-+them(lichHen)
-+kiemTraLichTrungCaNhanVien(maNV, ngay, gio)
-
-}
-
-class PhieuDangKyDAO{
-
-+timKiemPhieuDuDieuKien(tuKhoa)
-+kiemTraConHopLe(maPDK)
-
-}
-
-class PhieuCocDAO{
-
-+timKiemPhieuDaDuyet(tuKhoa)
-+kiemTraConHopLe(maPhieuCoc)
-
-}
-
-class HopDongDAO{
-
-+timKiemHopDongHieuLuc(tuKhoa)
-+kiemTraConHopLe(maHD)
-
-}
-
-class NhanVienDAO{
-
-+layTheoMa(maNV)
-
-}
-
-class ChiNhanhDAO{
-
-+layTatCa()
-+layTheoMa(maCN)
-
-}
-
-}
-
-'==========================
-' Quan hệ giữa các lớp
-'==========================
-
-' Boundary điều khiển Use Case
-MHTaoLichHen o-- TaoLichHenController
-
-'--------------------------
-' Trong tầng nghiệp vụ
-'--------------------------
-
-TaoLichHenController "1" -- "0..*" LichHen : xu ly
-TaoLichHenController "1" -- "0..1" DichVuThongBao : gui
-
-'--------------------------
-' Aggregation Business -> DAO
-'--------------------------
-
-LichHen o-- LichHenDAO
-
-TaoLichHenController o-- PhieuDangKyDAO
-TaoLichHenController o-- PhieuCocDAO
-TaoLichHenController o-- HopDongDAO
-TaoLichHenController o-- NhanVienDAO
-TaoLichHenController o-- ChiNhanhDAO
-
+SaleAppointmentPage --> LichHenController : HTTP /api/appointments
+LichHenController --> TaoLichHen : maNV tu JWT claim
+TaoLichHen --> LichHen
+TaoLichHen --> PhienDuLieu
+TaoLichHen --> PhieuDangKyDB
+TaoLichHen --> PhieuCocDB
+TaoLichHen --> HopDongDB
+LichHen --> LichHenDB
 @enduml

@@ -79,13 +79,19 @@ public sealed class LapPhieuHoanCoc
         using var phien = _taoPhienDuLieu();
         var pds = await PhieuDoiSoat.LayChiTietPhieuDoiSoat(maPDS);
         if (pds == null) return null;
+        if (pds.TrangThai != "DaChot" || pds.TienHoan <= 0 || await PhieuHoanCoc.DaTonTaiChoPhieuDoiSoat(maPDS))
+            throw new InvalidOperationException("Phiếu đối soát không còn trong hàng đợi hoàn cọc.");
 
         var pc = await PhieuCoc.LayChiTietPhieuCoc(pds.MaPhieuCoc);
         if (pc == null) return null;
 
         var kh = await KhachHang.LayThongTinKhachHang(pc.MaKH);
         var hd = pds.MaHD != null ? await HopDong.LayChiTietHopDong(pds.MaHD) : null;
-        var policy = hd != null && hd.MaChinhSach != null ? await ChinhSachHoanCoc.LayChinhSachTheoMa(hd.MaChinhSach) : await ChinhSachHoanCoc.LayChinhSachDangApDung();
+        if (pds.MaHD is not null && hd?.TrangThai != "DaThanhLy")
+            throw new InvalidOperationException("Hợp đồng chưa thanh lý nên chưa thể hoàn cọc.");
+        var policy = hd?.MaChinhSach != null
+            ? await ChinhSachHoanCoc.LayChinhSachTheoMa(hd.MaChinhSach)
+            : null;
         var phg = await Phong.DocChiTiet(pc.MaPhong);
 
         return new ChiTietHoanCocDto
@@ -105,7 +111,7 @@ public sealed class LapPhieuHoanCoc
             TienHoan = pds.TienHoan,
             TienThuThem = pds.TienThuThem,
             TrangThai = pds.TrangThai,
-            PolicyCode = policy?.MaChinhSach ?? "CS01",
+            PolicyCode = policy?.MaChinhSach ?? string.Empty,
             RefundRate = (int)(pds.TyLeHoanCoc * 100)
         };
     }
@@ -117,13 +123,14 @@ public sealed class LapPhieuHoanCoc
     }
 
     public async Task<PhieuHoanCoc> ThucHienHoanCoc(
-        string maPDS, string phuongThuc, string thongTinNhanTien, string maNV)
+        string maPDS, string phuongThuc, string thongTinNhanTien, string? maGiaoDich,
+        string minhChung, string maNV)
     {
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
         try
         {
-            var pds = await PhieuDoiSoat.LayChiTietPhieuDoiSoat(maPDS);
+            var pds = await PhieuDoiSoat.LayChiTietChoCapNhat(maPDS);
             if (pds == null)
                 throw new KeyNotFoundException("Phiếu đối soát không tồn tại.");
 
@@ -132,12 +139,18 @@ public sealed class LapPhieuHoanCoc
 
             if (pds.TienHoan <= 0)
                 throw new InvalidOperationException("Phiếu đối soát này không có tiền cọc cần hoàn trả.");
+            if (pds.MaHD is not null)
+            {
+                var hopDong = await HopDong.LayChiTietHopDong(pds.MaHD)
+                    ?? throw new KeyNotFoundException("Không tìm thấy hợp đồng của phiếu đối soát.");
+                if (hopDong.TrangThai != "DaThanhLy")
+                    throw new InvalidOperationException("Chỉ được hoàn cọc sau khi hợp đồng đã thanh lý.");
+            }
             if (await PhieuHoanCoc.DaTonTaiChoPhieuDoiSoat(maPDS))
                 throw new InvalidOperationException("Phiếu đối soát đã có phiếu hoàn cọc.");
 
-            var maPHC = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuHoanCoc", "MaPHC", "PHC");
-            var phieuHoanCoc = PhieuHoanCoc.TaoMoi(
-                maPHC, maPDS, pds.TienHoan, phuongThuc, thongTinNhanTien, maNV,
+            var phieuHoanCoc = PhieuHoanCoc.TaoPhieuHoanCoc(
+                maPDS, pds.TienHoan, phuongThuc, thongTinNhanTien, maGiaoDich, minhChung, maNV,
                 _timeProvider.GetLocalNow().DateTime);
 
             await phieuHoanCoc.LuuPhieu();

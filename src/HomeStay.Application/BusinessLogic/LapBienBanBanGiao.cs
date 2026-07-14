@@ -88,9 +88,8 @@ public sealed class LapBienBanBanGiao(Func<PhienDuLieu> taoPhienDuLieu, TimeProv
                 chiTiet.Add(dong);
             }
 
-            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("BienBanGiaoNhan", "MaBienBan", "BBBG");
             var bienBan = BienBanGiaoNhan.KhoiTaoBanGiao(
-                maMoi, maHD, maNV, timeProvider.GetLocalNow().DateTime, chiTiet);
+                maHD, maNV, timeProvider.GetLocalNow().DateTime, chiTiet);
 
             bienBan.KiemTraDuLieuTaiSan();
             await bienBan.LuuBienBan();

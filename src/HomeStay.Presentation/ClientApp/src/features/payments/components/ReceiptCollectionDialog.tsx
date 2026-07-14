@@ -33,6 +33,7 @@ export type ReceiptCollectionSubmit = {
   amount: number;
   paymentMethod: "cash" | "bank-transfer";
   evidenceName: string;
+  evidenceFile: File;
   note: string;
   collector: string;
   collectedAt: string;
@@ -145,9 +146,7 @@ export function ReceiptCollectionDialog({
       nextErrors.amount = "Vui lòng nhập số tiền thu hợp lệ.";
     }
     if (!form.paymentMethod) nextErrors.paymentMethod = "Vui lòng chọn phương thức thanh toán";
-    if (isBankTransfer && !form.evidenceFile) {
-      nextErrors.evidenceFile = "Vui lòng tải lên chứng từ thanh toán.";
-    }
+    if (!form.evidenceFile) nextErrors.evidenceFile = "Vui lòng tải lên chứng từ xác nhận đã thu tiền.";
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
@@ -171,6 +170,7 @@ export function ReceiptCollectionDialog({
       amount,
       paymentMethod: form.paymentMethod,
       evidenceName: form.evidenceName,
+      evidenceFile: form.evidenceFile!,
       note: form.note,
       collector: form.collector,
       collectedAt: form.collectedAt,
@@ -284,7 +284,7 @@ export function ReceiptCollectionDialog({
                 </Field>
 
                 <Field
-                  label={isBankTransfer ? "Minh chứng thanh toán *" : "Minh chứng thanh toán"}
+                  label="Minh chứng đã thu tiền *"
                   error={errors.evidenceFile}
                 >
                   <label

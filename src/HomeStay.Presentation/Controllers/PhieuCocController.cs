@@ -255,9 +255,14 @@ public sealed class PhieuCocController(
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
     }
 
+    [Authorize(Roles = "Sale")]
     [HttpPost]
     public async Task<IActionResult> TaoPhieuCoc([FromBody] TaoPhieuCocHttpRequest request)
     {
+        var maNhanVien = User.FindFirstValue("MaNV");
+        if (string.IsNullOrWhiteSpace(maNhanVien))
+            return Unauthorized(new { Message = "Không xác định được Nhân viên Sale đang đăng nhập." });
+
         try
         {
             var phieuCoc = await lapPhieuCoc.TaoPhieuCoc(
@@ -266,7 +271,7 @@ public sealed class PhieuCocController(
                 request.MaPhong,
                 request.DanhSachGiuong,
                 request.HinhThucThue,
-                request.MaNV);
+                maNhanVien);
             return Ok(phieuCoc);
         }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }

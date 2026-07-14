@@ -102,9 +102,7 @@ public sealed class LapBienBanThuHoiTaiSan(
                 chiTiet.Add(dong);
             }
 
-            var maMoi = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("BienBanGiaoNhan", "MaBienBan", "BBTH");
             var bienBan = BienBanGiaoNhan.KhoiTaoThuHoi(
-                maMoi,
                 maHD,
                 maNV,
                 timeProvider.GetLocalNow().DateTime,

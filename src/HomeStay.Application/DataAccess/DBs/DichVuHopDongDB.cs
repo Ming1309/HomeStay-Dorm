@@ -10,7 +10,7 @@ public static class DichVuHopDongDB
     {
         const string sql = """
             SELECT hddv.MaHD, hddv.MaDV, hddv.DonGiaKyKet,
-                   dv.TenDV, dv.DonGia, dv.DonViTinh
+                   dv.TenDV, dv.DonGia, dv.DonViTinh, dv.TrangThai
             FROM HopDong_DichVu hddv
             INNER JOIN DichVu dv ON dv.MaDV = hddv.MaDV
             WHERE hddv.MaHD = @MaHD
@@ -28,7 +28,8 @@ public static class DichVuHopDongDB
         public decimal DonGiaKyKet { get; set; }
         public string TenDV { get; set; } = string.Empty;
         public decimal DonGia { get; set; }
-        public string? DonViTinh { get; set; }
+        public string DonViTinh { get; set; } = string.Empty;
+        public string TrangThai { get; set; } = string.Empty;
     }
 
     private static DichVuHopDong TaoDichVu(DichVuHopDongRow x) => new()
@@ -42,6 +43,18 @@ public static class DichVuHopDongDB
             TenDV = x.TenDV,
             DonGia = x.DonGia,
             DonViTinh = x.DonViTinh,
+            TrangThai = x.TrangThai,
         },
     };
+
+    public static async Task Them(string maHD, string maDV, decimal donGiaKyKet)
+    {
+        const string sql = """
+            INSERT INTO HopDong_DichVu (MaHD, MaDV, DonGiaKyKet)
+            VALUES (@MaHD, @MaDV, @DonGiaKyKet)
+            """;
+        await PhienDuLieu.Session.Connection.ExecuteAsync(sql,
+            new { MaHD = maHD, MaDV = maDV, DonGiaKyKet = donGiaKyKet },
+            PhienDuLieu.Session.Transaction);
+    }
 }

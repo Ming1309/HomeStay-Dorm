@@ -27,6 +27,92 @@ public sealed class HuyPhieuCocEntityTests
     }
 
     [Fact]
+    public void PhieuCoc_QuaHanChuaThuTien_TuDongHuyVaDanhDauHeThong()
+    {
+        var deadline = new DateTime(2026, 7, 13, 11, 40, 0);
+        var phieu = new PhieuCoc
+        {
+            MaPhieuCoc = "PC001",
+            TrangThai = "ChoThanhToan",
+            HanThanhToan = deadline,
+            DaDongTien = false,
+        };
+
+        phieu.TuDongHuyQuaHan(deadline);
+
+        Assert.Equal("DaHuy", phieu.TrangThai);
+        Assert.Equal(deadline, phieu.ThoiDiemHuy);
+        Assert.Null(phieu.MaNVHuy);
+    }
+
+    [Theory]
+    [InlineData("ChoDoiChieu", false)]
+    [InlineData("ChoThanhToan", true)]
+    public void PhieuCoc_KhongTuDongHuyKhiDangDoiChieuHoacDaThuTien(
+        string trangThai, bool daDongTien)
+    {
+        var deadline = new DateTime(2026, 7, 13, 11, 40, 0);
+        var phieu = new PhieuCoc
+        {
+            MaPhieuCoc = "PC001",
+            TrangThai = trangThai,
+            HanThanhToan = deadline,
+            DaDongTien = daDongTien,
+        };
+
+        Assert.False(phieu.CoTheTuDongHuy(deadline.AddMinutes(1)));
+    }
+
+    [Fact]
+    public void PhieuCoc_DaHuyCoThoiDiem_DuDieuKienKiemTraDoiSoat()
+    {
+        var phieu = new PhieuCoc
+        {
+            MaPhieuCoc = "PC001",
+            TrangThai = "DaHuy",
+            ThoiDiemHuy = new DateTime(2026, 7, 13, 11, 40, 0),
+        };
+
+        phieu.KiemTraCoTheDoiSoatHoanCoc();
+    }
+
+    [Theory]
+    [InlineData("DaThanhToan")]
+    [InlineData("ChoThanhToan")]
+    public void PhieuCoc_ChuaHuy_TuChoiDoiSoatHoanCoc(string trangThai)
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC001", TrangThai = trangThai };
+
+        Assert.Throws<InvalidOperationException>(phieu.KiemTraCoTheDoiSoatHoanCoc);
+    }
+
+    [Fact]
+    public void PhieuCoc_DaHuyThieuThoiDiem_TuChoiDoiSoatHoanCoc()
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC001", TrangThai = "DaHuy" };
+
+        Assert.Throws<InvalidOperationException>(phieu.KiemTraCoTheDoiSoatHoanCoc);
+    }
+
+    [Fact]
+    public void PhieuThu_KhopSoTienCoc_DuDieuKienDoiSoat()
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC001", TongTien = 2_000_000m };
+        var phieuThu = new PhieuThu { MaPhieuCoc = "PC001", SoTienThu = 2_000_000m };
+
+        phieuThu.KiemTraKhopTienCoc(phieu);
+    }
+
+    [Fact]
+    public void PhieuThu_LechSoTienCoc_TuChoiDoiSoat()
+    {
+        var phieu = new PhieuCoc { MaPhieuCoc = "PC001", TongTien = 2_000_000m };
+        var phieuThu = new PhieuThu { MaPhieuCoc = "PC001", SoTienThu = 1_900_000m };
+
+        Assert.Throws<InvalidOperationException>(() => phieuThu.KiemTraKhopTienCoc(phieu));
+    }
+
+    [Fact]
     public void Phong_GiaiPhongMotGiuong_CapNhatPhongConGiuongTrong()
     {
         var phong = TaoPhong();

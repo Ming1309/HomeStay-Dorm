@@ -1,0 +1,50 @@
+@startuml
+title SO DO TUAN TU - QUAN LY DICH VU (UC 1.4.26)
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+actor "Quan tri vien" as QTV
+boundary ": MHQuanLyDichVu" as MH
+control ": QuanLyDichVu" as QL
+control ": DichVu" as DV
+entity ": DichVuDB" as DB
+
+QTV -> MH : loadServices()
+MH -> QL : LayDanhSach()
+QL -> DV : LayDanhSach()
+DV -> DB : LayDanhSach()
+MH -> MH : hien thi danh sach
+
+QTV -> MH : onSubmit(values)
+MH -> MH : validate form
+alt them moi
+  MH -> QL : Them(dichVu)
+  QL -> DV : ChuanHoa()
+  QL -> DV : KiemTraDuLieuHopLe()
+  QL -> DV : TaoMaMoi()
+  DV -> DB : TaoMaMoi()
+  QL -> DV : Them()
+  DV -> DB : Them(dichVu)
+else cap nhat
+  MH -> QL : CapNhat(maDV, thongTin)
+  QL -> DV : ChuanHoa()
+  QL -> DV : KiemTraDuLieuHopLe()
+  QL -> DV : Doc(maDV)
+  DV -> DB : Doc(maDV)
+  QL -> DV : CapNhat()
+  DV -> DB : CapNhat(dichVu)
+end
+
+QTV -> MH : confirmDelete()
+MH -> QL : Xoa(maDV)
+QL -> DV : Doc(maDV)
+DV -> DB : Doc(maDV)
+QL -> DV : DangDuocThamChieu(maDV)
+DV -> DB : DangDuocThamChieu(maDV)
+alt da duoc tham chieu
+  QL -> QL : throw InvalidOperationException
+else chua duoc tham chieu
+  QL -> DV : Xoa()
+  DV -> DB : Xoa(maDV)
+end
+@enduml

@@ -1,121 +1,56 @@
 @startuml
-title 3 Layers - Tạo Phiếu Đăng Ký
-
-skinparam dpi 180
-skinparam shadowing false
+title LAP PHIEU DANG KY - SO DO LOP 3 TANG
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 
-package "Lớp giao diện" #EAF8E4 {
-
-class MHLapPhieuDangKy{
-
-+txtHoTen : textbox
-+cboGioiTinh : ComboBox
-+txtSDT : textbox
-+txtEmail : textbox
-+txtDiaChi : textbox
-
-+cboLoaiGiayTo : ComboBox
-+txtSoGiayTo : textbox
-
-+cboSoNguoi : ComboBox
-+cboLoaiPhong : ComboBox
-+cboLoaiHinhThue : ComboBox
-+cboThoiHanThue : ComboBox
-
-+cboKhuVucMongMuon : ComboBox
-+cboMucGiaMongMuon : ComboBox
-
-+dtpNgayDuKien : DateTimePicker
-
-+chkTienIch : CheckBoxGroup
-
-+txtGhiChu : textbox
-
-+btnHuy_Click()
-
-+btnTaoPhieuDangKy_Click()
-
-+hienThiForm()
-
+package "TANG GIAO DIEN" {
+  class RegistrationForm <<boundary>> {
+    +onSubmit(data)
+  }
+  class PhieuDangKyController <<controller>> {
+    +TaoPhieuDangKy(request)
+    +TimKiemPhieuDangKy(...)
+    +LayChiTietPhieuDangKy(id)
+  }
 }
 
+package "TANG NGHIEP VU" {
+  class LapPhieuDangKy <<control>> {
+    +TaoPhieuDangKy(..., maNV) : Task<PhieuDangKy>
+    +TimKiemPhieuDangKy(...) : Task<IReadOnlyList<PhieuDangKy>>
+    +LayChiTietPhieuDangKy(maPDK) : Task<PhieuDangKy>
+  }
+  class PhieuDangKy <<entity>> {
+    +TaoMoi(..., thoiDiem) : PhieuDangKy
+    +KiemTraDieuKien(thoiDiemHienTai)
+    +Them() : Task
+  }
+  class KhachHang <<entity>> {
+    +KiemTraTonTai(soGiayTo) : Task<KhachHang>
+    +TaoMoi(...) : KhachHang
+    +Them() : Task
+  }
 }
 
-package "Lớp nghiệp vụ" #FFF2CC {
-
-class PhieuDangKy{
-
-+maPDK : string
-+khuVuc : string
-+soLuongNguoi : string
-+loaiDichVu : string
-+mucGia : string
-+thoiGianDuKienVao : Date
-+thoiHanThue : string
-+yeuCauKhac : string
-+TrangThai : string
-+maNV : string
-
-+taoPhieuDangKy(ThongTinPDK)
-
-+kiemTraDieuKien()
-
+package "TANG TRUY CAP DU LIEU" {
+  class PhieuDangKyDB <<database>> {
+    +Them(phieu) : Task
+    +TimKiem(...) : Task<IReadOnlyList<PhieuDangKy>>
+    +LayTheoMa(maPDK) : Task<PhieuDangKy>
+  }
+  class KhachHangDB <<database>>
+  class PhienDuLieu <<database>> {
+    +BatDauGiaoDich()
+    +Commit()
+    +Rollback()
+  }
 }
 
-class KhachHang{
-
-+maKH : string
-+HoTen : String
-+GioiTinh : string
-+SDT : string
-+Email : string
-+DiaChi : string
-+LoaiGiayTo : string
-+SoGiayTo : string
-
-+taoKhachHang(ThongTinKH)
-
-+kiemTraTonTai(soGiayTo)
-
-}
-
-}
-
-package "Lớp truy xuất dữ liệu" #D6EAF8 {
-
-class PhieuDangKyDB{
-
-+themPhieuDangKy(PhieuDangKy)
-
-+capNhatPhieuDangKy(maPDK)
-
-+xoaPhieuDangKy(maPDK)
-
-+layPhieuDangKyTheoMa(maPDK)
-
-}
-
-class KhachHangDB{
-
-+themKhachHang(KhachHang)
-
-+capNhatKhachHang(maKH)
-
-+xoaKhachHang(maKH)
-
-+TimKhachHangTheoSoGiayTo(soGiayTo)
-
-}
-
-}
-
-' GUI -> BUS
-MHLapPhieuDangKy o-- PhieuDangKy
-MHLapPhieuDangKy o-- KhachHang
-
-' DB -> BUS (từ dưới lên)
-PhieuDangKy o-down- PhieuDangKyDB
-KhachHang o-down- KhachHangDB
+RegistrationForm --> PhieuDangKyController : HTTP /api/registrations
+PhieuDangKyController --> LapPhieuDangKy : maNV tu JWT claim
+LapPhieuDangKy --> PhienDuLieu
+LapPhieuDangKy --> KhachHang
+LapPhieuDangKy --> PhieuDangKy
+KhachHang --> KhachHangDB
+PhieuDangKy --> PhieuDangKyDB
 @enduml

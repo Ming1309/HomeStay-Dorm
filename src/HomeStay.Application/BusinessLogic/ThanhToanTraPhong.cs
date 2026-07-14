@@ -153,9 +153,8 @@ public sealed class ThanhToanTraPhong
                 throw new InvalidOperationException("Phiếu đối soát đã có phiếu thu.");
 
             var thoiDiem = _timeProvider.GetLocalNow().DateTime;
-            var maPT = await DataAccess.DBs.MaTuDongDB.TaoMaMoi("PhieuThu", "MaPT", "PT");
             var phieuThu = PhieuThu.TaoPhieuThu(
-                maPT, maPDS, pds.TienThuThem, phuongThuc, anhMinhChung, maNV, thoiDiem);
+                maPDS, pds.TienThuThem, phuongThuc, anhMinhChung, maNV, thoiDiem);
             await phieuThu.LuuPhieu();
 
             await PhieuDoiSoat.ChuyenSangDaTatToan(maPDS);

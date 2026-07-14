@@ -28,7 +28,7 @@ package "TANG GIAO DIEN" #EAF2F8 {
 
 package "TANG NGHIEP VU" #FCF3CF {
   class GhiNhanThanhToanCoc {
-    + LayDanhSachChoThanhToan(text: String): IReadOnlyList<PhieuCoc>
+    + LayDanhSachChoThanhToan(thoiDiemHienTai: DateTime, text: String): IReadOnlyList<PhieuCoc>
     + LayChiTiet(maPhieuCoc: String): PhieuCoc
     + GuiChungTuThanhToan(maPhieuCoc: String, phuongThucThanhToan: String, tepChungTu: TepChungTuCoc): PhieuCoc
   }
@@ -48,9 +48,10 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayDanhSachChoThanhToan(text: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
     + KiemTraTrangThaiChoGhiNhan()
-    + KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan: String)
-    + GhiNhanThanhToan(phuongThucThanhToan: String, anhMinhChung: String)
-    + CapNhatThanhToan()
+    + KiemTraConHanThanhToan(thoiDiemHienTai: DateTime)
+    + KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan: String, thoiDiemHienTai: DateTime)
+    + GhiNhanThanhToan(phuongThucThanhToan: String, anhMinhChung: String, thoiDiemHienTai: DateTime)
+    + CapNhatThanhToan(thoiDiemHienTai: DateTime)
   }
 
   class KhachHang {
@@ -68,9 +69,9 @@ package "TANG NGHIEP VU" #FCF3CF {
 
 package "TANG TRUY CAP DU LIEU" #FDEDEC {
   class PhieuCocDB {
-    + LayDanhSachChoThanhToan(text: String): IReadOnlyList<PhieuCoc>
+    + LayDanhSachChoThanhToan(thoiDiemHienTai: DateTime, text: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
-    + CapNhatThanhToan(phieu: PhieuCoc)
+    + CapNhatThanhToan(phieu: PhieuCoc, thoiDiemHienTai: DateTime)
   }
 }
 

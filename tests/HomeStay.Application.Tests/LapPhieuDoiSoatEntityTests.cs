@@ -65,6 +65,7 @@ public sealed class LapPhieuDoiSoatEntityTests
         Assert.Equal(1_200_000m, pds.TienHoan);
         Assert.Equal(0m, pds.TienThuThem);
         Assert.Equal(800_000m, pds.TongKhauTru);
+        Assert.Equal("ChoXacNhan", pds.TrangThai);
     }
 
     [Fact]
@@ -80,6 +81,22 @@ public sealed class LapPhieuDoiSoatEntityTests
         Assert.Equal(0m, pds.TienHoan);
         Assert.Equal(300_000m, pds.TienThuThem);
         Assert.Equal(800_000m, pds.TongKhauTru);
+    }
+
+    [Fact]
+    public void PhieuDoiSoat_PhieuCocDaHuy_DungSoTienThucThuVaTiLeChuaKy()
+    {
+        var chinhSach = TaoChinhSachMau();
+        var phieuThu = new PhieuThu { MaPhieuCoc = "PC0007", SoTienThu = 1_900_000m };
+        var pds = PhieuDoiSoat.TaoMoi("PC0007", null, "NV02", new DateTime(2026, 7, 13));
+
+        pds.ApDungChinhSachHoanCoc(chinhSach.TiLe_ChuaKy);
+        pds.TinhTongKhauTru(0);
+        pds.ChotKetQua(phieuThu.SoTienThu);
+
+        Assert.Equal(0.8000m, pds.TyLeHoanCoc);
+        Assert.Equal(1_520_000m, pds.TienHoan);
+        Assert.Equal(0m, pds.TienThuThem);
     }
 
     private static ChinhSachHoanCoc TaoChinhSachMau() => new()

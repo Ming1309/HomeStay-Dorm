@@ -18,6 +18,4 @@ public sealed class TaoLichHenHttpRequest
     [Required]
     public TimeSpan GioHen { get; set; }
 
-    [Required]
-    public string MaNV { get; set; } = string.Empty;
 }

@@ -29,10 +29,12 @@ public sealed record ChiTietThanhToanHopDongHttpResponse(
     decimal TongCong,
     IReadOnlyList<KhoanThuHttpResponse> KhoanThus);
 
-public sealed record TienHanhThuTienHttpRequest(
-    [Required] string MaHD,
-    [Required] string PhuongThucThanhToan,
-    string? AnhMinhChung);
+public sealed class TienHanhThuTienHttpRequest
+{
+    [Required] public string MaHD { get; set; } = string.Empty;
+    [Required] public string PhuongThucThanhToan { get; set; } = string.Empty;
+    [Required] public IFormFile? ChungTu { get; set; }
+}
 
 public sealed record TienHanhThuTienHttpResponse(
     string MaPT,

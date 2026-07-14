@@ -1,47 +1,58 @@
-@startuml LapPhieuHoanCoc_3Lop
-skinparam classAttributeIconSize 0
+@startuml
+title SO DO LOP 3 TANG - LAP PHIEU HOAN COC
+top to bottom direction
 skinparam shadowing false
-
-package "Lớp giao diện" {
-  class MHHoanCoc {
-    +chonPhieuDoiSoat(maPDS : String)
-    +chonPhuongThuc(TienMat | ChuyenKhoan)
-    +lapPhieuHoanCoc()
-  }
-  class PhieuHoanCocController {
-    +TaoPhieuHoanCoc(request) : HttpResponse
-  }
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
 }
 
-package "Lớp nghiệp vụ" {
-  class LapPhieuHoanCoc {
-    +ThucHienHoanCoc(maPDS, phuongThuc, thongTinNhanTien, maNV) : PhieuHoanCoc
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHHoanCoc {
+    + fetchQueue()
+    + fetchDetails(maPDS: String)
+    + handleSubmit(values: RefundFormValues)
   }
-  class PhieuHoanCoc {
-    +SoTienHoan : Decimal
-    +TaoPhieuHoanCoc(maPDS, soTien, phuongThuc, thongTinNhanTien, maNV, thoiDiem)
-    +DaTonTaiChoPhieuDoiSoat(maPDS) : Boolean
+}
+package "TANG NGHIEP VU" #FCF3CF {
+  class LapPhieuHoanCoc {
+    + LayDSPhieuDoiSoatCanHoan(): IReadOnlyList<DoiSoatChoHoanCocDto>
+    + LayChiTietPhieuDoiSoatDto(maPDS: String): ChiTietHoanCocDto
+    + ThucHienHoanCoc(maPDS: String, phuongThuc: String, thongTinNhanTien: String, maGiaoDich: String, minhChung: String, maNV: String): PhieuHoanCoc
   }
   class PhieuDoiSoat {
-    +TienHoan : Decimal
-    +ChuyenSangDaTatToan(maPDS) : Task
+    - TienHoan: Decimal
+    - TrangThai: String
+    + LayDSPhieuDoiSoatCanHoan(): IReadOnlyList<PhieuDoiSoat>
+    + LayChiTietPhieuDoiSoat(maPDS: String): PhieuDoiSoat
+    + LayChiTietChoCapNhat(maPDS: String): PhieuDoiSoat
+    + ChuyenSangDaTatToan(maPDS: String)
+  }
+  class PhieuHoanCoc {
+    - MaGiaoDich: String
+    - MinhChung: String
+    + TaoPhieuHoanCoc(maPDS: String, soTien: Decimal, phuongThuc: String, thongTinNhanTien: String, maGiaoDich: String, minhChung: String, maNV: String, thoiDiem: DateTime): PhieuHoanCoc
+    + DaTonTaiChoPhieuDoiSoat(maPDS: String): Boolean
+    + LuuPhieu()
   }
 }
-
-package "Lớp truy xuất dữ liệu" {
-  class PhieuHoanCocDB {
-    +InsertPhieuHoanCoc(phieuHoanCoc)
-    +TonTaiTheoMaPhieuDoiSoat(maPDS) : Boolean
-  }
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
   class PhieuDoiSoatDB {
-    +UpdateTrangThai(maPDS, trangThaiHienTai, trangThaiMoi) : Integer
+    + GetDSPhieuDoiSoatCanHoan(): IReadOnlyList<PhieuDoiSoat>
+    + GetPhieuDoiSoatChoCapNhat(maPDS: String): PhieuDoiSoat
+    + UpdateTrangThai(maPDS: String, trangThaiHienTai: String, trangThaiMoi: String): Boolean
+  }
+  class PhieuHoanCocDB {
+    + TonTaiTheoMaPhieuDoiSoat(maPDS: String): Boolean
+    + InsertPhieuHoanCoc(phieu: PhieuHoanCoc)
   }
 }
-
-MHHoanCoc --> PhieuHoanCocController
-PhieuHoanCocController --> LapPhieuHoanCoc
-LapPhieuHoanCoc --> PhieuHoanCoc
-LapPhieuHoanCoc --> PhieuDoiSoat
-PhieuHoanCoc --> PhieuHoanCocDB
-PhieuDoiSoat --> PhieuDoiSoatDB
+MHHoanCoc o-- LapPhieuHoanCoc
+LapPhieuHoanCoc o-- PhieuDoiSoat
+LapPhieuHoanCoc o-- PhieuHoanCoc
+PhieuDoiSoat o-- PhieuDoiSoatDB
+PhieuHoanCoc o-- PhieuHoanCocDB
 @enduml

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, X, Edit2 } from "lucide-react";
 
-import { useAuth } from "@/features/auth/model/auth-store";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -29,7 +28,6 @@ const getStatusLabel = (status: string) =>
   APPOINTMENT_STATUSES.find((item) => item.value === status)?.label ?? status;
 
 export function AppointmentLookupWorkspace() {
-  const { user } = useAuth();
   const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -42,7 +40,9 @@ export function AppointmentLookupWorkspace() {
   const [editedAppointment, setEditedAppointment] = useState<AppointmentRecord | null>(null);
 
   useEffect(() => {
-    appointmentService.list().then(setAppointments).catch(console.error);
+    appointmentService.list().then(setAppointments).catch((error) => {
+      toast.error(error instanceof Error ? error.message : "Không thể tải lịch hẹn.");
+    });
   }, []);
 
   const uniqueDates = useMemo(() => {
@@ -123,7 +123,6 @@ export function AppointmentLookupWorkspace() {
       const updated = await appointmentService.update(editedAppointment.id, {
         ngayHen: editedAppointment.date,
         gioHen: editedAppointment.time + (editedAppointment.time.length === 5 ? ':00' : ''),
-        maNV: user?.maNV || 'NV01',
         trangThai: editedAppointment.status
       });
       setAppointments(appointments.map((a) => (a.id === updated.id ? updated : a)));
@@ -204,7 +203,7 @@ export function AppointmentLookupWorkspace() {
                 const data = await appointmentService.list(search, dateFilter, timeFilter);
                 setAppointments(data);
               } catch(e) {
-                console.error(e);
+                toast.error(e instanceof Error ? e.message : "Không thể tra cứu lịch hẹn.");
               }
             }}
             className="mt-3 w-full h-9 bg-blue-600 hover:bg-blue-700"
@@ -303,7 +302,10 @@ export function AppointmentLookupWorkspace() {
                         <select
                           value={editedAppointment.appointmentType}
                           onChange={(e) =>
-                            setEditedAppointment({ ...editedAppointment, appointmentType: e.target.value as any })
+                            setEditedAppointment({
+                              ...editedAppointment,
+                              appointmentType: e.target.value as AppointmentRecord["appointmentType"],
+                            })
                           }
                           className="mt-2 w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm"
                         >

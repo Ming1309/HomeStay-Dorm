@@ -15,7 +15,6 @@ public sealed class HopDong
     public string? MaNV { get; set; }
     public string MaPhieuCoc { get; set; } = string.Empty;
     public string? MaChinhSach { get; set; }
-    public string? MaQD { get; set; }
     public string? MaQLDuyet { get; set; }
     public decimal TienCoc { get; set; }
 

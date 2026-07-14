@@ -1,0 +1,191 @@
+@startuml
+title SO DO LOP 3 TANG - LAP HOP DONG THUE
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
+
+'=====================
+' TANG GIAO DIEN
+'=====================
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHLapHopDongThue {
+    - txtTimKiemPhieuCoc: TextBox
+    - grvDanhSachPhieuCoc: GridView
+    - dtpNgayBatDau: DateTimePicker
+    - dtpNgayKetThuc: DateTimePicker
+    - txtGiaThueThang: TextBox
+    - txtTienCocDaThu: TextBox
+    - cboKyThanhToan: ComboBox
+    - chkKhachDaDongYTaiLieu: CheckBox
+    - btnLuuXemTruocHopDong: Button
+    - btnHuyHopDong: Button
+    - btnXacNhanKhachDaKy: Button
+    --
+    + hienThiForm()
+    + nhapTuKhoaTimKiem(tuKhoa: String)
+    + hienThiDanhSachPhieuCoc()
+    + chonPhieuCoc(maPhieuCoc: String)
+    + hienThiChiTietPhieuCoc()
+    + nhapThongTinHopDong()
+    + clickLuuXemTruocHopDong()
+    + clickXacNhanKhachDaKy()
+    + clickHuyHopDong()
+    + hienThiThongBao()
+    + hienThiLoi()
+  }
+}
+
+'=====================
+' TANG NGHIEP VU
+'=====================
+package "TANG NGHIEP VU" #FCF3CF {
+  class LapHopDongThue {
+    + LayDanhSachPhieuCocDaDuyet(text: String): IReadOnlyList<PhieuCoc>
+    + LayThongTinPhieuCoc(maPhieuCoc: String): Object
+    + TaoHopDong(maPhieuCoc: String, maNV: String, ngayBatDau: DateTime, ngayKetThuc: DateTime, kyThanhToan: int?, giaThue: decimal, maQD: String, dsMaDV: List<string>): HopDong
+    + XacNhanKhachDaKy(maHD: String): HopDong
+    + HuyHopDong(maHD: String)
+  }
+
+  class PhieuCoc {
+    - MaPhieuCoc: String
+    - HanThanhToan: DateTime?
+    - HinhThucThue: String
+    - SoGiuongThue: int
+    - TongTien: decimal
+    - ThoiDiemCoc: DateTime
+    - TrangThai: String
+    - MaKH: String
+    - MaPhong: String
+    - MaNV: String
+    --
+    + LayDanhSachDaDuyet(text: string): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: string): PhieuCoc
+  }
+
+  class HopDong {
+    - MaHD: String
+    - NgayKy: DateTime?
+    - NgayBatDau: DateTime
+    - NgayKetThuc: DateTime
+    - KyThanhToan: int?
+    - GiaThue: decimal
+    - TrangThai: String
+    - MaNV: String
+    - MaPhieuCoc: String
+  }
+
+  class ThanhVienDangKy {
+    - MaPhieuCoc: String
+    - MaKH: String
+    - VaiTro: String
+    - TrangThaiDuyet: String
+    --
+    + LayDanhSachThanhVien(maPhieuCoc: string): IReadOnlyList<ThanhVienDangKy>
+  }
+
+  class DichVu {
+    - MaDV: String
+    - TenDV: String
+    - DonGia: decimal
+    - DonViTinh: String
+    - TrangThai: String
+    --
+    + LayDanhSach(): IReadOnlyList<DichVu>
+  }
+
+  class DichVuHopDong {
+    - MaHD: String
+    - MaDV: String
+    - DonGiaKyKet: decimal
+  }
+
+  class QuyDinh {
+    - MaQD: String
+    - TenQD: String
+    - LoaiQD: String
+    - DuongDanFile: String
+    - NgayApDung: DateOnly
+    - NgayKetThuc: DateOnly?
+    --
+    + LayDanhSach(): IReadOnlyList<QuyDinh>
+  }
+
+  class ChinhSachHoanCoc {
+    - MaChinhSach: String
+    - TenChinhSach: String
+    - TiLe_ChuaKy: decimal
+    - TiLe_TruocHan_NganHan: decimal
+    - TiLe_TruocHan_DaiHan: decimal
+    - TiLe_DungHan: decimal
+    - MocLuuTru: int
+    --
+    + LayChinhSachDangApDung(ngay: DateOnly): ChinhSachHoanCoc
+  }
+}
+
+'=====================
+' TANG TRUY CAP DU LIEU
+'=====================
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class PhieuCocDB {
+    + LayDanhSachDaDuyet(text: string): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: string): PhieuCoc
+  }
+
+  class HopDongDB {
+    + TonTaiTheoPhieuCoc(maPhieuCoc: string): boolean
+    + Them(hd: HopDong)
+    + UpdateTrangThai(maHD: string, trangThai: string): boolean
+  }
+
+  class ThanhVienDangKyDB {
+    + LayTheoMaPhieuCoc(maPhieuCoc: string): List<ThanhVienDangKy>
+  }
+
+  class DichVuDB {
+    + LayDanhSach(): IReadOnlyList<DichVu>
+  }
+
+  class DichVuHopDongDB {
+    + Them(maHD: string, maDV: string, donGiaKyKet: decimal)
+  }
+
+  class QuyDinhDB {
+    + LayDanhSach(): IReadOnlyList<QuyDinh>
+  }
+
+  class ChinhSachHoanCocDB {
+    + LayChinhSachDangApDung(ngay: DateOnly): ChinhSachHoanCoc
+  }
+}
+
+'=====================
+' QUAN HỆ (ASSOCIATIONS)
+'=====================
+MHLapHopDongThue o-- LapHopDongThue
+
+LapHopDongThue o-- PhieuCoc
+LapHopDongThue o-- HopDong
+LapHopDongThue o-- ThanhVienDangKy
+LapHopDongThue o-- DichVu
+LapHopDongThue o-- DichVuHopDong
+LapHopDongThue o-- QuyDinh
+LapHopDongThue o-- ChinhSachHoanCoc
+
+PhieuCoc o-- PhieuCocDB
+HopDong o-- HopDongDB
+ThanhVienDangKy o-- ThanhVienDangKyDB
+DichVu o-- DichVuDB
+DichVuHopDong o-- DichVuHopDongDB
+QuyDinh o-- QuyDinhDB
+ChinhSachHoanCoc o-- ChinhSachHoanCocDB
+
+@enduml

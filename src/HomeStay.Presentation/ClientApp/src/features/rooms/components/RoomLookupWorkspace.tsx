@@ -13,6 +13,8 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
 import { useWorkflowStore, type Room, type BedStatus } from "@/app/providers/workflow-store";
 import { roomAreas } from "@/features/rooms/model/mock-rooms";
+import { roomLookupService } from "@/features/rooms/services/room-lookup-service";
+import { toast } from "sonner";
 
 const bedColor: Record<BedStatus, string> = {
   available: "text-emerald-500",
@@ -50,45 +52,19 @@ export function RoomLookupWorkspace() {
   useEffect(() => {
     let isMounted = true;
     
-    fetch('/api/room-types')
-      .then(res => res.json())
+    roomLookupService.listRoomTypes()
       .then(data => {
         if (!isMounted) return;
-        setRoomTypes(data.map((t: any) => t.tenLoaiPhong));
+        setRoomTypes(data);
       })
-      .catch(console.error);
+      .catch((error) => toast.error(error instanceof Error ? error.message : "Không thể tải loại phòng."));
 
-    fetch('/api/rooms/search')
-      .then(res => res.json())
+    roomLookupService.search()
       .then(data => {
         if (!isMounted) return;
-        const mapped: Room[] = data.map((item: any) => ({
-          id: item.maPhong,
-          roomNumber: item.soPhong,
-          type: item.loaiPhong?.tenLoaiPhong || '',
-          area: item.tang || '',
-          status: item.trangThai === 'Trong' ? 'available' 
-                : item.trangThai === 'ConGiuongTrong' ? 'partially_available' 
-                : item.trangThai === 'GiuCho' ? 'partially_available' 
-                : item.trangThai === 'DaCoc' || item.trangThai === 'DangSuDung' ? 'full' 
-                : 'maintenance',
-          basePrice: item.loaiPhong?.giaThue || 0,
-          totalBeds: item.loaiPhong?.sucChua || item.giuongs?.length || 0,
-          availableBeds: item.soGiuongTrong || 0,
-          beds: (item.giuongs || []).map((g: any) => ({
-            id: g.maGiuong,
-            name: g.maGiuong,
-            status: g.trangThai === 'Trong' ? 'available' 
-                  : g.trangThai === 'DaCoc' ? 'deposited' 
-                  : g.trangThai === 'DangSuDung' ? 'occupied' 
-                  : 'maintenance'
-          })),
-          assets: [],
-          features: []
-        }));
-        setRooms(mapped);
+        setRooms(data);
       })
-      .catch(console.error);
+      .catch((error) => toast.error(error instanceof Error ? error.message : "Không thể tải danh sách phòng."));
     return () => { isMounted = false; };
   }, []);
 
@@ -321,18 +297,12 @@ function RoomCard({ room }: { room: Room }) {
     if (showDetail && assets.length === 0) {
       let isMounted = true;
       setLoadingAssets(true);
-      fetch(`/api/rooms/${room.id}/assets`)
-        .then(res => res.json())
+      roomLookupService.listAssets(room.id)
         .then(data => {
           if (!isMounted) return;
-          const fetchedAssets = (data || []).map((ts: any) => ({
-            id: ts.maTS,
-            name: ts.taiSan?.tenTaiSan || ts.maTS,
-            quantity: ts.soLuongTieuChuan || 1
-          }));
-          setAssets(fetchedAssets);
+          setAssets(data);
         })
-        .catch(console.error)
+        .catch((error) => toast.error(error instanceof Error ? error.message : "Không thể tải tài sản phòng."))
         .finally(() => {
           if (isMounted) setLoadingAssets(false);
         });
