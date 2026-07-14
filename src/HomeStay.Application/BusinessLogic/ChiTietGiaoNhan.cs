@@ -6,6 +6,7 @@ public sealed class ChiTietGiaoNhan
 {
     public static readonly HashSet<string> TinhTrangHopLe = new(StringComparer.OrdinalIgnoreCase)
     {
+        "Mới",
         "Bình thường",
         "Hư hỏng",
         "Mất mát",

@@ -429,6 +429,47 @@ public static class HopDongDB
         },
     };
 
+    // ==========================================================
+    // UC 1.4.15 Lập biên bản bàn giao
+    // ==========================================================
+    public static async Task<IReadOnlyList<HopDongChoBanGiao>> LayDanhSachChoBanGiao(string? tuKhoa = null)
+    {
+        const string sql = """
+            SELECT hd.MaHD, kh.HoTen AS TenKhachHang, p.SoPhong, p.ToaNha, p.MaPhong
+            FROM HopDong hd
+            INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc = hd.MaPhieuCoc
+            INNER JOIN KhachHang kh ON kh.MaKH = pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong = pc.MaPhong
+            WHERE hd.TrangThai = N'ChoBanGiao'
+              AND NOT EXISTS (
+                  SELECT 1 FROM BienBanGiaoNhan bb
+                  WHERE bb.MaHD = hd.MaHD AND bb.LoaiBienBan = N'BanGiao'
+              )
+              AND (@TuKhoa IS NULL
+                   OR hd.MaHD LIKE '%' + @TuKhoa + '%'
+                   OR kh.HoTen LIKE '%' + @TuKhoa + '%'
+                   OR p.SoPhong LIKE '%' + @TuKhoa + '%')
+            ORDER BY hd.MaHD
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<HopDongChoBanGiao>(sql,
+            new { TuKhoa = ChuanHoa(tuKhoa) }, PhienDuLieu.Session.Transaction);
+        return rows.ToList();
+    }
+
+    public static async Task<bool> UpdateTrangThai(string maHD, string trangThai)
+    {
+        const string sql = "UPDATE HopDong SET TrangThai = @TrangThai WHERE MaHD = @MaHD";
+        return await PhienDuLieu.Session.Connection.ExecuteAsync(
+            sql, new { MaHD = maHD, TrangThai = trangThai }, PhienDuLieu.Session.Transaction) == 1;
+    }
+
+    public static async Task<bool> TonTaiChoBanGiaoTheoHD(string maHD)
+    {
+        const string sql = "SELECT COUNT(1) FROM HopDong WHERE MaHD = @MaHD AND TrangThai = N'ChoBanGiao'";
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(
+            sql, new { MaHD = maHD }, PhienDuLieu.Session.Transaction) > 0;
+    }
+
     private static string? ChuanHoa(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

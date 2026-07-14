@@ -26,4 +26,12 @@ public sealed class ThanhVienHopDong
         if (!await ThanhVienHopDongDB.UpdateTrangThaiDaTra(maHD.Trim(), ngayTra.Date))
             throw new InvalidOperationException("Không thể cập nhật trạng thái chi tiết hợp đồng thành Đã trả.");
     }
+
+    public static async Task CapNhatDangThueTheoHD(string maHD)
+    {
+        if (string.IsNullOrWhiteSpace(maHD))
+            throw new ArgumentException("Mã hợp đồng không được để trống.");
+        if (!await ThanhVienHopDongDB.UpdateTrangThaiDangThue(maHD.Trim()))
+            throw new InvalidOperationException("Không thể cập nhật trạng thái chi tiết hợp đồng thành Đang thuê.");
+    }
 }

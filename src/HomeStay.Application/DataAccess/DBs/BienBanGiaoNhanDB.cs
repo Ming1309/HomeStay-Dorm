@@ -100,6 +100,17 @@ public static class BienBanGiaoNhanDB
             sql, new { MaBienBan = maBienBan }, PhienDuLieu.Session.Transaction);
     }
 
+    public static async Task<bool> TonTaiBanGiaoTheoHD(string maHD)
+    {
+        const string sql = """
+            SELECT COUNT(1)
+            FROM BienBanGiaoNhan
+            WHERE MaHD = @MaHD AND LoaiBienBan = N'BanGiao'
+            """;
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(
+            sql, new { MaHD = maHD }, PhienDuLieu.Session.Transaction) > 0;
+    }
+
     public static async Task<bool> DaCoHoaDonBoiThuongTheoHD(string maHD)
     {
         const string sql = """

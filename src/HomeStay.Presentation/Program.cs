@@ -60,6 +60,9 @@ builder.Services.AddScoped<TraCuuLichHen>();
 builder.Services.AddScoped<SuaLichHen>();
 builder.Services.AddScoped<LapPhieuDangKy>();
 
+// UC 1.4.15 Lập biên bản bàn giao
+builder.Services.AddScoped<LapBienBanBanGiao>();
+
 var app = builder.Build();
 
 app.Lifetime.ApplicationStarted.Register(() =>

@@ -24,4 +24,17 @@ public static class GiuongDB
                 throw new InvalidOperationException($"Giường {maGiuong} không thể cập nhật trạng thái.");
         }
     }
+
+    public static async Task UpdateTrangThaiTheoHopDong(string maHD, string trangThai)
+    {
+        const string sql = """
+            UPDATE g
+            SET g.TrangThai = @TrangThai
+            FROM Giuong g
+            INNER JOIN ChiTietHopDong cthd ON g.MaGiuong = cthd.MaGiuong
+            WHERE cthd.MaHD = @MaHD
+            """;
+        await PhienDuLieu.Session.Connection.ExecuteAsync(sql,
+            new { MaHD = maHD, TrangThai = trangThai }, PhienDuLieu.Session.Transaction);
+    }
 }

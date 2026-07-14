@@ -40,6 +40,25 @@ public sealed class HopDong
     public static Task<bool> CoLichTraPhongTrongNgay(string maHD) =>
         HopDongDB.CoLichTraPhongTrongNgay(maHD);
 
+    public void KiemTraChoBanGiao()
+    {
+        if (!string.Equals(TrangThai, "ChoBanGiao", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Hợp đồng không ở trạng thái Chờ bàn giao.");
+    }
+
+    public static Task<IReadOnlyList<HopDongChoBanGiao>> LayDanhSachChoBanGiao(string? tuKhoa = null) =>
+        HopDongDB.LayDanhSachChoBanGiao(tuKhoa);
+
+    public static Task<bool> TonTaiChoBanGiaoTheoHD(string maHD) =>
+        HopDongDB.TonTaiChoBanGiaoTheoHD(maHD);
+
+    public async Task ChuyenTrangThaiDangHieuLuc()
+    {
+        if (!await HopDongDB.UpdateTrangThai(MaHD, "DangHieuLuc"))
+            throw new InvalidOperationException("Không thể chuyển hợp đồng sang trạng thái Đang hiệu lực.");
+        TrangThai = "DangHieuLuc";
+    }
+
     public void KiemTraDangHieuLuc()
     {
         if (!string.Equals(TrangThai, "DangHieuLuc", StringComparison.OrdinalIgnoreCase))
@@ -117,6 +136,15 @@ public sealed class HopDongCoLichTraPhong
     public DateTime NgayTraPhong { get; set; }
     public TimeSpan GioTraPhong { get; set; }
     public string MaLH { get; set; } = string.Empty;
+}
+
+public sealed class HopDongChoBanGiao
+{
+    public string MaHD { get; set; } = string.Empty;
+    public string TenKhachHang { get; set; } = string.Empty;
+    public string SoPhong { get; set; } = string.Empty;
+    public string? ToaNha { get; set; }
+    public string MaPhong { get; set; } = string.Empty;
 }
 
 public sealed class HopDongChoThanhLy
