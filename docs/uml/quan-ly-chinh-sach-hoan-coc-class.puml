@@ -1,0 +1,78 @@
+@startuml
+title SO DO LOP 3 TANG - QUAN LY CHINH SACH HOAN COC (UC 1.4.28)
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHQuanLyChinhSachHoanCoc {
+    - txtTenChinhSach: TextBox
+    - dtNgayApDung: DateInput
+    - dtNgayKetThuc: DateInput
+    - txtMocLuuTru: NumberInput
+    - txtTiLe_ChuaKy: NumberInput
+    - txtTiLe_TruocHan_NganHan: NumberInput
+    - txtTiLe_TruocHan_DaiHan: NumberInput
+    - txtTiLe_DungHan: NumberInput
+    - tblLichSuApDung: Table
+    - btnTaoPhienBan: Button
+    --
+    + loadPolicies()
+    + onSubmit(values)
+    + handleConfirmCreate()
+  }
+}
+
+package "TANG NGHIEP VU" #FCF3CF {
+  class QuanLyChinhSachHoanCoc {
+    + LayDanhSach(): List<ChinhSachHoanCoc>
+    + LayChinhSachHienHanh(): ChinhSachHoanCoc
+    + TaoPhienBan(chinhSachMoi: ChinhSachHoanCoc): ChinhSachHoanCoc
+  }
+
+  class ChinhSachHoanCoc {
+    - MaChinhSach: String
+    - TenChinhSach: String
+    - TiLe_ChuaKy: Decimal
+    - TiLe_TruocHan_NganHan: Decimal
+    - TiLe_TruocHan_DaiHan: Decimal
+    - TiLe_DungHan: Decimal
+    - MocLuuTru: Integer
+    - NgayApDung: Date
+    - NgayKetThuc: Date
+    --
+    + LayDanhSach(): List<ChinhSachHoanCoc>
+    + LayChinhSachDangApDung(ngay: Date): ChinhSachHoanCoc
+    + LayPhienBanMoiNhat(): ChinhSachHoanCoc
+    + TaoMaMoi(): String
+    + KiemTraDuLieuHopLe()
+    + Them()
+    + CapNhatNgayKetThuc(ngayKetThuc: Date)
+    + TinhTrangThai(homNay: Date): String
+    + XacDinhTyLeHoan(soThangThucTe: Integer, soThangHopDong: Integer): Decimal
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class ChinhSachHoanCocDB {
+    + LayDanhSach(): List<ChinhSachHoanCoc>
+    + LayChinhSachDangApDung(ngay: Date): ChinhSachHoanCoc
+    + LayPhienBanMoiNhat(): ChinhSachHoanCoc
+    + TaoMaMoi(): String
+    + Them(chinhSach: ChinhSachHoanCoc)
+    + CapNhatNgayKetThuc(maChinhSach: String, ngayKetThuc: Date)
+  }
+}
+
+MHQuanLyChinhSachHoanCoc o-- QuanLyChinhSachHoanCoc
+QuanLyChinhSachHoanCoc o-- ChinhSachHoanCoc
+ChinhSachHoanCoc o-- ChinhSachHoanCocDB
+
+@enduml

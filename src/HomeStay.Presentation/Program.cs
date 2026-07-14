@@ -62,6 +62,7 @@ builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();
 builder.Services.AddScoped<QuanLyPhongGiuong>();
 builder.Services.AddScoped<QuanLyQuyDinh>();
+builder.Services.AddScoped<QuanLyChinhSachHoanCoc>();
 builder.Services.AddScoped<TaoLichHen>();
 builder.Services.AddScoped<TraCuuLichHen>();
 builder.Services.AddScoped<SuaLichHen>();

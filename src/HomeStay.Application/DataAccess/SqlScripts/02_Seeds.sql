@@ -138,9 +138,9 @@ GO
 -- 10. Chính Sách Hoàn Cọc
 -- TiLe_ChuaKy: Hoàn cọc nếu khách hủy trước khi ký hợp đồng
 -- MocLuuTru: Số tháng quy định để phân biệt NganHan (trước hạn ngắn hạn) và DaiHan
-INSERT INTO ChinhSachHoanCoc (MaChinhSach, TenChinhSach, TiLe_ChuaKy, TiLe_TruocHan_NganHan, TiLe_TruocHan_DaiHan, TiLe_DungHan, MocLuuTru)
+INSERT INTO ChinhSachHoanCoc (MaChinhSach, TenChinhSach, TiLe_ChuaKy, TiLe_TruocHan_NganHan, TiLe_TruocHan_DaiHan, TiLe_DungHan, MocLuuTru, NgayApDung, NgayKetThuc)
 VALUES 
-('CS01', N'Chính sách Tiêu Chuẩn 2024', 0.8000, 0.5000, 0.7000, 1.0000, 6);
+('CS01', N'Chính sách Tiêu Chuẩn 2024', 0.8000, 0.5000, 0.7000, 1.0000, 6, '2024-01-01', NULL);
 GO
 
 -- 11. Khách Hàng (Mẫu)

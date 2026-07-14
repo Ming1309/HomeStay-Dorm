@@ -74,11 +74,11 @@ public sealed class LapPhieuDoiSoat
 
     private async Task<ChiTietDoiSoatDto> LayChiTietVaTinhToanInternal(string maHoSo, string loaiHoSo)
     {
-        var cs = await ChinhSachHoanCoc.LayChinhSachDangApDung()
-            ?? throw new InvalidOperationException("Không tìm thấy chính sách hoàn cọc đang áp dụng.");
-
         if (loaiHoSo == "PhieuCoc")
         {
+            var homNay = DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
+            var cs = await ChinhSachHoanCoc.LayChinhSachDangApDung(homNay)
+                ?? throw new InvalidOperationException("Không tìm thấy chính sách hoàn cọc đang áp dụng.");
             decimal tienCoc = await PhieuCoc.LaySoTienCoc(maHoSo);
             var pds = PhieuDoiSoat.TaoMoi(maHoSo, null, null, _timeProvider.GetLocalNow().DateTime);
             pds.ApDungChinhSachHoanCoc(cs.TiLe_ChuaKy);
@@ -106,6 +106,12 @@ public sealed class LapPhieuDoiSoat
             int soThangThucTe = hd.TinhSoThangThucTe(_timeProvider.GetLocalNow().DateTime);
             int soThangHopDong = hd.TinhSoThangHopDong();
 
+            var homNay = DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
+            var cs = (hd.MaChinhSach is not null
+                ? await ChinhSachHoanCoc.LayChinhSachTheoMa(hd.MaChinhSach)
+                : await ChinhSachHoanCoc.LayChinhSachDangApDung(homNay))
+                ?? throw new InvalidOperationException(
+                    "Không tìm thấy chính sách hoàn cọc của hợp đồng.");
             decimal tyLe = cs.XacDinhTyLeHoan(soThangThucTe, soThangHopDong);
             var dsHoaDon = await HoaDon.LayDanhSachChuaThanhToan(maHoSo);
 

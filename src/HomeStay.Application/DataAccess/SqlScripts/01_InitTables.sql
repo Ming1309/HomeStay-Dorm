@@ -121,7 +121,9 @@ CREATE TABLE ChinhSachHoanCoc (
     TiLe_TruocHan_NganHan  DECIMAL(5,4)   NOT NULL,
     TiLe_TruocHan_DaiHan   DECIMAL(5,4)   NOT NULL,
     TiLe_DungHan           DECIMAL(5,4)   NOT NULL,
-    MocLuuTru              INT            NULL
+    MocLuuTru              INT            NOT NULL,
+    NgayApDung              DATE           NOT NULL,
+    NgayKetThuc             DATE           NULL
 );
 GO
 
@@ -413,6 +415,8 @@ CREATE UNIQUE INDEX UX_PhieuThu_MaPDS
     WHERE MaPDS IS NOT NULL;
 CREATE UNIQUE INDEX UX_PhieuHoanCoc_MaPDS
     ON PhieuHoanCoc (MaPDS);
+CREATE UNIQUE INDEX UX_ChinhSachHoanCoc_NgayApDung
+    ON ChinhSachHoanCoc (NgayApDung);
 GO
 
 
@@ -472,6 +476,10 @@ ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_TiLe_TruocHan_DaiHan
     CHECK (TiLe_TruocHan_DaiHan BETWEEN 0 AND 1);
 ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_TiLe_DungHan
     CHECK (TiLe_DungHan BETWEEN 0 AND 1);
+ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_MocLuuTru
+    CHECK (MocLuuTru > 0);
+ALTER TABLE ChinhSachHoanCoc ADD CONSTRAINT CK_ChinhSach_NgayKetThuc
+    CHECK (NgayKetThuc IS NULL OR NgayKetThuc >= NgayApDung);
 
 -- QuyDinh
 ALTER TABLE QuyDinh ADD CONSTRAINT CK_QuyDinh_LoaiQD
