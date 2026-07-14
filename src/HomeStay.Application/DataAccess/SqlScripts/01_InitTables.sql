@@ -222,7 +222,8 @@ CREATE TABLE DichVu (
     MaDV      VARCHAR(20)    NOT NULL,
     TenDV     NVARCHAR(100)  NOT NULL,
     DonGia    DECIMAL(18,2)  NOT NULL,
-    DonViTinh NVARCHAR(50)   NULL
+    DonViTinh NVARCHAR(50)   NOT NULL,
+    TrangThai NVARCHAR(20)   NOT NULL
 );
 GO
 
@@ -234,9 +235,12 @@ CREATE TABLE HopDong_DichVu (
 GO
 
 CREATE TABLE TaiSan (
-    MaTS      VARCHAR(20)    NOT NULL,
-    TenTaiSan NVARCHAR(100)  NOT NULL,
-    GiaTri    DECIMAL(18,2)  NULL
+    MaTS        VARCHAR(20)    NOT NULL,
+    TenTaiSan   NVARCHAR(100)  NOT NULL,
+    LoaiTaiSan  NVARCHAR(30)   NOT NULL,
+    GiaTri      DECIMAL(18,2)  NOT NULL,
+    MoTa        NVARCHAR(500)  NULL,
+    TrangThai   NVARCHAR(20)   NOT NULL
 );
 GO
 
@@ -407,6 +411,7 @@ ALTER TABLE KhachHang    ADD CONSTRAINT UQ_KhachHang_SoGiayTo   UNIQUE (SoGiayTo
 ALTER TABLE HopDong      ADD CONSTRAINT UQ_HopDong_PhieuCoc     UNIQUE (MaPhieuCoc);
 ALTER TABLE TaiKhoan     ADD CONSTRAINT UQ_TaiKhoan_TenDangNhap UNIQUE (TenDangNhap);
 ALTER TABLE TaiKhoan     ADD CONSTRAINT UQ_TaiKhoan_MaNV        UNIQUE (MaNV);
+ALTER TABLE TaiSan       ADD CONSTRAINT UQ_TaiSan_TenTaiSan     UNIQUE (TenTaiSan);
 CREATE UNIQUE INDEX UX_PhieuThu_MaPhieuCoc
     ON PhieuThu (MaPhieuCoc)
     WHERE MaPhieuCoc IS NOT NULL;
@@ -427,6 +432,8 @@ GO
 ALTER TABLE Phong        ADD CONSTRAINT DF_Phong_TrangThai        DEFAULT N'Trong'        FOR TrangThai;
 ALTER TABLE Giuong       ADD CONSTRAINT DF_Giuong_TrangThai       DEFAULT N'Trong'        FOR TrangThai;
 ALTER TABLE PhieuDangKy  ADD CONSTRAINT DF_PhieuDangKy_TrangThai  DEFAULT N'DangXuLy'    FOR TrangThai;
+ALTER TABLE DichVu       ADD CONSTRAINT DF_DichVu_TrangThai        DEFAULT N'DangApDung'  FOR TrangThai;
+ALTER TABLE TaiSan       ADD CONSTRAINT DF_TaiSan_TrangThai        DEFAULT N'DangApDung'  FOR TrangThai;
 ALTER TABLE PhieuCoc     ADD CONSTRAINT DF_PhieuCoc_ThoiDiemCoc   DEFAULT GETDATE()       FOR ThoiDiemCoc;
 ALTER TABLE PhieuCoc     ADD CONSTRAINT DF_PhieuCoc_TrangThai      DEFAULT N'KhoiTao'     FOR TrangThai;
 ALTER TABLE ThanhVienDangKy ADD CONSTRAINT DF_ThanhVienDangKy_TrangThaiDuyet DEFAULT N'ChoDuyet' FOR TrangThaiDuyet;
@@ -533,6 +540,8 @@ ALTER TABLE ChiTietHopDong ADD CONSTRAINT CK_ChiTietHopDong_TrangThaiThue
 -- DichVu
 ALTER TABLE DichVu ADD CONSTRAINT CK_DichVu_DonGia
     CHECK (DonGia >= 0);
+ALTER TABLE DichVu ADD CONSTRAINT CK_DichVu_TrangThai
+    CHECK (TrangThai IN (N'DangApDung', N'NgungApDung'));
 
 -- HopDong_DichVu
 ALTER TABLE HopDong_DichVu ADD CONSTRAINT CK_HopDong_DichVu_DonGiaKyKet
@@ -541,6 +550,10 @@ ALTER TABLE HopDong_DichVu ADD CONSTRAINT CK_HopDong_DichVu_DonGiaKyKet
 -- TaiSan
 ALTER TABLE TaiSan ADD CONSTRAINT CK_TaiSan_GiaTri
     CHECK (GiaTri >= 0);
+ALTER TABLE TaiSan ADD CONSTRAINT CK_TaiSan_LoaiTaiSan
+    CHECK (LoaiTaiSan IN (N'NoiThat', N'ThietBiDien', N'TienIchBanGiao'));
+ALTER TABLE TaiSan ADD CONSTRAINT CK_TaiSan_TrangThai
+    CHECK (TrangThai IN (N'DangApDung', N'NgungApDung'));
 
 -- Phong_TaiSan
 ALTER TABLE Phong_TaiSan ADD CONSTRAINT CK_Phong_TaiSan_SoLuong

@@ -61,6 +61,8 @@ builder.Services.AddSingleton<MatKhauHasher>();
 builder.Services.AddScoped<XacThucNguoiDung>();
 builder.Services.AddScoped<QuanLyNguoiDung>();
 builder.Services.AddScoped<QuanLyPhongGiuong>();
+builder.Services.AddScoped<QuanLyDichVu>();
+builder.Services.AddScoped<QuanLyTaiSan>();
 builder.Services.AddScoped<QuanLyQuyDinh>();
 builder.Services.AddScoped<QuanLyChinhSachHoanCoc>();
 builder.Services.AddScoped<TaoLichHen>();

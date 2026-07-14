@@ -73,31 +73,31 @@ VALUES
 GO
 
 -- 6. Dịch Vụ
-INSERT INTO DichVu (MaDV, TenDV, DonGia, DonViTinh)
+INSERT INTO DichVu (MaDV, TenDV, DonGia, DonViTinh, TrangThai)
 VALUES 
-('DV01', N'Tiền Điện', 3500, N'kWh'),
-('DV02', N'Tiền Nước', 20000, N'Khối'),
-('DV03', N'Phí Quản Lý Chung', 100000, N'Tháng/Người'),
-('DV04', N'Gửi xe máy', 150000, N'Tháng/Chiếc'),
-('DV05', N'Tiền Wifi/Internet', 50000, N'Tháng/Người');
+('DV01', N'Tiền Điện', 3500, N'kWh', N'DangApDung'),
+('DV02', N'Tiền Nước', 20000, N'Khối', N'DangApDung'),
+('DV03', N'Phí Quản Lý Chung', 100000, N'Tháng/Người', N'DangApDung'),
+('DV04', N'Gửi xe máy', 150000, N'Tháng/Chiếc', N'DangApDung'),
+('DV05', N'Tiền Wifi/Internet', 50000, N'Tháng/Người', N'DangApDung');
 GO
 
 -- 7. Tài Sản
-INSERT INTO TaiSan (MaTS, TenTaiSan, GiaTri)
+INSERT INTO TaiSan (MaTS, TenTaiSan, LoaiTaiSan, GiaTri, MoTa, TrangThai)
 VALUES 
-('TS01', N'Máy Lạnh', 8000000),
-('TS02', N'Tủ lạnh', 5000000),
-('TS03', N'Giường tầng sắt 2 chỗ', 2500000),
-('TS04', N'Tủ quần áo cá nhân', 1500000),
-('TS05', N'Rèm cửa chống nắng', 800000),
-('TS06', N'Máy giặt', 4500000),
-('TS07', N'Máy nước nóng', 2500000),
-('TS08', N'Kệ để dép 4 tầng', 250000),
-('TS09', N'Nệm cao su non', 1200000),
-('TS10', N'Bàn học gỗ', 600000),
-('TS11', N'Ghế xoay', 450000),
-('TS12', N'Chìa khóa phòng', 50000),
-('TS13', N'Thẻ từ ra vào cổng', 100000);
+('TS01', N'Máy Lạnh', N'ThietBiDien', 8000000, NULL, N'DangApDung'),
+('TS02', N'Tủ lạnh', N'ThietBiDien', 5000000, NULL, N'DangApDung'),
+('TS03', N'Giường tầng sắt 2 chỗ', N'NoiThat', 2500000, NULL, N'DangApDung'),
+('TS04', N'Tủ quần áo cá nhân', N'NoiThat', 1500000, NULL, N'DangApDung'),
+('TS05', N'Rèm cửa chống nắng', N'NoiThat', 800000, NULL, N'DangApDung'),
+('TS06', N'Máy giặt', N'ThietBiDien', 4500000, NULL, N'DangApDung'),
+('TS07', N'Máy nước nóng', N'ThietBiDien', 2500000, NULL, N'DangApDung'),
+('TS08', N'Kệ để dép 4 tầng', N'NoiThat', 250000, NULL, N'DangApDung'),
+('TS09', N'Nệm cao su non', N'NoiThat', 1200000, NULL, N'DangApDung'),
+('TS10', N'Bàn học gỗ', N'NoiThat', 600000, NULL, N'DangApDung'),
+('TS11', N'Ghế xoay', N'NoiThat', 450000, NULL, N'DangApDung'),
+('TS12', N'Chìa khóa phòng', N'TienIchBanGiao', 50000, NULL, N'DangApDung'),
+('TS13', N'Thẻ từ ra vào cổng', N'TienIchBanGiao', 100000, NULL, N'DangApDung');
 GO
 
 -- 8. Phòng - Tài Sản

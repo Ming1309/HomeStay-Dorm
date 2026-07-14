@@ -379,17 +379,7 @@ export function AdminDepositPolicyPage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between border-t border-gray-200 pt-3">
-                          <span className="text-xs text-gray-500">
-                            <kbd className="rounded border bg-gray-50 px-1.5 py-0.5 text-[10px]">
-                              Ctrl
-                            </kbd>{" "}
-                            +{" "}
-                            <kbd className="rounded border bg-gray-50 px-1.5 py-0.5 text-[10px]">
-                              S
-                            </kbd>{" "}
-                            : Tạo phiên bản
-                          </span>
+                        <div className="flex items-center justify-end border-t border-gray-200 pt-3">
                           <div className="flex gap-2">
                             <Button
                               type="button"

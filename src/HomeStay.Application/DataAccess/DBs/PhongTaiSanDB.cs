@@ -10,7 +10,7 @@ public static class PhongTaiSanDB
     {
         const string sql = """
             SELECT pts.MaPhong, pts.MaTS, pts.SoLuongTieuChuan,
-                   ts.MaTS, ts.TenTaiSan, ts.GiaTri
+                   ts.MaTS, ts.TenTaiSan, ts.LoaiTaiSan, ts.GiaTri, ts.MoTa, ts.TrangThai
             FROM Phong_TaiSan pts
             INNER JOIN TaiSan ts ON pts.MaTS = ts.MaTS
             WHERE pts.MaPhong = @MaPhong
