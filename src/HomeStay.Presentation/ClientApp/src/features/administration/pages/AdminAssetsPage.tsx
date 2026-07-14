@@ -60,7 +60,7 @@ const assetSchema = z.object({
   compensationValue: z
     .string()
     .min(1, "Vui lòng nhập giá trị bồi thường")
-    .regex(/^\d+$/, "Giá trị bồi thường chỉ chứa chữ số"),
+    .regex(/^\d+$/, "Giá trị chỉ chứa chữ số"),
   description: z.string().max(500, "Mô tả không được vượt quá 500 ký tự").optional(),
   status: z.enum(["DangApDung", "NgungApDung"]),
 });
@@ -299,7 +299,7 @@ export function AdminAssetsPage() {
                     <TableHead>Mã TS</TableHead>
                     <TableHead>Tên tài sản</TableHead>
                     <TableHead>Phân loại</TableHead>
-                    <TableHead className="text-right">Giá trị bồi thường</TableHead>
+                    <TableHead className="text-right">Giá trị</TableHead>
                     <TableHead>Mô tả</TableHead>
                     <TableHead>Trạng thái</TableHead>
                     <TableHead className="text-right">Hành động</TableHead>
@@ -420,7 +420,7 @@ export function AdminAssetsPage() {
                 name="compensationValue"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Giá trị bồi thường *</FormLabel>
+                    <FormLabel>Giá trị *</FormLabel>
                     <FormControl>
                       <Input
                         inputMode="numeric"
