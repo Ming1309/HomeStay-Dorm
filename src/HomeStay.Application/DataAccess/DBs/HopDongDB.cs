@@ -23,7 +23,7 @@ public static class HopDongDB
     public static async Task<IReadOnlyList<dynamic>> TimKiemHopDongHieuLuc(string? tuKhoa)
     {
         const string sql = """
-            SELECT hd.MaHD, hd.TrangThai, kh.MaKH, kh.HoTen, kh.SDT
+            SELECT hd.MaHD AS maHD, hd.TrangThai AS trangThai, kh.MaKH AS maKH, kh.HoTen AS hoTen, kh.SDT AS sdt
             FROM HopDong hd
             JOIN PhieuCoc pc ON hd.MaPhieuCoc = pc.MaPhieuCoc
             JOIN KhachHang kh ON pc.MaKH = kh.MaKH

@@ -418,7 +418,7 @@ public static class PhieuCocDB
     public static async Task<IReadOnlyList<dynamic>> TimKiemPhieuDaDuyet(string? tuKhoa)
     {
         const string sql = """
-            SELECT pc.MaPhieuCoc, pc.TrangThai, kh.MaKH, kh.HoTen, kh.SDT
+            SELECT pc.MaPhieuCoc AS maPhieuCoc, pc.TrangThai AS trangThai, kh.MaKH AS maKH, kh.HoTen AS hoTen, kh.SDT AS sdt
             FROM PhieuCoc pc
             JOIN KhachHang kh ON pc.MaKH = kh.MaKH
             WHERE pc.TrangThai IN (N'DaThanhToan', N'DaDuyet')
