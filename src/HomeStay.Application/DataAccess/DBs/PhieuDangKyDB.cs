@@ -10,7 +10,7 @@ public static class PhieuDangKyDB
     public static async Task<IReadOnlyList<dynamic>> TimKiemPhieuDuDieuKien(string maCN, string? tuKhoa)
     {
         const string sql = """
-            SELECT pdk.MaPDK, pdk.TrangThai, kh.MaKH, kh.HoTen, kh.SDT
+            SELECT pdk.MaPDK AS maPDK, pdk.TrangThai AS trangThai, kh.MaKH AS maKH, kh.HoTen AS hoTen, kh.SDT AS sdt
             FROM PhieuDangKy pdk
             JOIN KhachHang kh ON pdk.MaKH = kh.MaKH
             WHERE pdk.TrangThai = N'DangXuLy' AND pdk.MaCN=@MaCN

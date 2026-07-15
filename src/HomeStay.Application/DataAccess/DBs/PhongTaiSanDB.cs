@@ -9,7 +9,7 @@ public static class PhongTaiSanDB
     public static async Task<IReadOnlyList<PhongTaiSan>> LayTaiSanTheoPhong(string maPhong)
     {
         const string sql = """
-            SELECT pts.MaPhong, pts.MaTS, pts.SoLuongTieuChuan,
+            SELECT pts.MaPhong, pts.SoLuongTieuChuan,
                    ts.MaTS, ts.TenTaiSan, ts.LoaiTaiSan, ts.GiaTri, ts.MoTa, ts.TrangThai
             FROM Phong_TaiSan pts
             INNER JOIN TaiSan ts ON pts.MaTS = ts.MaTS
@@ -19,6 +19,7 @@ public static class PhongTaiSanDB
             sql,
             (pts, ts) =>
             {
+                pts.MaTS = ts.MaTS;
                 pts.TaiSan = ts;
                 return pts;
             },
