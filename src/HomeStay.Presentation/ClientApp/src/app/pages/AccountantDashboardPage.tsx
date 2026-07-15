@@ -132,7 +132,7 @@ export function AccountantDashboardPage() {
         },
       ],
       recentTransactions: paymentLogs.slice(0, 5),
-    };
+    } as const;
   }, [
     compensationInvoices,
     contracts,
@@ -261,10 +261,10 @@ function TaskPanel({
   tasks,
 }: {
   title: string;
-  tasks: Array<{
+  tasks: ReadonlyArray<{
     text: string;
     meta: string;
-    to: (typeof quickActions)[number]["to"];
+    to: (typeof quickActions)[number]["to"] | "/accountant/compensation";
     tone: keyof typeof toneClass;
   }>;
 }) {

@@ -29,7 +29,7 @@ public sealed class PhieuCocController(
     {
         try
         {
-            return Ok((await traCuuPhieuCoc.TimKiem(maPhieuCoc, sdt, email, soGiayTo))
+            return Ok((await traCuuPhieuCoc.TimKiem(maPhieuCoc, sdt, email, soGiayTo, User.FindFirstValue("MaNV")))
                 .Select(TaoPhieuTraCuuResponse));
         }
         catch (ArgumentException ex) { return BadRequest(new { Message = ex.Message }); }
@@ -39,14 +39,14 @@ public sealed class PhieuCocController(
     [HttpGet("{id}/lookup")]
     public async Task<IActionResult> LayChiTietTraCuu(string id)
     {
-        try { return Ok(TaoChiTietTraCuuResponse(await traCuuPhieuCoc.LayChiTiet(id))); }
+        try { return Ok(TaoChiTietTraCuuResponse(await traCuuPhieuCoc.LayChiTiet(id, User.FindFirstValue("MaNV")))); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
     }
 
     [Authorize(Roles = "Sale")]
     [HttpGet("cancellable")]
     public async Task<IActionResult> LayDanhSachCoTheHuy([FromQuery] string? text = null) =>
-        Ok((await traCuuPhieuCoc.LayDanhSachCoTheHuy(text)).Select(TaoPhieuTraCuuResponse));
+        Ok((await traCuuPhieuCoc.LayDanhSachCoTheHuy(text, User.FindFirstValue("MaNV"))).Select(TaoPhieuTraCuuResponse));
 
     [Authorize(Roles = "Sale")]
     [HttpPost("{id}/cancel")]
@@ -64,18 +64,18 @@ public sealed class PhieuCocController(
     [Authorize(Roles = "KeToan")]
     [HttpGet("cancelled-awaiting-reconciliation")]
     public async Task<IActionResult> LayDanhSachDaHuyChoDoiSoat() =>
-        Ok((await traCuuPhieuCoc.LayDanhSachDaHuyChoDoiSoat()).Select(TaoPhieuTraCuuResponse));
+        Ok((await traCuuPhieuCoc.LayDanhSachDaHuyChoDoiSoat(User.FindFirstValue("MaNV"))).Select(TaoPhieuTraCuuResponse));
 
     [Authorize(Roles = "QuanLy")]
     [HttpGet("cho-doi-chieu")]
     public async Task<IActionResult> LayDanhSachChoDoiChieu([FromQuery] string? text = null) =>
-        Ok((await xacNhanKhoanTienCoc.LayDanhSachChoDoiChieu(text)).Select(TaoPhieuChoDoiChieuResponse));
+        Ok((await xacNhanKhoanTienCoc.LayDanhSachChoDoiChieu(text, User.FindFirstValue("MaNV"))).Select(TaoPhieuChoDoiChieuResponse));
 
     [Authorize(Roles = "QuanLy")]
     [HttpGet("{id}/xac-nhan-tien-coc")]
     public async Task<IActionResult> LayChiTietXacNhanTienCoc(string id)
     {
-        try { return Ok(TaoChiTietXacNhanResponse(await xacNhanKhoanTienCoc.LayChiTiet(id))); }
+        try { return Ok(TaoChiTietXacNhanResponse(await xacNhanKhoanTienCoc.LayChiTiet(id, User.FindFirstValue("MaNV")))); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
     }
@@ -103,7 +103,7 @@ public sealed class PhieuCocController(
     [HttpPost("{id}/yeu-cau-bo-sung")]
     public async Task<IActionResult> YeuCauBoSung(string id, [FromBody] YeuCauBoSungChungTuHttpRequest request)
     {
-        try { return Ok(TaoChiTietXacNhanResponse(await xacNhanKhoanTienCoc.YeuCauBoSung(id, request.LyDo))); }
+        try { return Ok(TaoChiTietXacNhanResponse(await xacNhanKhoanTienCoc.YeuCauBoSung(id, request.LyDo, User.FindFirstValue("MaNV")))); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
         catch (ArgumentException ex) { return BadRequest(new { Message = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
@@ -184,13 +184,13 @@ public sealed class PhieuCocController(
     [Authorize(Roles = "Sale")]
     [HttpGet("cho-thanh-toan")]
     public async Task<IActionResult> LayDanhSachChoThanhToan([FromQuery] string? text = null) =>
-        Ok((await ghiNhanThanhToanCoc.LayDanhSachChoThanhToan(text)).Select(TaoPhieuChoThanhToanResponse));
+        Ok((await ghiNhanThanhToanCoc.LayDanhSachChoThanhToan(text, User.FindFirstValue("MaNV"))).Select(TaoPhieuChoThanhToanResponse));
 
     [Authorize(Roles = "Sale")]
     [HttpGet("{id}/ghi-nhan-thanh-toan")]
     public async Task<IActionResult> LayChiTietGhiNhanThanhToan(string id)
     {
-        try { return Ok(TaoChiTietGhiNhanResponse(await ghiNhanThanhToanCoc.LayChiTiet(id))); }
+        try { return Ok(TaoChiTietGhiNhanResponse(await ghiNhanThanhToanCoc.LayChiTiet(id, User.FindFirstValue("MaNV")))); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
     }
@@ -213,6 +213,7 @@ public sealed class PhieuCocController(
                 id,
                 request.PhuongThucThanhToan,
                 new TepChungTuCoc(request.ChungTu.FileName, request.ChungTu.Length, noiDung),
+                User.FindFirstValue("MaNV"),
                 cancellationToken);
             return Ok(TaoChiTietGhiNhanResponse(phieu));
         }
@@ -226,6 +227,8 @@ public sealed class PhieuCocController(
     [HttpGet("chung-tu/{tenTep}")]
     public async Task<IActionResult> DocChungTu(string tenTep, CancellationToken cancellationToken)
     {
+        if (!await traCuuPhieuCoc.DuocDocChungTu(tenTep, User.FindFirstValue("MaNV")))
+            return NotFound(new { Message = "Không tìm thấy chứng từ thanh toán." });
         var noiDung = await chungTuStorage.Doc(tenTep, cancellationToken);
         return noiDung is null
             ? NotFound(new { Message = "Không tìm thấy chứng từ thanh toán." })
@@ -235,13 +238,13 @@ public sealed class PhieuCocController(
     [Authorize(Roles = "KeToan")]
     [HttpGet("initial")]
     public async Task<IActionResult> LayDanhSachKhoiTao([FromQuery] string? text = null) =>
-        Ok((await tinhTienCoc.LayDanhSachKhoiTao(text)).Select(TaoDanhSachResponse));
+        Ok((await tinhTienCoc.LayDanhSachKhoiTao(text, User.FindFirstValue("MaNV"))).Select(TaoDanhSachResponse));
 
     [Authorize(Roles = "KeToan")]
     [HttpGet("{id}")]
     public async Task<IActionResult> LayChiTietTinhTien(string id)
     {
-        try { return Ok(TaoChiTietResponse(await tinhTienCoc.LayChiTietVaTinhTien(id))); }
+        try { return Ok(TaoChiTietResponse(await tinhTienCoc.LayChiTietVaTinhTien(id, User.FindFirstValue("MaNV")))); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
     }
@@ -250,7 +253,7 @@ public sealed class PhieuCocController(
     [HttpPost("{id}/xac-nhan-tinh-tien")]
     public async Task<IActionResult> XacNhanTinhTien(string id)
     {
-        try { return Ok(TaoChiTietResponse(await tinhTienCoc.XacNhanTinhTien(id))); }
+        try { return Ok(TaoChiTietResponse(await tinhTienCoc.XacNhanTinhTien(id, User.FindFirstValue("MaNV")))); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
     }

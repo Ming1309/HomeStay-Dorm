@@ -14,26 +14,28 @@ public sealed class TaoLichHen
         _timeProvider = timeProvider;
     }
 
-    public async Task<IReadOnlyList<dynamic>> TaiDanhSachChungTu(string loaiLichHen, string? tuKhoa)
+    public async Task<IReadOnlyList<dynamic>> TaiDanhSachChungTu(string loaiLichHen, string? tuKhoa, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
         return loaiLichHen switch
         {
-            "XemPhong" => await PhieuDangKyDB.TimKiemPhieuDuDieuKien(tuKhoa),
-            "NhanPhong" => await PhieuCocDB.TimKiemPhieuDaDuyet(tuKhoa),
-            "TraPhong" => await HopDongDB.TimKiemHopDongHieuLuc(tuKhoa),
+            "XemPhong" => await PhieuDangKyDB.TimKiemPhieuDuDieuKien(nhanVien.MaCN, tuKhoa),
+            "NhanPhong" => await PhieuCocDB.TimKiemPhieuDaDuyet(nhanVien.MaCN, tuKhoa),
+            "TraPhong" => await HopDongDB.TimKiemHopDongHieuLuc(nhanVien.MaCN, tuKhoa),
             _ => throw new ArgumentException("Loại lịch hẹn không hợp lệ.")
         };
     }
 
-    public async Task<LichHen> LuuLichHen(string loai, string maChungTu, string maCN, DateTime ngayHen, TimeSpan gioHen, string maNV)
+    public async Task<LichHen> LuuLichHen(string loai, string maChungTu, DateTime ngayHen, TimeSpan gioHen, string maNV)
     {
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
         try
         {
             var thoiDiem = _timeProvider.GetLocalNow().DateTime;
-            var lichHen = LichHen.TaoMoi(loai, maChungTu, maCN, ngayHen, gioHen, maNV, thoiDiem);
+            var nhanVien = await NhanVien.DocPhamVi(maNV);
+            var lichHen = LichHen.TaoMoi(loai, maChungTu, nhanVien.MaCN, ngayHen, gioHen, maNV, thoiDiem);
 
             lichHen.KiemTraThoiGianHopLe(thoiDiem);
             await lichHen.KiemTraHopLe();

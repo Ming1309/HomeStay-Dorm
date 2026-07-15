@@ -8,17 +8,19 @@ public sealed class GhiNhanThanhToanCoc(
     IChungTuCocStorage chungTuStorage,
     TimeProvider timeProvider)
 {
-    public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(string? text = null)
+    public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(string? text, string? maNV)
     {
         using var phien = taoPhienDuLieu();
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
         return await PhieuCoc.LayDanhSachChoThanhToan(
-            timeProvider.GetLocalNow().DateTime, text);
+            nhanVien.MaCN, timeProvider.GetLocalNow().DateTime, text);
     }
 
-    public async Task<PhieuCoc> LayChiTiet(string maPhieuCoc)
+    public async Task<PhieuCoc> LayChiTiet(string maPhieuCoc, string? maNV)
     {
         using var phien = taoPhienDuLieu();
-        var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc, nhanVien.MaCN)
             ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
         phieu.KiemTraTrangThaiChoGhiNhan();
         phieu.KiemTraConHanThanhToan(timeProvider.GetLocalNow().DateTime);
@@ -29,6 +31,7 @@ public sealed class GhiNhanThanhToanCoc(
         string maPhieuCoc,
         string phuongThucThanhToan,
         TepChungTuCoc tepChungTu,
+        string? maNV,
         CancellationToken cancellationToken = default)
     {
         using var phien = taoPhienDuLieu();
@@ -38,7 +41,8 @@ public sealed class GhiNhanThanhToanCoc(
         PhieuCoc? phieuDaCapNhat = null;
         try
         {
-            var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
+            var nhanVien = await NhanVien.DocPhamVi(maNV);
+            var phieu = await PhieuCoc.DocChiTietChoCapNhat(maPhieuCoc, nhanVien.MaCN)
                 ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
             phieu.KiemTraCoTheGhiNhanThanhToan(
                 phuongThucThanhToan, timeProvider.GetLocalNow().DateTime);

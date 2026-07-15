@@ -6,6 +6,7 @@ using HomeStay.Application.DataAccess.DBs;
 
 public sealed class PhieuThu
 {
+    public static Task<bool> ThamChieuChungTu(string tenTep) => PhieuThuDB.ThamChieuChungTu(tenTep);
     public string MaPT { get; set; } = string.Empty;
     public decimal SoTienThu { get; set; }
     public DateTime ThoiGian { get; set; }

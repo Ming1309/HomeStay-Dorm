@@ -13,22 +13,25 @@ public sealed class LapPhieuCoc
         _timeProvider = timeProvider;
     }
 
-    public async Task<IReadOnlyList<LichHen>> LayDanhSachKhachChoCoc()
+    public async Task<IReadOnlyList<LichHen>> LayDanhSachKhachChoCoc(string? maNV)
     {
         using var phien = _taoPhienDuLieu();
-        return await LichHen.LayDanhSachKhachChoCoc();
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        return await LichHen.LayDanhSachKhachChoCoc(nhanVien.MaCN);
     }
 
-    public async Task<IReadOnlyList<LichHen>> TimKiemKhachChoCoc(string text)
+    public async Task<IReadOnlyList<LichHen>> TimKiemKhachChoCoc(string text, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
-        return await LichHen.LayDanhSachKhachChoCoc(text);
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        return await LichHen.LayDanhSachKhachChoCoc(nhanVien.MaCN, text);
     }
 
-    public async Task<LichHen?> LayChiTietLichHen(string maLichHen)
+    public async Task<LichHen?> LayChiTietLichHen(string maLichHen, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
-        return await LichHen.DocChiTiet(maLichHen);
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        return await LichHen.DocChiTiet(maLichHen, nhanVien.MaCN);
     }
 
     public async Task<IReadOnlyList<Phong>> LayPhongOGhep(int soLuong, string? toaNha, string? loaiPhong,
@@ -52,7 +55,8 @@ public sealed class LapPhieuCoc
         phien.BatDauGiaoDich();
         try
         {
-            var lichHen = await LichHen.DocChiTiet(maLichHen)
+            var nhanVien = await NhanVien.DocPhamVi(maNhanVien);
+            var lichHen = await LichHen.DocChiTiet(maLichHen, nhanVien.MaCN, khoaCapNhat: true)
                 ?? throw new InvalidOperationException("Không tìm thấy lịch hẹn.");
             lichHen.KiemTraCoTheLapPhieuCoc();
 
@@ -62,6 +66,7 @@ public sealed class LapPhieuCoc
 
             var phong = await Phong.DocChiTiet(maPhong)
                 ?? throw new InvalidOperationException("Không tìm thấy phòng.");
+            nhanVien.KiemTraCungChiNhanh(phong.MaCN);
             var giuongs = hinhThucThue == "NguyenCan"
                 ? phong.GiuNguyenPhong()
                 : phong.GiuGiuong(danhSachGiuong);

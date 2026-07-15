@@ -8,6 +8,12 @@ using HomeStay.Application.DataAccess.DbConnections;
 
 public static class PhieuThuDB
 {
+    public static async Task<bool> ThamChieuChungTu(string tenTep)
+    {
+        const string sql = "SELECT COUNT(1) FROM PhieuThu WHERE AnhMinhChung=@TenTep OR AnhMinhChung LIKE '%/' + @TenTep";
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(sql,
+            new { TenTep = tenTep }, PhienDuLieu.Session.Transaction) > 0;
+    }
     // ==========================================================
     // Methods from feat/thanh-toan-tra-phong branch
     // ==========================================================

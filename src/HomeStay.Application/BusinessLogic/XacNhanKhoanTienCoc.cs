@@ -9,16 +9,18 @@ public sealed class XacNhanKhoanTienCoc(
     TimeProvider timeProvider,
     CauHinhHetHanPhieuCoc cauHinhHetHan)
 {
-    public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string? text = null)
+    public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string? text, string? maNV)
     {
         using var phien = taoPhienDuLieu();
-        return await PhieuCoc.LayDanhSachChoDoiChieu(text);
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        return await PhieuCoc.LayDanhSachChoDoiChieu(nhanVien.MaCN, text);
     }
 
-    public async Task<PhieuCoc> LayChiTiet(string maPhieuCoc)
+    public async Task<PhieuCoc> LayChiTiet(string maPhieuCoc, string? maNV)
     {
         using var phien = taoPhienDuLieu();
-        var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc, nhanVien.MaCN)
             ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
         phieu.KiemTraCoTheXacNhanThanhToan();
         return phieu;
@@ -30,7 +32,8 @@ public sealed class XacNhanKhoanTienCoc(
         phien.BatDauGiaoDich();
         try
         {
-            var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
+            var nhanVien = await NhanVien.DocPhamVi(maNhanVienQuanLy);
+            var phieu = await PhieuCoc.DocChiTietChoCapNhat(maPhieuCoc, nhanVien.MaCN)
                 ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
             phieu.KiemTraCoTheXacNhanThanhToan();
 
@@ -55,13 +58,14 @@ public sealed class XacNhanKhoanTienCoc(
         }
     }
 
-    public async Task<PhieuCoc> YeuCauBoSung(string maPhieuCoc, string lyDo)
+    public async Task<PhieuCoc> YeuCauBoSung(string maPhieuCoc, string lyDo, string? maNV)
     {
         using var phien = taoPhienDuLieu();
         phien.BatDauGiaoDich();
         try
         {
-            var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
+            var nhanVien = await NhanVien.DocPhamVi(maNV);
+            var phieu = await PhieuCoc.DocChiTietChoCapNhat(maPhieuCoc, nhanVien.MaCN)
                 ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
             phieu.YeuCauBoSung(
                 lyDo,

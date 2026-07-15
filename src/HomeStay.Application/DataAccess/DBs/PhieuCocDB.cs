@@ -6,8 +6,18 @@ using HomeStay.Application.DataAccess.DbConnections;
 
 public static class PhieuCocDB
 {
+    public static async Task<bool> ThamChieuChungTu(string maCN, string tenTep)
+    {
+        const string sql = """
+            SELECT COUNT(1) FROM PhieuCoc
+            WHERE MaCN=@MaCN AND AnhMinhChung IS NOT NULL
+              AND (AnhMinhChung=@TenTep OR AnhMinhChung LIKE '%/' + @TenTep)
+            """;
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(sql,
+            new { MaCN = maCN, TenTep = tenTep }, PhienDuLieu.Session.Transaction) > 0;
+    }
     public static async Task<IReadOnlyList<PhieuCoc>> TraCuu(
-        string? maPhieuCoc, string? sdt, string? email, string? soGiayTo)
+        string maCN, string? maPhieuCoc, string? sdt, string? email, string? soGiayTo)
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
@@ -18,7 +28,8 @@ public static class PhieuCocDB
             INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
             INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
             LEFT JOIN PhieuThu pt ON pt.MaPhieuCoc=pc.MaPhieuCoc
-            WHERE (@MaPhieuCoc IS NULL OR pc.MaPhieuCoc LIKE '%' + @MaPhieuCoc + '%')
+            WHERE pc.MaCN=@MaCN
+              AND (@MaPhieuCoc IS NULL OR pc.MaPhieuCoc LIKE '%' + @MaPhieuCoc + '%')
               AND (@SDT IS NULL OR kh.SDT LIKE '%' + @SDT + '%')
               AND (@Email IS NULL OR kh.Email LIKE '%' + @Email + '%')
               AND (@SoGiayTo IS NULL OR kh.SoGiayTo LIKE '%' + @SoGiayTo + '%')
@@ -26,13 +37,13 @@ public static class PhieuCocDB
             """;
         var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql, new
         {
-            MaPhieuCoc = ChuanHoa(maPhieuCoc), SDT = ChuanHoa(sdt),
+            MaCN = maCN, MaPhieuCoc = ChuanHoa(maPhieuCoc), SDT = ChuanHoa(sdt),
             Email = ChuanHoa(email), SoGiayTo = ChuanHoa(soGiayTo),
         }, PhienDuLieu.Session.Transaction);
         return rows.Select(TaoPhieuCocDanhSach).ToList();
     }
 
-    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachCoTheHuy(string? text = null)
+    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachCoTheHuy(string maCN, string? text = null)
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
@@ -43,7 +54,7 @@ public static class PhieuCocDB
             INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
             INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
             LEFT JOIN PhieuThu pt ON pt.MaPhieuCoc=pc.MaPhieuCoc
-            WHERE pc.TrangThai<>N'DaHuy'
+            WHERE pc.MaCN=@MaCN AND pc.TrangThai<>N'DaHuy'
               AND NOT EXISTS (SELECT 1 FROM HopDong hd WHERE hd.MaPhieuCoc=pc.MaPhieuCoc)
               AND (@Text IS NULL OR pc.MaPhieuCoc LIKE '%' + @Text + '%'
                    OR kh.HoTen LIKE '%' + @Text + '%' OR kh.SDT LIKE '%' + @Text + '%'
@@ -51,11 +62,11 @@ public static class PhieuCocDB
             ORDER BY pc.ThoiDiemCoc DESC,pc.MaPhieuCoc
             """;
         var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql,
-            new { Text = ChuanHoa(text) }, PhienDuLieu.Session.Transaction);
+            new { MaCN = maCN, Text = ChuanHoa(text) }, PhienDuLieu.Session.Transaction);
         return rows.Select(TaoPhieuCocDanhSach).ToList();
     }
 
-    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoat()
+    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoat(string maCN)
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,
@@ -67,7 +78,7 @@ public static class PhieuCocDB
             INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
             INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
             INNER JOIN PhieuThu pt ON pt.MaPhieuCoc=pc.MaPhieuCoc
-            WHERE pc.TrangThai=N'DaHuy'
+            WHERE pc.MaCN=@MaCN AND pc.TrangThai=N'DaHuy'
               AND pc.ThoiDiemHuy IS NOT NULL
               AND pt.SoTienThu>0
               AND pt.SoTienThu=pc.TongTien
@@ -76,11 +87,33 @@ public static class PhieuCocDB
             ORDER BY pc.ThoiDiemHuy,pc.MaPhieuCoc
             """;
         var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql,
-            transaction: PhienDuLieu.Session.Transaction);
+            new { MaCN = maCN }, PhienDuLieu.Session.Transaction);
         return rows.Select(TaoPhieuCocDanhSach).ToList();
     }
 
-    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null)
+    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoatHeThong()
+    {
+        const string sql = """
+            SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,
+                   pt.SoTienThu AS TongTien,pc.ThoiDiemCoc,pc.ThoiDiemHuy,pc.MaNVHuy,
+                   pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,pc.MaCN,CAST(1 AS bit) AS DaDongTien,
+                   kh.HoTen AS TenKhachHang,kh.SDT,kh.Email,kh.SoGiayTo,p.SoPhong,p.ToaNha
+            FROM PhieuCoc pc
+            INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
+            INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
+            INNER JOIN PhieuThu pt ON pt.MaPhieuCoc=pc.MaPhieuCoc
+            WHERE pc.TrangThai=N'DaHuy' AND pc.ThoiDiemHuy IS NOT NULL
+              AND pt.SoTienThu>0 AND pt.SoTienThu=pc.TongTien
+              AND NOT EXISTS (SELECT 1 FROM HopDong hd WHERE hd.MaPhieuCoc=pc.MaPhieuCoc)
+              AND NOT EXISTS (SELECT 1 FROM PhieuDoiSoat pds WHERE pds.MaPhieuCoc=pc.MaPhieuCoc)
+            ORDER BY pc.ThoiDiemHuy,pc.MaPhieuCoc
+            """;
+        var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(
+            sql, transaction: PhienDuLieu.Session.Transaction);
+        return rows.Select(TaoPhieuCocDanhSach).ToList();
+    }
+
+    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string maCN, string? text = null)
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
@@ -89,13 +122,13 @@ public static class PhieuCocDB
             FROM PhieuCoc pc
             INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
             INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
-            WHERE pc.TrangThai=N'KhoiTao'
+            WHERE pc.MaCN=@MaCN AND pc.TrangThai=N'KhoiTao'
               AND (@Text IS NULL OR pc.MaPhieuCoc LIKE '%' + @Text + '%'
                    OR kh.HoTen LIKE '%' + @Text + '%' OR p.SoPhong LIKE '%' + @Text + '%')
             ORDER BY pc.ThoiDiemCoc, pc.MaPhieuCoc
             """;
         var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql,
-            new { Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim() },
+            new { MaCN = maCN, Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim() },
             PhienDuLieu.Session.Transaction);
         return rows.Select(x => new PhieuCoc
         {
@@ -118,7 +151,7 @@ public static class PhieuCocDB
     }
 
     public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(
-        DateTime thoiDiemHienTai, string? text = null)
+        string maCN, DateTime thoiDiemHienTai, string? text = null)
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
@@ -127,7 +160,7 @@ public static class PhieuCocDB
             FROM PhieuCoc pc
             INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
             INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
-            WHERE pc.TrangThai=N'ChoThanhToan'
+            WHERE pc.MaCN=@MaCN AND pc.TrangThai=N'ChoThanhToan'
               AND pc.HanThanhToan>@ThoiDiemHienTai
               AND (@Text IS NULL OR pc.MaPhieuCoc LIKE '%' + @Text + '%'
                    OR kh.HoTen LIKE '%' + @Text + '%' OR p.SoPhong LIKE '%' + @Text + '%')
@@ -136,7 +169,7 @@ public static class PhieuCocDB
         var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql,
             new
             {
-                ThoiDiemHienTai = thoiDiemHienTai,
+                MaCN = maCN, ThoiDiemHienTai = thoiDiemHienTai,
                 Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim(),
             },
             PhienDuLieu.Session.Transaction);
@@ -162,7 +195,7 @@ public static class PhieuCocDB
         return rows.ToList();
     }
 
-    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string? text = null)
+    public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string maCN, string? text = null)
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
@@ -171,29 +204,32 @@ public static class PhieuCocDB
             FROM PhieuCoc pc
             INNER JOIN KhachHang kh ON kh.MaKH=pc.MaKH
             INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
-            WHERE pc.TrangThai=N'ChoDoiChieu'
+            WHERE pc.MaCN=@MaCN AND pc.TrangThai=N'ChoDoiChieu'
               AND (@Text IS NULL OR pc.MaPhieuCoc LIKE '%' + @Text + '%'
                    OR kh.HoTen LIKE '%' + @Text + '%' OR p.SoPhong LIKE '%' + @Text + '%')
             ORDER BY pc.HanThanhToan, pc.MaPhieuCoc
             """;
         var rows = await PhienDuLieu.Session.Connection.QueryAsync<PhieuCocListRow>(sql,
-            new { Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim() },
+            new { MaCN = maCN, Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim() },
             PhienDuLieu.Session.Transaction);
         return rows.Select(TaoPhieuCocDanhSach).ToList();
     }
 
-    public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) =>
-        DocChiTietNoiBo(maPhieuCoc, khoaCapNhat: false);
+    public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc, string maCN) =>
+        DocChiTietNoiBo(maPhieuCoc, maCN, khoaCapNhat: false);
 
-    public static Task<PhieuCoc?> DocChiTietChoCapNhat(string maPhieuCoc) =>
-        DocChiTietNoiBo(maPhieuCoc, khoaCapNhat: true);
+    public static Task<PhieuCoc?> DocChiTietChoCapNhat(string maPhieuCoc, string maCN) =>
+        DocChiTietNoiBo(maPhieuCoc, maCN, khoaCapNhat: true);
 
-    private static async Task<PhieuCoc?> DocChiTietNoiBo(string maPhieuCoc, bool khoaCapNhat)
+    public static Task<PhieuCoc?> DocChiTietHeThong(string maPhieuCoc, bool khoaCapNhat = false) =>
+        DocChiTietNoiBo(maPhieuCoc, null, khoaCapNhat);
+
+    private static async Task<PhieuCoc?> DocChiTietNoiBo(string maPhieuCoc, string? maCN, bool khoaCapNhat)
     {
         var goiYKhoa = khoaCapNhat ? " WITH (UPDLOCK, HOLDLOCK)" : string.Empty;
         var sql = $"""
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
-                   pc.ThoiDiemCoc,pc.ThoiDiemHuy,pc.MaNVHuy,pc.AnhMinhChung,pc.PhuongThucThanhToan,pc.LyDoYeuCauBoSung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   pc.ThoiDiemCoc,pc.ThoiDiemHuy,pc.MaNVHuy,pc.AnhMinhChung,pc.PhuongThucThanhToan,pc.LyDoYeuCauBoSung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,pc.MaCN,
                    CASE WHEN pt.MaPT IS NULL THEN CAST(0 AS bit) ELSE CAST(1 AS bit) END AS DaDongTien,
                    kh.HoTen AS TenKhachHang, kh.SDT, kh.Email,
                    kh.GioiTinh, kh.NgaySinh, kh.QuocTich, kh.LoaiGiayTo, kh.SoGiayTo, kh.DiaChiThuongTru,
@@ -204,10 +240,10 @@ public static class PhieuCocDB
             INNER JOIN Phong p ON p.MaPhong=pc.MaPhong
             INNER JOIN LoaiPhong lp ON lp.MaLP=p.MaLP
             LEFT JOIN PhieuThu pt ON pt.MaPhieuCoc=pc.MaPhieuCoc
-            WHERE pc.MaPhieuCoc=@MaPhieuCoc
+            WHERE pc.MaPhieuCoc=@MaPhieuCoc AND (@MaCN IS NULL OR pc.MaCN=@MaCN)
             """;
         var row = await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<PhieuCocDetailRow>(sql,
-            new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction);
+            new { MaPhieuCoc = maPhieuCoc, MaCN = maCN }, PhienDuLieu.Session.Transaction);
         if (row is null) return null;
 
         const string bedSql = """
@@ -234,6 +270,7 @@ public static class PhieuCocDB
             MaKH = row.MaKH,
             MaPhong = row.MaPhong,
             MaNV = row.MaNV,
+            MaCN = row.MaCN,
             ThoiDiemHuy = row.ThoiDiemHuy,
             MaNVHuy = row.MaNVHuy,
             DaDongTien = row.DaDongTien,
@@ -349,8 +386,8 @@ public static class PhieuCocDB
     public static async Task Them(PhieuCoc phieu)
     {
         const string insertDeposit = """
-            INSERT INTO PhieuCoc (MaPhieuCoc,HanThanhToan,HinhThucThue,SoGiuongThue,TongTien,ThoiDiemCoc,AnhMinhChung,PhuongThucThanhToan,LyDoYeuCauBoSung,TrangThai,MaKH,MaPhong,MaNV)
-            VALUES (@MaPhieuCoc,@HanThanhToan,@HinhThucThue,@SoGiuongThue,@TongTien,@ThoiDiemCoc,@AnhMinhChung,@PhuongThucThanhToan,@LyDoYeuCauBoSung,@TrangThai,@MaKH,@MaPhong,@MaNV)
+            INSERT INTO PhieuCoc (MaPhieuCoc,HanThanhToan,HinhThucThue,SoGiuongThue,TongTien,ThoiDiemCoc,AnhMinhChung,PhuongThucThanhToan,LyDoYeuCauBoSung,TrangThai,MaKH,MaPhong,MaNV,MaCN)
+            VALUES (@MaPhieuCoc,@HanThanhToan,@HinhThucThue,@SoGiuongThue,@TongTien,@ThoiDiemCoc,@AnhMinhChung,@PhuongThucThanhToan,@LyDoYeuCauBoSung,@TrangThai,@MaKH,@MaPhong,@MaNV,@MaCN)
             """;
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(insertDeposit, phieu, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể tạo phiếu cọc.");
@@ -415,26 +452,26 @@ public static class PhieuCocDB
             throw new InvalidOperationException("Phiếu cọc đã được xử lý bởi người khác hoặc không còn ở trạng thái thanh toán.");
     }
 
-    public static async Task<IReadOnlyList<dynamic>> TimKiemPhieuDaDuyet(string? tuKhoa)
+    public static async Task<IReadOnlyList<dynamic>> TimKiemPhieuDaDuyet(string maCN, string? tuKhoa)
     {
         const string sql = """
             SELECT pc.MaPhieuCoc, pc.TrangThai, kh.MaKH, kh.HoTen, kh.SDT
             FROM PhieuCoc pc
             JOIN KhachHang kh ON pc.MaKH = kh.MaKH
-            WHERE pc.TrangThai IN (N'DaThanhToan', N'DaDuyet')
+            WHERE pc.MaCN=@MaCN AND pc.TrangThai IN (N'DaThanhToan', N'DaDuyet')
               AND (@TuKhoa IS NULL OR pc.MaPhieuCoc LIKE '%' + @TuKhoa + '%' OR kh.HoTen LIKE '%' + @TuKhoa + '%' OR kh.SDT LIKE '%' + @TuKhoa + '%')
             ORDER BY pc.ThoiDiemCoc DESC
             """;
         var rows = await PhienDuLieu.Session.Connection.QueryAsync(
-            sql, new { TuKhoa = string.IsNullOrWhiteSpace(tuKhoa) ? null : tuKhoa.Trim() }, PhienDuLieu.Session.Transaction);
+            sql, new { MaCN = maCN, TuKhoa = string.IsNullOrWhiteSpace(tuKhoa) ? null : tuKhoa.Trim() }, PhienDuLieu.Session.Transaction);
         return rows.ToList();
     }
 
-    public static async Task<bool> KiemTraConHopLe(string maPhieuCoc)
+    public static async Task<bool> KiemTraConHopLe(string maPhieuCoc, string maCN)
     {
-        const string sql = "SELECT COUNT(1) FROM PhieuCoc WHERE MaPhieuCoc = @MaPhieuCoc AND TrangThai IN (N'DaThanhToan', N'DaDuyet')";
+        const string sql = "SELECT COUNT(1) FROM PhieuCoc WHERE MaPhieuCoc=@MaPhieuCoc AND MaCN=@MaCN AND TrangThai IN (N'DaThanhToan',N'DaDuyet')";
         return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(
-            sql, new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction) > 0;
+            sql, new { MaPhieuCoc = maPhieuCoc, MaCN = maCN }, PhienDuLieu.Session.Transaction) > 0;
     }
 
     public static async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDuyet(string? text = null)
@@ -568,6 +605,7 @@ public static class PhieuCocDB
         public string MaKH { get; set; } = string.Empty;
         public string MaPhong { get; set; } = string.Empty;
         public string? MaNV { get; set; }
+        public string MaCN { get; set; } = string.Empty;
         public DateTime? ThoiDiemHuy { get; set; }
         public string? MaNVHuy { get; set; }
         public bool DaDongTien { get; set; }
@@ -617,6 +655,7 @@ public static class PhieuCocDB
     private static PhieuCoc TaoPhieuCocDanhSach(PhieuCocListRow x) => new()
     {
         MaPhieuCoc = x.MaPhieuCoc,
+        MaCN = x.MaCN,
         HanThanhToan = x.HanThanhToan,
         HinhThucThue = x.HinhThucThue,
         SoGiuongThue = x.SoGiuongThue,

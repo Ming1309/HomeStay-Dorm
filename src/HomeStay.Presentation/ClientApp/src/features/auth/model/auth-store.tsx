@@ -8,6 +8,8 @@ export type CurrentUser = {
   hoTen?: string;
   maNV: string;
   vaiTro: string;
+  maCN: string;
+  tenChiNhanh?: string;
   role: UserRole;
 };
 

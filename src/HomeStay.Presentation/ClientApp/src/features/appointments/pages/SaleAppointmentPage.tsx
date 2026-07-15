@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarDays, Search } from "lucide-react";
+import { CalendarDays, Lock, Search } from "lucide-react";
 import * as z from "zod";
 
 import { Badge } from "@/shared/ui/badge";
@@ -25,9 +25,9 @@ import {
   type AppointmentDocument,
   type AppointmentRecord,
   AppointmentType,
-  type BranchOption,
   appointmentService,
 } from "@/features/appointments/services/appointment-service";
+import { useAuth } from "@/features/auth/model/auth-store";
 
 const appointmentSchema = z.object({
   branch: z.string().min(1, "Chi nhánh hẹn là bắt buộc"),
@@ -56,32 +56,29 @@ function getStatusBadgeClass(status: string) {
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
 export function SaleAppointmentPage() {
+  const { user } = useAuth();
   const [appointmentType, setAppointmentType] = useState<AppointmentType>("view-room");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("Đã xác nhận");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
   const [documentList, setDocumentList] = useState<AppointmentDocument[]>([]);
-  const [branchOptions, setBranchOptions] = useState<BranchOption[]>([]);
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
 
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: {
-      branch: "",
+      branch: user?.maCN ?? "",
       date: "",
       time: "",
     },
   });
-
-  const branch = watch("branch");
 
   useEffect(() => {
     setSelectedId(null);
@@ -92,15 +89,8 @@ export function SaleAppointmentPage() {
     appointmentService.list().then(setAppointments).catch((error) => {
       toast.error(error instanceof Error ? error.message : "Không thể tải lịch hẹn.");
     });
-    appointmentService.getBranches().then(branches => {
-      setBranchOptions(branches);
-      if (branches.length > 0) {
-        setValue("branch", branches[0].value);
-      }
-    }).catch((error) => {
-      toast.error(error instanceof Error ? error.message : "Không thể tải chi nhánh.");
-    });
-  }, [setValue]);
+    if (user?.maCN) setValue("branch", user.maCN);
+  }, [setValue, user?.maCN]);
 
   useEffect(() => {
     let isMounted = true;
@@ -144,13 +134,12 @@ export function SaleAppointmentPage() {
       const record = await appointmentService.create({
         loaiLichHen: appointmentType === 'checkin' ? 'NhanPhong' : appointmentType === 'checkout' ? 'TraPhong' : 'XemPhong',
         maChungTu: selectedReference.id,
-        maCN: formData.branch,
         ngayHen: formData.date,
         gioHen: formData.time + ':00'
       });
       setAppointments((prev) => [record, ...prev]);
       toast.success("Tạo lịch hẹn thành công");
-      reset({ branch: branchOptions[0]?.value ?? "", date: "", time: "" });
+      reset({ branch: user?.maCN ?? "", date: "", time: "" });
       } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Lỗi tạo lịch hẹn');
     }
@@ -311,18 +300,15 @@ export function SaleAppointmentPage() {
                       <Label htmlFor="branch" className="text-sm font-medium">
                         Chi nhánh hẹn <span className="text-red-500">*</span>
                       </Label>
-                      <Select value={branch} onValueChange={(value) => setValue("branch", value)}>
-                        <SelectTrigger id="branch" className="h-10 text-sm">
-                          <SelectValue placeholder="Chọn chi nhánh" />
-                        </SelectTrigger>
-                          <SelectContent>
-                            {branchOptions.map((branchOption) => (
-                              <SelectItem key={branchOption.value} value={branchOption.value}>
-                                {branchOption.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                      </Select>
+                      <div className="relative">
+                        <Input
+                          id="branch"
+                          value={user?.tenChiNhanh ?? user?.maCN ?? ""}
+                          readOnly
+                          className="h-10 bg-gray-50 pr-9 text-sm"
+                        />
+                        <Lock className="absolute right-3 top-3 size-4 text-gray-400" />
+                      </div>
                       {errors.branch && (
                         <p className="text-sm text-red-500">{errors.branch.message}</p>
                       )}

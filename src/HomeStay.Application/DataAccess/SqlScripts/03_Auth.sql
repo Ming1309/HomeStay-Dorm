@@ -82,3 +82,21 @@ IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = 'quanly')
     INSERT INTO TaiKhoan (MaTK, TenDangNhap, MatKhauHash, TrangThai, Email, MaNV)
     VALUES ('TK_NV01', 'quanly', N'PBKDF2$SHA256$100000$VsfBFOVmI0RDLSWa22Nhnw==$zTri9Dwr2uwUMRyOK6wj2gV65SiHhNCTJF1F5oGgDe8=', N'HoatDong', 'quanly@homestay.local', 'NV01');
 GO
+
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = 'sale.cn02')
+    INSERT INTO TaiKhoan (MaTK, TenDangNhap, MatKhauHash, TrangThai, Email, MaNV)
+    SELECT 'TK_NV04', 'sale.cn02', MatKhauHash, N'HoatDong', 'sale.cn02@homestay.local', 'NV04'
+    FROM TaiKhoan WHERE TenDangNhap = 'sale';
+GO
+
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = 'quanly.cn02')
+    INSERT INTO TaiKhoan (MaTK, TenDangNhap, MatKhauHash, TrangThai, Email, MaNV)
+    SELECT 'TK_NV05', 'quanly.cn02', MatKhauHash, N'HoatDong', 'quanly.cn02@homestay.local', 'NV05'
+    FROM TaiKhoan WHERE TenDangNhap = 'quanly';
+GO
+
+IF NOT EXISTS (SELECT 1 FROM TaiKhoan WHERE TenDangNhap = 'ketoan.cn02')
+    INSERT INTO TaiKhoan (MaTK, TenDangNhap, MatKhauHash, TrangThai, Email, MaNV)
+    SELECT 'TK_NV06', 'ketoan.cn02', MatKhauHash, N'HoatDong', 'ketoan.cn02@homestay.local', 'NV06'
+    FROM TaiKhoan WHERE TenDangNhap = 'ketoan';
+GO

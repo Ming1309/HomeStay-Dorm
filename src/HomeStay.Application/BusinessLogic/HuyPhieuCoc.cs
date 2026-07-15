@@ -20,7 +20,7 @@ public sealed class HuyPhieuCoc(
         phien.BatDauGiaoDich();
         try
         {
-            var phieu = await PhieuCoc.DocChiTietChoCapNhat(maPhieuCoc);
+            var phieu = await PhieuCoc.DocChiTietHeThong(maPhieuCoc, khoaCapNhat: true);
             if (phieu is null || !phieu.CoTheTuDongHuy(thoiDiemHienTai))
             {
                 phien.Rollback();
@@ -65,7 +65,8 @@ public sealed class HuyPhieuCoc(
         phien.BatDauGiaoDich();
         try
         {
-            var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
+            var nhanVien = await NhanVien.DocPhamVi(maNhanVien);
+            var phieu = await PhieuCoc.DocChiTietChoCapNhat(maPhieuCoc, nhanVien.MaCN)
                 ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
             if (await HopDong.TonTaiTheoPhieuCoc(maPhieuCoc))
                 throw new InvalidOperationException("Hồ sơ đã chuyển sang giai đoạn Ký hợp đồng. Vui lòng sử dụng chức năng Thanh lý hợp đồng.");

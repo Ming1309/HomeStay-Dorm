@@ -29,6 +29,7 @@ public sealed class LapPhieuDangKy
         try
         {
             var thoiDiem = _timeProvider.GetLocalNow().DateTime;
+            var nhanVien = await NhanVien.DocPhamVi(maNV);
 
             // Kiểm tra khách hàng đã tồn tại theo số giấy tờ
             var khachHang = await KhachHang.KiemTraTonTai(soGiayTo);
@@ -40,7 +41,7 @@ public sealed class LapPhieuDangKy
                 await khachHang.Them();
             }
 
-            var phieuDangKy = PhieuDangKy.TaoMoi(khachHang.MaKH, maNV, khuVuc, soLuongNguoi,
+            var phieuDangKy = PhieuDangKy.TaoMoi(khachHang.MaKH, maNV, nhanVien.MaCN, khuVuc, soLuongNguoi,
                 loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem);
             phieuDangKy.KiemTraDieuKien(thoiDiem);
             await phieuDangKy.Them();
@@ -57,15 +58,17 @@ public sealed class LapPhieuDangKy
     }
 
     public async Task<IReadOnlyList<PhieuDangKy>> TimKiemPhieuDangKy(
-        string? sdt, string? soGiayTo, string? email, string? hoTen = null, string? maPDK = null)
+        string? sdt, string? soGiayTo, string? email, string? hoTen, string? maPDK, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
-        return await PhieuDangKy.TimKiem(sdt, soGiayTo, email, hoTen, maPDK);
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        return await PhieuDangKy.TimKiem(nhanVien.MaCN, sdt, soGiayTo, email, hoTen, maPDK);
     }
 
-    public async Task<PhieuDangKy?> LayChiTietPhieuDangKy(string maPDK)
+    public async Task<PhieuDangKy?> LayChiTietPhieuDangKy(string maPDK, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
-        return await PhieuDangKy.DocChiTiet(maPDK);
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        return await PhieuDangKy.DocChiTiet(maPDK, nhanVien.MaCN);
     }
 }
