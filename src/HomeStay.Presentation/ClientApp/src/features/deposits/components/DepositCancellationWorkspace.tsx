@@ -75,7 +75,7 @@ export function DepositCancellationWorkspace() {
     setSubmitting(true);
     try {
       await cancelDeposit(cancelledId);
-      toast.success("Hủy hồ sơ đặt cọc thành công");
+      toast.success(`Đã hủy phiếu cọc ${cancelledId}.`);
       setConfirmOpen(false);
       const remaining = items.filter((item) => item.maPhieuCoc !== cancelledId);
       setItems(remaining);
