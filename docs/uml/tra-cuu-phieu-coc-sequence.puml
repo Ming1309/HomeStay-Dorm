@@ -4,15 +4,28 @@ hide footbox
 autonumber 1 1
 skinparam shadowing false
 actor "Nguoi dung" as ND
+
+box "GUI" #D5F5D3
 boundary ": MHTraCuuPhieuCoc" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": TraCuuPhieuCoc" as TC
 control ": PhieuCoc" as PC
+end box
+
+box "DB" #D6EAF8
 entity ": PhieuCocDB" as PCDB
+end box
 
-ND -> MH : HienThi()
+ND -> MH : Mo man hinh chuc nang
+activate MH
+MH -> MH : HienThi()
 
-ND -> MH : btnTimKiem_Click()
+ND -> MH : Nhan "Tim Kiem"
+MH -> MH : btnTimKiem_Click()
 MH -> TC : TimKiem(maPhieuCoc, sdt, email, soGiayTo)
+activate TC
 alt Khong co tieu chi tim kiem
   note right of TC
     TimKiem tu choi yeu cau va tra thong bao
@@ -20,16 +33,29 @@ alt Khong co tieu chi tim kiem
   end note
 else Co it nhat mot tieu chi
   TC -> PC : TraCuu(maPhieuCoc, sdt, email, soGiayTo)
+  activate PC
   PC -> PCDB : TraCuu(maPhieuCoc, sdt, email, soGiayTo)
+  activate PCDB
   opt Co phieu coc trong ket qua
-    ND -> MH : grvKetQua_CellClick(maPhieuCoc)
+deactivate PCDB
+deactivate PC
+deactivate TC
+    ND -> MH : Chon phieu coc trong ket qua
+    MH -> MH : grvKetQua_CellClick(maPhieuCoc)
     MH -> TC : LayChiTiet(maPhieuCoc)
+    activate TC
     TC -> PC : DocChiTiet(maPhieuCoc)
+    activate PC
     PC -> PCDB : DocChiTiet(maPhieuCoc)
+    activate PCDB
     note right of PCDB
       Doc thong tin PhieuCoc, KhachHang, Phong
       va danh sach Giuong lien quan
     end note
   end
+deactivate PCDB
+deactivate PC
 end
+deactivate TC
+deactivate MH
 @enduml

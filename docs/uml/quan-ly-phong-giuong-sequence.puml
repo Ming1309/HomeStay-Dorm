@@ -6,18 +6,28 @@ autonumber 1 1
 skinparam shadowing false
 
 actor "Quan tri vien" as QT
+
+box "GUI" #D5F5D3
 boundary ": MHQuanLyPhongGiuong" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": QuanLyPhongGiuong" as QL
 control ": Phong" as P
-entity ": PhongDB" as PDB
 control ": Giuong" as G
-entity ": GiuongDB" as GDB
 control ": LoaiPhong" as LP
-entity ": LoaiPhongDB" as LPDB
 control ": ChiNhanh" as CN
-entity ": ChiNhanhDB" as CNDB
+end box
 
-QT -> MH : loadData()
+box "DB" #D6EAF8
+entity ": PhongDB" as PDB
+entity ": GiuongDB" as GDB
+entity ": LoaiPhongDB" as LPDB
+entity ": ChiNhanhDB" as CNDB
+end box
+
+QT -> MH : Chon chuc nang va mo man hinh
+MH -> MH : loadData()
 activate MH
 MH -> QL : LayDanhSachPhong("", "", "", "")
 activate QL
@@ -57,12 +67,16 @@ deactivate CN
 deactivate QL
 
 alt Them phong
-  QT -> MH : openCreateRoom()
-  QT -> MH : submitRoom(values)
+  QT -> MH : Nhan "Them phong"
+  MH -> MH : openCreateRoom()
+  QT -> MH : Nhap thong tin phong va nhan "Luu"
+  MH -> MH : submitRoom(values)
   MH -> QL : ThemPhong(phong)
   activate QL
   QL -> P : ChuanHoa()
+  activate P
   QL -> P : KiemTraDuLieuHopLe()
+  deactivate P
   QL -> LP : LayTheoMa(maLP)
   activate LP
   LP -> LPDB : LayTheoMa(maLP)
@@ -89,12 +103,16 @@ alt Them phong
   deactivate P
   deactivate QL
 else Sua phong
-  QT -> MH : openEditRoom(room)
-  QT -> MH : submitRoom(values)
+  QT -> MH : Chon phong va nhan "Sua"
+  MH -> MH : openEditRoom(room)
+  QT -> MH : Nhap thong tin phong va nhan "Luu"
+  MH -> MH : submitRoom(values)
   MH -> QL : CapNhatPhong(maPhong, thongTin)
   activate QL
   QL -> P : ChuanHoa()
+  activate P
   QL -> P : KiemTraDuLieuHopLe()
+  deactivate P
   QL -> P : DocChiTiet(maPhong)
   activate P
   P -> PDB : DocChiTiet(maPhong)
@@ -126,7 +144,9 @@ else Sua phong
   deactivate PDB
   deactivate P
   QL -> P : KiemTraSucChuaChoDoiLoaiPhong(sucChuaMoi, soGiuongHienCo)
+  activate P
   QL -> P : KiemTraDoiTrangThai(trangThaiMoi, giuongHienCo, dangDuocThamChieu)
+  deactivate P
   QL -> P : CapNhatThongTin()
   activate P
   P -> PDB : CapNhatThongTin(phong)
@@ -135,7 +155,8 @@ else Sua phong
   deactivate P
   deactivate QL
 else Xoa phong
-  QT -> MH : confirmDelete()
+  QT -> MH : Chon ban ghi va xac nhan xoa
+  MH -> MH : confirmDelete()
   MH -> QL : XoaPhong(maPhong)
   activate QL
   QL -> P : DocChiTiet(maPhong)
@@ -145,6 +166,8 @@ else Xoa phong
   deactivate PDB
   deactivate P
   QL -> P : KiemTraCoTheXoa()
+  activate P
+  deactivate P
   QL -> P : DangDuocThamChieu(maPhong)
   activate P
   P -> PDB : DangDuocThamChieu(maPhong)
@@ -159,12 +182,16 @@ else Xoa phong
   deactivate P
   deactivate QL
 else Them giuong
-  QT -> MH : openCreateBed()
-  QT -> MH : submitBed(values)
+  QT -> MH : Nhan "Them giuong"
+  MH -> MH : openCreateBed()
+  QT -> MH : Nhap thong tin giuong va nhan "Luu"
+  MH -> MH : submitBed(values)
   MH -> QL : ThemGiuong(giuong)
   activate QL
   QL -> G : ChuanHoa()
+  activate G
   QL -> G : KiemTraDuLieuHopLe()
+  deactivate G
   QL -> P : DocChiTiet(maPhong)
   activate P
   P -> PDB : DocChiTiet(maPhong)
@@ -178,6 +205,8 @@ else Them giuong
   deactivate GDB
   deactivate G
   QL -> P : KiemTraSoGiuongKhongVuotSucChua(soGiuongHienCo)
+  activate P
+  deactivate P
   QL -> G : Them()
   activate G
   G -> GDB : Them(giuong)
@@ -186,12 +215,16 @@ else Them giuong
   deactivate G
   deactivate QL
 else Sua giuong
-  QT -> MH : openEditBed(bed)
-  QT -> MH : submitBed(values)
+  QT -> MH : Chon giuong va nhan "Sua"
+  MH -> MH : openEditBed(bed)
+  QT -> MH : Nhap thong tin giuong va nhan "Luu"
+  MH -> MH : submitBed(values)
   MH -> QL : CapNhatGiuong(maGiuong, thongTin)
   activate QL
   QL -> G : ChuanHoa()
+  activate G
   QL -> G : KiemTraDuLieuHopLe()
+  deactivate G
   QL -> G : DocChiTiet(maGiuong)
   activate G
   G -> GDB : DocChiTiet(maGiuong)
@@ -217,9 +250,15 @@ else Sua giuong
   deactivate GDB
   deactivate G
   QL -> G : KiemTraCoTheDoiSoGiuong(dangDuocThamChieu)
+  activate G
   QL -> G : KiemTraCoTheChuyenPhong(dangDuocThamChieu)
+  deactivate G
   QL -> P : KiemTraSoGiuongKhongVuotSucChua(soGiuongHienCo)
+  activate P
+  deactivate P
   QL -> G : KiemTraDoiTrangThai(trangThaiMoi, dangDuocThamChieu)
+  activate G
+  deactivate G
   QL -> G : CapNhatThongTin()
   activate G
   G -> GDB : CapNhatThongTin(giuong)
@@ -228,7 +267,8 @@ else Sua giuong
   deactivate G
   deactivate QL
 else Xoa giuong
-  QT -> MH : confirmDelete()
+  QT -> MH : Chon ban ghi va xac nhan xoa
+  MH -> MH : confirmDelete()
   MH -> QL : XoaGiuong(maGiuong)
   activate QL
   QL -> G : DocChiTiet(maGiuong)
@@ -238,6 +278,8 @@ else Xoa giuong
   deactivate GDB
   deactivate G
   QL -> G : KiemTraCoTheXoa()
+  activate G
+  deactivate G
   QL -> G : DangDuocThamChieu(maGiuong)
   activate G
   G -> GDB : DangDuocThamChieu(maGiuong)

@@ -4,42 +4,102 @@ hide footbox
 autonumber 1 1
 skinparam shadowing false
 actor "Quan ly" as QL
+
+box "GUI" #D5F5D3
 boundary ": MHXacNhanPhieuDoiSoat" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": XacNhanPhieuDoiSoat" as XN
 control ": PhieuDoiSoat" as PDS
 control ": PhieuCoc" as PC
 control ": KhachHang" as KH
 control ": HoaDon" as HDON
+end box
+
+box "DB" #D6EAF8
 entity ": PhieuDoiSoatDB" as PDSDB
 entity ": PhieuCocDB" as PCDB
 entity ": HoaDonDB" as HDONDB
+end box
 
-QL -> MH : HienThi()
+QL -> MH : Mo man hinh chuc nang
+activate MH
+MH -> MH : HienThi()
 MH -> XN : LayDanhSachChoXacNhan()
+activate XN
 XN -> PDS : LayDanhSachChoXacNhan()
+activate PDS
 PDS -> PDSDB : GetDanhSachChoXacNhan()
+activate PDSDB
+deactivate PDSDB
+deactivate PDS
 XN -> PC : DocChiTiet(maPhieuCoc)
+activate PC
 PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
+deactivate PCDB
+deactivate PC
 XN -> PDS : XacDinhKetQua()
+activate PDS
 
-QL -> MH : grvChoXacNhan_CellClick(maPDS)
+deactivate PDS
+deactivate XN
+QL -> MH : Chon phieu doi soat
+MH -> MH : grvChoXacNhan_CellClick(maPDS)
 MH -> XN : LayChiTiet(maPDS)
+activate XN
 XN -> PDS : LayChiTietPhieuDoiSoat(maPDS)
+activate PDS
 PDS -> PDSDB : GetPhieuDoiSoatTheoMaPDS(maPDS)
+activate PDSDB
+deactivate PDSDB
+deactivate PDS
 XN -> PC : DocChiTiet(maPhieuCoc)
+activate PC
 PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
+deactivate PCDB
+deactivate PC
 XN -> HDON : LayDSHoaDonTheoPhieuDoiSoat(maPDS)
+activate HDON
 HDON -> HDONDB : GetDSHoaDonTheoMaPDS(maPDS)
+activate HDONDB
+deactivate HDONDB
+deactivate HDON
 XN -> KH : CoKenhLienHe()
+activate KH
+deactivate KH
 XN -> PDS : XacDinhKetQua()
+activate PDS
 
-QL -> MH : btnXacNhan_Click()
+deactivate PDS
+deactivate XN
+QL -> MH : Nhan "Xac Nhan"
+MH -> MH : btnXacNhan_Click()
 MH -> XN : XacNhan(maPDS, true, maNhanVien)
+activate XN
 XN -> PDS : LayChiTietChoCapNhat(maPDS)
+activate PDS
 PDS -> PDSDB : GetPhieuDoiSoatChoCapNhat(maPDS)
+activate PDSDB
+deactivate PDSDB
+deactivate PDS
 XN -> PC : DocChiTiet(maPhieuCoc)
+activate PC
 PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
+deactivate PCDB
+deactivate PC
 XN -> KH : CoKenhLienHe()
+activate KH
+deactivate KH
 XN -> PDS : XacNhanKhachHangDongY(maNhanVien, thoiDiem)
+activate PDS
 PDS -> PDSDB : XacNhan(phieu, trangThaiMoi)
+activate PDSDB
+deactivate PDSDB
+deactivate PDS
+deactivate XN
+deactivate MH
 @enduml

@@ -6,13 +6,23 @@ autonumber 1 1
 skinparam shadowing false
 
 actor "Quan tri vien" as QTV
+
+box "GUI" #D5F5D3
 boundary ": MHQuanLyChinhSachHoanCoc" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": QuanLyChinhSachHoanCoc" as QLCSHC
 control ": ChinhSachHoanCoc" as CS
+end box
+
+box "DB" #D6EAF8
 entity ": ChinhSachHoanCocDB" as CSDB
+end box
 
 ' === Luong 1: Tai lich su khi mo man hinh ===
-QTV -> MH : loadPolicies()
+QTV -> MH : Chon chuc nang va mo man hinh
+MH -> MH : loadPolicies()
 activate MH
 MH -> QLCSHC : LayDanhSach()
 activate QLCSHC
@@ -27,12 +37,15 @@ MH -> MH : hien thi tblLichSuApDung
 
 ' === Luong 2: Tao phien ban chinh sach moi ===
 QTV -> MH : nhap thong tin chinh sach moi
-QTV -> MH : onSubmit(values)
+MH -> MH : onSubmit(values)
 MH -> MH : validate zod va hien xac nhan
-QTV -> MH : handleConfirmCreate()
+QTV -> MH : Xac nhan luu chinh sach
+MH -> MH : handleConfirmCreate()
 MH -> QLCSHC : TaoPhienBan(chinhSachMoi)
 activate QLCSHC
 QLCSHC -> CS : KiemTraDuLieuHopLe()
+activate CS
+deactivate CS
 QLCSHC -> CS : LayPhienBanMoiNhat()
 activate CS
 CS -> CSDB : LayPhienBanMoiNhat()

@@ -6,36 +6,74 @@ autonumber 1 1
 skinparam shadowing false
 
 actor "Ke toan" as KT
+
+box "GUI" #D5F5D3
 boundary ": MHTinhTienCoc" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": TinhTienCoc" as TTC
 control ": PhieuCoc" as PC
 control ": Phong" as P
+end box
+
+box "DB" #D6EAF8
 entity ": PhieuCocDB" as PCDB
+end box
 
-KT -> MH : taiDanhSach(text)
+KT -> MH : Nhan nut thao tac tren giao dien
+activate MH
+MH -> MH : taiDanhSach(text)
 MH -> TTC : LayDanhSachKhoiTao(text)
+activate TTC
 TTC -> PC : LayDanhSachKhoiTao(text)
+activate PC
 PC -> PCDB : LayDanhSachKhoiTao(text)
+activate PCDB
 
-KT -> MH : chonPhieuCoc(maPhieuCoc)
+deactivate PCDB
+deactivate PC
+deactivate TTC
+KT -> MH : Chon phieu coc
+MH -> MH : chonPhieuCoc(maPhieuCoc)
 MH -> TTC : LayChiTietVaTinhTien(maPhieuCoc)
+activate TTC
 TTC -> PC : DocChiTiet(maPhieuCoc)
+activate PC
 PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
 alt HinhThucThue = OGhep
+deactivate PCDB
   PC -> PC : dem Giuongs
 else HinhThucThue = NguyenCan
   PC -> PC : lay Phong.LoaiPhong.SucChua
 end
 PC -> P : TinhTienCoc(soGiuong)
-MH --> KT : hien thi cong thuc va TongTien
+activate P
+MH -> MH : hien thi cong thuc va TongTien
 
-KT -> MH : xacNhan()
+deactivate P
+deactivate PC
+deactivate TTC
+KT -> MH : Nhan nut thao tac tren giao dien
+MH -> MH : xacNhan()
 MH -> TTC : XacNhanTinhTien(maPhieuCoc)
+activate TTC
 TTC -> PC : DocChiTiet(maPhieuCoc)
+activate PC
 PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
+deactivate PCDB
 PC -> PC : XacNhanTinhTien(thoiDiemXacNhan, thoiHanThanhToan)
 PC -> P : TinhTienCoc(soGiuong)
+activate P
+deactivate P
 PC -> PCDB : CapNhatTinhTien(phieu)
-MH --> KT : thong bao Tao phieu coc thanh cong
+activate PCDB
+MH -> MH : thong bao Tao phieu coc thanh cong
 
+deactivate PCDB
+deactivate PC
+deactivate TTC
+deactivate MH
 @enduml

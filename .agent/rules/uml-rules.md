@@ -18,6 +18,9 @@
 ## Sequence Diagram
 
 - Use `boundary` for the screen, `control` for use-case controls and business entities, and `entity` only for DB classes.
+- Put sequence participants into three colored boxes: `GUI` uses `#D5F5D3`, `BUS` uses `#FCF3CF`, and `DB` uses `#D6EAF8`. Keep actors outside the boxes.
+- Use explicit `activate`/`deactivate` bars. Keep the active screen bar visible for the current user interaction and nest control, business-entity, and DB activations in call order; do not use `autoactivate`.
+- Show the user's concrete UI action before the screen handler. For example, model `Actor -> MH : Nhap thong tin`, `Actor -> MH : Nhan "Luu"`, then `MH -> MH : onSubmit(data)` before the boundary calls the use-case control.
 - Do not show HTTP controllers, DTOs, `PhienDuLieu`, connection, transaction, commit, rollback, or return arrows.
 - Include initial screen loading, user events, validation, entity behavior, and persistence operations that the use case actually performs.
 - Use concrete method names and parameters. Do not use ellipses, vague placeholders, nullable `?` notation, or a message that has no corresponding code method.

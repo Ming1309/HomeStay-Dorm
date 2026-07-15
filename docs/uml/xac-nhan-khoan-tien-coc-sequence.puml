@@ -6,63 +6,133 @@ autonumber 1 1
 skinparam shadowing false
 
 actor "Quan ly" as QL
+
+box "GUI" #D5F5D3
 boundary ": MHXacNhanKhoanTienCoc" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": XacNhanKhoanTienCoc" as XN
 control ": PhieuCoc" as PC
 control ": PhieuThu" as PT
 control ": Phong" as P
+end box
+
+box "DB" #D6EAF8
 entity ": PhieuCocDB" as PCDB
 entity ": PhieuThuDB" as PTDB
 entity ": PhongDB" as PDB
+end box
 
-QL -> MH : hienThiDanhSachPhieuChoDoiChieu(tuKhoa)
+QL -> MH : Mo man hinh chuc nang
+activate MH
+MH -> MH : hienThiDanhSachPhieuChoDoiChieu(tuKhoa)
 MH -> XN : LayDanhSachChoDoiChieu(tuKhoa)
+activate XN
 XN -> PC : LayDanhSachChoDoiChieu(tuKhoa)
+activate PC
 PC -> PCDB : LayDanhSachChoDoiChieu(tuKhoa)
+activate PCDB
 
-QL -> MH : chonPhieuCoc(maPhieuCoc)
+deactivate PCDB
+deactivate PC
+deactivate XN
+QL -> MH : Chon phieu coc
+MH -> MH : chonPhieuCoc(maPhieuCoc)
 MH -> XN : LayChiTiet(maPhieuCoc)
+activate XN
 XN -> PC : DocChiTiet(maPhieuCoc)
+activate PC
 PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
+deactivate PCDB
+deactivate PC
 XN -> PC : KiemTraCoTheXacNhanThanhToan()
+activate PC
+deactivate PC
+deactivate XN
 MH -> MH : hien thi chi tiet va chung tu
 
 alt Khoan coc hop le
-  QL -> MH : xacNhanHopLe()
+  QL -> MH : Nhan "Xac nhan hop le"
+  MH -> MH : xacNhanHopLe()
   MH -> XN : XacNhanHopLe(maPhieuCoc, maNhanVienQuanLy)
+  activate XN
   XN -> PC : DocChiTiet(maPhieuCoc)
+  activate PC
   PC -> PCDB : DocChiTiet(maPhieuCoc)
+  activate PCDB
+deactivate PCDB
+deactivate PC
   XN -> PC : KiemTraCoTheXacNhanThanhToan()
+  activate PC
+deactivate PC
   XN -> P : DocChiTiet(maPhong)
+  activate P
   P -> PDB : DocChiTiet(maPhong)
+  activate PDB
+deactivate PDB
+deactivate P
   XN -> P : XacNhanDatCoc(maGiuongs)
+  activate P
+deactivate P
   XN -> PT : TaoChoTienCoc(phieuCoc, maNhanVienQuanLy, thoiGian)
+  activate PT
+deactivate PT
   XN -> PC : XacNhanThanhToan()
+  activate PC
+deactivate PC
   XN -> PC : CapNhatXacNhanThanhToan()
+  activate PC
   PC -> PCDB : CapNhatXacNhanThanhToan(phieu)
+  activate PCDB
+deactivate PCDB
+deactivate PC
   XN -> PT : Them()
+  activate PT
   PT -> PTDB : Them(phieuThu)
+  activate PTDB
+deactivate PTDB
+deactivate PT
   XN -> P : CapNhatDatCoc()
+  activate P
   P -> PDB : CapNhatDatCoc(phong)
+  activate PDB
   alt Co tranh chap trang thai hoac giuong
-    XN --> MH : rollback va bao loi
+    MH -> MH : hien thi rollback va bao loi
   else Thanh cong
-    XN --> MH : phieu coc va ma phieu thu
+deactivate PDB
+deactivate P
+deactivate XN
     MH -> MH : thong bao dat coc thanh cong
   end
 else Chung tu can bo sung
-  QL -> MH : yeuCauBoSung(lyDo)
+  QL -> MH : Nhap ly do va nhan "Yeu cau bo sung"
+  MH -> MH : yeuCauBoSung(lyDo)
   alt Ly do rong hoac qua 500 ky tu
     MH -> MH : hien thi loi ly do
   else Ly do hop le
     MH -> XN : YeuCauBoSung(maPhieuCoc, lyDo)
+    activate XN
     XN -> PC : DocChiTiet(maPhieuCoc)
+    activate PC
     PC -> PCDB : DocChiTiet(maPhieuCoc)
+    activate PCDB
+deactivate PCDB
+deactivate PC
     XN -> PC : YeuCauBoSung(lyDo, thoiDiemYeuCau, thoiHanThanhToan)
+    activate PC
+deactivate PC
     XN -> PC : CapNhatYeuCauBoSung()
+    activate PC
     PC -> PCDB : CapNhatYeuCauBoSung(phieu)
+    activate PCDB
+deactivate PCDB
+deactivate PC
+deactivate XN
     MH -> MH : thong bao da gui yeu cau
   end
 end
 
+deactivate MH
 @enduml

@@ -8,11 +8,11 @@ title Lập hóa đơn bồi thường
 
 actor "Kế Toán" as KT
 
-box "GUI" #F9FBE7
+box "GUI" #D5F5D3
     boundary "MHLapHoaDonBoiThuong" as MH
 end box
 
-box "BUS" #FEF9E7
+box "BUS" #FCF3CF
     control "BienBanGiaoNhan" as BB
     control "ChiTietGiaoNhan" as CTGN
     control "TaiSan" as TS
@@ -21,7 +21,7 @@ box "BUS" #FEF9E7
     control "NhanVien" as NV
 end box
 
-box "DB" #F5EEF8
+box "DB" #D6EAF8
     entity "BienBanGiaoNhanDB" as BBDB
     entity "ChiTietGiaoNhanDB" as CTGNDB
     entity "TaiSanDB" as TSDB
@@ -35,8 +35,6 @@ end box
 ' =====================
 
 KT -> MH : 1.0 Truy cập chức năng\nLập hóa đơn bồi thường
-activate KT
-deactivate KT
 activate MH
 
 MH -> BB : 1.1 layDSBienBanThuHoiChuaXuLy()
@@ -45,13 +43,9 @@ BB -> BBDB : 1.2 getDSBienBanThuHoiChuaXuLy()
 activate BBDB
 deactivate BBDB
 deactivate BB
-deactivate MH
 
 
 KT -> MH : 2.0 Chọn một Biên bản\ncần xử lý
-activate KT
-deactivate KT
-activate MH
 MH -> BB : 2.1 layChiTietBienBan(maBienBan)
 activate BB
 BB -> BBDB : 2.2 getBienBanTheoMaBienBan(maBienBan)
@@ -72,19 +66,12 @@ TS -> TSDB : 2.6 getTaiSanTheoMaTS(maTS)
 activate TSDB
 deactivate TSDB
 deactivate TS
-deactivate MH
 
 
 KT -> MH : 3.0 Nhập số tiền phạt\nbồi thường cho từng tài sản
-activate KT
-deactivate KT
-activate MH
-deactivate MH
 
-KT -> MH : 4.0 btnLapHoaDonBoiThuong_Click()
-activate KT
-deactivate KT
-activate MH
+KT -> MH : Nhan "Lap Hoa Don Boi Thuong"
+MH -> MH : 4.0 btnLapHoaDonBoiThuong_Click()
 MH -> HD : 4.1 kiemTraTinhHopLe(dsSoTien)
 activate HD
 deactivate HD
@@ -111,13 +98,10 @@ deactivate CTHDDB
 deactivate CTHD
 
 MH -> MH : 4.8 hienThiDialogThanhCong\n(maHoaDon, tongBoiThuong)
-deactivate MH
 
 
-KT -> MH : 5.0 btnHoanTat_Click()
-activate KT
-deactivate KT
-activate MH
+KT -> MH : Nhan "Hoan Tat"
+MH -> MH : 5.0 btnHoanTat_Click()
 deactivate MH
 
 ' =====================

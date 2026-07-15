@@ -6,95 +6,194 @@ skinparam maxMessageSize 250
 skinparam BoxPadding 10
 
 actor "Nhan vien Sale" as NV
+
+box "GUI" #D5F5D3
 boundary "MHNhapHoSoLuuTru" as MH
+end box
+
+box "BUS" #FCF3CF
 control "NhapHoSoLuuTru" as UC
 control "PhieuCoc" as PhieuCoc
 control "LichHen" as LichHen
 control "KhachHang" as KhachHang
 control "Phong" as Phong
 control "ThanhVienDangKy" as ThanhVienDangKy
+end box
+
+box "DB" #D6EAF8
 entity "PhieuCocDB" as PhieuCocDB
 entity "LichHenDB" as LichHenDB
 entity "KhachHangDB" as KhachHangDB
 entity "ThanhVienDangKyDB" as ThanhVienDangKyDB
+end box
 
-NV -> MH : loadDanhSachPhieuCoc()
+NV -> MH : Mo man hinh chuc nang
+activate MH
+MH -> MH : loadDanhSachPhieuCoc()
 MH -> UC : LayDanhSachChoNhap(text)
+activate UC
 UC -> PhieuCoc : LayPhieuCocDaThanhToanNhanPhongHomNay(text)
+activate PhieuCoc
 PhieuCoc -> PhieuCocDB : LayPhieuCocDaThanhToanNhanPhongHomNay(text)
+activate PhieuCocDB
+deactivate PhieuCocDB
+deactivate PhieuCoc
+deactivate UC
 MH -> MH : hienThiDanhSachPhieuCoc()
 
-NV -> MH : clickChonPhieuCoc(maPhieuCoc)
+NV -> MH : Chon phieu coc
+MH -> MH : clickChonPhieuCoc(maPhieuCoc)
 MH -> UC : LayChiTiet(maPhieuCoc)
+activate UC
 UC -> PhieuCoc : DocChiTiet(maPhieuCoc)
+activate PhieuCoc
 PhieuCoc -> PhieuCocDB : DocChiTiet(maPhieuCoc)
+activate PhieuCocDB
+deactivate PhieuCocDB
+deactivate PhieuCoc
 UC -> PhieuCoc : KiemTraDaThanhToan()
+activate PhieuCoc
+deactivate PhieuCoc
 UC -> LichHen : DocTheoMaPhieuCoc(maPhieuCoc)
+activate LichHen
 LichHen -> LichHenDB : DocTheoMaPhieuCoc(maPhieuCoc)
+activate LichHenDB
+deactivate LichHenDB
+deactivate LichHen
 UC -> LichHen : KiemTraLoaiNhanPhong()
+activate LichHen
+deactivate LichHen
+deactivate UC
 MH -> MH : hienThiThongTinTuPhieuCoc()
 
-NV -> MH : nhapThongTinCuTru()
+NV -> MH : Nhap thong tin tren giao dien
+MH -> MH : nhapThongTinCuTru()
 opt Co nguoi o cung
-  NV -> MH : clickThemNguoiOCung()
+  NV -> MH : Nhan "Them nguoi o cung"
+  MH -> MH : clickThemNguoiOCung()
   MH -> MH : hienThiPopupThemNguoiOCung()
-  NV -> MH : xacNhanNguoiOCung(thanhVien)
+  NV -> MH : Nhap thong tin va xac nhan nguoi o cung
+  MH -> MH : xacNhanNguoiOCung(thanhVien)
   MH -> MH : capNhatDanhSachNguoiOCung()
 end
 
-NV -> MH : clickLuuHoSo()
+NV -> MH : Nhan "Luu ho so"
+MH -> MH : clickLuuHoSo()
 MH -> UC : NhapHoSo(maPhieuCoc, diaChiThuongTru, cacThanhVien)
+activate UC
 UC -> PhieuCoc : DocChiTiet(maPhieuCoc)
+activate PhieuCoc
 PhieuCoc -> PhieuCocDB : DocChiTiet(maPhieuCoc)
+activate PhieuCocDB
+deactivate PhieuCocDB
+deactivate PhieuCoc
 UC -> PhieuCoc : KiemTraDaThanhToan()
+activate PhieuCoc
+deactivate PhieuCoc
 UC -> PhieuCoc : KiemTraHinhThucThue()
+activate PhieuCoc
+deactivate PhieuCoc
 UC -> LichHen : DocTheoMaPhieuCoc(maPhieuCoc)
+activate LichHen
 LichHen -> LichHenDB : DocTheoMaPhieuCoc(maPhieuCoc)
+activate LichHenDB
+deactivate LichHenDB
+deactivate LichHen
 UC -> LichHen : KiemTraLoaiNhanPhong()
+activate LichHen
+deactivate LichHen
 UC -> LichHen : KiemTraTrangThaiHopLe()
+activate LichHen
+deactivate LichHen
 UC -> KhachHang : KiemTraThongTinBatBuoc(nguoiDaiDien)
+activate KhachHang
+deactivate KhachHang
 UC -> KhachHang : KiemTraDinhDangEmail(email)
+activate KhachHang
+deactivate KhachHang
 UC -> KhachHang : KiemTraSoGiayTo(soGiayTo, loaiGiayTo)
+activate KhachHang
+deactivate KhachHang
 UC -> KhachHang : KiemTraNgaySinh(ngaySinh)
+activate KhachHang
 
 loop Moi nguoi o cung
+deactivate KhachHang
   UC -> KhachHang : ChuanHoaThongTinNhanDang()
+  activate KhachHang
 end
+deactivate KhachHang
 UC -> KhachHang : KiemTraTrungSoGiayTo(nguoiDaiDien, cacThanhVien)
+activate KhachHang
 
 loop Kiem tra moi nguoi o cung
+deactivate KhachHang
   UC -> KhachHang : KiemTraThongTinBatBuoc(thanhVien)
+  activate KhachHang
+deactivate KhachHang
   UC -> KhachHang : KiemTraDinhDangEmail(email)
+  activate KhachHang
+deactivate KhachHang
   UC -> KhachHang : KiemTraSoGiayTo(soGiayTo, loaiGiayTo)
+  activate KhachHang
+deactivate KhachHang
   UC -> KhachHang : KiemTraNgaySinh(ngaySinh)
+  activate KhachHang
+deactivate KhachHang
   UC -> KhachHang : TimTheoSoGiayTo(soGiayTo)
+  activate KhachHang
   KhachHang -> KhachHangDB : TimTheoSoGiayTo(soGiayTo)
+  activate KhachHangDB
   alt So giay to da ton tai
+deactivate KhachHangDB
+deactivate KhachHang
+deactivate UC
     MH -> MH : hienThiLoi("So giay to da ton tai trong he thong")
   end
 end
 
 UC -> PhieuCoc : KiemTraSoLuongThanhVien(soLuongThanhVien)
+activate PhieuCoc
 UC -> Phong : KiemTraSucChua(soLuongThanhVien)
+activate Phong
 UC -> KhachHang : CapNhatDiaChiThuongTru(diaChiThuongTru)
+activate KhachHang
 UC -> KhachHang : LuuDiaChiThuongTru()
 KhachHang -> KhachHangDB : CapNhatDiaChiThuongTru(maKH, diaChiThuongTru)
+activate KhachHangDB
 UC -> ThanhVienDangKy : TaoDaiDien(maPhieuCoc, maKH)
+activate ThanhVienDangKy
 
 loop Tao moi moi nguoi o cung
   UC -> KhachHang : Them()
+deactivate ThanhVienDangKy
+deactivate KhachHangDB
   KhachHang -> KhachHangDB : Them(khachHang)
+  activate KhachHangDB
   UC -> ThanhVienDangKy : TaoThanhVien(maPhieuCoc, maKH)
+  activate ThanhVienDangKy
   UC -> ThanhVienDangKy : KiemTraVaiTroHopLe()
 end
 
 UC -> ThanhVienDangKy : XoaTheoPhieuCoc(maPhieuCoc)
 ThanhVienDangKy -> ThanhVienDangKyDB : XoaTheoPhieuCoc(maPhieuCoc)
+activate ThanhVienDangKyDB
 UC -> ThanhVienDangKy : ThemHangLoat(danhSach)
+deactivate ThanhVienDangKyDB
 ThanhVienDangKy -> ThanhVienDangKyDB : ThemHangLoat(danhSach)
+activate ThanhVienDangKyDB
 UC -> PhieuCoc : CapNhatTrangThai("ChoDuyet")
 UC -> PhieuCoc : LuuCapNhatTrangThai()
+deactivate ThanhVienDangKyDB
+deactivate ThanhVienDangKy
+deactivate KhachHangDB
+deactivate KhachHang
+deactivate Phong
 PhieuCoc -> PhieuCocDB : CapNhatTrangThai(maPhieuCoc, "ChoDuyet")
+activate PhieuCocDB
+deactivate PhieuCocDB
+deactivate PhieuCoc
 MH -> MH : hienThiThongBao()
 
+deactivate MH
 @enduml

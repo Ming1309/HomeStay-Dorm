@@ -8,16 +8,16 @@ title Tra cứu phiếu đăng ký
 
 actor "Nhân Viên Sale" as NVS
 
-box "GUI" #D6EAF8
+box "GUI" #D5F5D3
     boundary "MHTraCuuPhieuDangKy" as MH
 end box
 
-box "BUS" #FEF9E7
+box "BUS" #FCF3CF
     control "PhieuDangKy" as PDK
     control "KhachHang" as KH
 end box
 
-box "DB" #F2F3F4
+box "DB" #D6EAF8
     entity "PhieuDangKyDB" as PDKDB
     entity "KhachHangDB" as KHDB
 end box
@@ -31,8 +31,7 @@ activate MH
 
 NVS -> MH : 2.0 Nhập thông tin tìm kiếm\n(SĐT / CCCD / Email / Tên / Mã)
 
-NVS -> MH : 3.0 btnTimKiem_Click()
-activate MH #DAEEF8
+MH -> MH : 3.0 btnTimKiem_Click()
 
 MH -> PDK : 3.1 timKiemPhieuDangKy(tuKhoa)
 activate PDK
@@ -44,9 +43,7 @@ deactivate PDK
 MH -> MH : 3.3 hienThiDSKetQua()
 
 NVS -> MH : 4.0 Chọn "Xem chi tiết"\nmột PhieuDangKy
-deactivate MH
 
-activate MH #DAEEF8
 MH -> PDK : 4.1 layChiTietPhieuDangKy(maPDK)
 activate PDK
 PDK -> PDKDB : 4.2 getPhieuDangKyTheoMaPDK(maPDK)
@@ -62,8 +59,6 @@ deactivate KHDB
 deactivate KH
 
 MH -> MH : 4.5 hienThiChiTietPhieuDangKy()
-deactivate MH
-deactivate MH
 
 ' =====================
 ' LUỒNG PHỤ A3: Không nhập tiêu chí
@@ -71,8 +66,8 @@ deactivate MH
 
 alt A3 - Không nhập thông tin tìm kiếm
 
-    NVS -> MH : btnTimKiem_Click()\n(tuKhoa rỗng)
-    activate MH
+    NVS -> MH : Nhan "Tim Kiem"
+    MH -> MH : btnTimKiem_Click()\n(tuKhoa rỗng)
     MH -> MH : hienThiThongBao\n"Vui lòng nhập ít nhất\nmột tiêu chí tìm kiếm"
     deactivate MH
 

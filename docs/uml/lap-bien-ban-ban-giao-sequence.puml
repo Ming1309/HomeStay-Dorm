@@ -6,24 +6,34 @@ autonumber 1 1
 skinparam shadowing false
 
 actor "Quản lý" as QL
+
+box "GUI" #D5F5D3
 boundary ": MHLapBienBanBanGiao" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": LapBienBanBanGiao" as LBB
 control ": HopDong" as HD
 control ": BienBanGiaoNhan" as BB
 control ": ChiTietGiaoNhan" as CT
 control ": PhongTaiSan" as PTS
 control ": Giuong" as G
+end box
+
+box "DB" #D6EAF8
 entity ": HopDongDB" as HDDB
 entity ": BienBanGiaoNhanDB" as BBDB
 entity ": ChiTietGiaoNhanDB" as CTDB
 entity ": PhongTaiSanDB" as PTSDB
 entity ": GiuongDB" as GDB
+end box
 
 '=====================
 ' TẢI DANH SÁCH HỢP ĐỒNG
 '=====================
 
-QL -> MH : hienThiForm()
+QL -> MH : Chon chuc nang va mo man hinh
+MH -> MH : hienThiForm()
 activate MH
 MH -> LBB : LayDanhSachChoBanGiao()
 activate LBB
@@ -34,10 +44,9 @@ activate HDDB
 deactivate HDDB
 deactivate HD
 deactivate LBB
-deactivate MH
 
-QL -> MH : nhapTuKhoaTimKiem(tuKhoa)
-activate MH
+QL -> MH : Nhap thong tin tren giao dien
+MH -> MH : nhapTuKhoaTimKiem(tuKhoa)
 MH -> LBB : LayDanhSachChoBanGiao(tuKhoa)
 activate LBB
 LBB -> HD : LayDanhSachChoBanGiao(tuKhoa)
@@ -47,14 +56,13 @@ activate HDDB
 deactivate HDDB
 deactivate HD
 deactivate LBB
-deactivate MH
 
 '=====================
 ' CHỌN HỢP ĐỒNG VÀ TẢI TÀI SẢN
 '=====================
 
-QL -> MH : chonHopDong(maHD)
-activate MH
+QL -> MH : Chon doi tuong tren giao dien
+MH -> MH : chonHopDong(maHD)
 MH -> LBB : LayChiTietBanGiao(maHD)
 activate LBB
 
@@ -83,15 +91,15 @@ activate PTSDB
 deactivate PTSDB
 deactivate PTS
 deactivate LBB
-deactivate MH
 
 '=====================
 ' NHẬP HIỆN TRẠNG VÀ CHỐT
 '=====================
 
-QL -> MH : nhapSoLuongVaTinhTrang()
-QL -> MH : btnChotBanGiao_Click()
-activate MH
+QL -> MH : Nhap thong tin tren giao dien
+MH -> MH : nhapSoLuongVaTinhTrang()
+QL -> MH : Nhan "Chot Ban Giao"
+MH -> MH : btnChotBanGiao_Click()
 
 MH -> LBB : ChotBienBan(maHD, maNV, taiSan)
 activate LBB
@@ -167,14 +175,13 @@ deactivate HDDB
 deactivate HD
 
 deactivate LBB
-deactivate MH
 
 '=====================
 ' HỦY BÀN GIAO
 '=====================
 
-QL -> MH : btnHuyBanGiao_Click()
-activate MH
+QL -> MH : Nhan "Huy Ban Giao"
+MH -> MH : btnHuyBanGiao_Click()
 MH -> MH : hienThiThongBaoHuy()
 deactivate MH
 

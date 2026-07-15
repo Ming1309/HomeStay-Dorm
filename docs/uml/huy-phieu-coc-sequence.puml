@@ -5,61 +5,147 @@ autonumber 1 1
 skinparam shadowing false
 actor "Nhan vien Sale" as NV
 actor "He thong" as HT
+
+box "GUI" #D5F5D3
 boundary ": MHHuyPhieuCoc" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": HuyPhieuCoc" as HC
 control ": HopDong" as HD
-entity ": HopDongDB" as HDDB
 control ": PhieuCoc" as PC
-entity ": PhieuCocDB" as PCDB
 control ": Phong" as P
-entity ": PhongDB" as PDB
 control ": DichVuThongBao" as DV
 control ": ThongBao" as TB
-entity ": ThongBaoDB" as TBDB
+end box
 
-NV -> MH : chon phieu va xac nhan huy
+box "DB" #D6EAF8
+entity ": HopDongDB" as HDDB
+entity ": PhieuCocDB" as PCDB
+entity ": PhongDB" as PDB
+entity ": ThongBaoDB" as TBDB
+end box
+
+NV -> MH : chon phieu coc can huy
+activate MH
+MH -> MH : select(maPhieuCoc)
+NV -> MH : xac nhan huy phieu coc
+MH -> MH : confirm()
 MH -> HC : Huy(maPhieuCoc, maNhanVien)
+activate HC
 HC -> PC : DocChiTiet(maPhieuCoc)
+activate PC
 PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
+deactivate PCDB
+deactivate PC
 HC -> HD : TonTaiTheoPhieuCoc(maPhieuCoc)
+activate HD
 HD -> HDDB : TonTaiTheoPhieuCoc(maPhieuCoc)
+activate HDDB
+deactivate HDDB
+deactivate HD
 HC -> P : DocChiTiet(maPhong)
+activate P
 P -> PDB : DocChiTiet(maPhong)
+activate PDB
+deactivate PDB
+deactivate P
 HC -> PC : Huy(maNhanVien, thoiDiem)
+activate PC
+deactivate PC
 HC -> P : GiaiPhongDatCoc(maGiuongs)
+activate P
+deactivate P
 HC -> PC : CapNhatHuy()
+activate PC
 PC -> PCDB : CapNhatHuy(phieu)
+activate PCDB
+deactivate PCDB
+deactivate PC
 HC -> P : CapNhatGiaiPhongDatCoc()
+activate P
 P -> PDB : CapNhatGiaiPhongDatCoc(phong)
+activate PDB
 alt phieu.DaDongTien
+deactivate PDB
+deactivate P
   HC -> DV : GuiThongBaoKeToan(tieuDe, noiDung, lienKet, maNhanVien, maPhieuCoc)
+  activate DV
   DV -> TB : Tao(tieuDe, noiDung, KeToan, lienKet, orange, maNhanVien, maPhieuCoc, thoiDiem)
+  activate TB
+deactivate TB
   DV -> TB : Luu()
+  activate TB
   TB -> TBDB : Them(thongBao)
+  activate TBDB
+deactivate TBDB
 end
 
 == Tu dong huy phieu qua han ==
 HT -> HC : LayDanhSachMaQuaHan(thoiDiemHienTai, batchSize)
+deactivate TB
+deactivate DV
 HC -> PC : LayDanhSachMaQuaHan(thoiDiemHienTai, batchSize)
+activate PC
 PC -> PCDB : LayDanhSachMaQuaHan(thoiDiemHienTai, batchSize)
+activate PCDB
 loop tung ma phieu coc qua han
   HT -> HC : TuDongHuyQuaHan(maPhieuCoc, thoiDiemHienTai)
+deactivate PCDB
+deactivate PC
   HC -> PC : DocChiTietChoCapNhat(maPhieuCoc)
+  activate PC
   PC -> PCDB : DocChiTietChoCapNhat(maPhieuCoc)
+  activate PCDB
+deactivate PCDB
+deactivate PC
   HC -> PC : CoTheTuDongHuy(thoiDiemHienTai)
+  activate PC
+deactivate PC
   HC -> HD : TonTaiTheoPhieuCoc(maPhieuCoc)
+  activate HD
   HD -> HDDB : TonTaiTheoPhieuCoc(maPhieuCoc)
+  activate HDDB
+deactivate HDDB
+deactivate HD
   HC -> P : DocChiTiet(maPhong)
+  activate P
   P -> PDB : DocChiTiet(maPhong)
+  activate PDB
+deactivate PDB
+deactivate P
   HC -> PC : TuDongHuyQuaHan(thoiDiemHienTai)
+  activate PC
+deactivate PC
   HC -> P : GiaiPhongDatCoc(maGiuongs)
+  activate P
+deactivate P
   HC -> PC : CapNhatTuDongHuy(thoiDiemHienTai)
+  activate PC
   PC -> PCDB : CapNhatTuDongHuy(phieu, thoiDiemHienTai)
+  activate PCDB
+deactivate PCDB
+deactivate PC
   HC -> P : CapNhatGiaiPhongDatCoc()
+  activate P
   P -> PDB : CapNhatGiaiPhongDatCoc(phong)
+  activate PDB
+deactivate PDB
+deactivate P
   HC -> DV : GuiThongBaoSale(tieuDe, noiDung, lienKet, maNVGui, maPhieuCoc)
+  activate DV
   DV -> TB : Tao(tieuDe, noiDung, Sale, lienKet, orange, maNVGui, maPhieuCoc, thoiDiem)
+  activate TB
+deactivate TB
   DV -> TB : Luu()
+  activate TB
   TB -> TBDB : Them(thongBao)
+  activate TBDB
+deactivate TBDB
 end
+deactivate TB
+deactivate DV
+deactivate HC
+deactivate MH
 @enduml

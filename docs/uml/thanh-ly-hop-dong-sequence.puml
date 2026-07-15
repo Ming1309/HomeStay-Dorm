@@ -8,18 +8,18 @@ title Thanh lý hợp đồng
 
 actor "Quản lý" as QL
 
-box "GUI" #F9FBE7
+box "GUI" #D5F5D3
 boundary "MHThanhLyHopDong" as MH
 end box
 
-box "BUS" #FEF9E7
+box "BUS" #FCF3CF
 control "HopDong" as HD
 control "PhieuDoiSoat" as PDS
 control "ThanhVienHopDong" as TV
 control "Giuong" as GI
 end box
 
-box "DB" #F5EEF8
+box "DB" #D6EAF8
 entity "HopDongDB" as HDDB
 entity "PhieuDoiSoatDB" as PDSDB
 entity "ThanhVienHopDongDB" as TVDB
@@ -44,7 +44,6 @@ activate HDDB
 deactivate HDDB
 
 deactivate HD
-deactivate MH
 
 '=========================
 ' XEM CHI TIẾT HỢP ĐỒNG
@@ -52,7 +51,6 @@ deactivate MH
 
 QL -> MH : 2.0 Chọn hợp đồng cần thanh lý
 
-activate MH
 
 MH -> HD : 2.1 layThongTinHopDong(maHD)
 
@@ -89,7 +87,6 @@ deactivate PDS
 
 MH -> MH : 2.7 hienThiThongTinHopDong(maHD)
 
-deactivate MH
 
 '=========================
 ' KIỂM TRA ĐIỀU KIỆN + THANH LÝ
@@ -97,7 +94,6 @@ deactivate MH
 
 QL -> MH : 3.0 Xác nhận đã ký biên bản và thu hồi chìa khóa/thẻ
 
-activate MH
 
 MH -> MH : 3.1 kiemTraDieuKienThanhLy(maHD)
 
@@ -109,7 +105,8 @@ alt Khách đã hoàn tất nghĩa vụ tài chính
 
 deactivate PDS
 
-QL -> MH : 3.3 btnThanhLy_Click()
+QL -> MH : Nhan "Thanh Ly"
+MH -> MH : 3.3 btnThanhLy_Click()
 
 MH -> HD : 3.4 thanhLyHopDong(maHD, ngayThanhLy, nguoiThucHien, ghiChu)
 
@@ -147,8 +144,6 @@ deactivate GI
 MH -> MH : 3.10 hienThiThongBaoThanhCong()
 
 else Khách còn nợ tiền
-
-deactivate PDS
 
 MH -> MH : A5.1 hienThiThongBaoLoi()
 

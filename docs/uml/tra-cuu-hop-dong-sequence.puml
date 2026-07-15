@@ -8,18 +8,18 @@ skinparam maxMessageSize 80
 
 actor "Nguoi dung" as USER
 
-box "GUI" #F9FBE7
+box "GUI" #D5F5D3
 boundary "MHTraCuuHopDong" as MH
 end box
 
-box "BUS" #FEF9E7
+box "BUS" #FCF3CF
 control "TraCuuHopDong" as DK
 control "HopDong" as HD
 control "ThanhVienHopDong" as TV
 control "DichVuHopDong" as DV
 end box
 
-box "DB" #F5EEF8
+box "DB" #D6EAF8
 entity "HopDongDB" as HDDB
 entity "ThanhVienHopDongDB" as TVDB
 entity "DichVuHopDongDB" as DVDB
@@ -45,7 +45,6 @@ deactivate HDDB
 deactivate HD
 
 deactivate DK
-deactivate MH
 
 
 '=====================
@@ -53,9 +52,8 @@ deactivate MH
 '=====================
 
 USER -> MH : 2.0 Nhap tieu chi
-activate MH
 
-USER -> MH : 2.1 btnTimKiem_Click()
+MH -> MH : 2.1 btnTimKiem_Click()
 
 MH -> DK : 2.2 TimKiem(tuKhoa, trangThai)
 activate DK
@@ -95,15 +93,14 @@ note right of MH : Hien thi danh sach hop dong
 end
 
 deactivate DK
-deactivate MH
 
 
 '=====================
 ' XEM CHI TIET
 '=====================
 
-USER -> MH : 3.0 grvDSHopDong_CellClick(maHD)
-activate MH
+USER -> MH : Chon hop dong trong ket qua
+MH -> MH : 3.0 grvDSHopDong_CellClick(maHD)
 
 MH -> DK : 3.1 LayChiTiet(maHD)
 activate DK

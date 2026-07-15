@@ -1,40 +1,107 @@
 @startuml
 title Quản lý quy định lưu trú
-skinparam responseMessageBelowArrow true
 
+actor "Quan tri vien" as QTV
+
+box "GUI" #D5F5D3
 boundary MHQuanLyQuyDinh
+end box
+
+box "BUS" #FCF3CF
 control QuanLyQuyDinh
 control QuyDinh
+end box
+
+box "DB" #D6EAF8
 entity QuyDinhDB
 entity QuyDinhFileStorage
+end box
+skinparam responseMessageBelowArrow true
 
+
+QTV -> MHQuanLyQuyDinh : Chon chuc nang "Quan ly quy dinh"
+activate MHQuanLyQuyDinh
+MHQuanLyQuyDinh -> MHQuanLyQuyDinh : HienThi()
 MHQuanLyQuyDinh -> QuanLyQuyDinh: LayDanhSach()
+activate QuanLyQuyDinh
 QuanLyQuyDinh -> QuyDinh: LayDanhSach()
+activate QuyDinh
 QuyDinh -> QuyDinhDB: LayDanhSach()
+activate QuyDinhDB
 
+QTV -> MHQuanLyQuyDinh : Nhap thong tin va chon tep PDF
+QTV -> MHQuanLyQuyDinh : Nhan "Them"
+MHQuanLyQuyDinh -> MHQuanLyQuyDinh : btnThem_Click()
 MHQuanLyQuyDinh -> QuanLyQuyDinh: Them(quyDinh, tep)
+deactivate QuyDinhDB
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinh: ChuanHoa()
+activate QuyDinh
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinh: KiemTraDuLieuHopLe(false)
+activate QuyDinh
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinhFileStorage: Luu(tep)
+activate QuyDinhFileStorage
+deactivate QuyDinhFileStorage
 QuanLyQuyDinh -> QuyDinh: Them()
+activate QuyDinh
 QuyDinh -> QuyDinhDB: Them(quyDinh)
+activate QuyDinhDB
 
+QTV -> MHQuanLyQuyDinh : Chon quy dinh va sua thong tin
+QTV -> MHQuanLyQuyDinh : Nhan "Luu thay doi"
+MHQuanLyQuyDinh -> MHQuanLyQuyDinh : btnSua_Click()
 MHQuanLyQuyDinh -> QuanLyQuyDinh: CapNhat(maQD, thongTin, tepMoi)
+deactivate QuyDinhDB
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinh: Doc(maQD)
+activate QuyDinh
 QuyDinh -> QuyDinhDB: Doc(maQD)
+activate QuyDinhDB
+deactivate QuyDinhDB
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinh: KiemTraDuLieuHopLe(true)
+activate QuyDinh
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinh: CapNhat()
+activate QuyDinh
 QuyDinh -> QuyDinhDB: CapNhat(quyDinh)
+activate QuyDinhDB
 
+QTV -> MHQuanLyQuyDinh : Chon quy dinh va xac nhan xoa
+MHQuanLyQuyDinh -> MHQuanLyQuyDinh : btnXoa_Click()
 MHQuanLyQuyDinh -> QuanLyQuyDinh: Xoa(maQD)
+deactivate QuyDinhDB
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinh: Doc(maQD)
+activate QuyDinh
 QuyDinh -> QuyDinhDB: Doc(maQD)
+activate QuyDinhDB
+deactivate QuyDinhDB
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinh: DangDuocThamChieu(maQD)
+activate QuyDinh
 QuyDinh -> QuyDinhDB: DangDuocThamChieu(maQD)
+activate QuyDinhDB
+deactivate QuyDinhDB
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinh: Xoa()
+activate QuyDinh
 QuyDinh -> QuyDinhDB: Xoa(maQD)
+activate QuyDinhDB
+deactivate QuyDinhDB
+deactivate QuyDinh
 QuanLyQuyDinh -> QuyDinhFileStorage: Xoa(duongDan)
+activate QuyDinhFileStorage
 
+QTV -> MHQuanLyQuyDinh : Chon "Xem van ban"
+MHQuanLyQuyDinh -> MHQuanLyQuyDinh : btnXemVanBan_Click()
 MHQuanLyQuyDinh -> QuanLyQuyDinh: DocVanBan(tenTep)
+deactivate QuyDinhFileStorage
 QuanLyQuyDinh -> QuyDinhFileStorage: Doc(tenTep)
+activate QuyDinhFileStorage
+deactivate QuyDinhFileStorage
+deactivate QuanLyQuyDinh
+deactivate MHQuanLyQuyDinh
 @enduml

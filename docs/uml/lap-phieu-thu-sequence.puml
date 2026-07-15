@@ -8,18 +8,18 @@ title Lập phiếu thu - Thanh toán trả phòng
 
 actor "Kế Toán" as KT
 
-box "GUI" #F9FBE7
+box "GUI" #D5F5D3
     boundary "MHLapPhieuThu" as MH
 end box
 
-box "BUS" #FEF9E7
+box "BUS" #FCF3CF
     control "PhieuDoiSoat" as PDS
     control "HoaDon" as HD
     control "PhieuThu" as PT
     control "NhanVien" as NV
 end box
 
-box "DB" #F5EEF8
+box "DB" #D6EAF8
     entity "PhieuDoiSoatDB" as PDSDB
     entity "HoaDonDB" as HDDB
     entity "PhieuThuDB" as PTDB
@@ -68,8 +68,8 @@ KT -> MH : 4.1 Tải lên minh chứng\nthanh toán (nếu có)
 ' XÁC NHẬN THU TIỀN
 ' =====================
 
-KT -> MH : 5.0 btnXacNhanThuTien_Click()
-activate MH #DAEEF8
+KT -> MH : Nhan "Xac Nhan Thu Tien"
+MH -> MH : 5.0 btnXacNhanThuTien_Click()
 
 MH -> NV : 5.1 layThongTinNhanVien(maNV)
 activate NV
@@ -94,8 +94,8 @@ deactivate PDSDB
 deactivate PDS
 
 deactivate MH
-deactivate MH
 
-KT -> MH : 6.0 btnQuayLai_Click()
+KT -> MH : Nhan "Quay Lai"
+MH -> MH : 6.0 btnQuayLai_Click()
 
 @enduml

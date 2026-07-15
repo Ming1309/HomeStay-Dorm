@@ -9,11 +9,11 @@ title Lập biên bản thu hồi tài sản
 
 actor "Quản lý" as QL
 
-box "GUI" #F9FBE7
+box "GUI" #D5F5D3
 boundary "MHLapBienBanThuHoi" as MH
 end box
 
-box "BUS" #FEF9E7
+box "BUS" #FCF3CF
 control "DieuKhienLapBienBanThuHoi" as DK
 control "HopDong" as HD
 control "LichHen" as LH
@@ -22,7 +22,7 @@ control "ChiTietGiaoNhan" as CTGN
 control "DichVuThongBao" as TB
 end box
 
-box "DB" #F5EEF8
+box "DB" #D6EAF8
 entity "NhanVienDB" as NVDB
 entity "HopDongDB" as HDDB
 entity "LichHenDB" as LHDB
@@ -66,7 +66,6 @@ deactivate HD
 DK -> MH : 1.7 hienThiDanhSachHopDong()
 
 deactivate DK
-deactivate MH
 
 
 '=====================
@@ -74,7 +73,6 @@ deactivate MH
 '=====================
 
 QL -> MH : 2.0 Chọn hợp đồng
-activate MH
 
 MH -> DK : 2.1 layChiTietHopDongThuHoi(maHD)
 activate DK
@@ -104,17 +102,17 @@ deactivate CTGN
 DK -> MH : 2.7 hienThiDanhSachTaiSan()
 
 deactivate DK
-deactivate MH
 
 
 '=====================
 ' LƯU BIÊN BẢN THU HỒI
 '=====================
 
-QL -> MH : 3.0 nhapSoLuongTinhTrangMinhChung()
-activate MH
+QL -> MH : Nhap thong tin tren giao dien
+MH -> MH : 3.0 nhapSoLuongTinhTrangMinhChung()
 
-QL -> MH : 3.1 btnLuuBienBan_Click()
+QL -> MH : Nhan "Luu Bien Ban"
+MH -> MH : 3.1 btnLuuBienBan_Click()
 
 MH -> DK : 3.2 luuBienBanThuHoi(maHD, dsTaiSan)
 activate DK

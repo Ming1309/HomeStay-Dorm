@@ -4,49 +4,115 @@ hide footbox
 autonumber 1 1
 skinparam shadowing false
 actor "Quan tri vien" as QTV
+
+box "GUI" #D5F5D3
 boundary ": MHQuanLyTaiSan" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": QuanLyTaiSan" as QL
 control ": TaiSan" as TS
-entity ": TaiSanDB" as DB
+end box
 
-QTV -> MH : loadAssets()
+box "DB" #D6EAF8
+entity ": TaiSanDB" as DB
+end box
+
+QTV -> MH : Mo man hinh chuc nang
+activate MH
+MH -> MH : loadAssets()
 MH -> QL : LayDanhSach()
+activate QL
 QL -> TS : LayDanhSach()
+activate TS
 TS -> DB : LayDanhSach()
+activate DB
+deactivate DB
+deactivate TS
+deactivate QL
 MH -> MH : hien thi danh sach
 
-QTV -> MH : onSubmit(values)
+QTV -> MH : Nhap thong tin va nhan "Luu"
+MH -> MH : onSubmit(values)
 MH -> MH : validate form
 alt them moi
   MH -> QL : Them(taiSan)
+  activate QL
   QL -> TS : ChuanHoa()
+  activate TS
+deactivate TS
   QL -> TS : KiemTraDuLieuHopLe()
+  activate TS
+deactivate TS
   QL -> TS : TrungTen(tenTaiSan, maLoaiTru)
+  activate TS
   TS -> DB : TrungTen(tenTaiSan, maLoaiTru)
+  activate DB
+deactivate DB
+deactivate TS
   QL -> TS : Them()
+  activate TS
   TS -> DB : Them(taiSan)
+  activate DB
+deactivate DB
+deactivate TS
+deactivate QL
 else cap nhat
   MH -> QL : CapNhat(maTS, thongTin)
+  activate QL
   QL -> TS : ChuanHoa()
+  activate TS
+deactivate TS
   QL -> TS : KiemTraDuLieuHopLe()
+  activate TS
+deactivate TS
   QL -> TS : Doc(maTS)
+  activate TS
   TS -> DB : Doc(maTS)
+  activate DB
+deactivate DB
+deactivate TS
   QL -> TS : TrungTen(tenTaiSan, maLoaiTru)
+  activate TS
   TS -> DB : TrungTen(tenTaiSan, maLoaiTru)
+  activate DB
+deactivate DB
+deactivate TS
   QL -> TS : CapNhat()
+  activate TS
   TS -> DB : CapNhat(taiSan)
+  activate DB
+deactivate DB
+deactivate TS
+deactivate QL
 end
 
-QTV -> MH : confirmDelete()
+QTV -> MH : Chon ban ghi va xac nhan xoa
+MH -> MH : confirmDelete()
 MH -> QL : Xoa(maTS)
+activate QL
 QL -> TS : Doc(maTS)
+activate TS
 TS -> DB : Doc(maTS)
+activate DB
+deactivate DB
+deactivate TS
 QL -> TS : DangDuocThamChieu(maTS)
+activate TS
 TS -> DB : DangDuocThamChieu(maTS)
+activate DB
 alt da duoc tham chieu
+deactivate DB
+deactivate TS
   QL -> QL : throw InvalidOperationException
 else chua duoc tham chieu
   QL -> TS : Xoa()
+  activate TS
   TS -> DB : Xoa(maTS)
+  activate DB
 end
+deactivate DB
+deactivate TS
+deactivate QL
+deactivate MH
 @enduml

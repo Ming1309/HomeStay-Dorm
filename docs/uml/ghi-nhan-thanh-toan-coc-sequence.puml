@@ -6,51 +6,97 @@ autonumber 1 1
 skinparam shadowing false
 
 actor "Nhan vien Sale" as NV
+
+box "GUI" #D5F5D3
 boundary ": MHGhiNhanThanhToanCoc" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": GhiNhanThanhToanCoc" as GNTT
 control ": PhieuCoc" as PC
+end box
+
+box "DB" #D6EAF8
 entity ": PhieuCocDB" as PCDB
+end box
 
-NV -> MH : loadPendingDeposits(text)
+NV -> MH : Mo man hinh chuc nang
+activate MH
+MH -> MH : loadPendingDeposits(text)
 MH -> GNTT : LayDanhSachChoThanhToan(text)
+activate GNTT
 GNTT -> PC : LayDanhSachChoThanhToan(thoiDiemHienTai, text)
+activate PC
 PC -> PCDB : LayDanhSachChoThanhToan(thoiDiemHienTai, text)
+activate PCDB
 
-NV -> MH : chonPhieuCoc(item)
+deactivate PCDB
+deactivate PC
+deactivate GNTT
+NV -> MH : Chon phieu coc
+MH -> MH : chonPhieuCoc(item)
 MH -> GNTT : LayChiTiet(maPhieuCoc)
+activate GNTT
 GNTT -> PC : DocChiTiet(maPhieuCoc)
+activate PC
 PC -> PCDB : DocChiTiet(maPhieuCoc)
+activate PCDB
+deactivate PCDB
+deactivate PC
 GNTT -> PC : KiemTraTrangThaiChoGhiNhan()
+activate PC
+deactivate PC
 GNTT -> PC : KiemTraConHanThanhToan(thoiDiemHienTai)
+activate PC
 
 alt Khach thanh toan tien mat
   note over NV,MH
     Sale nhan tien, lap va ky bien nhan
     cung khach hang o ngoai he thong.
   end note
-  NV -> MH : chonTepChungTu(anhBienNhanDaKy)
+deactivate PC
+deactivate GNTT
+  NV -> MH : Chon tep minh chung
+  MH -> MH : chonTepChungTu(anhBienNhanDaKy)
 else Khach chuyen khoan
-  NV -> MH : chonTepChungTu(anhGiaoDich)
+  NV -> MH : Chon tep minh chung
+  MH -> MH : chonTepChungTu(anhGiaoDich)
 end
 
-NV -> MH : guiChungTu()
+NV -> MH : Nhan "Gui chung tu"
+MH -> MH : guiChungTu()
 alt Chua chon tep
   MH -> MH : hien thi loi thieu chung tu
 else Tep sai dinh dang hoac vuot qua 5 MB
   MH -> MH : hien thi loi tep khong hop le
 else Du lieu hop le
   MH -> GNTT : GuiChungTuThanhToan(maPhieuCoc, phuongThucThanhToan, tepChungTu)
+  activate GNTT
   GNTT -> PC : DocChiTiet(maPhieuCoc)
+  activate PC
   PC -> PCDB : DocChiTiet(maPhieuCoc)
+  activate PCDB
+deactivate PCDB
+deactivate PC
   GNTT -> PC : KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan, thoiDiemHienTai)
+  activate PC
+deactivate PC
   GNTT -> PC : GhiNhanThanhToan(phuongThucThanhToan, anhMinhChung, thoiDiemHienTai)
+  activate PC
+deactivate PC
   GNTT -> PC : CapNhatThanhToan(thoiDiemHienTai)
+  activate PC
   PC -> PCDB : CapNhatThanhToan(phieu, thoiDiemHienTai)
+  activate PCDB
   alt Phieu het han hoac khong con ChoThanhToan
+deactivate PCDB
+deactivate PC
+deactivate GNTT
     MH -> MH : hien thi loi tranh chap trang thai
   else Cap nhat thanh cong
     MH -> MH : hien thi thong bao thanh cong
   end
 end
 
+deactivate MH
 @enduml

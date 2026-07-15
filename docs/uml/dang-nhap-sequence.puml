@@ -1,16 +1,44 @@
 @startuml
 title Đăng nhập
-skinparam responseMessageBelowArrow true
 
+actor "Nguoi dung" as ND
+
+box "GUI" #D5F5D3
 boundary MHDangNhap
+end box
+
+box "BUS" #FCF3CF
 control XacThucNguoiDung
 control TaiKhoan
-entity TaiKhoanDB
+end box
 
+box "DB" #D6EAF8
+entity TaiKhoanDB
+end box
+skinparam responseMessageBelowArrow true
+
+
+ND -> MHDangNhap : Nhap ten dang nhap va mat khau
+ND -> MHDangNhap : Nhan "Dang nhap"
+activate MHDangNhap
+MHDangNhap -> MHDangNhap : btnDangNhap_Click()
 MHDangNhap -> XacThucNguoiDung: DangNhap()
+activate XacThucNguoiDung
 XacThucNguoiDung -> TaiKhoan: DocTheoTenDangNhap()
+activate TaiKhoan
 TaiKhoan -> TaiKhoanDB: DocTheoTenDangNhap()
+activate TaiKhoanDB
+deactivate TaiKhoanDB
+deactivate TaiKhoan
 XacThucNguoiDung -> TaiKhoan: DangHoatDong()
+activate TaiKhoan
+deactivate TaiKhoan
 XacThucNguoiDung -> TaiKhoan: KiemTraMatKhau()
+activate TaiKhoan
 TaiKhoan -> TaiKhoanDB: CapNhatLanDangNhap()
+activate TaiKhoanDB
+deactivate TaiKhoanDB
+deactivate TaiKhoan
+deactivate XacThucNguoiDung
+deactivate MHDangNhap
 @enduml

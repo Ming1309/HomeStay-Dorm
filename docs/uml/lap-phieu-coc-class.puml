@@ -4,24 +4,24 @@ title SO DO LOP 3 TANG - LAP PHIEU COC
 top to bottom direction
 skinparam shadowing false
 skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 45
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 skinparam class {
-  BackgroundColor #FFFACD
-  BorderColor #9B7B7B
+  BorderColor #7F8C8D
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHLapPhieuCoc {
-    - txtTimKiemKH: TextBox
-    - grvKhachChoCoc: GridView
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHLapPhieuCoc #BFE8BA {
+    - grvLichHenChoCoc: GridView
     - txtHoTen: TextBox
     - txtSDT: TextBox
     - dtpNgaySinh: DatePicker
     - lstGioiTinh: ListBox
-    - lstLoaiGiayTo: ListBox
     - txtQuocTich: TextBox
     - txtEmail: TextBox
+    - lstLoaiGiayTo: ListBox
     - txtSoGiayTo: TextBox
     - rdoThueOGhep: RadioButton
     - rdoThueNguyenPhong: RadioButton
@@ -33,34 +33,33 @@ package "TANG GIAO DIEN" #EAF2F8 {
     - grvDanhSachPhong: GridView
     - grvDanhSachGiuong: GridView
     - btnChinhSua: Button
-    - btnTimKiem: Button
-    - btnTaoYeuCauCoc: Button
+    - btnTimPhong: Button
+    - btnTaoPhieuCoc: Button
     - dlgXacNhanTaoPhieu: AlertDialog
     - lblTienCocTamTinh: Label
     --
     + HienThi()
-    + selectAppointment(lichHen: LichHen)
-    + changeRentalType(hinhThucThue: String)
-    + searchRooms()
-    + selectWholeRoom(phong: Phong)
-    + toggleBed(phong: Phong, maGiuong: String)
-    + openConfirmation()
-    + submitDeposit()
+    + chonLichHen(lichHen: LichHen)
+    + chonHinhThucThue(hinhThucThue: String)
+    + timPhong()
+    + chonNguyenPhong(phong: Phong)
+    + chonBoChonGiuong(phong: Phong, maGiuong: String)
+    + moHopThoaiXacNhan()
+    + taoPhieuCoc()
   }
-
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class LapPhieuCoc {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class LapPhieuCoc #F4E3A2 {
     + LayDanhSachKhachChoCoc(maNV: String): IReadOnlyList<LichHen>
-    + TimKiemKhachChoCoc(text: String, maNV: String): IReadOnlyList<LichHen>
     + LayChiTietLichHen(maLichHen: String, maNV: String): LichHen
     + LayPhongOGhep(soLuong: Integer, toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal, gioiTinh: String, maNV: String): IReadOnlyList<Phong>
     + LayPhongNguyenCan(toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal, gioiTinh: String, maNV: String): IReadOnlyList<Phong>
     + TaoPhieuCoc(maLichHen: String, thongTinKhachHang: KhachHang, maPhong: String, danhSachGiuong: IEnumerable<String>, hinhThucThue: String, maNhanVien: String): PhieuCoc
+    - KiemTraThongTinKhachHang(khachHang: KhachHang)
   }
 
-  class NhanVien {
+  class NhanVien #F4E3A2 {
     - MaNV: String
     - MaCN: String
     - VaiTro: String
@@ -68,23 +67,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + DocPhamVi(maNV: String): NhanVien
   }
 
-  class KhachHang {
-    - MaKH: String
-    - HoTen: String
-    - NgaySinh: DateTime
-    - GioiTinh: String
-    - QuocTich: String
-    - LoaiGiayTo: String
-    - SoGiayTo: String
-    - DiaChiThuongTru: String
-    - SDT: String
-    - Email: String
-    --
-    + CapNhatTu(thongTinMoi: KhachHang): Boolean
-    + CapNhat()
-  }
-
-  class LichHen {
+  class LichHen #F4E3A2 {
     - MaLH: String
     - NgayHen: DateTime
     - GioHen: TimeSpan
@@ -92,17 +75,32 @@ package "TANG NGHIEP VU" #FCF3CF {
     - TrangThai: String
     - MaPDK: String
     - MaPhieuCoc: String
+    - MaCN: String
     - KhachHang: KhachHang
     --
     + LayDanhSachKhachChoCoc(maCN: String): IReadOnlyList<LichHen>
-    + LayDanhSachKhachChoCoc(maCN: String, text: String): IReadOnlyList<LichHen>
     + DocChiTiet(maLichHen: String, maCN: String, khoaCapNhat: Boolean): LichHen
     + KiemTraCoTheLapPhieuCoc()
     + GanPhieuCoc(maPhieuCoc: String)
     + LuuPhieuCoc()
   }
 
-  class Phong {
+  class KhachHang #F4E3A2 {
+    - MaKH: String
+    - HoTen: String
+    - NgaySinh: DateTime
+    - GioiTinh: String
+    - QuocTich: String
+    - LoaiGiayTo: String
+    - SoGiayTo: String
+    - SDT: String
+    - Email: String
+    --
+    + CapNhatTu(thongTinMoi: KhachHang): Boolean
+    + CapNhat()
+  }
+
+  class Phong #F4E3A2 {
     - MaPhong: String
     - SoPhong: String
     - ToaNha: String
@@ -110,8 +108,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     - GioiTinhChoPhep: String
     - TrangThai: String
     - MaCN: String
-    - SoGiuongTrong: Integer
-    - GiuongsVuaGiu: IReadOnlyList<Giuong>
+    - Giuongs: List<Giuong>
     --
     + LayPhongOGhep(soLuong: Integer, toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal, maCN: String, gioiTinh: String): IReadOnlyList<Phong>
     + LayPhongNguyenCan(toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal, maCN: String, gioiTinh: String): IReadOnlyList<Phong>
@@ -119,12 +116,10 @@ package "TANG NGHIEP VU" #FCF3CF {
     + KiemTraGioiTinhChoPhep(dsKhach: IReadOnlyList<KhachHang>): Boolean
     + GiuGiuong(maGiuongs: IEnumerable<String>): IReadOnlyList<Giuong>
     + GiuNguyenPhong(): IReadOnlyList<Giuong>
-    + TinhTienCoc(soGiuong: Integer): Decimal
-    + PhuHopYeuCau(toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal): Boolean
     + CapNhat()
   }
 
-  class Giuong {
+  class Giuong #F4E3A2 {
     - MaGiuong: String
     - SoGiuong: String
     - TrangThai: String
@@ -133,101 +128,108 @@ package "TANG NGHIEP VU" #FCF3CF {
     + GiuCho(maPhong: String)
   }
 
-  class LoaiPhong {
+  class LoaiPhong #F4E3A2 {
     - MaLP: String
     - TenLoaiPhong: String
     - SucChua: Integer
     - GiaThue: Decimal
   }
 
-  class PhieuCoc {
+  class PhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
-    - HanThanhToan: DateTime
     - HinhThucThue: String
     - SoGiuongThue: Integer
     - TongTien: Decimal
+    - ThoiDiemCoc: DateTime
     - TrangThai: String
+    - MaKH: String
+    - MaPhong: String
+    - MaNV: String
+    - MaCN: String
     --
     + TaoMoi(hinhThucThue: String, khachHang: KhachHang, phong: Phong, giuongs: IReadOnlyList<Giuong>, maNhanVien: String, thoiDiem: DateTime): PhieuCoc
     + Them()
   }
 
-  class ThanhVienDangKy {
+  class ThanhVienDangKy #F4E3A2 {
     - MaPhieuCoc: String
     - MaKH: String
     - VaiTro: String
     - TrangThaiDuyet: String
   }
 
-  class DichVuThongBao {
-    + PhatCanXuLyTheoVaiTro(loaiSuKien: String, maCN: String, vaiTroNhan: String, tieuDe: String, noiDung: String, lienKet: String, maThamChieu: String, maNVGui: String)
-  }
-
-  class ThongBao {
-    + Tao(loaiSuKien: String, loaiThongBao: String, tieuDe: String, noiDung: String, maCN: String, vaiTroNhan: String, maNVNhan: String, lienKet: String, tone: String, khoaChongTrung: String, maNVGui: String, maThamChieu: String, thoiGianTao: DateTime): ThongBao
-    + Luu()
-  }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class NhanVienDB #BFDCF0 {
+    + DocChiTiet(maNV: String): NhanVien
+  }
 
-  class LichHenDB {
+  class LichHenDB #BFDCF0 {
     + LayDanhSachKhachChoCoc(maCN: String): IReadOnlyList<LichHen>
-    + LayDanhSachKhachChoCoc(maCN: String, text: String): IReadOnlyList<LichHen>
     + DocChiTiet(maLichHen: String, maCN: String, khoaCapNhat: Boolean): LichHen
     + GanPhieuCoc(lichHen: LichHen)
   }
 
-  class KhachHangDB {
+  class KhachHangDB #BFDCF0 {
     + CapNhat(khachHang: KhachHang)
   }
 
-  class PhongDB {
+  class PhongDB #BFDCF0 {
     + LayPhongOGhep(soLuong: Integer, toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal, maCN: String, gioiTinh: String): IReadOnlyList<Phong>
     + LayPhongNguyenCan(toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal, maCN: String, gioiTinh: String): IReadOnlyList<Phong>
     + DocChiTiet(maPhong: String, maCN: String): Phong
     + CapNhat(phong: Phong)
   }
 
-  class PhieuCocDB {
+  class PhieuCocDB #BFDCF0 {
     + Them(phieu: PhieuCoc)
   }
 
-  class NhanVienDB {
-    + DocChiTiet(maNV: String): NhanVien
-  }
-
-  class ThongBaoDB {
-    + Them(thongBao: ThongBao, capNhatNeuTonTai: Boolean)
-  }
+  NhanVienDB -[hidden]right- LichHenDB
+  LichHenDB -[hidden]right- KhachHangDB
+  KhachHangDB -[hidden]right- PhieuCocDB
+  PhieuCocDB -[hidden]right- PhongDB
 }
 
-' Boundary dieu khien use case lap phieu coc.
-MHLapPhieuCoc  o--  LapPhieuCoc
+' Co dinh thu tu ba tang theo chieu doc.
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
 
-' Trong BLL: duong thang, khong huong.
-LapPhieuCoc "1" -- "0..*" LichHen : xu ly
-LapPhieuCoc "1" -- "0..*" KhachHang : cap nhat
-LapPhieuCoc "1" -- "0..*" Phong : xu ly
-LapPhieuCoc "1" -- "0..*" PhieuCoc : lap
-LapPhieuCoc "1" -- "1" NhanVien : doc pham vi
-LapPhieuCoc "1" -- "1" DichVuThongBao : phat tac vu
-LichHen "0..*" -- "1" KhachHang : dat lich
-LichHen "1" -- "0..1" PhieuCoc : gan coc
-Phong "0..*" -- "1" LoaiPhong : thuoc
-Phong "1" -- "1..*" Giuong : chua
-PhieuCoc "0..*" -- "1" KhachHang : dai dien
-PhieuCoc "0..*" -- "1" Phong : dat
-PhieuCoc "0..*" -- "1..*" Giuong : chi tiet
-PhieuCoc "1" -- "1..*" ThanhVienDangKy : gom
-DichVuThongBao "1" -- "0..*" ThongBao : tao
+' Neo lop o hang thap nhat cua BUS voi lop trung tam cua DAL.
+' Rang buoc truc tiep nay buoc toan bo DAL nam duoi BUS.
+Giuong -[hidden]down- PhieuCocDB
 
-' Aggregation giua business va data access.
-LichHen  o--  LichHenDB
-KhachHang  o--  KhachHangDB
-Phong  o--  PhongDB
-PhieuCoc  o-- PhieuCocDB
-NhanVien o-- NhanVienDB
-ThongBao o-- ThongBaoDB
+' Ep bo cuc theo tung hang de han che duong noi giao nhau.
+NhanVien -[hidden]right- LichHen
+KhachHang -[hidden]right- PhieuCoc
+PhieuCoc -[hidden]right- Phong
+ThanhVienDangKy -[hidden]right- Giuong
+Giuong -[hidden]right- LoaiPhong
+
+' Boundary va control cua use case.
+MHLapPhieuCoc o-down- LapPhieuCoc
+LapPhieuCoc o-down- NhanVien
+LapPhieuCoc o-down- LichHen
+LapPhieuCoc o-down- KhachHang
+LapPhieuCoc o-down- PhieuCoc
+LapPhieuCoc o-down- Phong
+
+' Quan he nghiep vu thuc su; bo nhan tren duong noi de so do gon hon.
+LichHen "0..*" -left- "1" KhachHang
+LichHen "1" -down- "0..1" PhieuCoc
+PhieuCoc "0..*" -left- "1" KhachHang
+PhieuCoc "0..*" -right- "1" Phong
+PhieuCoc "0..*" -down- "1..*" Giuong
+PhieuCoc "1" -down- "1..*" ThanhVienDangKy
+Phong "0..*" -down- "1" LoaiPhong
+Phong "1" -down- "1..*" Giuong
+
+' Moi lop nghiep vu truy cap DB cua chinh no.
+NhanVien o-down- NhanVienDB
+LichHen o-down- LichHenDB
+KhachHang o-down- KhachHangDB
+PhieuCoc o-down- PhieuCocDB
+Phong o-down- PhongDB
 
 @enduml

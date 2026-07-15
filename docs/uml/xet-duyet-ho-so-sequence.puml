@@ -10,29 +10,39 @@ skinparam sequence {
 
 actor "Quản lý" as QL
 
+box "GUI" #D5F5D3
 boundary "MH_XetDuyetHoSo" as MH
 boundary "Popup_ChiTietThanhVien" as POPCT
 boundary "Popup_XacNhanTuChoiHoSo" as POPTC
+end box
 
-entity "PhieuCoc" as PC
-entity "ThanhVienDangKy" as TV
-entity "KhachHang" as KH
-entity "Phong" as PH
-entity "ChiTietPhieuCoc" as CTPC
-entity "Giuong" as G
+box "BUS" #FCF3CF
+control "PhieuCoc" as PC
+control "ThanhVienDangKy" as TV
+control "KhachHang" as KH
+control "Phong" as PH
+control "ChiTietPhieuCoc" as CTPC
+control "Giuong" as G
+end box
 
-database "PhieuCocDB" as PCDB
-database "ThanhVienDangKyDB" as TVDB
-database "KhachHangDB" as KHDB
-database "PhongDB" as PHDB
-database "ChiTietPhieuCocDB" as CTPCDB
-database "GiuongDB" as GDB
+box "DB" #D6EAF8
+entity "PhieuCocDB" as PCDB
+entity "ThanhVienDangKyDB" as TVDB
+entity "KhachHangDB" as KHDB
+entity "PhongDB" as PHDB
+entity "ChiTietPhieuCocDB" as CTPCDB
+entity "GiuongDB" as GDB
+end box
+
+
+
 
 ' =====================================================
 ' 1. MỞ MÀN HÌNH VÀ HIỂN THỊ HỒ SƠ CHỜ DUYỆT
 ' =====================================================
 
-QL -> MH: 1. loadDanhSachHoSoChoDuyet()
+QL -> MH : Chon chuc nang va mo man hinh
+MH -> MH : 1. loadDanhSachHoSoChoDuyet()
 activate MH
 
 MH -> PC: 2. layHoSoChoDuyet()
@@ -50,7 +60,8 @@ MH -> MH: 4. hienThiDanhSachHoSo()
 ' 2. QUẢN LÝ CHỌN MỘT HỒ SƠ
 ' =====================================================
 
-QL -> MH: 5. clickChonHoSo(maPhieuCoc)
+QL -> MH : Nhan "Chon Ho So"
+MH -> MH : 5. clickChonHoSo(maPhieuCoc)
 
 MH -> PC: 6. layThongTinHoSo(maPhieuCoc)
 activate PC
@@ -104,7 +115,8 @@ MH -> MH: 16. hienThiDanhSachThanhVien()
 ' =====================================================
 
 opt 17. Quản lý xem chi tiết thành viên
-    QL -> MH: 17. clickXemChiTietThanhVien(maKH)
+    QL -> MH : Nhan "Xem Chi Tiet Thanh Vien"
+    MH -> MH : 17. clickXemChiTietThanhVien(maKH)
 
     MH -> KH: 18. layThongTinKhachHang(maKH)
     activate KH
@@ -120,7 +132,8 @@ opt 17. Quản lý xem chi tiết thành viên
 
     POPCT -> POPCT: 21. hienThiThongTinThanhVien()
 
-    QL -> POPCT: 22. clickDongPopup()
+    QL -> POPCT : Nhan "Dong Popup"
+    POPCT -> POPCT : 22. clickDongPopup()
     deactivate POPCT
 end
 
@@ -130,7 +143,8 @@ end
 
 alt 23a. Duyệt toàn bộ hồ sơ
 
-    QL -> MH: 23. clickDuyetToanBo()
+    QL -> MH : Nhan "Duyet Toan Bo"
+    MH -> MH : 23. clickDuyetToanBo()
 
     MH -> PC: 24. kiemTraTrangThaiChoDuyet()
     activate PC
@@ -187,7 +201,8 @@ alt 23a. Duyệt toàn bộ hồ sơ
 
 else 23b. Từ chối một thành viên, sau đó duyệt các thành viên còn lại
 
-    QL -> MH: 23. clickTuChoiThanhVien(maKH)
+    QL -> MH : Nhan "Tu Choi Thanh Vien"
+    MH -> MH : 23. clickTuChoiThanhVien(maKH)
 
     MH -> TV: 24. danhDauTuChoi(maPhieuCoc, maKH)
     activate TV
@@ -201,7 +216,8 @@ else 23b. Từ chối một thành viên, sau đó duyệt các thành viên cò
     MH -> MH: 26. capNhatDanhSachThanhVien()
     MH -> MH: 27. doiNutDuyetToanBoThanhDuyetConLai()
 
-    QL -> MH: 28. clickDuyetThanhVienConLai()
+    QL -> MH : Nhan "Duyet Thanh Vien Con Lai"
+    MH -> MH : 28. clickDuyetThanhVienConLai()
 
     MH -> PC: 29. kiemTraTrangThaiChoDuyet()
     activate PC
@@ -260,12 +276,14 @@ else 23b. Từ chối một thành viên, sau đó duyệt các thành viên cò
 
 else 23c. Từ chối toàn bộ hồ sơ
 
-    QL -> MH: 23. clickTuChoiHoSo()
+    QL -> MH : Nhan "Tu Choi Ho So"
+    MH -> MH : 23. clickTuChoiHoSo()
 
     MH -> POPTC: 24. hienThiPopup()
     activate POPTC
 
-    QL -> POPTC: 25. clickXacNhan()
+    QL -> POPTC : Nhan "Xac Nhan"
+    POPTC -> POPTC : 25. clickXacNhan()
     deactivate POPTC
 
     MH -> TV: 26. danhDauTatCaThanhVienTuChoi(maPhieuCoc)

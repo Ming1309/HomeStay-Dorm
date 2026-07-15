@@ -6,32 +6,40 @@ autonumber 1 1
 skinparam shadowing false
 
 actor "Nhan vien kinh doanh" as Sale
-boundary ": MHLapPhieuCoc" as MH
-control ": LapPhieuCoc" as LPC
-control ": NhanVien" as NVI
-entity ": NhanVienDB" as NVIDB
-control ": LichHen" as LH
-entity ": LichHenDB" as LHDB
-control ": KhachHang" as KH
-entity ": KhachHangDB" as KHDB
-control ": Phong" as P
-entity ": PhongDB" as PDB
-control ": PhieuCoc" as PC
-entity ": PhieuCocDB" as PCDB
-control ": DichVuThongBao" as DVTB
-control ": ThongBao" as TB
-entity ": ThongBaoDB" as TBDB
 
-Sale -> MH : HienThi()
+box "GUI" #D5F5D3
+boundary ": MHLapPhieuCoc" as MH
+end box
+
+box "BUS" #FCF3CF
+control ": LapPhieuCoc" as LPC
+control ": NhanVien" as NV
+control ": LichHen" as LH
+control ": KhachHang" as KH
+control ": Phong" as P
+control ": Giuong" as G
+control ": PhieuCoc" as PC
+end box
+
+box "DB" #D6EAF8
+entity ": NhanVienDB" as NVDB
+entity ": LichHenDB" as LHDB
+entity ": KhachHangDB" as KHDB
+entity ": PhongDB" as PDB
+entity ": PhieuCocDB" as PCDB
+end box
+
+Sale -> MH : Chon chuc nang "Lap phieu coc"
 activate MH
+MH -> MH : HienThi()
 MH -> LPC : LayDanhSachKhachChoCoc(maNV)
 activate LPC
-LPC -> NVI : DocPhamVi(maNV)
-activate NVI
-NVI -> NVIDB : DocChiTiet(maNV)
-activate NVIDB
-deactivate NVIDB
-deactivate NVI
+LPC -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
 LPC -> LH : LayDanhSachKhachChoCoc(maCN)
 activate LH
 LH -> LHDB : LayDanhSachKhachChoCoc(maCN)
@@ -40,32 +48,10 @@ deactivate LHDB
 deactivate LH
 deactivate LPC
 
-Sale -> MH : nhap tu khoa tim kiem
-MH -> LPC : TimKiemKhachChoCoc(text, maNV)
-activate LPC
-LPC -> NVI : DocPhamVi(maNV)
-activate NVI
-NVI -> NVIDB : DocChiTiet(maNV)
-activate NVIDB
-deactivate NVIDB
-deactivate NVI
-LPC -> LH : LayDanhSachKhachChoCoc(maCN, text)
-activate LH
-LH -> LHDB : LayDanhSachKhachChoCoc(maCN, text)
-activate LHDB
-deactivate LHDB
-deactivate LH
-deactivate LPC
-
-Sale -> MH : selectAppointment(lichHen)
+Sale -> MH : Chon mot lich hen da xem phong
+MH -> MH : chonLichHen(lichHen)
 MH -> LPC : LayChiTietLichHen(maLichHen, maNV)
 activate LPC
-LPC -> NVI : DocPhamVi(maNV)
-activate NVI
-NVI -> NVIDB : DocChiTiet(maNV)
-activate NVIDB
-deactivate NVIDB
-deactivate NVI
 LPC -> LH : DocChiTiet(maLichHen, maCN, false)
 activate LH
 LH -> LHDB : DocChiTiet(maLichHen, maCN, false)
@@ -74,20 +60,22 @@ deactivate LHDB
 deactivate LH
 deactivate LPC
 
-Sale -> MH : chinh sua thong tin khach hang
+opt Khach hang thay doi thong tin
+  Sale -> MH : Nhan "Chinh sua" va cap nhat thong tin
+end
 
-Sale -> MH : changeRentalType(hinhThucThue)
+Sale -> MH : Chon hinh thuc thue
+MH -> MH : chonHinhThucThue(hinhThucThue)
+opt HinhThucThue = OGhep
+  Sale -> MH : Nhap so luong giuong can coc
+end
+Sale -> MH : Chon bo loc phong
+Sale -> MH : Nhan "Tim phong"
+MH -> MH : timPhong()
 
-Sale -> MH : searchRooms()
 alt HinhThucThue = NguyenCan
   MH -> LPC : LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax, gioiTinh, maNV)
   activate LPC
-  LPC -> NVI : DocPhamVi(maNV)
-  activate NVI
-  NVI -> NVIDB : DocChiTiet(maNV)
-  activate NVIDB
-  deactivate NVIDB
-  deactivate NVI
   LPC -> P : LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh)
   activate P
   P -> PDB : LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh)
@@ -98,12 +86,6 @@ alt HinhThucThue = NguyenCan
 else HinhThucThue = OGhep
   MH -> LPC : LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax, gioiTinh, maNV)
   activate LPC
-  LPC -> NVI : DocPhamVi(maNV)
-  activate NVI
-  NVI -> NVIDB : DocChiTiet(maNV)
-  activate NVIDB
-  deactivate NVIDB
-  deactivate NVI
   LPC -> P : LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh)
   activate P
   P -> PDB : LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh)
@@ -113,24 +95,20 @@ else HinhThucThue = OGhep
   deactivate LPC
 end
 
-opt HinhThucThue = NguyenCan
-  Sale -> MH : selectWholeRoom(phong)
-end
-opt HinhThucThue = OGhep
-  Sale -> MH : toggleBed(phong, maGiuong)
+alt HinhThucThue = NguyenCan
+  Sale -> MH : Chon mot phong trong
+  MH -> MH : chonNguyenPhong(phong)
+else HinhThucThue = OGhep
+  Sale -> MH : Chon hoac bo chon tung giuong
+  MH -> MH : chonBoChonGiuong(phong, maGiuong)
 end
 
-Sale -> MH : openConfirmation()
-Sale -> MH : submitDeposit()
+Sale -> MH : Nhan "Tao phieu va gui Ke toan"
+MH -> MH : moHopThoaiXacNhan()
+Sale -> MH : Xac nhan tao phieu coc
+MH -> MH : taoPhieuCoc()
 MH -> LPC : TaoPhieuCoc(maLichHen, thongTinKhachHang, maPhong, danhSachGiuong, hinhThucThue, maNV)
 activate LPC
-
-LPC -> NVI : DocPhamVi(maNV)
-activate NVI
-NVI -> NVIDB : DocChiTiet(maNV)
-activate NVIDB
-deactivate NVIDB
-deactivate NVI
 
 LPC -> LH : DocChiTiet(maLichHen, maCN, true)
 activate LH
@@ -140,10 +118,11 @@ deactivate LHDB
 LH -> LH : KiemTraCoTheLapPhieuCoc()
 deactivate LH
 
+LPC -> LPC : KiemTraThongTinKhachHang(thongTinKhachHang)
 LPC -> KH : CapNhatTu(thongTinKhachHang)
 activate KH
 deactivate KH
-opt Thong tin khach hang thay doi
+opt Thong tin khach hang da thay doi
   LPC -> KH : CapNhat()
   activate KH
   KH -> KHDB : CapNhat(khachHang)
@@ -160,8 +139,18 @@ deactivate PDB
 P -> P : KiemTraGioiTinhChoPhep(dsKhach)
 alt HinhThucThue = NguyenCan
   P -> P : GiuNguyenPhong()
+  loop Moi giuong trong phong
+    P -> G : GiuCho(maPhong)
+    activate G
+    deactivate G
+  end
 else HinhThucThue = OGhep
   P -> P : GiuGiuong(danhSachGiuong)
+  loop Moi giuong da chon
+    P -> G : GiuCho(maPhong)
+    activate G
+    deactivate G
+  end
 end
 deactivate P
 
@@ -191,19 +180,7 @@ activate LHDB
 deactivate LHDB
 deactivate LH
 
-LPC -> DVTB : PhatCanXuLyTheoVaiTro(loaiSuKien, maCN, KeToan, tieuDe, noiDung, lienKet, maPhieuCoc, maNV)
-activate DVTB
-DVTB -> TB : Tao(loaiSuKien, CanXuLy, tieuDe, noiDung, maCN, KeToan, maNVNhan, lienKet, tone, khoaChongTrung, maNV, maPhieuCoc, thoiGianTao)
-activate TB
-deactivate TB
-DVTB -> TB : Luu()
-activate TB
-TB -> TBDB : Them(thongBao, false)
-activate TBDB
-deactivate TBDB
-deactivate TB
-deactivate DVTB
-
 deactivate LPC
 deactivate MH
+
 @enduml

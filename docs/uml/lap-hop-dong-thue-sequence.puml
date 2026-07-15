@@ -6,25 +6,35 @@ autonumber 1 1
 skinparam shadowing false
 
 actor "Nhan vien Sale" as NV
+
+box "GUI" #D5F5D3
 boundary ": MHLapHopDongThue" as MH
+end box
+
+box "BUS" #FCF3CF
 control ": LapHopDongThue" as UC
 control ": PhieuCoc" as PC
-entity ": PhieuCocDB" as PCDB
 control ": ThanhVienDangKy" as TVDK
-entity ": ThanhVienDangKyDB" as TVDKDB
 control ": DichVu" as DV
-entity ": DichVuDB" as DVDB
 control ": QuyDinh" as QD
-entity ": QuyDinhDB" as QDDB
 control ": ChinhSachHoanCoc" as CS
+end box
+
+box "DB" #D6EAF8
+entity ": PhieuCocDB" as PCDB
+entity ": ThanhVienDangKyDB" as TVDKDB
+entity ": DichVuDB" as DVDB
+entity ": QuyDinhDB" as QDDB
 entity ": ChinhSachHoanCocDB" as CSDB
 entity ": HopDongDB" as HDDB
 entity ": DichVuHopDongDB" as HDDVDB
+end box
 
 '==================================================
 ' 1. MO CHUC NANG / LOAD DS PHIEU COC DA DUYET
 '==================================================
-NV -> MH : hienThiForm()
+NV -> MH : Chon chuc nang va mo man hinh
+MH -> MH : hienThiForm()
 activate MH
 MH -> UC : LayDanhSachPhieuCocDaDuyet(text)
 activate UC
@@ -39,7 +49,8 @@ deactivate UC
 '==================================================
 ' 2. CHON PHIEU COC / LOAD CHI TIET PHIEU COC
 '==================================================
-NV -> MH : chonPhieuCoc(maPhieuCoc)
+NV -> MH : Chon phieu coc
+MH -> MH : chonPhieuCoc(maPhieuCoc)
 MH -> UC : LayThongTinPhieuCoc(maPhieuCoc)
 activate UC
 
@@ -83,8 +94,10 @@ deactivate UC
 '==================================================
 ' 3. NHAP THONG TIN & XEM TRUOC HOP DONG
 '==================================================
-NV -> MH : nhapThongTinHopDong()
-NV -> MH : clickLuuXemTruocHopDong()
+NV -> MH : Nhap thong tin tren giao dien
+MH -> MH : nhapThongTinHopDong()
+NV -> MH : Nhan "Luu Xem Truoc Hop Dong"
+MH -> MH : clickLuuXemTruocHopDong()
 MH -> UC : TaoHopDong(maPhieuCoc, maNV, ngayBatDau, ngayKetThuc, kyThanhToan, giaThue, maQD, dsMaDV)
 activate UC
 
@@ -123,7 +136,8 @@ deactivate UC
 '==================================================
 ' 4. XAC NHAN KHACH DA KY
 '==================================================
-NV -> MH : clickXacNhanKhachDaKy()
+NV -> MH : Nhan "Xac Nhan Khach Da Ky"
+MH -> MH : clickXacNhanKhachDaKy()
 MH -> UC : XacNhanKhachDaKy(maHD)
 activate UC
 UC -> HDDB : UpdateTrangThai(maHD, "ChoThanhToan")
@@ -134,7 +148,8 @@ deactivate UC
 '==================================================
 ' 5. HUY HOP DONG
 '==================================================
-NV -> MH : clickHuyHopDong()
+NV -> MH : Nhan "Huy Hop Dong"
+MH -> MH : clickHuyHopDong()
 MH -> UC : HuyHopDong(maHD)
 activate UC
 UC -> HDDB : UpdateTrangThai(maHD, "DaHuy")

@@ -4,40 +4,89 @@ hide footbox
 autonumber
 
 actor "Nhan vien Sale" as Sale
+
+box "GUI" #D5F5D3
 boundary MHLapPhieuDangKy as MH
+end box
+
+box "BUS" #FCF3CF
 control LapPhieuDangKy as UC
 control NhanVien as NV
-entity NhanVienDB as NVDB
 control Phong as P
-entity PhongDB as PDB
 control KhachHang as KH
-entity KhachHangDB as KHDB
 control PhieuDangKy as PDK
+end box
+
+box "DB" #D6EAF8
+entity NhanVienDB as NVDB
+entity PhongDB as PDB
+entity KhachHangDB as KHDB
 entity PhieuDangKyDB as PDKDB
+end box
 
 Sale -> MH : Mo man hinh lap phieu dang ky
+activate MH
 MH -> MH : RegistrationForm()
 MH -> UC : LayKhuVucDangKy(maNV)
+activate UC
 UC -> NV : DocPhamVi(maNV)
+activate NV
 NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
 UC -> P : LocPhongTheoTieuChi(null, null, null, maCN, null, 0, 0)
+activate P
 P -> PDB : LayPhongTheoBoLoc(null, null, null, maCN, null, 0, 0)
+activate PDB
+deactivate PDB
+deactivate P
+deactivate UC
 Sale -> MH : Nhap thong tin va chon Luu phieu
 MH -> MH : onSubmit(data)
 MH -> UC : TaoPhieuDangKy(hoTen, gioiTinh, sdt, email, loaiGiayTo, soGiayTo, khuVuc, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, maNV)
+activate UC
 UC -> NV : DocPhamVi(maNV)
+activate NV
 NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
 UC -> P : LocPhongTheoTieuChi(khuVuc, null, null, maCN, null, 0, 0)
+activate P
 P -> PDB : LayPhongTheoBoLoc(khuVuc, null, null, maCN, null, 0, 0)
+activate PDB
+deactivate PDB
+deactivate P
 UC -> KH : KiemTraTonTai(soGiayTo)
+activate KH
 KH -> KHDB : KiemTraTonTai(soGiayTo)
+activate KHDB
 alt Khach hang chua ton tai
+deactivate KHDB
+deactivate KH
   UC -> KH : TaoMoi(hoTen, gioiTinh, sdt, email, null, loaiGiayTo, soGiayTo)
+  activate KH
+deactivate KH
   UC -> KH : Them()
+  activate KH
   KH -> KHDB : Them(khachHang)
+  activate KHDB
 end
+deactivate KHDB
+deactivate KH
 UC -> PDK : TaoMoi(maKH, maNV, maCN, tenChiNhanh, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem)
+activate PDK
+deactivate PDK
 UC -> PDK : KiemTraDieuKien(thoiDiem)
+activate PDK
+deactivate PDK
 UC -> PDK : Them()
+activate PDK
 PDK -> PDKDB : Them(phieuDangKy)
+activate PDKDB
+deactivate PDKDB
+deactivate PDK
+deactivate UC
+deactivate MH
 @enduml
