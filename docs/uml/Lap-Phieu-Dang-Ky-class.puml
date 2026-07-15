@@ -1,0 +1,62 @@
+@startuml
+title LAP PHIEU DANG KY - SO DO LOP 3 TANG
+top to bottom direction
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHLapPhieuDangKy <<boundary>> {
+    +onSubmit(data)
+  }
+}
+
+package "TANG NGHIEP VU" #E8F8F5 {
+  class LapPhieuDangKy <<control>> {
+    +LayKhuVucDangKy(maNV) : Task<IReadOnlyList<String>>
+    +TaoPhieuDangKy(hoTen, gioiTinh, sdt, email, loaiGiayTo, soGiayTo, khuVuc, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, maNV) : Task<PhieuDangKy>
+  }
+  class NhanVien <<control>> {
+    +DocPhamVi(maNV) : Task<NhanVien>
+  }
+  class KhachHang <<control>> {
+    +KiemTraTonTai(soGiayTo) : Task<KhachHang>
+    +TaoMoi(hoTen, gioiTinh, sdt, email, diaChiThuongTru, loaiGiayTo, soGiayTo) : KhachHang
+    +Them() : Task
+  }
+  class PhieuDangKy <<control>> {
+    +TaoMoi(maKH, maNV, maCN, khuVuc, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem) : PhieuDangKy
+    +KiemTraDieuKien(thoiDiemHienTai)
+    +Them() : Task
+  }
+  class Phong <<control>> {
+    +LocPhongTheoTieuChi(toaNha, tang, maLP, maCN, trangThai, giaMin, giaMax) : Task<IReadOnlyList<Phong>>
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class NhanVienDB <<entity>> {
+    +DocChiTiet(maNV) : Task<NhanVien>
+  }
+  class KhachHangDB <<entity>> {
+    +KiemTraTonTai(soGiayTo) : Task<KhachHang>
+    +Them(khachHang) : Task
+  }
+  class PhieuDangKyDB <<entity>> {
+    +Them(phieu) : Task
+  }
+  class PhongDB <<entity>> {
+    +LayPhongTheoBoLoc(toaNha, tang, maLP, maCN, trangThai, giaMin, giaMax) : Task<IReadOnlyList<Phong>>
+  }
+}
+
+MHLapPhieuDangKy o-- LapPhieuDangKy
+LapPhieuDangKy o-- NhanVien
+LapPhieuDangKy o-- KhachHang
+LapPhieuDangKy o-- PhieuDangKy
+LapPhieuDangKy o-- Phong
+NhanVien o-- NhanVienDB
+KhachHang o-- KhachHangDB
+PhieuDangKy o-- PhieuDangKyDB
+Phong o-- PhongDB
+@enduml

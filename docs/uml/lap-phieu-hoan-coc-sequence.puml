@@ -1,0 +1,34 @@
+@startuml
+title SO DO TUAN TU - LAP PHIEU HOAN COC
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+actor "Ke toan" as KT
+boundary ": MHHoanCoc" as MH
+control ": LapPhieuHoanCoc" as LPHC
+control ": PhieuDoiSoat" as PDS
+entity ": PhieuDoiSoatDB" as PDSDB
+control ": PhieuHoanCoc" as PHC
+entity ": PhieuHoanCocDB" as PHCDB
+
+KT -> MH : mo man hinh hoan coc
+MH -> LPHC : LayDSPhieuDoiSoatCanHoan()
+LPHC -> PDS : LayDSPhieuDoiSoatCanHoan()
+PDS -> PDSDB : GetDSPhieuDoiSoatCanHoan()
+KT -> MH : chon phieu doi soat
+MH -> LPHC : LayChiTietPhieuDoiSoatDto(maPDS)
+LPHC -> PDS : LayChiTietPhieuDoiSoat(maPDS)
+PDS -> PDSDB : GetPhieuDoiSoatTheoMaPDS(maPDS)
+
+KT -> MH : nhap phuong thuc va xac nhan hoan
+MH -> LPHC : ThucHienHoanCoc(maPDS, phuongThuc, thongTinNhanTien, maGiaoDich, minhChung, maNV)
+LPHC -> PDS : LayChiTietChoCapNhat(maPDS)
+PDS -> PDSDB : GetPhieuDoiSoatChoCapNhat(maPDS)
+LPHC -> PHC : DaTonTaiChoPhieuDoiSoat(maPDS)
+PHC -> PHCDB : TonTaiTheoMaPhieuDoiSoat(maPDS)
+LPHC -> PHC : TaoPhieuHoanCoc(maPDS, pds.TienHoan, phuongThuc, thongTinNhanTien, maNV, thoiDiem)
+LPHC -> PHC : LuuPhieu()
+PHC -> PHCDB : InsertPhieuHoanCoc(phieu)
+LPHC -> PDS : ChuyenSangDaTatToan(maPDS)
+PDS -> PDSDB : UpdateTrangThai(maPDS, DaChot, DaTatToan)
+@enduml

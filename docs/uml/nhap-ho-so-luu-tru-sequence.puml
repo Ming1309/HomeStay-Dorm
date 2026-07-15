@@ -1,0 +1,100 @@
+@startuml UC11_SequenceDiagram_NhapHoSoLuuTru
+title SEQUENCE DIAGRAM - NHAP HO SO LUU TRU
+
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 250
+skinparam BoxPadding 10
+
+actor "Nhan vien Sale" as NV
+boundary "MHNhapHoSoLuuTru" as MH
+control "NhapHoSoLuuTru" as UC
+control "PhieuCoc" as PhieuCoc
+control "LichHen" as LichHen
+control "KhachHang" as KhachHang
+control "Phong" as Phong
+control "ThanhVienDangKy" as ThanhVienDangKy
+entity "PhieuCocDB" as PhieuCocDB
+entity "LichHenDB" as LichHenDB
+entity "KhachHangDB" as KhachHangDB
+entity "ThanhVienDangKyDB" as ThanhVienDangKyDB
+
+NV -> MH : loadDanhSachPhieuCoc()
+MH -> UC : LayDanhSachChoNhap(text)
+UC -> PhieuCoc : LayPhieuCocDaThanhToanNhanPhongHomNay(text)
+PhieuCoc -> PhieuCocDB : LayPhieuCocDaThanhToanNhanPhongHomNay(text)
+MH -> MH : hienThiDanhSachPhieuCoc()
+
+NV -> MH : clickChonPhieuCoc(maPhieuCoc)
+MH -> UC : LayChiTiet(maPhieuCoc)
+UC -> PhieuCoc : DocChiTiet(maPhieuCoc)
+PhieuCoc -> PhieuCocDB : DocChiTiet(maPhieuCoc)
+UC -> PhieuCoc : KiemTraDaThanhToan()
+UC -> LichHen : DocTheoMaPhieuCoc(maPhieuCoc)
+LichHen -> LichHenDB : DocTheoMaPhieuCoc(maPhieuCoc)
+UC -> LichHen : KiemTraLoaiNhanPhong()
+MH -> MH : hienThiThongTinTuPhieuCoc()
+
+NV -> MH : nhapThongTinCuTru()
+opt Co nguoi o cung
+  NV -> MH : clickThemNguoiOCung()
+  MH -> MH : hienThiPopupThemNguoiOCung()
+  NV -> MH : xacNhanNguoiOCung(thanhVien)
+  MH -> MH : capNhatDanhSachNguoiOCung()
+end
+
+NV -> MH : clickLuuHoSo()
+MH -> UC : NhapHoSo(maPhieuCoc, diaChiThuongTru, cacThanhVien)
+UC -> PhieuCoc : DocChiTiet(maPhieuCoc)
+PhieuCoc -> PhieuCocDB : DocChiTiet(maPhieuCoc)
+UC -> PhieuCoc : KiemTraDaThanhToan()
+UC -> PhieuCoc : KiemTraHinhThucThue()
+UC -> LichHen : DocTheoMaPhieuCoc(maPhieuCoc)
+LichHen -> LichHenDB : DocTheoMaPhieuCoc(maPhieuCoc)
+UC -> LichHen : KiemTraLoaiNhanPhong()
+UC -> LichHen : KiemTraTrangThaiHopLe()
+UC -> KhachHang : KiemTraThongTinBatBuoc(nguoiDaiDien)
+UC -> KhachHang : KiemTraDinhDangEmail(email)
+UC -> KhachHang : KiemTraSoGiayTo(soGiayTo, loaiGiayTo)
+UC -> KhachHang : KiemTraNgaySinh(ngaySinh)
+
+loop Moi nguoi o cung
+  UC -> KhachHang : ChuanHoaThongTinNhanDang()
+end
+UC -> KhachHang : KiemTraTrungSoGiayTo(nguoiDaiDien, cacThanhVien)
+
+loop Kiem tra moi nguoi o cung
+  UC -> KhachHang : KiemTraThongTinBatBuoc(thanhVien)
+  UC -> KhachHang : KiemTraDinhDangEmail(email)
+  UC -> KhachHang : KiemTraSoGiayTo(soGiayTo, loaiGiayTo)
+  UC -> KhachHang : KiemTraNgaySinh(ngaySinh)
+  UC -> KhachHang : TimTheoSoGiayTo(soGiayTo)
+  KhachHang -> KhachHangDB : TimTheoSoGiayTo(soGiayTo)
+  alt So giay to da ton tai
+    MH -> MH : hienThiLoi("So giay to da ton tai trong he thong")
+  end
+end
+
+UC -> PhieuCoc : KiemTraSoLuongThanhVien(soLuongThanhVien)
+UC -> Phong : KiemTraSucChua(soLuongThanhVien)
+UC -> KhachHang : CapNhatDiaChiThuongTru(diaChiThuongTru)
+UC -> KhachHang : LuuDiaChiThuongTru()
+KhachHang -> KhachHangDB : CapNhatDiaChiThuongTru(maKH, diaChiThuongTru)
+UC -> ThanhVienDangKy : TaoDaiDien(maPhieuCoc, maKH)
+
+loop Tao moi moi nguoi o cung
+  UC -> KhachHang : Them()
+  KhachHang -> KhachHangDB : Them(khachHang)
+  UC -> ThanhVienDangKy : TaoThanhVien(maPhieuCoc, maKH)
+  UC -> ThanhVienDangKy : KiemTraVaiTroHopLe()
+end
+
+UC -> ThanhVienDangKy : XoaTheoPhieuCoc(maPhieuCoc)
+ThanhVienDangKy -> ThanhVienDangKyDB : XoaTheoPhieuCoc(maPhieuCoc)
+UC -> ThanhVienDangKy : ThemHangLoat(danhSach)
+ThanhVienDangKy -> ThanhVienDangKyDB : ThemHangLoat(danhSach)
+UC -> PhieuCoc : CapNhatTrangThai("ChoDuyet")
+UC -> PhieuCoc : LuuCapNhatTrangThai()
+PhieuCoc -> PhieuCocDB : CapNhatTrangThai(maPhieuCoc, "ChoDuyet")
+MH -> MH : hienThiThongBao()
+
+@enduml

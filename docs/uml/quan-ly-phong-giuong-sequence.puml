@@ -1,0 +1,257 @@
+@startuml
+title SO DO TUAN TU - QUAN LY PHONG GIUONG
+
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+
+actor "Quan tri vien" as QT
+boundary ": MHQuanLyPhongGiuong" as MH
+control ": QuanLyPhongGiuong" as QL
+control ": Phong" as P
+entity ": PhongDB" as PDB
+control ": Giuong" as G
+entity ": GiuongDB" as GDB
+control ": LoaiPhong" as LP
+entity ": LoaiPhongDB" as LPDB
+control ": ChiNhanh" as CN
+entity ": ChiNhanhDB" as CNDB
+
+QT -> MH : loadData()
+activate MH
+MH -> QL : LayDanhSachPhong("", "", "", "")
+activate QL
+QL -> P : LayDanhSachQuanTri("", "", "", "")
+activate P
+P -> PDB : LayDanhSachQuanTri("", "", "", "")
+activate PDB
+deactivate PDB
+deactivate P
+deactivate QL
+MH -> QL : LayDanhSachGiuong("", "", "")
+activate QL
+QL -> G : LayDanhSachQuanTri("", "", "")
+activate G
+G -> GDB : LayDanhSachQuanTri("", "", "")
+activate GDB
+deactivate GDB
+deactivate G
+deactivate QL
+MH -> QL : LayDanhSachLoaiPhong()
+activate QL
+QL -> LP : LayDanhSach()
+activate LP
+LP -> LPDB : LayDanhSach()
+activate LPDB
+deactivate LPDB
+deactivate LP
+deactivate QL
+MH -> QL : LayDanhSachChiNhanh()
+activate QL
+QL -> CN : LayDanhSach()
+activate CN
+CN -> CNDB : LayDanhSach()
+activate CNDB
+deactivate CNDB
+deactivate CN
+deactivate QL
+
+alt Them phong
+  QT -> MH : openCreateRoom()
+  QT -> MH : submitRoom(values)
+  MH -> QL : ThemPhong(phong)
+  activate QL
+  QL -> P : ChuanHoa()
+  QL -> P : KiemTraDuLieuHopLe()
+  QL -> LP : LayTheoMa(maLP)
+  activate LP
+  LP -> LPDB : LayTheoMa(maLP)
+  activate LPDB
+  deactivate LPDB
+  deactivate LP
+  QL -> CN : TonTai(maCN)
+  activate CN
+  CN -> CNDB : TonTai(maCN)
+  activate CNDB
+  deactivate CNDB
+  deactivate CN
+  QL -> P : TrungSoPhong(maCN, soPhong, "")
+  activate P
+  P -> PDB : TrungSoPhong(maCN, soPhong, "")
+  activate PDB
+  deactivate PDB
+  deactivate P
+  QL -> P : Them()
+  activate P
+  P -> PDB : Them(phong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  deactivate QL
+else Sua phong
+  QT -> MH : openEditRoom(room)
+  QT -> MH : submitRoom(values)
+  MH -> QL : CapNhatPhong(maPhong, thongTin)
+  activate QL
+  QL -> P : ChuanHoa()
+  QL -> P : KiemTraDuLieuHopLe()
+  QL -> P : DocChiTiet(maPhong)
+  activate P
+  P -> PDB : DocChiTiet(maPhong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  QL -> LP : LayTheoMa(maLP)
+  activate LP
+  LP -> LPDB : LayTheoMa(maLP)
+  activate LPDB
+  deactivate LPDB
+  deactivate LP
+  QL -> CN : TonTai(maCN)
+  activate CN
+  CN -> CNDB : TonTai(maCN)
+  activate CNDB
+  deactivate CNDB
+  deactivate CN
+  QL -> P : TrungSoPhong(maCN, soPhong, maPhong)
+  activate P
+  P -> PDB : TrungSoPhong(maCN, soPhong, maPhong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  QL -> P : DangDuocThamChieu(maPhong)
+  activate P
+  P -> PDB : DangDuocThamChieu(maPhong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  QL -> P : KiemTraSucChuaChoDoiLoaiPhong(sucChuaMoi, soGiuongHienCo)
+  QL -> P : KiemTraDoiTrangThai(trangThaiMoi, giuongHienCo, dangDuocThamChieu)
+  QL -> P : CapNhatThongTin()
+  activate P
+  P -> PDB : CapNhatThongTin(phong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  deactivate QL
+else Xoa phong
+  QT -> MH : confirmDelete()
+  MH -> QL : XoaPhong(maPhong)
+  activate QL
+  QL -> P : DocChiTiet(maPhong)
+  activate P
+  P -> PDB : DocChiTiet(maPhong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  QL -> P : KiemTraCoTheXoa()
+  QL -> P : DangDuocThamChieu(maPhong)
+  activate P
+  P -> PDB : DangDuocThamChieu(maPhong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  QL -> P : Xoa()
+  activate P
+  P -> PDB : Xoa(maPhong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  deactivate QL
+else Them giuong
+  QT -> MH : openCreateBed()
+  QT -> MH : submitBed(values)
+  MH -> QL : ThemGiuong(giuong)
+  activate QL
+  QL -> G : ChuanHoa()
+  QL -> G : KiemTraDuLieuHopLe()
+  QL -> P : DocChiTiet(maPhong)
+  activate P
+  P -> PDB : DocChiTiet(maPhong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  QL -> G : TrungSoGiuong(maPhong, soGiuong, "")
+  activate G
+  G -> GDB : TrungSoGiuong(maPhong, soGiuong, "")
+  activate GDB
+  deactivate GDB
+  deactivate G
+  QL -> P : KiemTraSoGiuongKhongVuotSucChua(soGiuongHienCo)
+  QL -> G : Them()
+  activate G
+  G -> GDB : Them(giuong)
+  activate GDB
+  deactivate GDB
+  deactivate G
+  deactivate QL
+else Sua giuong
+  QT -> MH : openEditBed(bed)
+  QT -> MH : submitBed(values)
+  MH -> QL : CapNhatGiuong(maGiuong, thongTin)
+  activate QL
+  QL -> G : ChuanHoa()
+  QL -> G : KiemTraDuLieuHopLe()
+  QL -> G : DocChiTiet(maGiuong)
+  activate G
+  G -> GDB : DocChiTiet(maGiuong)
+  activate GDB
+  deactivate GDB
+  deactivate G
+  QL -> P : DocChiTiet(maPhong)
+  activate P
+  P -> PDB : DocChiTiet(maPhong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  QL -> G : TrungSoGiuong(maPhong, soGiuong, maGiuong)
+  activate G
+  G -> GDB : TrungSoGiuong(maPhong, soGiuong, maGiuong)
+  activate GDB
+  deactivate GDB
+  deactivate G
+  QL -> G : DangDuocThamChieu(maGiuong)
+  activate G
+  G -> GDB : DangDuocThamChieu(maGiuong)
+  activate GDB
+  deactivate GDB
+  deactivate G
+  QL -> G : KiemTraCoTheDoiSoGiuong(dangDuocThamChieu)
+  QL -> G : KiemTraCoTheChuyenPhong(dangDuocThamChieu)
+  QL -> P : KiemTraSoGiuongKhongVuotSucChua(soGiuongHienCo)
+  QL -> G : KiemTraDoiTrangThai(trangThaiMoi, dangDuocThamChieu)
+  QL -> G : CapNhatThongTin()
+  activate G
+  G -> GDB : CapNhatThongTin(giuong)
+  activate GDB
+  deactivate GDB
+  deactivate G
+  deactivate QL
+else Xoa giuong
+  QT -> MH : confirmDelete()
+  MH -> QL : XoaGiuong(maGiuong)
+  activate QL
+  QL -> G : DocChiTiet(maGiuong)
+  activate G
+  G -> GDB : DocChiTiet(maGiuong)
+  activate GDB
+  deactivate GDB
+  deactivate G
+  QL -> G : KiemTraCoTheXoa()
+  QL -> G : DangDuocThamChieu(maGiuong)
+  activate G
+  G -> GDB : DangDuocThamChieu(maGiuong)
+  activate GDB
+  deactivate GDB
+  deactivate G
+  QL -> G : Xoa()
+  activate G
+  G -> GDB : Xoa(maGiuong)
+  activate GDB
+  deactivate GDB
+  deactivate G
+  deactivate QL
+end
+
+deactivate MH
+@enduml

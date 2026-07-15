@@ -1,0 +1,155 @@
+@startuml ThanhLyHopDong_3Layer
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam classHeaderBackgroundColor #AED6F1
+skinparam classBorderColor #2980B9
+skinparam classBackgroundColor #EBF5FB
+skinparam ArrowColor #2C3E50
+skinparam ArrowThickness 1.5
+skinparam shadowing false
+skinparam roundcorner 6
+skinparam linetype ortho
+
+'=====================
+' LỚP GIAO DIỆN
+'=====================
+
+package "Lớp giao diện" #EBF5FB {
+
+class MHThanhLyHopDong{
+
++lblMaHopDong
++lblKhachHang
++lblPhong
++lblNgayBatDau
++lblNgayKetThuc
+
++lblTienCoc
++lblTongKhauTru
++lblTienHoan
++lblTienThuThem
+
++chkKyBienBanThanhLy
++chkThuHoiChiaKhoa
+
++btnThanhLy
+
+--
+
++hienThiForm()
++loadDanhSachHopDong()
++hienThiThongTinHopDong(maHD:String)
++kiemTraDieuKienThanhLy(maHD:String)
++btnThanhLy_Click()
+
+}
+
+}
+
+'=====================
+' LỚP NGHIỆP VỤ
+'=====================
+
+package "Lớp nghiệp vụ" #FEF9E7 {
+
+class HopDong{
+
++maHD:String
++trangThai:String
+
+--
+
++layDanhSachChoThanhLy(tuKhoa:String) : List
++layThongTinHopDong(maHD:String) : HopDong
++thanhLyHopDong(maHD:String,ngayThanhLy:DateTime,nguoiThucHien:String,ghiChu:String)
+
+}
+
+class PhieuDoiSoat{
+
++maPDS:String
++tienHoan:Decimal
++tienThuThem:Decimal
++trangThai:String
+
+--
+
++layThongTinDoiSoat(maHD:String) : PhieuDoiSoat
++kiemTraCongNo(pds:PhieuDoiSoat) : Boolean
+
+}
+
+class ThanhVienHopDong{
+
++maHD:String
++maGiuong:String
++trangThaiThue:String
+
+--
+
++layDanhSachGiuong(maHD:String) : List
++capNhatTrangThaiDaTra(maHD:String,ngayTra:DateTime)
+
+}
+
+class Giuong{
+
++maGiuong:String
++trangThai:String
+
+--
+
++capNhatTrangThaiTrong(maGiuong:String)
++capNhatDanhSachTrong(dsMaGiuong:List)
+
+}
+
+}
+
+'=====================
+' LỚP DỮ LIỆU
+'=====================
+
+package "Lớp truy xuất dữ liệu" #FDF2F8 {
+
+class HopDongDB{
+
++getDanhSachChoThanhLy(tuKhoa:String) : List
++updateTrangThaiThanhLy(maHD:String) : Boolean
+
+}
+
+class PhieuDoiSoatDB{
+
++getPhieuDoiSoatTheoMaHD(maHD:String) : PhieuDoiSoat
+
+}
+
+class ThanhVienHopDongDB{
+
++layDanhSachTheoHopDong(maHD:String) : List
++updateTrangThaiDaTra(maHD:String,ngayTra:DateTime) : Boolean
+
+}
+
+class GiuongDB{
+
++updateTrangThai(maGiuong:String,trangThai:String) : Boolean
++updateTrangThaiBatch(dsMaGiuong:List,trangThai:String)
+
+}
+
+}
+
+MHThanhLyHopDong o-- HopDong
+MHThanhLyHopDong o-- PhieuDoiSoat
+MHThanhLyHopDong o-- ThanhVienHopDong
+MHThanhLyHopDong o-- Giuong
+
+HopDong o-- HopDongDB
+PhieuDoiSoat o-- PhieuDoiSoatDB
+ThanhVienHopDong o-- ThanhVienHopDongDB
+Giuong o-- GiuongDB
+
+@enduml

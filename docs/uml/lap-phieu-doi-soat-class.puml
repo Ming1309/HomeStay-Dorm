@@ -1,0 +1,114 @@
+@startuml
+title SO DO LOP 3 TANG - LAP PHIEU DOI SOAT
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHLapPhieuDoiSoat {
+    + loadHoSoList(searchQuery: String)
+    + loadDetail()
+    + handleCreate()
+  }
+}
+
+package "TANG NGHIEP VU" #FCF3CF {
+  class LapPhieuDoiSoat {
+    + LayDanhSachChoDoiSoat(text: String): IReadOnlyList<HoSoChoDoiSoat>
+    + LayChiTietVaTinhToan(maHoSo: String, loaiHoSo: String): ChiTietDoiSoatDto
+    + TaoPhieuDoiSoat(maHoSo: String, loaiHoSo: String, ghiChu: String, maNhanVien: String): PhieuDoiSoat
+    - LayChiTietVaTinhToanInternal(maHoSo: String, loaiHoSo: String): ChiTietDoiSoatDto
+  }
+  class PhieuCoc {
+    - TrangThai: String
+    - TongTien: Decimal
+    - ThoiDiemHuy: DateTime
+    + LayDanhSachDaHuyChoDoiSoat(): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + KiemTraCoTheDoiSoatHoanCoc()
+  }
+  class PhieuThu {
+    - SoTienThu: Decimal
+    + LayTheoPhieuCoc(maPhieuCoc: String): PhieuThu
+    + KiemTraKhopTienCoc(phieuCoc: PhieuCoc)
+  }
+  class HopDong {
+    + LayDanhSachChoDoiSoat(): IReadOnlyList<HopDong>
+    + LayThongTinLuuTru(maHD: String): HopDong
+    + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean
+    + TinhSoThangThucTe(ngayDoiSoat: DateTime): Integer
+    + TinhSoThangHopDong(): Integer
+  }
+  class ChinhSachHoanCoc {
+    - TiLe_ChuaKy: Decimal
+    + LayChinhSachDangApDung(ngay: DateOnly): ChinhSachHoanCoc
+    + LayChinhSachTheoMa(maChinhSach: String): ChinhSachHoanCoc
+    + XacDinhTyLeHoan(soThangThucTe: Integer, soThangHopDong: Integer): Decimal
+  }
+  class HoaDon {
+    + LayDanhSachChuaThanhToan(maHD: String): IReadOnlyList<HoaDon>
+  }
+  class PhieuDoiSoat {
+    - TrangThai: String
+    - TienHoan: Decimal
+    - TienThuThem: Decimal
+    + TaoMoi(maPhieuCoc: String, maHD: String, maNhanVien: String, thoiDiem: DateTime): PhieuDoiSoat
+    + TonTaiChoPhieuCocChuaKy(maPhieuCoc: String): Boolean
+    + ApDungChinhSachHoanCoc(tyLe: Decimal)
+    + TinhTongKhauTru(tongKhauTru: Decimal)
+    + TinhToanDoiSoat(tienCoc: Decimal, tyLe: Decimal, dsHoaDon: IReadOnlyList<HoaDon>)
+    + ChotKetQua(tienCoc: Decimal)
+    + LuuPhieu()
+  }
+  class DichVuThongBao {
+    + GuiThongBaoQuanLy(maPDS: String)
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class PhieuCocDB {
+    + LayDanhSachDaHuyChoDoiSoat(): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+  }
+  class PhieuThuDB {
+    + LayTheoPhieuCoc(maPhieuCoc: String): PhieuThu
+  }
+  class HopDongDB {
+    + LayDanhSachChoDoiSoat(): IReadOnlyList<HopDong>
+    + LayThongTinLuuTru(maHD: String): HopDong
+    + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean
+  }
+  class ChinhSachHoanCocDB {
+    + LayChinhSachDangApDung(ngay: DateOnly): ChinhSachHoanCoc
+    + GetChinhSachTheoMa(maChinhSach: String): ChinhSachHoanCoc
+  }
+  class HoaDonDB {
+    + GetDanhSachChuaThanhToanTheoHD(maHD: String): IReadOnlyList<HoaDon>
+  }
+  class PhieuDoiSoatDB {
+    + TonTaiChoPhieuCocChuaKy(maPhieuCoc: String): Boolean
+    + LuuPhieu(phieu: PhieuDoiSoat)
+  }
+}
+
+MHLapPhieuDoiSoat o-- LapPhieuDoiSoat
+LapPhieuDoiSoat o-- PhieuCoc
+LapPhieuDoiSoat o-- PhieuThu
+LapPhieuDoiSoat o-- HopDong
+LapPhieuDoiSoat o-- ChinhSachHoanCoc
+LapPhieuDoiSoat o-- HoaDon
+LapPhieuDoiSoat o-- PhieuDoiSoat
+LapPhieuDoiSoat o-- DichVuThongBao
+PhieuCoc o-- PhieuCocDB
+PhieuThu o-- PhieuThuDB
+HopDong o-- HopDongDB
+ChinhSachHoanCoc o-- ChinhSachHoanCocDB
+HoaDon o-- HoaDonDB
+PhieuDoiSoat o-- PhieuDoiSoatDB
+@enduml

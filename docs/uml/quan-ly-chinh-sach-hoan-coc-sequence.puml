@@ -1,0 +1,66 @@
+@startuml
+title SO DO TUAN TU - QUAN LY CHINH SACH HOAN COC (UC 1.4.28)
+
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+
+actor "Quan tri vien" as QTV
+boundary ": MHQuanLyChinhSachHoanCoc" as MH
+control ": QuanLyChinhSachHoanCoc" as QLCSHC
+control ": ChinhSachHoanCoc" as CS
+entity ": ChinhSachHoanCocDB" as CSDB
+
+' === Luong 1: Tai lich su khi mo man hinh ===
+QTV -> MH : loadPolicies()
+activate MH
+MH -> QLCSHC : LayDanhSach()
+activate QLCSHC
+QLCSHC -> CS : LayDanhSach()
+activate CS
+CS -> CSDB : LayDanhSach()
+activate CSDB
+deactivate CSDB
+deactivate CS
+deactivate QLCSHC
+MH -> MH : hien thi tblLichSuApDung
+
+' === Luong 2: Tao phien ban chinh sach moi ===
+QTV -> MH : nhap thong tin chinh sach moi
+QTV -> MH : onSubmit(values)
+MH -> MH : validate zod va hien xac nhan
+QTV -> MH : handleConfirmCreate()
+MH -> QLCSHC : TaoPhienBan(chinhSachMoi)
+activate QLCSHC
+QLCSHC -> CS : KiemTraDuLieuHopLe()
+QLCSHC -> CS : LayPhienBanMoiNhat()
+activate CS
+CS -> CSDB : LayPhienBanMoiNhat()
+activate CSDB
+deactivate CSDB
+deactivate CS
+
+alt ngay ap dung khong sau phien ban moi nhat
+  QLCSHC -> QLCSHC : throw InvalidOperationException
+else ngay ap dung hop le
+  opt phien ban cu chua ket thuc truoc ngay ap dung moi
+    QLCSHC -> CS : CapNhatNgayKetThuc(ngayKetThuc)
+    activate CS
+    CS -> CSDB : CapNhatNgayKetThuc(maChinhSach, ngayKetThuc)
+    activate CSDB
+    deactivate CSDB
+    deactivate CS
+  end
+  QLCSHC -> CS : Them()
+  activate CS
+  CS -> CS : KiemTraDuLieuHopLe()
+  CS -> CSDB : Them(chinhSachMoi)
+  activate CSDB
+  deactivate CSDB
+  deactivate CS
+end
+deactivate QLCSHC
+MH -> MH : loadPolicies() va hien toast thanh cong
+deactivate MH
+
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+title SO DO LOP 3 TANG - DANG NHAP
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHDangNhap {
+    - txtTenDangNhap: TextBox
+    - txtMatKhau: TextBox
+    - btnDangNhap: Button
+    - btnDangXuat: Button
+    --
+    + btnDangNhap_Click()
+    + btnDangXuat_Click()
+  }
+
+}
+
+package "TANG NGHIEP VU" #FCF3CF {
+  class XacThucNguoiDung {
+    + DangNhap(tenDangNhap: String, matKhau: String): TaiKhoan
+    + DangXuat()
+  }
+
+  class TaiKhoan {
+    - MaTK: String
+    - TenDangNhap: String
+    - MatKhauHash: String
+    - TrangThai: String
+    - LanDangNhapCuoi: DateTime
+    - MaNV: String
+    --
+    + DocTheoTenDangNhap(tenDangNhap: String): TaiKhoan
+    + DangHoatDong(): Boolean
+    + KiemTraMatKhau(matKhau: String): Boolean
+    + CapNhatLanDangNhap()
+  }
+
+  class NhanVien {
+    - MaNV: String
+    - HoTen: String
+    - VaiTro: String
+    - MaCN: String
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class TaiKhoanDB {
+    + DocTheoTenDangNhap(tenDangNhap: String): TaiKhoan
+    + CapNhatLanDangNhap(taiKhoan: TaiKhoan)
+  }
+}
+
+' Giao dien su dung use case.
+MHDangNhap o-- XacThucNguoiDung
+
+' Lop dieu phoi tap hop cac lop nghiep vu lien quan.
+XacThucNguoiDung o-- TaiKhoan : xac thuc
+TaiKhoan "0..*" -- "1" NhanVien : so huu
+
+' Aggregation giua business va data access.
+TaiKhoan o-- TaiKhoanDB
+@enduml

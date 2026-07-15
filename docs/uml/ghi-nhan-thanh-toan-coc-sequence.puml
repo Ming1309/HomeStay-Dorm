@@ -1,0 +1,56 @@
+@startuml
+title SO DO TUAN TU - GHI NHAN THANH TOAN COC
+
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+
+actor "Nhan vien Sale" as NV
+boundary ": MHGhiNhanThanhToanCoc" as MH
+control ": GhiNhanThanhToanCoc" as GNTT
+control ": PhieuCoc" as PC
+entity ": PhieuCocDB" as PCDB
+
+NV -> MH : loadPendingDeposits(text)
+MH -> GNTT : LayDanhSachChoThanhToan(text)
+GNTT -> PC : LayDanhSachChoThanhToan(thoiDiemHienTai, text)
+PC -> PCDB : LayDanhSachChoThanhToan(thoiDiemHienTai, text)
+
+NV -> MH : chonPhieuCoc(item)
+MH -> GNTT : LayChiTiet(maPhieuCoc)
+GNTT -> PC : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTiet(maPhieuCoc)
+GNTT -> PC : KiemTraTrangThaiChoGhiNhan()
+GNTT -> PC : KiemTraConHanThanhToan(thoiDiemHienTai)
+
+alt Khach thanh toan tien mat
+  note over NV,MH
+    Sale nhan tien, lap va ky bien nhan
+    cung khach hang o ngoai he thong.
+  end note
+  NV -> MH : chonTepChungTu(anhBienNhanDaKy)
+else Khach chuyen khoan
+  NV -> MH : chonTepChungTu(anhGiaoDich)
+end
+
+NV -> MH : guiChungTu()
+alt Chua chon tep
+  MH -> MH : hien thi loi thieu chung tu
+else Tep sai dinh dang hoac vuot qua 5 MB
+  MH -> MH : hien thi loi tep khong hop le
+else Du lieu hop le
+  MH -> GNTT : GuiChungTuThanhToan(maPhieuCoc, phuongThucThanhToan, tepChungTu)
+  GNTT -> PC : DocChiTiet(maPhieuCoc)
+  PC -> PCDB : DocChiTiet(maPhieuCoc)
+  GNTT -> PC : KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan, thoiDiemHienTai)
+  GNTT -> PC : GhiNhanThanhToan(phuongThucThanhToan, anhMinhChung, thoiDiemHienTai)
+  GNTT -> PC : CapNhatThanhToan(thoiDiemHienTai)
+  PC -> PCDB : CapNhatThanhToan(phieu, thoiDiemHienTai)
+  alt Phieu het han hoac khong con ChoThanhToan
+    MH -> MH : hien thi loi tranh chap trang thai
+  else Cap nhat thanh cong
+    MH -> MH : hien thi thong bao thanh cong
+  end
+end
+
+@enduml

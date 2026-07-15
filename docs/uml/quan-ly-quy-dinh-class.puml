@@ -1,0 +1,86 @@
+@startuml
+title SO DO LOP 3 TANG - QUAN LY QUY DINH LUU TRU
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFACD
+  BorderColor #9B7B7B
+}
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHQuanLyQuyDinh {
+    - txtTimKiem: TextBox
+    - lstLoaiQuyDinh: ListBox
+    - lstTrangThai: ListBox
+    - grvDanhSachQuyDinh: GridView
+    - txtTenQuyDinh: TextBox
+    - dtNgayApDung: DatePicker
+    - dtNgayKetThuc: DatePicker
+    - fileVanBan: FileInput
+    - btnThem: Button
+    - btnSua: Button
+    - btnXoa: Button
+    --
+    + HienThi()
+    + btnThem_Click()
+    + btnSua_Click()
+    + btnXoa_Click()
+    + btnXemVanBan_Click()
+  }
+}
+
+package "TANG NGHIEP VU" #FCF3CF {
+  class QuanLyQuyDinh {
+    + LayDanhSach(): IReadOnlyList<QuyDinh>
+    + Them(quyDinh: QuyDinh, tep: TepQuyDinh): QuyDinh
+    + CapNhat(maQD: String, thongTin: QuyDinh, tepMoi: TepQuyDinh): QuyDinh
+    + Xoa(maQD: String)
+    + DocVanBan(tenTep: String): NoiDungQuyDinh
+  }
+
+  class QuyDinh {
+    - MaQD: String
+    - TenQD: String
+    - LoaiQD: String
+    - DuongDanFile: String
+    - NgayApDung: DateOnly
+    - NgayKetThuc: DateOnly
+    --
+    + ChuanHoa()
+    + KiemTraDuLieuHopLe(yeuCauDuongDan: Boolean)
+    + TinhTrangThai(homNay: DateOnly): String
+    + LayDanhSach(): IReadOnlyList<QuyDinh>
+    + Doc(maQD: String): QuyDinh
+    + DangDuocThamChieu(maQD: String): Boolean
+    + Them()
+    + CapNhat()
+    + Xoa()
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class QuyDinhDB {
+    + LayDanhSach(): IReadOnlyList<QuyDinh>
+    + Doc(maQD: String): QuyDinh
+    + DangDuocThamChieu(maQD: String): Boolean
+    + Them(quyDinh: QuyDinh)
+    + CapNhat(quyDinh: QuyDinh)
+    + Xoa(maQD: String)
+  }
+
+  class QuyDinhFileStorage {
+    + Luu(tep: TepQuyDinh): String
+    + Doc(tenTep: String): NoiDungQuyDinh
+    + Xoa(duongDan: String)
+  }
+}
+
+MHQuanLyQuyDinh o-- QuanLyQuyDinh
+QuanLyQuyDinh o-- QuyDinh : quan ly
+QuanLyQuyDinh o-- QuyDinhFileStorage : quan ly PDF
+QuyDinh o-- QuyDinhDB
+@enduml

@@ -24,9 +24,22 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 .idea
+.vs/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
+
+# .NET
+**/bin/
+**/obj/
+src/HomeStay.Presentation/App_Data/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Accidental exception/process dumps (e.g. shell redirects)
+src/HomeStay.Presentation/Microsoft.*.Exception
+src/HomeStay.Presentation/System.*.Exception
+src/HomeStay.Presentation/dotnet

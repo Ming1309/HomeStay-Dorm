@@ -1,0 +1,77 @@
+@startuml
+title SO DO TUAN TU - LAP PHIEU DOI SOAT
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+
+actor "Ke toan" as KT
+boundary ": MHLapPhieuDoiSoat" as MH
+control ": LapPhieuDoiSoat" as LPDS
+control ": PhieuCoc" as PC
+entity ": PhieuCocDB" as PCDB
+control ": PhieuThu" as PT
+entity ": PhieuThuDB" as PTDB
+control ": HopDong" as HD
+entity ": HopDongDB" as HDDB
+control ": ChinhSachHoanCoc" as CS
+entity ": ChinhSachHoanCocDB" as CSDB
+control ": HoaDon" as HDON
+entity ": HoaDonDB" as HDONDB
+control ": PhieuDoiSoat" as PDS
+entity ": PhieuDoiSoatDB" as PDSDB
+control ": DichVuThongBao" as TB
+
+KT -> MH : mo man hinh doi soat
+MH -> LPDS : LayDanhSachChoDoiSoat(text)
+LPDS -> HD : LayDanhSachChoDoiSoat()
+HD -> HDDB : LayDanhSachChoDoiSoat()
+LPDS -> PC : LayDanhSachDaHuyChoDoiSoat()
+PC -> PCDB : LayDanhSachDaHuyChoDoiSoat()
+
+KT -> MH : chon ho so
+MH -> LPDS : LayChiTietVaTinhToan(maHoSo, loaiHoSo)
+alt loaiHoSo = PhieuCoc
+  LPDS -> PC : DocChiTiet(maHoSo)
+  PC -> PCDB : DocChiTiet(maHoSo)
+  LPDS -> PC : KiemTraCoTheDoiSoatHoanCoc()
+  LPDS -> HD : TonTaiTheoPhieuCoc(maHoSo)
+  HD -> HDDB : TonTaiTheoPhieuCoc(maHoSo)
+  LPDS -> PT : LayTheoPhieuCoc(maHoSo)
+  PT -> PTDB : LayTheoPhieuCoc(maHoSo)
+  LPDS -> PT : KiemTraKhopTienCoc(phieuCoc)
+  LPDS -> PDS : TonTaiChoPhieuCocChuaKy(maHoSo)
+  PDS -> PDSDB : TonTaiChoPhieuCocChuaKy(maHoSo)
+  LPDS -> CS : LayChinhSachDangApDung(homNay)
+  CS -> CSDB : LayChinhSachDangApDung(homNay)
+  LPDS -> PDS : TaoMoi(maHoSo, null, null, thoiDiem)
+  LPDS -> PDS : ApDungChinhSachHoanCoc(chinhSach.TiLe_ChuaKy)
+  LPDS -> PDS : TinhTongKhauTru(0)
+  LPDS -> PDS : ChotKetQua(phieuThu.SoTienThu)
+else loaiHoSo = HopDong
+  LPDS -> HD : LayThongTinLuuTru(maHoSo)
+  HD -> HDDB : LayThongTinLuuTru(maHoSo)
+  LPDS -> HD : TinhSoThangThucTe(thoiDiem)
+  LPDS -> HD : TinhSoThangHopDong()
+  alt hopDong.MaChinhSach co gia tri
+    LPDS -> CS : LayChinhSachTheoMa(hopDong.MaChinhSach)
+    CS -> CSDB : GetChinhSachTheoMa(hopDong.MaChinhSach)
+  else hop dong cu chua gan chinh sach
+    LPDS -> CS : LayChinhSachDangApDung(homNay)
+    CS -> CSDB : LayChinhSachDangApDung(homNay)
+  end
+  LPDS -> HDON : LayDanhSachChuaThanhToan(maHoSo)
+  HDON -> HDONDB : GetDanhSachChuaThanhToanTheoHD(maHoSo)
+  LPDS -> PDS : TaoMoi(maPhieuCoc, maHoSo, null, thoiDiem)
+  LPDS -> PDS : TinhToanDoiSoat(tienCoc, tyLe, dsHoaDon)
+end
+
+KT -> MH : xac nhan tao phieu doi soat
+MH -> LPDS : TaoPhieuDoiSoat(maHoSo, loaiHoSo, ghiChu, maNhanVien)
+LPDS -> LPDS : LayChiTietVaTinhToanInternal(maHoSo, loaiHoSo)
+LPDS -> PDS : LuuPhieu()
+note right of PDS
+  PDS moi co TrangThai = ChoXacNhan
+end note
+PDS -> PDSDB : LuuPhieu(phieu)
+LPDS -> TB : GuiThongBaoQuanLy(maPDS)
+@enduml

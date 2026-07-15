@@ -1,0 +1,158 @@
+@startuml LapBienBanThuHoiTaiSan_Sequence
+
+skinparam sequenceArrowThickness 1.2
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 80
+
+title Lập biên bản thu hồi tài sản
+
+actor "Quản lý" as QL
+
+box "GUI" #F9FBE7
+boundary "MHLapBienBanThuHoi" as MH
+end box
+
+box "BUS" #FEF9E7
+control "DieuKhienLapBienBanThuHoi" as DK
+control "HopDong" as HD
+control "LichHen" as LH
+control "BienBanGiaoNhan" as BB
+control "ChiTietGiaoNhan" as CTGN
+control "DichVuThongBao" as TB
+end box
+
+box "DB" #F5EEF8
+entity "NhanVienDB" as NVDB
+entity "HopDongDB" as HDDB
+entity "LichHenDB" as LHDB
+entity "BienBanGiaoNhanDB" as BBDB
+entity "ChiTietGiaoNhanDB" as CTGNDB
+end box
+
+
+'=====================
+' TẢI DANH SÁCH HỢP ĐỒNG TRẢ PHÒNG
+'=====================
+
+QL -> MH : 1.0 Truy cập chức năng
+activate MH
+
+MH -> DK : 1.1 khoiTaoForm(maNVDangNhap)
+activate DK
+
+DK -> NVDB : 1.2 getNhanVien(maNVDangNhap)
+activate NVDB
+deactivate NVDB
+
+DK -> LH : 1.3 layLichTraPhongTrongNgay()
+activate LH
+
+LH -> LHDB : 1.4 getLichTraPhongTrongNgay()
+activate LHDB
+deactivate LHDB
+
+deactivate LH
+
+DK -> HD : 1.5 layDanhSachCoLichTraTrongNgay()
+activate HD
+
+HD -> HDDB : 1.6 getDanhSachCoLichTraTrongNgay()
+activate HDDB
+deactivate HDDB
+
+deactivate HD
+
+DK -> MH : 1.7 hienThiDanhSachHopDong()
+
+deactivate DK
+deactivate MH
+
+
+'=====================
+' CHỌN HỢP ĐỒNG VÀ TẢI TÀI SẢN
+'=====================
+
+QL -> MH : 2.0 Chọn hợp đồng
+activate MH
+
+MH -> DK : 2.1 layChiTietHopDongThuHoi(maHD)
+activate DK
+
+DK -> HD : 2.2 layThongTinChiTiet(maHD)
+activate HD
+
+HD -> HDDB : 2.3 getChiTiet(maHD)
+activate HDDB
+deactivate HDDB
+
+HD -> HDDB : 2.4 checkTrangThai(maHD, "DangHieuLuc")
+activate HDDB
+deactivate HDDB
+
+deactivate HD
+
+DK -> CTGN : 2.5 napDanhSachTaiSan(maHD)
+activate CTGN
+
+CTGN -> CTGNDB : 2.6 getTaiSanTheoPhong(maHD)
+activate CTGNDB
+deactivate CTGNDB
+
+deactivate CTGN
+
+DK -> MH : 2.7 hienThiDanhSachTaiSan()
+
+deactivate DK
+deactivate MH
+
+
+'=====================
+' LƯU BIÊN BẢN THU HỒI
+'=====================
+
+QL -> MH : 3.0 nhapSoLuongTinhTrangMinhChung()
+activate MH
+
+QL -> MH : 3.1 btnLuuBienBan_Click()
+
+MH -> DK : 3.2 luuBienBanThuHoi(maHD, dsTaiSan)
+activate DK
+
+DK -> BB : 3.3 kiemTraDuLieuTaiSan(dsTaiSan)
+activate BB
+
+alt A4 Thiếu tình trạng / dữ liệu bắt buộc
+
+DK -> MH : A4.1 hienThiLoiDuLieu()
+
+else Dữ liệu hợp lệ
+
+DK -> BB : 3.4 khoiTaoThuHoi(maHD, maNV)
+BB -> BBDB : 3.5 insertBienBan()
+activate BBDB
+deactivate BBDB
+
+deactivate BB
+
+DK -> CTGN : 3.6 luuChiTiet(maBienBan, dsTaiSan)
+activate CTGN
+
+CTGN -> CTGNDB : 3.7 insertChiTiet()
+activate CTGNDB
+deactivate CTGNDB
+
+deactivate CTGN
+
+DK -> TB : 3.8 guiThongBaoKeToan(maHD, maBienBan)
+activate TB
+deactivate TB
+
+DK -> MH : 3.9 hienThiThongBaoThanhCong()
+
+end
+
+deactivate DK
+deactivate MH
+
+@enduml

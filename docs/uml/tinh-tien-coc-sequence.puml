@@ -1,0 +1,41 @@
+@startuml
+title SO DO TUAN TU - TINH TIEN COC
+
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+
+actor "Ke toan" as KT
+boundary ": MHTinhTienCoc" as MH
+control ": TinhTienCoc" as TTC
+control ": PhieuCoc" as PC
+control ": Phong" as P
+entity ": PhieuCocDB" as PCDB
+
+KT -> MH : taiDanhSach(text)
+MH -> TTC : LayDanhSachKhoiTao(text)
+TTC -> PC : LayDanhSachKhoiTao(text)
+PC -> PCDB : LayDanhSachKhoiTao(text)
+
+KT -> MH : chonPhieuCoc(maPhieuCoc)
+MH -> TTC : LayChiTietVaTinhTien(maPhieuCoc)
+TTC -> PC : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTiet(maPhieuCoc)
+alt HinhThucThue = OGhep
+  PC -> PC : dem Giuongs
+else HinhThucThue = NguyenCan
+  PC -> PC : lay Phong.LoaiPhong.SucChua
+end
+PC -> P : TinhTienCoc(soGiuong)
+MH --> KT : hien thi cong thuc va TongTien
+
+KT -> MH : xacNhan()
+MH -> TTC : XacNhanTinhTien(maPhieuCoc)
+TTC -> PC : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTiet(maPhieuCoc)
+PC -> PC : XacNhanTinhTien(thoiDiemXacNhan, thoiHanThanhToan)
+PC -> P : TinhTienCoc(soGiuong)
+PC -> PCDB : CapNhatTinhTien(phieu)
+MH --> KT : thong bao Tao phieu coc thanh cong
+
+@enduml

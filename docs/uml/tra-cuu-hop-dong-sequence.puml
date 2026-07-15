@@ -1,0 +1,141 @@
+@startuml
+title TRA CUU HOP DONG
+
+skinparam sequenceArrowThickness 1.2
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 80
+
+actor "Nguoi dung" as USER
+
+box "GUI" #F9FBE7
+boundary "MHTraCuuHopDong" as MH
+end box
+
+box "BUS" #FEF9E7
+control "TraCuuHopDong" as DK
+control "HopDong" as HD
+control "ThanhVienHopDong" as TV
+control "DichVuHopDong" as DV
+end box
+
+box "DB" #F5EEF8
+entity "HopDongDB" as HDDB
+entity "ThanhVienHopDongDB" as TVDB
+entity "DichVuHopDongDB" as DVDB
+end box
+
+'=====================
+' KHOI TAO MAN HINH (A2)
+'=====================
+
+USER -> MH : 1.0 Truy cap chuc nang
+activate MH
+
+MH -> DK : 1.1 TimKiem(null, null)
+activate DK
+
+DK -> HD : 1.2 LayDanhSachHieuLuc()
+activate HD
+
+HD -> HDDB : 1.3 LayDanhSachHieuLuc()
+activate HDDB
+deactivate HDDB
+
+deactivate HD
+
+deactivate DK
+deactivate MH
+
+
+'=====================
+' TIM KIEM
+'=====================
+
+USER -> MH : 2.0 Nhap tieu chi
+activate MH
+
+USER -> MH : 2.1 btnTimKiem_Click()
+
+MH -> DK : 2.2 TimKiem(tuKhoa, trangThai)
+activate DK
+
+alt A2 Khong nhap tieu chi
+
+DK -> HD : A2.1 LayDanhSachHieuLuc()
+activate HD
+
+HD -> HDDB : A2.2 LayDanhSachHieuLuc()
+activate HDDB
+deactivate HDDB
+
+deactivate HD
+
+else Co tieu chi
+
+DK -> HD : 2.3 TimKiem(tuKhoa, trangThai)
+activate HD
+
+HD -> HDDB : 2.4 TraCuu(tuKhoa, trangThai)
+activate HDDB
+deactivate HDDB
+
+deactivate HD
+
+end
+
+alt A3 Khong tim thay hop dong
+
+note right of MH : Hien thi thong bao khong tim thay
+
+else Co ket qua
+
+note right of MH : Hien thi danh sach hop dong
+
+end
+
+deactivate DK
+deactivate MH
+
+
+'=====================
+' XEM CHI TIET
+'=====================
+
+USER -> MH : 3.0 grvDSHopDong_CellClick(maHD)
+activate MH
+
+MH -> DK : 3.1 LayChiTiet(maHD)
+activate DK
+
+DK -> HD : 3.2 DocChiTiet(maHD)
+activate HD
+
+HD -> HDDB : 3.3 DocChiTiet(maHD)
+activate HDDB
+deactivate HDDB
+
+HD -> TV : 3.4 LayDanhSachTheoHopDong(maHD)
+activate TV
+
+TV -> TVDB : 3.5 LayDanhSachTheoHopDong(maHD)
+activate TVDB
+deactivate TVDB
+
+deactivate TV
+
+HD -> DV : 3.6 LayDanhSachTheoHopDong(maHD)
+activate DV
+
+DV -> DVDB : 3.7 LayDanhSachTheoHopDong(maHD)
+activate DVDB
+deactivate DVDB
+
+deactivate DV
+
+deactivate HD
+
+deactivate DK
+deactivate MH
+
+@enduml
