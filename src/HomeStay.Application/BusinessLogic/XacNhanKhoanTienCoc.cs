@@ -7,7 +7,8 @@ public sealed record KetQuaXacNhanKhoanTienCoc(PhieuCoc PhieuCoc, PhieuThu Phieu
 public sealed class XacNhanKhoanTienCoc(
     Func<PhienDuLieu> taoPhienDuLieu,
     TimeProvider timeProvider,
-    CauHinhHetHanPhieuCoc cauHinhHetHan)
+    CauHinhHetHanPhieuCoc cauHinhHetHan,
+    DichVuThongBao thongBao)
 {
     public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string? text, string? maNV)
     {
@@ -48,6 +49,18 @@ public sealed class XacNhanKhoanTienCoc(
             await phieu.CapNhatXacNhanThanhToan();
             await phieuThu.Them();
             await phong.CapNhatDatCoc();
+            await thongBao.DongTacVu(
+                LoaiSuKienThongBao.ChungTuCocChoDoiChieu, phieu.MaPhieuCoc, nhanVien.MaNV);
+            await thongBao.PhatCanXuLyChoNhanVien(
+                LoaiSuKienThongBao.TienCocDaXacNhan,
+                phieu.MaCN,
+                "Sale",
+                phieu.MaNV,
+                "Khoản tiền cọc đã được xác nhận",
+                $"Phiếu {phieu.MaPhieuCoc} đã được xác nhận và lập phiếu thu {phieuThu.MaPT}. Hãy tiếp tục hồ sơ lưu trú.",
+                $"/sale/ho-so-luu-tru?maPhieuCoc={Uri.EscapeDataString(phieu.MaPhieuCoc)}",
+                phieu.MaPhieuCoc,
+                nhanVien.MaNV);
             phien.Commit();
             return new KetQuaXacNhanKhoanTienCoc(phieu, phieuThu);
         }
@@ -72,6 +85,20 @@ public sealed class XacNhanKhoanTienCoc(
                 timeProvider.GetLocalNow().DateTime,
                 cauHinhHetHan.ThoiHanThanhToan);
             await phieu.CapNhatYeuCauBoSung();
+            await thongBao.DongTacVu(
+                LoaiSuKienThongBao.ChungTuCocChoDoiChieu, phieu.MaPhieuCoc, nhanVien.MaNV);
+            await thongBao.PhatCanXuLyChoNhanVien(
+                LoaiSuKienThongBao.ChungTuCocCanBoSung,
+                phieu.MaCN,
+                "Sale",
+                phieu.MaNV,
+                "Chứng từ cọc cần bổ sung",
+                $"Phiếu {phieu.MaPhieuCoc}: {phieu.LyDoYeuCauBoSung}. Hạn mới {phieu.HanThanhToan:dd/MM/yyyy HH:mm}.",
+                $"/sale/ghi-nhan-coc?maPhieuCoc={Uri.EscapeDataString(phieu.MaPhieuCoc)}",
+                phieu.MaPhieuCoc,
+                nhanVien.MaNV,
+                khoaChongTrung: $"{LoaiSuKienThongBao.ChungTuCocCanBoSung}:{phieu.MaPhieuCoc}",
+                capNhatNeuTonTai: true);
             phien.Commit();
             return phieu;
         }

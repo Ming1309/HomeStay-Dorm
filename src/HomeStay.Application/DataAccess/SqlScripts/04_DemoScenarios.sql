@@ -332,5 +332,30 @@ VALUES
 ('PHC0002', 3040000, N'TienMat', N'Khách nhận tại quầy', NULL, N'/files/bien-nhan-phc0002.png', '2026-08-01T10:00:00', 'PDS0002', 'NV02');
 GO
 
+-- ============================================================
+-- 8. Thông báo theo chi nhánh và người nhận
+-- ============================================================
+INSERT INTO ThongBao
+    (MaTB, LoaiSuKien, LoaiThongBao, TieuDe, NoiDung, MaCN, VaiTroNhan, MaNVNhan,
+     LienKet, Tone, TrangThai, KhoaChongTrung, ThoiGianTao, MaNVGui, MaThamChieu,
+     MaNVXuLy, ThoiGianXuLy)
+VALUES
+('TBDEMO0001', N'PhieuCocHuyChoDoiSoat', N'CanXuLy', N'Phiếu cọc đã hủy cần đối soát',
+ N'Phiếu PC0007 đã thu tiền và đang chờ lập phiếu đối soát.', 'CN01', N'KeToan', NULL,
+ N'/accountant/doi-soat?maPhieuCoc=PC0007', N'orange', N'DangMo', N'DEMO:PC0007:DOISOAT', DATEADD(MINUTE,-20,GETDATE()), 'NV03', 'PC0007', NULL, NULL),
+('TBDEMO0002', N'PhieuDoiSoatChoXacNhan', N'CanXuLy', N'Phiếu đối soát cần xác nhận',
+ N'Phiếu PDS0004 đang chờ Quản lý trao đổi kết quả với khách.', 'CN01', N'QuanLy', NULL,
+ N'/manager/reconciliation-approval?maPDS=PDS0004', N'blue', N'DangMo', N'DEMO:PDS0004:XACNHAN', DATEADD(MINUTE,-15,GETDATE()), 'NV02', 'PDS0004', NULL, NULL),
+('TBDEMO0003', N'HoSoLuuTruChoDuyet', N'CanXuLy', N'Hồ sơ lưu trú cần xét duyệt',
+ N'Phiếu PC0005 của chi nhánh CN02 đang chờ xét duyệt.', 'CN02', N'QuanLy', NULL,
+ N'/manager/approval?maPhieuCoc=PC0005', N'blue', N'DangMo', N'DEMO:PC0005:DUYET', DATEADD(MINUTE,-10,GETDATE()), 'NV04', 'PC0005', NULL, NULL),
+('TBDEMO0004', N'TienCocDaXacNhan', N'CanXuLy', N'Khoản tiền cọc đã xác nhận',
+ N'Phiếu PC0008 đã có phiếu thu và cần tiếp tục hồ sơ lưu trú.', 'CN02', N'Sale', 'NV04',
+ N'/sale/ho-so-luu-tru?maPhieuCoc=PC0008', N'green', N'DangMo', N'DEMO:PC0008:HOSO', DATEADD(MINUTE,-5,GETDATE()), 'NV05', 'PC0008', NULL, NULL),
+('TBDEMO0005', N'PhieuDoiSoatChoXacNhan', N'CanXuLy', N'Phiếu đối soát đã được xử lý',
+ N'Phiếu PDS0001 đã được Quản lý xác nhận.', 'CN01', N'QuanLy', NULL,
+ N'/manager/reconciliation-approval?maPDS=PDS0001', N'green', N'DaXuLy', N'DEMO:PDS0001:DAXULY', DATEADD(DAY,-1,GETDATE()), 'NV02', 'PDS0001', 'NV01', DATEADD(HOUR,-20,GETDATE()));
+GO
+
 PRINT N'Đã chèn dữ liệu kịch bản nghiệp vụ thành công.';
 GO

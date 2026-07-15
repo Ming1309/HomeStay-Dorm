@@ -201,8 +201,27 @@ public sealed class LapPhieuDoiSoat
                 pds.HoaDons = dsHoaDon.ToList();
             }
 
+            var phieuCoc = await PhieuCoc.DocChiTiet(maPhieuCoc)
+                ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc của hồ sơ đối soát.");
             await pds.LuuPhieu();
-            await _dichVuThongBao.GuiThongBaoQuanLy(pds.MaPDS);
+            await _dichVuThongBao.DongTacVu(
+                LoaiSuKienThongBao.PhieuCocHuyChoDoiSoat, maPhieuCoc, maNhanVien);
+            if (maHD is not null)
+            {
+                await _dichVuThongBao.DongTacVu(
+                    LoaiSuKienThongBao.BienBanThuHoiChoBoiThuong, maHD, maNhanVien);
+                await _dichVuThongBao.DongTacVu(
+                    LoaiSuKienThongBao.BienBanThuHoiChoDoiSoat, maHD, maNhanVien);
+            }
+            await _dichVuThongBao.PhatCanXuLyTheoVaiTro(
+                LoaiSuKienThongBao.PhieuDoiSoatChoXacNhan,
+                phieuCoc.MaCN,
+                "QuanLy",
+                "Phiếu đối soát mới cần xác nhận",
+                $"Phiếu đối soát {pds.MaPDS} đã được lập. Vui lòng trao đổi kết quả với khách hàng.",
+                $"/manager/reconciliation-approval?maPDS={Uri.EscapeDataString(pds.MaPDS)}",
+                pds.MaPDS,
+                maNhanVien);
 
             phien.Commit();
             return pds;

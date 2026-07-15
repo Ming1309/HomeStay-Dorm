@@ -19,7 +19,9 @@ export const Route = createFileRoute("/accountant/compensation")({
 
 function AccountantCompensationPage() {
   const [items, setItems] = useState<BienBanThuHoiChuaXuLy[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("maBienBan"),
+  );
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
 

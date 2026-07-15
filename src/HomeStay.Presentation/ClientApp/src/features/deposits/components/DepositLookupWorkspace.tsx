@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -25,6 +25,7 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 export function DepositLookupWorkspace() {
+  const linkedDepositId = new URLSearchParams(window.location.search).get("maPhieuCoc");
   const [items, setItems] = useState<DepositLookupItem[]>([]);
   const [selected, setSelected] = useState<DepositLookupDetail | null>(null);
   const [searched, setSearched] = useState(false);
@@ -68,6 +69,25 @@ export function DepositLookupWorkspace() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!linkedDepositId) return;
+    setLoading(true);
+    Promise.all([
+      lookupDeposits({ maPhieuCoc: linkedDepositId, sdt: "", email: "", soGiayTo: "" }),
+      loadDepositLookupDetail(linkedDepositId),
+    ])
+      .then(([result, detail]) => {
+        setItems(result);
+        setSelected(detail);
+        setSearched(true);
+      })
+      .catch((error) => {
+        setSearched(true);
+        toast.error(error instanceof Error ? error.message : "Không thể tải phiếu cọc từ thông báo.");
+      })
+      .finally(() => setLoading(false));
+  }, [linkedDepositId]);
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-gray-50">

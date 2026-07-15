@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SaleRouteImport } from './routes/sale'
 import { Route as ResidenceRouteImport } from './routes/residence'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ManagerRouteImport } from './routes/manager'
 import { Route as ContractRouteImport } from './routes/contract'
 import { Route as ApprovalRouteImport } from './routes/approval'
@@ -69,6 +70,11 @@ const SaleRoute = SaleRouteImport.update({
 const ResidenceRoute = ResidenceRouteImport.update({
   id: '/residence',
   path: '/residence',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManagerRoute = ManagerRouteImport.update({
@@ -327,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/approval': typeof ApprovalRoute
   '/contract': typeof ContractRoute
   '/manager': typeof ManagerRouteWithChildren
+  '/notifications': typeof NotificationsRoute
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
   '/accountant/compensation': typeof AccountantCompensationRoute
@@ -377,6 +384,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/approval': typeof ApprovalRoute
   '/contract': typeof ContractRoute
+  '/notifications': typeof NotificationsRoute
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
   '/accountant/compensation': typeof AccountantCompensationRoute
@@ -431,6 +439,7 @@ export interface FileRoutesById {
   '/approval': typeof ApprovalRoute
   '/contract': typeof ContractRoute
   '/manager': typeof ManagerRouteWithChildren
+  '/notifications': typeof NotificationsRoute
   '/residence': typeof ResidenceRoute
   '/sale': typeof SaleRouteWithChildren
   '/accountant/compensation': typeof AccountantCompensationRoute
@@ -486,6 +495,7 @@ export interface FileRouteTypes {
     | '/approval'
     | '/contract'
     | '/manager'
+    | '/notifications'
     | '/residence'
     | '/sale'
     | '/accountant/compensation'
@@ -536,6 +546,7 @@ export interface FileRouteTypes {
     | '/'
     | '/approval'
     | '/contract'
+    | '/notifications'
     | '/residence'
     | '/sale'
     | '/accountant/compensation'
@@ -589,6 +600,7 @@ export interface FileRouteTypes {
     | '/approval'
     | '/contract'
     | '/manager'
+    | '/notifications'
     | '/residence'
     | '/sale'
     | '/accountant/compensation'
@@ -643,6 +655,7 @@ export interface RootRouteChildren {
   ApprovalRoute: typeof ApprovalRoute
   ContractRoute: typeof ContractRoute
   ManagerRoute: typeof ManagerRouteWithChildren
+  NotificationsRoute: typeof NotificationsRoute
   ResidenceRoute: typeof ResidenceRoute
   SaleRoute: typeof SaleRouteWithChildren
 }
@@ -661,6 +674,13 @@ declare module '@tanstack/react-router' {
       path: '/residence'
       fullPath: '/residence'
       preLoaderRoute: typeof ResidenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/manager': {
@@ -1137,6 +1157,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApprovalRoute: ApprovalRoute,
   ContractRoute: ContractRoute,
   ManagerRoute: ManagerRouteWithChildren,
+  NotificationsRoute: NotificationsRoute,
   ResidenceRoute: ResidenceRoute,
   SaleRoute: SaleRouteWithChildren,
 }

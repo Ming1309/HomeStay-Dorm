@@ -6,11 +6,13 @@ public sealed class NhapHoSoLuuTru
 {
     private readonly Func<PhienDuLieu> _taoPhienDuLieu;
     private readonly TimeProvider _timeProvider;
+    private readonly DichVuThongBao _thongBao;
 
-    public NhapHoSoLuuTru(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
+    public NhapHoSoLuuTru(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider, DichVuThongBao thongBao)
     {
         _taoPhienDuLieu = taoPhienDuLieu;
         _timeProvider = timeProvider;
+        _thongBao = thongBao;
     }
 
     public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoNhap(string? text = null)
@@ -107,6 +109,17 @@ public sealed class NhapHoSoLuuTru
 
             phieu.CapNhatTrangThai("ChoDuyet");
             await phieu.LuuCapNhatTrangThai();
+            await _thongBao.DongTacVu(
+                LoaiSuKienThongBao.TienCocDaXacNhan, phieu.MaPhieuCoc, phieu.MaNV);
+            await _thongBao.PhatCanXuLyTheoVaiTro(
+                LoaiSuKienThongBao.HoSoLuuTruChoDuyet,
+                phieu.MaCN,
+                "QuanLy",
+                "Hồ sơ lưu trú cần xét duyệt",
+                $"Phiếu {phieu.MaPhieuCoc} của {phieu.KhachHang.HoTen} đã gửi hồ sơ lưu trú.",
+                $"/manager/approval?maPhieuCoc={Uri.EscapeDataString(phieu.MaPhieuCoc)}",
+                phieu.MaPhieuCoc,
+                phieu.MaNV);
 
             phien.Commit();
             return phieu;

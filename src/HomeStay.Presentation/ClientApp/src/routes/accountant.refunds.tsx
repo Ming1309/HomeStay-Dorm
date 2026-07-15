@@ -118,7 +118,9 @@ function AccountantRefundsPage() {
     ? user.hoTen || user.tenDangNhap
     : "Kế toán đang đăng nhập";
   const [queue, setQueue] = useState<PhieuDoiSoatChoHoan[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("maPDS"),
+  );
   const [selectedDetails, setSelectedDetails] = useState<ChiTietDoiSoatChoHoan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 

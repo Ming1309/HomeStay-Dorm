@@ -18,7 +18,10 @@ public sealed class ChiTietBanGiao
     public List<PhongTaiSan> TaiSan { get; set; } = [];
 }
 
-public sealed class LapBienBanBanGiao(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
+public sealed class LapBienBanBanGiao(
+    Func<PhienDuLieu> taoPhienDuLieu,
+    TimeProvider timeProvider,
+    DichVuThongBao thongBao)
 {
     public async Task<IReadOnlyList<HopDongChoBanGiao>> LayDanhSachChoBanGiao(string? tuKhoa = null)
     {
@@ -98,6 +101,8 @@ public sealed class LapBienBanBanGiao(Func<PhienDuLieu> taoPhienDuLieu, TimeProv
             // ChiTietHopDong.TrangThaiThue đã là "DangThue" từ khi lập HĐ,
             // DB constraint chỉ cho phép {DangThue, DaTra}, không cần update.
             await hopDong.ChuyenTrangThaiDangHieuLuc();
+            await thongBao.DongTacVu(
+                LoaiSuKienThongBao.HopDongChoBanGiao, maHD, maNV);
 
             phien.Commit();
             return bienBan;

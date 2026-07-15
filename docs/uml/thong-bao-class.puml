@@ -1,0 +1,76 @@
+@startuml
+title SO DO LOP 3 TANG - THONG BAO NOI BO
+
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package "TANG GIAO DIEN" #EAF2F8 {
+  class MHThongBao {
+    + HienThiChuong()
+    + LocTacVuDangMo()
+    + DanhDauDaDoc(maTB: String)
+    + MoLienKet(lienKet: String)
+  }
+}
+
+package "TANG NGHIEP VU" #FCF3CF {
+  class DichVuThongBao {
+    + PhatCanXuLyTheoVaiTro(...): ThongBao
+    + PhatCanXuLyChoNhanVien(...): ThongBao
+    + PhatThongTin(...): ThongBao
+    + DongTacVu(loaiSuKien: String, maThamChieu: String, maNV: String)
+    + LayThongBaoCuaToi(maNV: String, boLoc: String, gioiHan: Integer, cursor: String): TrangThongBao
+    + DanhDauDaDoc(maNV: String, maTB: String)
+    + DanhDauTatCaDaDoc(maNV: String)
+  }
+
+  class ThongBao {
+    - MaTB: String
+    - LoaiSuKien: String
+    - LoaiThongBao: String
+    - MaCN: String
+    - VaiTroNhan: String
+    - MaNVNhan: String
+    - MaThamChieu: String
+    - LienKet: String
+    - TrangThai: String
+    - KhoaChongTrung: String
+    - ThoiGianTao: DateTime
+    - ThoiGianXuLy: DateTime
+    - MaNVXuLy: String
+    + Tao(...): ThongBao
+    + Luu()
+    + DongTacVu(maNV: String, thoiDiem: DateTime)
+  }
+
+  class NhanVien {
+    - MaNV: String
+    - MaCN: String
+    - VaiTro: String
+    + DocTheoMa(maNV: String): NhanVien
+  }
+}
+
+package "TANG TRUY CAP DU LIEU" #FDEDEC {
+  class ThongBaoDB {
+    + Luu(thongBao: ThongBao)
+    + LayCuaNhanVien(nhanVien: NhanVien, boLoc: String, ...): IReadOnlyList<ThongBao>
+    + DemChuaDoc(nhanVien: NhanVien): Integer
+    + DanhDauDaDoc(nhanVien: NhanVien, maTB: String)
+    + DongTacVu(loaiSuKien: String, maThamChieu: String, maNV: String, thoiDiem: DateTime)
+  }
+
+  class NhanVienDB {
+    + DocTheoMa(maNV: String): NhanVien
+  }
+}
+
+MHThongBao o-- DichVuThongBao
+DichVuThongBao "1" -- "0..*" ThongBao : dieu phoi
+DichVuThongBao "1" -- "1" NhanVien : xac dinh pham vi
+ThongBao o-- ThongBaoDB
+NhanVien o-- NhanVienDB
+@enduml

@@ -112,13 +112,29 @@ public sealed class LapBienBanThuHoiTaiSan(
             await bienBan.LuuBienBan();
             await ChiTietGiaoNhan.ThemNhieu(bienBan.ChiTiet);
 
-            // UC 1.4.17: gửi thông báo cho Kế toán để đối soát (trong cùng transaction)
-            await dichVuThongBao.GuiThongBaoKeToan(
-                tieuDe: "Biên bản thu hồi tài sản mới",
-                noiDung: $"Hợp đồng {maHD} ({hopDong.KhachHang.HoTen} • {hopDong.Phong.SoPhong}) vừa lập biên bản thu hồi {bienBan.MaBienBan}. Vui lòng lập phiếu đối soát.",
-                lienKet: "/accountant/doi-soat",
-                maNVGui: maNV,
-                maThamChieu: bienBan.MaBienBan);
+            var phieuCoc = hopDong.PhieuCoc ?? await PhieuCoc.DocChiTiet(hopDong.MaPhieuCoc)
+                ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc của hợp đồng.");
+            await dichVuThongBao.DongTacVu(
+                LoaiSuKienThongBao.LichTraPhong, maHD, maNV);
+
+            var coHuHong = chiTiet.Any(x => x.TinhTrang is "Hư hỏng" or "Mất mát");
+            await dichVuThongBao.PhatCanXuLyTheoVaiTro(
+                coHuHong
+                    ? LoaiSuKienThongBao.BienBanThuHoiChoBoiThuong
+                    : LoaiSuKienThongBao.BienBanThuHoiChoDoiSoat,
+                phieuCoc.MaCN,
+                "KeToan",
+                coHuHong ? "Biên bản thu hồi cần lập bồi thường" : "Biên bản thu hồi cần đối soát",
+                coHuHong
+                    ? $"Biên bản {bienBan.MaBienBan} của hợp đồng {maHD} có tài sản hư hỏng hoặc mất mát."
+                    : $"Biên bản {bienBan.MaBienBan} của hợp đồng {maHD} không có hư hỏng và đang chờ đối soát.",
+                coHuHong
+                    ? $"/accountant/compensation?maBienBan={Uri.EscapeDataString(bienBan.MaBienBan)}"
+                    : $"/accountant/doi-soat?maHD={Uri.EscapeDataString(maHD)}",
+                maHD,
+                maNV,
+                tone: coHuHong ? "orange" : "blue",
+                khoaChongTrung: $"{(coHuHong ? LoaiSuKienThongBao.BienBanThuHoiChoBoiThuong : LoaiSuKienThongBao.BienBanThuHoiChoDoiSoat)}:{bienBan.MaBienBan}");
 
             phien.Commit();
             return bienBan;

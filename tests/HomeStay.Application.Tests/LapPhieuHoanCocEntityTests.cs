@@ -93,9 +93,11 @@ public sealed class LapPhieuHoanCocEntityTests
     public async System.Threading.Tasks.Task LayDSPhieuDoiSoatCanHoan_WithConfiguredDatabase_ReturnsList()
     {
         var factory = new EnvironmentSqlConnectionFactory();
+        Func<PhienDuLieu> taoPhien = () => new PhienDuLieu(new SqlSession(factory));
         var lap = new LapPhieuHoanCoc(
-            () => new PhienDuLieu(new SqlSession(factory)),
-            TimeProvider.System);
+            taoPhien,
+            TimeProvider.System,
+            new DichVuThongBao(taoPhien, TimeProvider.System));
 
         var results = await lap.LayDSPhieuDoiSoatCanHoan();
 

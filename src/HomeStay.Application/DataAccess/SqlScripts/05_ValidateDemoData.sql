@@ -347,5 +347,43 @@ IF EXISTS (
     THROW 51011, 'Tong hoa don khong khop chi tiet.', 1;
 GO
 
+IF EXISTS (
+    SELECT 1
+    FROM ThongBao tb
+    LEFT JOIN ChiNhanh cn ON cn.MaCN=tb.MaCN
+    WHERE cn.MaCN IS NULL
+       OR LEN(LTRIM(RTRIM(tb.LoaiSuKien)))=0
+       OR LEN(LTRIM(RTRIM(tb.KhoaChongTrung)))=0
+)
+    THROW 51023, 'Thong bao thieu pham vi chi nhanh, loai su kien hoac khoa chong trung.', 1;
+GO
+
+IF EXISTS (
+    SELECT 1
+    FROM ThongBao tb
+    INNER JOIN NhanVien nv ON nv.MaNV=tb.MaNVNhan
+    WHERE nv.MaCN<>tb.MaCN OR nv.VaiTro<>tb.VaiTroNhan
+)
+    THROW 51024, 'Nguoi nhan truc tiep cua thong bao khong cung chi nhanh hoac sai vai tro.', 1;
+GO
+
+IF EXISTS (
+    SELECT KhoaChongTrung
+    FROM ThongBao
+    GROUP BY KhoaChongTrung
+    HAVING COUNT(*)>1
+)
+    THROW 51025, 'Thong bao bi trung khoa su kien.', 1;
+GO
+
+IF EXISTS (
+    SELECT 1 FROM ThongBao
+    WHERE (TrangThai=N'DangMo' AND (MaNVXuLy IS NOT NULL OR ThoiGianXuLy IS NOT NULL))
+       OR (TrangThai=N'DaXuLy' AND (MaNVXuLy IS NULL OR ThoiGianXuLy IS NULL))
+       OR (TrangThai=N'DaHuy' AND ThoiGianXuLy IS NULL)
+)
+    THROW 51026, 'Vong doi thong bao khong khop dau vet nguoi xu ly.', 1;
+GO
+
 PRINT N'05_ValidateDemoData.sql: dữ liệu mẫu hợp lệ.';
 GO

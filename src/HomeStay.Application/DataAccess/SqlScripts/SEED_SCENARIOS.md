@@ -70,7 +70,7 @@ Mã nghiệp vụ chỉ là số thứ tự, không mã hóa trạng thái hay u
 | Phiếu thu | `PT0001` - `PT0007` |
 | Phiếu hoàn cọc | `PHC0001` - `PHC0002` |
 | Biên bản giao nhận | `BBGN0001` - `BBGN0003`, `BBTH0001` (UC 1.4.20) |
-| Thông báo | `TB...` (sinh runtime) |
+| Thông báo | `TBDEMO0001` - `TBDEMO0005`, các mã `TB...` khác sinh runtime |
 
 ## Phạm vi kiểm thử
 
@@ -86,7 +86,9 @@ Mã nghiệp vụ chỉ là số thứ tự, không mã hóa trạng thái hay u
 - `PT0001` - `PT0007` đều có minh chứng; `PHC0001` - `PHC0002` có chứng từ giao/chuyển tiền, trong đó chuyển khoản có mã giao dịch.
 - `BBGN0001` - `BBGN0003` phục vụ bàn giao và thu hồi tài sản.
 - `BBTH0001` là biên bản thu hồi `HD0004` có tài sản `Hư hỏng`/`Mất mát`, **chưa** có hóa đơn bồi thường — phục vụ UC 1.4.20.
-- Bảng `ThongBao` / `ThongBao_NguoiDoc` phục vụ chuông thông báo theo vai trò (header Bell).
+- `TBDEMO0001`/`TBDEMO0002` là tác vụ CN01; `TBDEMO0003`/`TBDEMO0004` là tác vụ CN02;
+  `TBDEMO0005` minh họa tác vụ đã được một Quản lý xử lý. Thông báo trực tiếp và theo vai trò
+  đều bị giới hạn bởi snapshot chi nhánh; trạng thái đọc vẫn riêng theo từng nhân viên.
 
 `03_Auth.sql` tạo các tài khoản phát triển `admin`, `sale`, `ketoan`, `quanly` để kiểm thử phân quyền.
 Các màn hình lập phiếu, tính tiền, ghi nhận thanh toán và xác nhận khoản tiền cọc dùng API thật;

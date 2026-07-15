@@ -362,20 +362,28 @@ CREATE TABLE PhieuHoanCoc (
 GO
 
 CREATE TABLE ThongBao (
-    MaTB         VARCHAR(20)    NOT NULL,
-    TieuDe       NVARCHAR(200)  NOT NULL,
-    NoiDung      NVARCHAR(500)  NOT NULL,
-    VaiTroNhan   NVARCHAR(20)   NOT NULL,
-    LienKet      NVARCHAR(200)  NULL,
-    Tone         NVARCHAR(20)   NOT NULL,
-    ThoiGianTao  DATETIME       NOT NULL,
-    MaNVGui      VARCHAR(20)    NULL,
-    MaThamChieu  VARCHAR(50)    NULL
+    MaTB            VARCHAR(36)    NOT NULL,
+    LoaiSuKien      NVARCHAR(80)   NOT NULL,
+    LoaiThongBao    NVARCHAR(20)   NOT NULL,
+    TieuDe          NVARCHAR(200)  NOT NULL,
+    NoiDung         NVARCHAR(500)  NOT NULL,
+    MaCN            VARCHAR(20)    NOT NULL,
+    VaiTroNhan      NVARCHAR(20)   NOT NULL,
+    MaNVNhan        VARCHAR(20)    NULL,
+    LienKet         NVARCHAR(300)  NULL,
+    Tone            NVARCHAR(20)   NOT NULL,
+    TrangThai       NVARCHAR(20)   NOT NULL,
+    KhoaChongTrung  NVARCHAR(180)  NOT NULL,
+    ThoiGianTao     DATETIME       NOT NULL,
+    MaNVGui         VARCHAR(20)    NULL,
+    MaThamChieu     VARCHAR(50)    NULL,
+    MaNVXuLy        VARCHAR(20)    NULL,
+    ThoiGianXuLy    DATETIME       NULL
 );
 GO
 
 CREATE TABLE ThongBao_NguoiDoc (
-    MaTB      VARCHAR(20)  NOT NULL,
+    MaTB      VARCHAR(36)  NOT NULL,
     MaNV      VARCHAR(20)  NOT NULL,
     ThoiGianDoc DATETIME   NOT NULL
 );
@@ -828,16 +836,40 @@ ALTER TABLE PhieuHoanCoc ADD CONSTRAINT FK_PhieuHoanCoc_NhanVien
 -- ThongBao
 ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_VaiTroNhan
     CHECK (VaiTroNhan IN (N'Sale', N'KeToan', N'QuanLy', N'QuanTri'));
+ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_LoaiThongBao
+    CHECK (LoaiThongBao IN (N'CanXuLy', N'ThongTin', N'CanhBao'));
 ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_Tone
-    CHECK (Tone IN (N'blue', N'green', N'orange'));
+    CHECK (Tone IN (N'blue', N'green', N'orange', N'red'));
+ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_TrangThai
+    CHECK (TrangThai IN (N'DangMo', N'DaXuLy', N'DaHuy', N'ThongTin'));
+ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_VongDoi
+    CHECK (
+        (LoaiThongBao = N'CanXuLy' AND TrangThai IN (N'DangMo', N'DaXuLy', N'DaHuy'))
+        OR (LoaiThongBao IN (N'ThongTin', N'CanhBao') AND TrangThai = N'ThongTin')
+    );
+ALTER TABLE ThongBao ADD CONSTRAINT FK_ThongBao_ChiNhanh
+    FOREIGN KEY (MaCN) REFERENCES ChiNhanh(MaCN);
 ALTER TABLE ThongBao ADD CONSTRAINT FK_ThongBao_NhanVienGui
     FOREIGN KEY (MaNVGui) REFERENCES NhanVien(MaNV);
+ALTER TABLE ThongBao ADD CONSTRAINT FK_ThongBao_NhanVienNhan
+    FOREIGN KEY (MaNVNhan) REFERENCES NhanVien(MaNV);
+ALTER TABLE ThongBao ADD CONSTRAINT FK_ThongBao_NhanVienXuLy
+    FOREIGN KEY (MaNVXuLy) REFERENCES NhanVien(MaNV);
 
 -- ThongBao_NguoiDoc
 ALTER TABLE ThongBao_NguoiDoc ADD CONSTRAINT FK_ThongBao_NguoiDoc_ThongBao
     FOREIGN KEY (MaTB) REFERENCES ThongBao(MaTB);
 ALTER TABLE ThongBao_NguoiDoc ADD CONSTRAINT FK_ThongBao_NguoiDoc_NhanVien
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
+GO
+
+CREATE UNIQUE INDEX UX_ThongBao_KhoaChongTrung
+    ON ThongBao(KhoaChongTrung);
+CREATE INDEX IX_ThongBao_VaiTroChiNhanh
+    ON ThongBao(MaCN, VaiTroNhan, TrangThai, ThoiGianTao DESC);
+CREATE INDEX IX_ThongBao_NguoiNhan
+    ON ThongBao(MaNVNhan, ThoiGianTao DESC)
+    WHERE MaNVNhan IS NOT NULL;
 GO
 
 -- Phạm vi chi nhánh được áp tại database để mọi query cũ/mới đều được cô lập.

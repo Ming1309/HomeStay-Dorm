@@ -142,6 +142,8 @@ public sealed class ThanhLyHopDongController(
             var hopDong = await HopDong.LayThongTinHopDong(maHD)
                 ?? throw new KeyNotFoundException("Không tìm thấy hợp đồng.");
             hopDong.KiemTraDangHieuLuc();
+            var phieuCoc = hopDong.PhieuCoc ?? await PhieuCoc.DocChiTiet(hopDong.MaPhieuCoc)
+                ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc của hợp đồng.");
 
             var pds = await PhieuDoiSoat.LayThongTinDoiSoat(maHD)
                 ?? throw new InvalidOperationException("Hợp đồng chưa có phiếu đối soát. Vui lòng yêu cầu Kế toán lập phiếu đối soát trước.");
@@ -171,13 +173,19 @@ public sealed class ThanhLyHopDongController(
 
             if (pds.TienHoan > 0)
             {
-                await dichVuThongBao.GuiThongBaoKeToan(
-                    tieuDe: "Yêu cầu hoàn cọc sau thanh lý",
-                    noiDung: $"Hợp đồng {maHD} đã thanh lý. Phiếu đối soát {pds.MaPDS} còn {pds.TienHoan:N0} VNĐ cần hoàn cọc.",
-                    lienKet: "/accountant/refunds",
-                    maNVGui: maNV,
-                    maThamChieu: pds.MaPDS);
+                await dichVuThongBao.PhatCanXuLyTheoVaiTro(
+                    LoaiSuKienThongBao.PhieuDoiSoatChoHoan,
+                    phieuCoc.MaCN,
+                    "KeToan",
+                    "Yêu cầu hoàn cọc sau thanh lý",
+                    $"Hợp đồng {maHD} đã thanh lý. Phiếu đối soát {pds.MaPDS} còn {pds.TienHoan:N0} VNĐ cần hoàn cọc.",
+                    $"/accountant/refunds?maPDS={Uri.EscapeDataString(pds.MaPDS)}",
+                    pds.MaPDS,
+                    maNV,
+                    tone: "orange");
             }
+            await dichVuThongBao.DongTacVu(
+                LoaiSuKienThongBao.HopDongChoThanhLy, maHD, maNV);
 
             phien.Commit();
 

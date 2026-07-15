@@ -145,7 +145,7 @@ public sealed class HopDongController(
     {
         try
         {
-            var hopDong = await lapHopDongThue.XacNhanKhachDaKy(id);
+            var hopDong = await lapHopDongThue.XacNhanKhachDaKy(id, User.FindFirst("MaNV")?.Value);
             return Ok(new { Message = "Lap hop dong thanh cong", MaHD = hopDong.MaHD });
         }
         catch (InvalidOperationException ex) { return BadRequest(new { Message = ex.Message }); }

@@ -7,11 +7,13 @@ public sealed class LapHopDongThue
 {
     private readonly Func<PhienDuLieu> _taoPhienDuLieu;
     private readonly TimeProvider _timeProvider;
+    private readonly DichVuThongBao _thongBao;
 
-    public LapHopDongThue(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
+    public LapHopDongThue(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider, DichVuThongBao thongBao)
     {
         _taoPhienDuLieu = taoPhienDuLieu;
         _timeProvider = timeProvider;
+        _thongBao = thongBao;
     }
 
     public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachPhieuCocDaDuyet(string? text = null)
@@ -89,6 +91,9 @@ public sealed class LapHopDongThue
                 }
             }
 
+            await _thongBao.DongTacVu(
+                LoaiSuKienThongBao.HoSoLuuTruDaDuyet, phieu.MaPhieuCoc, maNV);
+
             phien.Commit();
             return hopDong;
         }
@@ -99,14 +104,27 @@ public sealed class LapHopDongThue
         }
     }
 
-    public async Task<HopDong> XacNhanKhachDaKy(string maHD)
+    public async Task<HopDong> XacNhanKhachDaKy(string maHD, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
         try
         {
+            var hopDongHienTai = await HopDong.DocChiTiet(maHD)
+                ?? throw new KeyNotFoundException("Không tìm thấy hợp đồng.");
+            var phieuCoc = await PhieuCoc.DocChiTiet(hopDongHienTai.MaPhieuCoc)
+                ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc của hợp đồng.");
             if (!await HopDongDB.UpdateTrangThai(maHD, "ChoThanhToan"))
                 throw new InvalidOperationException("Không thể cập nhật trạng thái hợp đồng.");
+            await _thongBao.PhatCanXuLyTheoVaiTro(
+                LoaiSuKienThongBao.HopDongChoThanhToan,
+                phieuCoc.MaCN,
+                "KeToan",
+                "Hợp đồng đã ký cần thu tiền kỳ đầu",
+                $"Hợp đồng {maHD} của {phieuCoc.KhachHang.HoTen} đã ký và đang chờ thu tiền.",
+                $"/accountant/payments?maHD={Uri.EscapeDataString(maHD)}",
+                maHD,
+                maNV);
             phien.Commit();
             return new HopDong { MaHD = maHD, TrangThai = "ChoThanhToan" };
         }

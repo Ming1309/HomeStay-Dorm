@@ -127,7 +127,7 @@ public sealed class PhieuCocController(
     [HttpPost("{id}/xet-duyet/duyet-toan-bo")]
     public async Task<IActionResult> DuyetToanBo(string id)
     {
-        try { return Ok(TaoChiTietXetDuyetResponse(await xetDuyetHoSo.DuyetToanBo(id))); }
+        try { return Ok(TaoChiTietXetDuyetResponse(await xetDuyetHoSo.DuyetToanBo(id, User.FindFirstValue("MaNV")))); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
     }
@@ -163,7 +163,7 @@ public sealed class PhieuCocController(
     [HttpPost("{id}/xet-duyet/duyet-con-lai")]
     public async Task<IActionResult> DuyetThanhVienConLai(string id)
     {
-        try { return Ok(TaoChiTietXetDuyetResponse(await xetDuyetHoSo.DuyetThanhVienConLai(id))); }
+        try { return Ok(TaoChiTietXetDuyetResponse(await xetDuyetHoSo.DuyetThanhVienConLai(id, User.FindFirstValue("MaNV")))); }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
     }
@@ -174,7 +174,7 @@ public sealed class PhieuCocController(
     {
         try
         {
-            await xetDuyetHoSo.TuChoiHoSo(id);
+            await xetDuyetHoSo.TuChoiHoSo(id, User.FindFirstValue("MaNV"));
             return Ok(new { Message = "Đã hủy hồ sơ." });
         }
         catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }

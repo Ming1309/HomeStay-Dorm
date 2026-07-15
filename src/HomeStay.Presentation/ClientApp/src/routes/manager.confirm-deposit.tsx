@@ -17,7 +17,9 @@ export const Route = createFileRoute("/manager/confirm-deposit")({
 
 function ManagerConfirmDepositPage() {
   const [items, setItems] = useState<ReconciliationDeposit[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("maPhieuCoc"),
+  );
   const [detail, setDetail] = useState<ReconciliationDetail | null>(null);
   const [query, setQuery] = useState("");
   const [loadingList, setLoadingList] = useState(true);

@@ -33,6 +33,11 @@ function SaleContractWorkspacePage() {
     fetchItems(searchText);
   }, [fetchItems, searchText]);
 
+  useEffect(() => {
+    const target = new URLSearchParams(window.location.search).get("maPhieuCoc");
+    if (target) setSelected(items.find((item) => item.maPhieuCoc === target) ?? null);
+  }, [items]);
+
   return (
     <div className="flex h-full overflow-hidden">
       <ContractQueue

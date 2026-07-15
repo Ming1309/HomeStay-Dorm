@@ -42,11 +42,13 @@ public sealed class LapPhieuHoanCoc
 {
     private readonly Func<PhienDuLieu> _taoPhienDuLieu;
     private readonly TimeProvider _timeProvider;
+    private readonly DichVuThongBao _thongBao;
 
-    public LapPhieuHoanCoc(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
+    public LapPhieuHoanCoc(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider, DichVuThongBao thongBao)
     {
         _taoPhienDuLieu = taoPhienDuLieu;
         _timeProvider = timeProvider;
+        _thongBao = thongBao;
     }
 
     public async Task<IReadOnlyList<DoiSoatChoHoanCocDto>> LayDSPhieuDoiSoatCanHoan()
@@ -155,6 +157,24 @@ public sealed class LapPhieuHoanCoc
 
             await phieuHoanCoc.LuuPhieu();
             await PhieuDoiSoat.ChuyenSangDaTatToan(maPDS);
+            var phieuCoc = await PhieuCoc.DocChiTiet(pds.MaPhieuCoc)
+                ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc của phiếu đối soát.");
+            await _thongBao.DongTacVu(
+                LoaiSuKienThongBao.PhieuDoiSoatChoHoan, maPDS, maNV);
+            var truocHopDong = string.IsNullOrWhiteSpace(pds.MaHD);
+            await _thongBao.PhatThongTin(
+                LoaiSuKienThongBao.HoanCocDaHoanTat,
+                phieuCoc.MaCN,
+                truocHopDong ? "Sale" : "QuanLy",
+                truocHopDong ? phieuCoc.MaNV : pds.MaNVChot,
+                "Đã hoàn tiền cọc cho khách hàng",
+                $"Phiếu hoàn {phieuHoanCoc.MaPHC} đã ghi nhận hoàn {phieuHoanCoc.SoTienHoan:N0} VNĐ cho phiếu đối soát {maPDS}.",
+                truocHopDong
+                    ? $"/sale/tra-cuu-phieu-coc?maPhieuCoc={Uri.EscapeDataString(phieuCoc.MaPhieuCoc)}"
+                    : $"/manager/contracts?maHD={Uri.EscapeDataString(pds.MaHD!)}",
+                maPDS,
+                maNV,
+                tone: "green");
 
             phien.Commit();
 

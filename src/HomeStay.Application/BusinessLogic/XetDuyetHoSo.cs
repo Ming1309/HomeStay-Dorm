@@ -2,7 +2,9 @@
 
 using HomeStay.Application.DataAccess.DbConnections;
 
-public sealed class XetDuyetHoSo(Func<PhienDuLieu> taoPhienDuLieu)
+public sealed class XetDuyetHoSo(
+    Func<PhienDuLieu> taoPhienDuLieu,
+    DichVuThongBao thongBao)
 {
     public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDuyet(string? text = null)
     {
@@ -18,7 +20,7 @@ public sealed class XetDuyetHoSo(Func<PhienDuLieu> taoPhienDuLieu)
         return phieu;
     }
 
-    public async Task<PhieuCoc> DuyetToanBo(string maPhieuCoc)
+    public async Task<PhieuCoc> DuyetToanBo(string maPhieuCoc, string? maNV)
     {
         using var phien = taoPhienDuLieu();
         phien.BatDauGiaoDich();
@@ -44,6 +46,8 @@ public sealed class XetDuyetHoSo(Func<PhienDuLieu> taoPhienDuLieu)
 
             await Giuong.CapNhatDanhSachDaCoc(
                 phieu.Giuongs.Select(g => g.MaGiuong).ToList());
+
+            await ThongBaoDuyetThanhCong(phieu, maNV);
 
             phien.Commit();
             return phieu;
@@ -82,7 +86,7 @@ public sealed class XetDuyetHoSo(Func<PhienDuLieu> taoPhienDuLieu)
         }
     }
 
-    public async Task<PhieuCoc> DuyetThanhVienConLai(string maPhieuCoc)
+    public async Task<PhieuCoc> DuyetThanhVienConLai(string maPhieuCoc, string? maNV)
     {
         using var phien = taoPhienDuLieu();
         phien.BatDauGiaoDich();
@@ -116,6 +120,8 @@ public sealed class XetDuyetHoSo(Func<PhienDuLieu> taoPhienDuLieu)
             await Giuong.CapNhatDanhSachDaCoc(
                 phieu.Giuongs.Select(g => g.MaGiuong).ToList());
 
+            await ThongBaoDuyetThanhCong(phieu, maNV);
+
             phien.Commit();
             return phieu;
         }
@@ -126,7 +132,7 @@ public sealed class XetDuyetHoSo(Func<PhienDuLieu> taoPhienDuLieu)
         }
     }
 
-    public async Task TuChoiHoSo(string maPhieuCoc)
+    public async Task TuChoiHoSo(string maPhieuCoc, string? maNV)
     {
         using var phien = taoPhienDuLieu();
         phien.BatDauGiaoDich();
@@ -142,6 +148,21 @@ public sealed class XetDuyetHoSo(Func<PhienDuLieu> taoPhienDuLieu)
 
             await Giuong.CapNhatDanhSachTrong(
                 phieu.Giuongs.Select(g => g.MaGiuong).ToList());
+
+            await thongBao.DongTacVu(
+                LoaiSuKienThongBao.HoSoLuuTruChoDuyet, phieu.MaPhieuCoc, maNV);
+            await thongBao.PhatThongTin(
+                LoaiSuKienThongBao.HoSoLuuTruBiTuChoi,
+                phieu.MaCN,
+                "Sale",
+                phieu.MaNV,
+                "Hồ sơ lưu trú bị từ chối",
+                $"Hồ sơ {phieu.MaPhieuCoc} đã bị Quản lý từ chối. Vui lòng thông báo lại cho khách hàng.",
+                $"/sale/tra-cuu-phieu-coc?maPhieuCoc={Uri.EscapeDataString(phieu.MaPhieuCoc)}",
+                phieu.MaPhieuCoc,
+                maNV,
+                tone: "red",
+                loaiThongBao: "CanhBao");
 
             phien.Commit();
         }
@@ -171,5 +192,22 @@ public sealed class XetDuyetHoSo(Func<PhienDuLieu> taoPhienDuLieu)
             phien.Rollback();
             throw;
         }
+    }
+
+    private async Task ThongBaoDuyetThanhCong(PhieuCoc phieu, string? maNV)
+    {
+        await thongBao.DongTacVu(
+            LoaiSuKienThongBao.HoSoLuuTruChoDuyet, phieu.MaPhieuCoc, maNV);
+        await thongBao.PhatCanXuLyChoNhanVien(
+            LoaiSuKienThongBao.HoSoLuuTruDaDuyet,
+            phieu.MaCN,
+            "Sale",
+            phieu.MaNV,
+            "Hồ sơ lưu trú đã được duyệt",
+            $"Phiếu {phieu.MaPhieuCoc} đã được duyệt. Hãy lập và hướng dẫn khách ký hợp đồng.",
+            $"/sale/lap-hop-dong?maPhieuCoc={Uri.EscapeDataString(phieu.MaPhieuCoc)}",
+            phieu.MaPhieuCoc,
+            maNV,
+            tone: "green");
     }
 }

@@ -37,6 +37,11 @@ function SaleResidenceWorkspacePage() {
     return () => window.clearTimeout(timer);
   }, [query]);
 
+  useEffect(() => {
+    const target = new URLSearchParams(window.location.search).get("maPhieuCoc");
+    if (target) void layChiTiet(target).then(setSelected).catch(() => toast.error("Phiếu cọc không còn chờ nhập hồ sơ."));
+  }, []);
+
   const chonPhieuCoc = async (item: PhieuCocSummary) => {
     try {
       setSelected(await layChiTiet(item.maPhieuCoc));

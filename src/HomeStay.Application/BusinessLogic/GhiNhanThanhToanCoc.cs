@@ -6,7 +6,8 @@ using HomeStay.Application.DataAccess.FileStorage;
 public sealed class GhiNhanThanhToanCoc(
     Func<PhienDuLieu> taoPhienDuLieu,
     IChungTuCocStorage chungTuStorage,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    DichVuThongBao thongBao)
 {
     public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(string? text, string? maNV)
     {
@@ -53,6 +54,20 @@ public sealed class GhiNhanThanhToanCoc(
             phieu.GhiNhanThanhToan(
                 phuongThucThanhToan, duongDanChungTu, thoiDiemGhiNhan);
             await phieu.CapNhatThanhToan(thoiDiemGhiNhan);
+            await thongBao.DongTacVu(
+                LoaiSuKienThongBao.PhieuCocChoThanhToan, phieu.MaPhieuCoc, nhanVien.MaNV);
+            await thongBao.DongTacVu(
+                LoaiSuKienThongBao.ChungTuCocCanBoSung, phieu.MaPhieuCoc, nhanVien.MaNV);
+            await thongBao.PhatCanXuLyTheoVaiTro(
+                LoaiSuKienThongBao.ChungTuCocChoDoiChieu,
+                phieu.MaCN,
+                "QuanLy",
+                "Chứng từ cọc cần đối chiếu",
+                $"Phiếu {phieu.MaPhieuCoc} của {phieu.KhachHang.HoTen} vừa gửi chứng từ thanh toán.",
+                $"/manager/confirm-deposit?maPhieuCoc={Uri.EscapeDataString(phieu.MaPhieuCoc)}",
+                phieu.MaPhieuCoc,
+                nhanVien.MaNV,
+                khoaChongTrung: $"{LoaiSuKienThongBao.ChungTuCocChoDoiChieu}:{phieu.MaPhieuCoc}:{thoiDiemGhiNhan.Ticks}");
             phien.Commit();
             phieuDaCapNhat = phieu;
         }

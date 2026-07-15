@@ -1,0 +1,61 @@
+@startuml
+title SO DO TUAN TU - THONG BAO NOI BO THEO CHI NHANH
+
+hide footbox
+autonumber 1 1
+actor "Nhan vien nghiep vu" as NV
+boundary ": MHNghiepVu" as MH
+control ": UseCaseNguon" as UC
+control ": DichVuThongBao" as DV
+control ": ThongBao" as TB
+entity ": ThongBaoDB" as TBDB
+boundary ": MHThongBao" as MHTB
+
+NV -> MH : Hoan tat thao tac nghiep vu
+MH -> UC : XuLy(maNV, duLieu)
+activate UC
+UC -> UC : Doc lai NhanVien.MaCN va root record
+UC -> DV : PhatCanXuLyTheoVaiTro(maCN, vaiTro, suKien, thamChieu, lienKet)
+activate DV
+DV -> TB : Tao(..., khoaChongTrung)
+activate TB
+TB -> TBDB : Luu()
+activate TBDB
+note right of TBDB
+  Upsert theo KhoaChongTrung.
+  Cung transaction voi nghiep vu nguon.
+end note
+deactivate TBDB
+deactivate TB
+deactivate DV
+UC --> MH : Thanh cong
+deactivate UC
+
+NV -> MHTB : Mo chuong thong bao
+MHTB -> DV : LayThongBaoCuaToi(maNV, open, limit, cursor)
+activate DV
+DV -> DV : Doc NhanVien de lay MaCN + VaiTro
+DV -> TBDB : LayCuaNhanVien(nhanVien, ...)
+activate TBDB
+note right of TBDB
+  Chi tra task dung MaCN + VaiTro,
+  hoac task truc tiep dung MaNV.
+end note
+TBDB --> DV : danh sach + trang thai doc rieng
+deactivate TBDB
+DV --> MHTB : TrangThongBao
+deactivate DV
+
+NV -> MHTB : Chon thong bao
+MHTB -> DV : DanhDauDaDoc(maNV, maTB)
+DV -> TBDB : DanhDauDaDoc(nhanVien, maTB)
+MHTB -> MHTB : Dieu huong den dung ho so
+
+... Nghiep vu dich duoc xu ly ...
+UC -> DV : DongTacVu(loaiSuKien, maThamChieu, maNV)
+DV -> TBDB : Dong tac vu va ghi nguoi xu ly
+note right of TBDB
+  Moi nhan vien co trang thai doc rieng.
+  Tac vu chi dong khi nghiep vu hoan tat.
+end note
+@enduml

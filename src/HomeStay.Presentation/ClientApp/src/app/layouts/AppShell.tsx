@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
+  AlertTriangle,
   CheckCircle2,
   CreditCard,
   FileText,
@@ -61,19 +62,29 @@ export function AppShell({
   const navGroups = navGroupsByRole[role];
   const currentItem = findNavItem(role, currentPath);
   const [notifications, setNotifications] = useState<AppNotificationDto[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
-  const unreadCount = notifications.filter((item) => !item.daDoc).length;
   const employeeName = user?.hoTen || user?.tenDangNhap || "Người dùng";
   const employeeInitials = getInitials(employeeName);
 
   const refreshNotifications = useCallback(async (signal?: AbortSignal) => {
     setLoadingNotifications(true);
     try {
-      const items = await loadNotifications(signal);
-      setNotifications(items);
+      const [openPage, unreadPage] = await Promise.all([
+        loadNotifications({ filter: "open", limit: 20, signal }),
+        loadNotifications({ filter: "unread", limit: 20, signal }),
+      ]);
+      const seen = new Set<string>();
+      const items = [...openPage.items, ...unreadPage.items].filter((item) => {
+        if (seen.has(item.maTB)) return false;
+        seen.add(item.maTB);
+        return true;
+      });
+      setNotifications(items.slice(0, 20));
+      setUnreadCount(unreadPage.unreadCount);
     } catch (error) {
       if ((error as Error).name === "AbortError") return;
-      setNotifications([]);
+      // Giữ dữ liệu gần nhất nếu polling tạm thời thất bại.
     } finally {
       setLoadingNotifications(false);
     }
@@ -91,13 +102,25 @@ export function AppShell({
   useEffect(() => {
     const controller = new AbortController();
     void refreshNotifications(controller.signal);
-    return () => controller.abort();
+    const refreshWhenActive = () => {
+      if (document.visibilityState === "visible") void refreshNotifications();
+    };
+    const timer = window.setInterval(refreshWhenActive, 60_000);
+    window.addEventListener("focus", refreshWhenActive);
+    document.addEventListener("visibilitychange", refreshWhenActive);
+    return () => {
+      controller.abort();
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refreshWhenActive);
+      document.removeEventListener("visibilitychange", refreshWhenActive);
+    };
   }, [role, refreshNotifications]);
 
   const handleMarkAllRead = async () => {
     try {
       await markAllNotificationsRead();
       setNotifications((current) => current.map((item) => ({ ...item, daDoc: true })));
+      setUnreadCount(0);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không thể đánh dấu đã đọc");
     }
@@ -110,6 +133,7 @@ export function AppShell({
         setNotifications((current) =>
           current.map((n) => (n.maTB === item.maTB ? { ...n, daDoc: true } : n)),
         );
+        setUnreadCount((current) => Math.max(0, current - 1));
       } catch {
         // Không chặn điều hướng nếu mark-read thất bại
       }
@@ -155,7 +179,7 @@ export function AppShell({
                     <Bell className="size-4" />
                     {unreadCount > 0 && (
                       <span className="absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold leading-4 text-white">
-                        {unreadCount}
+                        {unreadCount > 99 ? "99+" : unreadCount}
                       </span>
                     )}
                   </button>
@@ -170,9 +194,11 @@ export function AppShell({
                         {unreadCount} thông báo chưa đọc trong phân hệ {meta.badgeLabel}
                       </p>
                     </div>
-                    <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
-                      Hôm nay
-                    </span>
+                    {notifications.some((item) => item.trangThai === "DangMo") && (
+                      <span className="rounded-md bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-700">
+                        Có việc cần xử lý
+                      </span>
+                    )}
                   </div>
                   <div className="max-h-[360px] overflow-y-auto p-2">
                     {loadingNotifications ? (
@@ -225,6 +251,18 @@ export function AppShell({
                                 <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-gray-500">
                                   {item.noiDung}
                                 </p>
+                                <div className="mt-1 flex items-center gap-2">
+                                  {item.trangThai === "DangMo" && (
+                                    <span className="rounded bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700">
+                                      Cần xử lý
+                                    </span>
+                                  )}
+                                  {item.thoiGianXuLy && (
+                                    <span className="truncate text-[10px] text-emerald-700">
+                                      {item.tenNguoiXuLy || "Đồng nghiệp"} đã xử lý
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="mt-1 text-[11px] font-medium text-gray-400">
                                   {formatRelativeTime(item.thoiGianTao)}
                                 </p>
@@ -235,7 +273,7 @@ export function AppShell({
                       })
                     )}
                   </div>
-                  <div className="border-t border-gray-100 px-3 py-2">
+                  <div className="grid grid-cols-2 gap-2 border-t border-gray-100 px-3 py-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -246,6 +284,12 @@ export function AppShell({
                     >
                       Đánh dấu tất cả đã đọc
                     </button>
+                    <Link
+                      to="/notifications"
+                      className="flex h-8 items-center justify-center rounded-md text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                    >
+                      Xem tất cả
+                    </Link>
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -314,6 +358,10 @@ const notificationTone = {
     iconBg: "bg-orange-50",
     iconText: "text-orange-600",
   },
+  red: {
+    iconBg: "bg-red-50",
+    iconText: "text-red-600",
+  },
 } as const;
 
 const notificationIconByTone: Record<
@@ -323,6 +371,7 @@ const notificationIconByTone: Record<
   blue: FileText,
   green: CheckCircle2,
   orange: CreditCard,
+  red: AlertTriangle,
 };
 
 function SidebarHeader({

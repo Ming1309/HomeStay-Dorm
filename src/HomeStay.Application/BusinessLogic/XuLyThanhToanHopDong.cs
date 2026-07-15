@@ -10,11 +10,13 @@ public sealed class XuLyThanhToanHopDong
 {
     private readonly Func<PhienDuLieu> _taoPhienDuLieu;
     private readonly TimeProvider _timeProvider;
+    private readonly DichVuThongBao _thongBao;
 
-    public XuLyThanhToanHopDong(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
+    public XuLyThanhToanHopDong(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider, DichVuThongBao thongBao)
     {
         _taoPhienDuLieu = taoPhienDuLieu;
         _timeProvider = timeProvider;
+        _thongBao = thongBao;
     }
 
     public async Task<IReadOnlyList<HopDongDto>> LayDSChoThanhToan()
@@ -123,6 +125,20 @@ public sealed class XuLyThanhToanHopDong
             await phieuThu.LuuPhieu();
 
             await HopDong.CapNhatTrangThaiChoBanGiao(maHD);
+            var phieuCoc = hopDong.PhieuCoc ?? await PhieuCoc.DocChiTiet(hopDong.MaPhieuCoc)
+                ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc của hợp đồng.");
+            await _thongBao.DongTacVu(
+                LoaiSuKienThongBao.HopDongChoThanhToan, maHD, maNVTrimmed);
+            await _thongBao.PhatCanXuLyTheoVaiTro(
+                LoaiSuKienThongBao.HopDongChoBanGiao,
+                phieuCoc.MaCN,
+                "QuanLy",
+                "Hợp đồng đã thanh toán, chờ bàn giao",
+                $"Hợp đồng {maHD} đã thu đủ {tongCong:N0} VNĐ và có thể bàn giao phòng.",
+                $"/manager/handover?maHD={Uri.EscapeDataString(maHD)}",
+                maHD,
+                maNVTrimmed,
+                tone: "green");
 
             phien.Commit();
             return phieuThu;

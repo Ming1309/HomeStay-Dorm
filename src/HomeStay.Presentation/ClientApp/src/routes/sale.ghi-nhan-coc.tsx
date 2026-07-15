@@ -21,6 +21,16 @@ function SalePaymentProofPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  useEffect(() => {
+    const target = new URLSearchParams(window.location.search).get("maPhieuCoc");
+    if (!target) return;
+    setDetailLoading(true);
+    void loadDepositPaymentDetail(target)
+      .then(setSelected)
+      .catch(() => toast.error("Phiếu cọc không còn chờ ghi nhận."))
+      .finally(() => setDetailLoading(false));
+  }, []);
+
   const reloadQueue = useCallback(() => {
     setSelected(null);
     setRefreshKey((value) => value + 1);
