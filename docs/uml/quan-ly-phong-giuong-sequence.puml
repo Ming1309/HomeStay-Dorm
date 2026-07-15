@@ -27,7 +27,7 @@ entity ": ChiNhanhDB" as CNDB
 end box
 
 QT -> MH : Chon chuc nang va mo man hinh
-MH -> MH : loadData()
+MH -> MH : HienThi()
 activate MH
 MH -> QL : LayDanhSachPhong("", "", "", "")
 activate QL
@@ -68,9 +68,9 @@ deactivate QL
 
 alt Them phong
   QT -> MH : Nhan "Them phong"
-  MH -> MH : openCreateRoom()
+  MH -> MH : moFormThemPhong()
   QT -> MH : Nhap thong tin phong va nhan "Luu"
-  MH -> MH : submitRoom(values)
+  MH -> MH : luuPhong(phong)
   MH -> QL : ThemPhong(phong)
   activate QL
   QL -> P : ChuanHoa()
@@ -104,9 +104,9 @@ alt Them phong
   deactivate QL
 else Sua phong
   QT -> MH : Chon phong va nhan "Sua"
-  MH -> MH : openEditRoom(room)
+  MH -> MH : moFormSuaPhong(phong)
   QT -> MH : Nhap thong tin phong va nhan "Luu"
-  MH -> MH : submitRoom(values)
+  MH -> MH : luuPhong(phong)
   MH -> QL : CapNhatPhong(maPhong, thongTin)
   activate QL
   QL -> P : ChuanHoa()
@@ -156,7 +156,7 @@ else Sua phong
   deactivate QL
 else Xoa phong
   QT -> MH : Chon ban ghi va xac nhan xoa
-  MH -> MH : confirmDelete()
+  MH -> MH : xacNhanXoa()
   MH -> QL : XoaPhong(maPhong)
   activate QL
   QL -> P : DocChiTiet(maPhong)
@@ -183,9 +183,9 @@ else Xoa phong
   deactivate QL
 else Them giuong
   QT -> MH : Nhan "Them giuong"
-  MH -> MH : openCreateBed()
+  MH -> MH : moFormThemGiuong()
   QT -> MH : Nhap thong tin giuong va nhan "Luu"
-  MH -> MH : submitBed(values)
+  MH -> MH : luuGiuong(giuong)
   MH -> QL : ThemGiuong(giuong)
   activate QL
   QL -> G : ChuanHoa()
@@ -216,9 +216,9 @@ else Them giuong
   deactivate QL
 else Sua giuong
   QT -> MH : Chon giuong va nhan "Sua"
-  MH -> MH : openEditBed(bed)
+  MH -> MH : moFormSuaGiuong(giuong)
   QT -> MH : Nhap thong tin giuong va nhan "Luu"
-  MH -> MH : submitBed(values)
+  MH -> MH : luuGiuong(giuong)
   MH -> QL : CapNhatGiuong(maGiuong, thongTin)
   activate QL
   QL -> G : ChuanHoa()
@@ -268,7 +268,7 @@ else Sua giuong
   deactivate QL
 else Xoa giuong
   QT -> MH : Chon ban ghi va xac nhan xoa
-  MH -> MH : confirmDelete()
+  MH -> MH : xacNhanXoa()
   MH -> QL : XoaGiuong(maGiuong)
   activate QL
   QL -> G : DocChiTiet(maGiuong)

@@ -1,0 +1,90 @@
+@startuml
+title SO DO LOP 3 TANG - TRA CUU PHONG GIUONG
+top to bottom direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BorderColor #7F8C8D
+}
+
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHTraCuuPhongGiuong #BFE8BA {
+    - lstToaNha: ListBox
+    - lstTang: ListBox
+    - lstLoaiPhong: ListBox
+    - lstTrangThai: ListBox
+    - txtGiaMin: TextBox
+    - txtGiaMax: TextBox
+    - grvDanhSachPhong: GridView
+    --
+    + HienThi()
+    + thayDoiBoLoc()
+    + xemTaiSan(maPhong: String)
+  }
+}
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class Phong #F4E3A2 {
+    + LocPhongTheoTieuChi(toaNha: String, tang: String, maLP: String, maCN: String,\n  trangThai: String, giaMin: Decimal, giaMax: Decimal): IReadOnlyList<Phong>
+    + LayDanhSachGiuong(maPhong: String): IReadOnlyList<Giuong>
+    + LayTaiSan(maPhong: String): IReadOnlyList<PhongTaiSan>
+  }
+  class Giuong #F4E3A2 {
+    + LayGiuongTheoPhong(maPhong: String): IReadOnlyList<Giuong>
+  }
+  class LoaiPhong #F4E3A2 {
+    + LayDanhSach(): IReadOnlyList<LoaiPhong>
+  }
+  class ChiNhanh #F4E3A2 {
+    + LayDanhSach(): IReadOnlyList<ChiNhanh>
+  }
+  class PhongTaiSan #F4E3A2 {
+    + LayTaiSanTheoPhong(maPhong: String): IReadOnlyList<PhongTaiSan>
+  }
+  class TaiSan #F4E3A2
+}
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class PhongDB #BFDCF0 {
+    + LayPhongTheoBoLoc(toaNha: String, tang: String, maLP: String, maCN: String,\n  trangThai: String, giaMin: Decimal, giaMax: Decimal): IReadOnlyList<Phong>
+  }
+  class GiuongDB #BFDCF0 {
+    + LayGiuongTheoPhong(maPhong: String): IReadOnlyList<Giuong>
+  }
+  class LoaiPhongDB #BFDCF0 {
+    + LayDanhSach(): IReadOnlyList<LoaiPhong>
+  }
+  class ChiNhanhDB #BFDCF0 {
+    + LayDanhSach(): IReadOnlyList<ChiNhanh>
+  }
+  class PhongTaiSanDB #BFDCF0 {
+    + LayTaiSanTheoPhong(maPhong: String): IReadOnlyList<PhongTaiSan>
+  }
+}
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+Phong -[hidden]down- Giuong
+Giuong -[hidden]right- LoaiPhong
+LoaiPhong -[hidden]right- ChiNhanh
+ChiNhanh -[hidden]down- PhongTaiSan
+PhongTaiSan -[hidden]right- TaiSan
+PhongDB -[hidden]right- GiuongDB
+GiuongDB -[hidden]right- LoaiPhongDB
+LoaiPhongDB -[hidden]down- ChiNhanhDB
+ChiNhanhDB -[hidden]right- PhongTaiSanDB
+MHTraCuuPhongGiuong o-down- Phong
+Phong -- Giuong
+Phong -- LoaiPhong
+Phong -- ChiNhanh
+Phong -- PhongTaiSan
+PhongTaiSan -- TaiSan
+Phong o-down- PhongDB
+Giuong o-down- GiuongDB
+LoaiPhong o-down- LoaiPhongDB
+ChiNhanh o-down- ChiNhanhDB
+PhongTaiSan o-down- PhongTaiSanDB
+Phong -[hidden]down- PhongDB
+TaiSan -[hidden]down- PhongDB
+@enduml

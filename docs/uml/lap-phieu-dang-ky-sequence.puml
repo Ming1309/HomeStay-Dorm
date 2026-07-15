@@ -1,32 +1,30 @@
 @startuml
-title LAP PHIEU DANG KY - SO DO TUAN TU
+title SO DO TUAN TU - LAP PHIEU DANG KY
 hide footbox
-autonumber
+autonumber 1 1
+skinparam shadowing false
 
 actor "Nhan vien Sale" as Sale
-
 box "GUI" #D5F5D3
-boundary MHLapPhieuDangKy as MH
+boundary ": MHLapPhieuDangKy" as MH
 end box
-
 box "BUS" #FCF3CF
-control LapPhieuDangKy as UC
-control NhanVien as NV
-control Phong as P
-control KhachHang as KH
-control PhieuDangKy as PDK
+control ": LapPhieuDangKy" as UC
+control ": NhanVien" as NV
+control ": Phong" as P
+control ": KhachHang" as KH
+control ": PhieuDangKy" as PDK
 end box
-
 box "DB" #D6EAF8
-entity NhanVienDB as NVDB
-entity PhongDB as PDB
-entity KhachHangDB as KHDB
-entity PhieuDangKyDB as PDKDB
+entity ": NhanVienDB" as NVDB
+entity ": PhongDB" as PDB
+entity ": KhachHangDB" as KHDB
+entity ": PhieuDangKyDB" as PDKDB
 end box
 
-Sale -> MH : Mo man hinh lap phieu dang ky
+Sale -> MH : Chon chuc nang "Lap phieu dang ky"
 activate MH
-MH -> MH : RegistrationForm()
+MH -> MH : HienThi()
 MH -> UC : LayKhuVucDangKy(maNV)
 activate UC
 UC -> NV : DocPhamVi(maNV)
@@ -42,8 +40,10 @@ activate PDB
 deactivate PDB
 deactivate P
 deactivate UC
-Sale -> MH : Nhap thong tin va chon Luu phieu
-MH -> MH : onSubmit(data)
+
+Sale -> MH : Nhap thong tin dang ky
+Sale -> MH : Nhan "Luu phieu"
+MH -> MH : lapPhieuDangKy()
 MH -> UC : TaoPhieuDangKy(hoTen, gioiTinh, sdt, email, loaiGiayTo, soGiayTo, khuVuc, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, maNV)
 activate UC
 UC -> NV : DocPhamVi(maNV)
@@ -62,27 +62,22 @@ UC -> KH : KiemTraTonTai(soGiayTo)
 activate KH
 KH -> KHDB : KiemTraTonTai(soGiayTo)
 activate KHDB
-alt Khach hang chua ton tai
 deactivate KHDB
 deactivate KH
+alt Khach hang chua ton tai
   UC -> KH : TaoMoi(hoTen, gioiTinh, sdt, email, null, loaiGiayTo, soGiayTo)
   activate KH
-deactivate KH
+  deactivate KH
   UC -> KH : Them()
   activate KH
   KH -> KHDB : Them(khachHang)
   activate KHDB
+  deactivate KHDB
+  deactivate KH
 end
-deactivate KHDB
-deactivate KH
-UC -> PDK : TaoMoi(maKH, maNV, maCN, tenChiNhanh, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem)
+UC -> PDK : TaoMoi(maKH, maNV, maCN, khuVuc, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem)
 activate PDK
-deactivate PDK
-UC -> PDK : KiemTraDieuKien(thoiDiem)
-activate PDK
-deactivate PDK
-UC -> PDK : Them()
-activate PDK
+PDK -> PDK : KiemTraDieuKien(thoiDiem)
 PDK -> PDKDB : Them(phieuDangKy)
 activate PDKDB
 deactivate PDKDB

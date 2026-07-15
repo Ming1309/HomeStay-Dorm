@@ -1,4 +1,4 @@
-@startuml LapBienBanBanGiao_3Lop
+@startuml
 title SO DO LOP 3 TANG - LAP BIEN BAN BAN GIAO
 
 top to bottom direction
@@ -14,8 +14,8 @@ skinparam class {
 '=====================
 ' TANG GIAO DIEN
 '=====================
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHLapBienBanBanGiao {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHLapBienBanBanGiao #BFE8BA {
     - txtTimKiem: TextBox
     - grvDSHopDongChoBanGiao: GridView
     - lblThongTinHopDong: Label
@@ -43,14 +43,14 @@ package "TANG GIAO DIEN" #EAF2F8 {
 '=====================
 ' TANG NGHIEP VU
 '=====================
-package "TANG NGHIEP VU" #FCF3CF {
-  class LapBienBanBanGiao {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class LapBienBanBanGiao #F4E3A2 {
     + LayDanhSachChoBanGiao(tuKhoa: String): IReadOnlyList<HopDongChoBanGiao>
     + LayChiTietBanGiao(maHD: String): ChiTietBanGiao
     + ChotBienBan(maHD: String, maNV: String, taiSan: IReadOnlyList<TaiSanBanGiaoInput>): BienBanGiaoNhan
   }
 
-  class HopDong {
+  class HopDong #F4E3A2 {
     - MaHD: String
     - NgayKy: DateTime?
     - NgayBatDau: DateTime
@@ -68,7 +68,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + ChuyenTrangThaiDangHieuLuc()
   }
 
-  class BienBanGiaoNhan {
+  class BienBanGiaoNhan #F4E3A2 {
     - MaBienBan: String
     - NgayBanGiao: DateTime
     - LoaiBienBan: String
@@ -81,7 +81,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LuuBienBan()
   }
 
-  class ChiTietGiaoNhan {
+  class ChiTietGiaoNhan #F4E3A2 {
     - MaBienBan: String
     - MaTS: String
     - TinhTrang: String
@@ -93,7 +93,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + ThemNhieu(chiTiet: IEnumerable<ChiTietGiaoNhan>)
   }
 
-  class PhongTaiSan {
+  class PhongTaiSan #F4E3A2 {
     - MaPhong: String
     - MaTS: String
     - SoLuongTieuChuan: int
@@ -101,7 +101,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayTaiSanTheoPhong(maPhong: String): IReadOnlyList<PhongTaiSan>
   }
 
-  class Giuong {
+  class Giuong #F4E3A2 {
     - MaGiuong: String
     - TrangThai: String
     --
@@ -112,28 +112,28 @@ package "TANG NGHIEP VU" #FCF3CF {
 '=====================
 ' TANG TRUY CAP DU LIEU
 '=====================
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class HopDongDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class HopDongDB #BFDCF0 {
     + LayDanhSachChoBanGiao(tuKhoa: String): IReadOnlyList<HopDongChoBanGiao>
     + DocChiTiet(maHD: String): HopDong
     + UpdateTrangThai(maHD: String, trangThai: String): Boolean
     + TonTaiChoBanGiaoTheoHD(maHD: String): Boolean
   }
 
-  class BienBanGiaoNhanDB {
+  class BienBanGiaoNhanDB #BFDCF0 {
     + Them(bienBan: BienBanGiaoNhan)
     + TonTaiBanGiaoTheoHD(maHD: String): Boolean
   }
 
-  class ChiTietGiaoNhanDB {
+  class ChiTietGiaoNhanDB #BFDCF0 {
     + ThemNhieu(chiTiet: IEnumerable<ChiTietGiaoNhan>)
   }
 
-  class PhongTaiSanDB {
+  class PhongTaiSanDB #BFDCF0 {
     + LayTaiSanTheoPhong(maPhong: String): IReadOnlyList<PhongTaiSan>
   }
 
-  class GiuongDB {
+  class GiuongDB #BFDCF0 {
     + UpdateTrangThaiTheoHopDong(maHD: String, trangThai: String)
   }
 }
@@ -155,4 +155,9 @@ ChiTietGiaoNhan o-- ChiTietGiaoNhanDB
 PhongTaiSan o-- PhongTaiSanDB
 Giuong o-- GiuongDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+LapBienBanBanGiao -[hidden]down- HopDongDB
+Giuong -[hidden]down- HopDongDB
 @enduml

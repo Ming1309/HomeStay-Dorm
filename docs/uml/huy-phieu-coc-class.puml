@@ -3,78 +3,77 @@ title SO DO LOP 3 TANG - HUY PHIEU COC
 top to bottom direction
 skinparam shadowing false
 skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 45
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 skinparam class {
-  BackgroundColor #FFFACD
-  BorderColor #9B7B7B
+  BorderColor #7F8C8D
 }
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHHuyPhieuCoc {
-    + select(id: String)
-    + confirm()
+
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHHuyPhieuCoc #BFE8BA {
+    - grvPhieuCocCoTheHuy: GridView
+    - dlgXacNhanHuy: AlertDialog
+    - btnHuyPhieuCoc: Button
+    --
+    + HienThi()
+    + chonPhieuCoc(maPhieuCoc: String)
+    + moHopThoaiXacNhan()
+    + huyPhieuCoc()
   }
 }
-package "TANG NGHIEP VU" #FCF3CF {
-  class HuyPhieuCoc {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class HuyPhieuCoc #F4E3A2 {
     + Huy(maPhieuCoc: String, maNhanVien: String): PhieuCoc
-    + LayDanhSachMaQuaHan(thoiDiemHienTai: DateTime, batchSize: Integer): IReadOnlyList<String>
-    + TuDongHuyQuaHan(maPhieuCoc: String, thoiDiemHienTai: DateTime): Boolean
   }
-  class HopDong {
+  class NhanVien #F4E3A2 {
+    + DocPhamVi(maNV: String): NhanVien
+  }
+  class HopDong #F4E3A2 {
     + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean
   }
-  class PhieuCoc {
+  class PhieuCoc #F4E3A2 {
     - TrangThai: String
-    - DaDongTien: Boolean
     - ThoiDiemHuy: DateTime
     - MaNVHuy: String
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
-    + DocChiTietChoCapNhat(maPhieuCoc: String): PhieuCoc
-    + LayDanhSachMaQuaHan(thoiDiemHienTai: DateTime, batchSize: Integer): IReadOnlyList<String>
+    + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
     + Huy(maNhanVien: String, thoiDiem: DateTime)
-    + CoTheTuDongHuy(thoiDiemHienTai: DateTime): Boolean
-    + TuDongHuyQuaHan(thoiDiemHienTai: DateTime)
     + CapNhatHuy()
-    + CapNhatTuDongHuy(thoiDiemHienTai: DateTime)
   }
-  class Phong {
+  class Phong #F4E3A2 {
     + DocChiTiet(maPhong: String): Phong
     + GiaiPhongDatCoc(maGiuongs: IEnumerable<String>)
     + CapNhatGiaiPhongDatCoc()
   }
-  class DichVuThongBao {
-    + GuiThongBaoKeToan(tieuDe: String, noiDung: String, lienKet: String, maNVGui: String, maThamChieu: String)
-    + GuiThongBaoSale(tieuDe: String, noiDung: String, lienKet: String, maNVGui: String, maThamChieu: String)
-  }
-  class ThongBao {
-    + Tao(tieuDe: String, noiDung: String, vaiTroNhan: String, lienKet: String, tone: String, maNVGui: String, maThamChieu: String, thoiGianTao: DateTime): ThongBao
-    + Luu()
-  }
 }
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class HopDongDB { + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean }
-  class PhieuCocDB {
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
-    + DocChiTietChoCapNhat(maPhieuCoc: String): PhieuCoc
-    + LayDanhSachMaQuaHan(thoiDiemHienTai: DateTime, batchSize: Integer): IReadOnlyList<String>
-    + CapNhatHuy(phieu: PhieuCoc)
-    + CapNhatTuDongHuy(phieu: PhieuCoc, thoiDiemHienTai: DateTime)
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class NhanVienDB #BFDCF0 {
+    + DocChiTiet(maNV: String): NhanVien
   }
-  class PhongDB {
+  class HopDongDB #BFDCF0 {
+    + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean
+  }
+  class PhieuCocDB #BFDCF0 {
+    + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
+    + CapNhatHuy(phieu: PhieuCoc)
+  }
+  class PhongDB #BFDCF0 {
     + DocChiTiet(maPhong: String): Phong
     + CapNhatGiaiPhongDatCoc(phong: Phong)
   }
-  class ThongBaoDB { + Them(thongBao: ThongBao) }
 }
-MHHuyPhieuCoc o-- HuyPhieuCoc
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+MHHuyPhieuCoc o-down- HuyPhieuCoc
+HuyPhieuCoc o-- NhanVien
 HuyPhieuCoc o-- HopDong
 HuyPhieuCoc o-- PhieuCoc
 HuyPhieuCoc o-- Phong
-HuyPhieuCoc o-- DichVuThongBao
-DichVuThongBao o-- ThongBao
-HopDong o-- HopDongDB
-PhieuCoc o-- PhieuCocDB
-Phong o-- PhongDB
-ThongBao o-- ThongBaoDB
+NhanVien o-down- NhanVienDB
+HopDong o-down- HopDongDB
+PhieuCoc o-down- PhieuCocDB
+Phong o-down- PhongDB
+HuyPhieuCoc -[hidden]down- NhanVienDB
+Phong -[hidden]down- NhanVienDB
 @enduml

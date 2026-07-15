@@ -1,4 +1,4 @@
-@startuml UC11_3Layers_NhapHoSoLuuTru
+@startuml
 title SO DO LOP 3 TANG - NHAP HO SO LUU TRU
 
 top to bottom direction
@@ -11,8 +11,8 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHNhapHoSoLuuTru {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHNhapHoSoLuuTru #BFE8BA {
     - lblTieuDePhieuCoc: Label
     - lblSoLuongPhieuHomNay: Label
     - txtTimKiemPhieuCoc: TextBox
@@ -56,10 +56,14 @@ package "TANG GIAO DIEN" #EAF2F8 {
     - btnThemNguoiOCung: Button
     - btnLuuHoSo: Button
     --
-    + loadDanhSachPhieuCoc()
+    + taiDanhSachPhieuCoc()
     + timKiemPhieuCoc()
     + clickChonPhieuCoc()
     + hienThiThongTinTuPhieuCoc()
+    + hienThiDanhSachPhieuCoc()
+    + hienThiPopupThemNguoiOCung()
+    + xacNhanNguoiOCung(thanhVien: KhachHang)
+    + capNhatDanhSachNguoiOCung()
     + nhapThongTinCuTru()
     + clickThemNguoiOCung()
     + clickLuuHoSo()
@@ -67,7 +71,7 @@ package "TANG GIAO DIEN" #EAF2F8 {
     + hienThiLoi()
   }
 
-  class PopupThemNguoiOCung {
+  class PopupThemNguoiOCung #BFE8BA {
     - lblTieuDePopup: Label
     - btnDongPopup: Button
     - txtHoTen: TextBox
@@ -93,14 +97,14 @@ package "TANG GIAO DIEN" #EAF2F8 {
   }
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class NhapHoSoLuuTru {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class NhapHoSoLuuTru #F4E3A2 {
     + LayDanhSachChoNhap(text: String): IReadOnlyList<PhieuCoc>
     + LayChiTiet(maPhieuCoc: String): PhieuCoc
     + NhapHoSo(maPhieuCoc: String, diaChiThuongTru: String, cacThanhVien: List<KhachHang>): PhieuCoc
   }
 
-  class PhieuCoc {
+  class PhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
     - HanThanhToan: DateTime
     - HinhThucThue: String
@@ -128,7 +132,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LuuCapNhatTrangThai()
   }
 
-  class LichHen {
+  class LichHen #F4E3A2 {
     - MaLH: String
     - NgayHen: DateTime
     - GioHen: TimeSpan
@@ -147,7 +151,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + KiemTraTrangThaiHopLe()
   }
 
-  class KhachHang {
+  class KhachHang #F4E3A2 {
     - MaKH: String
     - HoTen: String
     - NgaySinh: DateTime
@@ -172,7 +176,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + Them()
   }
 
-  class ThanhVienDangKy {
+  class ThanhVienDangKy #F4E3A2 {
     - MaPhieuCoc: String
     - MaKH: String
     - VaiTro: String
@@ -186,7 +190,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + ThemHangLoat(danhSach: List<ThanhVienDangKy>)
   }
 
-  class Phong {
+  class Phong #F4E3A2 {
     - MaPhong: String
     - SoPhong: String
     - ToaNha: String
@@ -201,14 +205,14 @@ package "TANG NGHIEP VU" #FCF3CF {
     + KiemTraSucChua(soLuongNguoi: Integer)
   }
 
-  class LoaiPhong {
+  class LoaiPhong #F4E3A2 {
     - MaLP: String
     - TenLoaiPhong: String
     - SucChua: Integer
     - GiaThue: Decimal
   }
 
-  class Giuong {
+  class Giuong #F4E3A2 {
     - MaGiuong: String
     - SoGiuong: String
     - TrangThai: String
@@ -216,24 +220,24 @@ package "TANG NGHIEP VU" #FCF3CF {
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class LichHenDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class LichHenDB #BFDCF0 {
     + DocTheoMaPhieuCoc(maPhieuCoc: String): LichHen
   }
 
-  class PhieuCocDB {
+  class PhieuCocDB #BFDCF0 {
     + LayPhieuCocDaThanhToanNhanPhongHomNay(text: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
     + CapNhatTrangThai(maPhieuCoc: String, trangThai: String)
   }
 
-  class KhachHangDB {
+  class KhachHangDB #BFDCF0 {
     + TimTheoSoGiayTo(soGiayTo: String): KhachHang
     + Them(khachHang: KhachHang)
     + CapNhatDiaChiThuongTru(maKH: String, diaChiThuongTru: String)
   }
 
-  class ThanhVienDangKyDB {
+  class ThanhVienDangKyDB #BFDCF0 {
     + LayTheoMaPhieuCoc(maPhieuCoc: String): List<ThanhVienDangKy>
     + XoaTheoPhieuCoc(maPhieuCoc: String)
     + ThemHangLoat(danhSach: List<ThanhVienDangKy>)
@@ -265,4 +269,9 @@ PhieuCoc  o--  PhieuCocDB
 KhachHang  o--  KhachHangDB
 ThanhVienDangKy  o--  ThanhVienDangKyDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+NhapHoSoLuuTru -[hidden]down- LichHenDB
+Giuong -[hidden]down- LichHenDB
 @enduml

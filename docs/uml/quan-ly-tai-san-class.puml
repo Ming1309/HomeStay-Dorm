@@ -10,26 +10,26 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHQuanLyTaiSan {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHQuanLyTaiSan #BFE8BA {
     - txtTimKiem: TextBox
     - cboLoaiTaiSan: ComboBox
     - cboTrangThai: ComboBox
     - tblTaiSan: Table
     - dlgTaiSan: Dialog
-    + loadAssets()
-    + onSubmit(values)
-    + confirmDelete()
+    + taiDanhSachTaiSan()
+    + luuTaiSan(taiSan: TaiSan)
+    + xacNhanXoa()
   }
 }
-package "TANG NGHIEP VU" #FCF3CF {
-  class QuanLyTaiSan {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class QuanLyTaiSan #F4E3A2 {
     + LayDanhSach(): List<TaiSan>
     + Them(taiSan: TaiSan): TaiSan
     + CapNhat(maTS: String, thongTin: TaiSan): TaiSan
     + Xoa(maTS: String)
   }
-  class TaiSan {
+  class TaiSan #F4E3A2 {
     - MaTS: String
     - TenTaiSan: String
     - LoaiTaiSan: String
@@ -47,8 +47,8 @@ package "TANG NGHIEP VU" #FCF3CF {
     + Xoa()
   }
 }
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class TaiSanDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class TaiSanDB #BFDCF0 {
     + LayDanhSach(): List<TaiSan>
     + Doc(maTS: String): TaiSan
     + TrungTen(tenTaiSan: String, maLoaiTru: String): Boolean
@@ -61,4 +61,8 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
 MHQuanLyTaiSan o-- QuanLyTaiSan
 QuanLyTaiSan o-- TaiSan
 TaiSan o-- TaiSanDB
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+QuanLyTaiSan -[hidden]down- TaiSanDB
 @enduml

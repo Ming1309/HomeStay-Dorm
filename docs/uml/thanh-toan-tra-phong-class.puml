@@ -1,4 +1,4 @@
-@startuml ThanhToanTraPhong_3Lop
+@startuml
 
 skinparam classAttributeIconSize 0
 skinparam classFontSize 12
@@ -15,9 +15,9 @@ skinparam linetype ortho
 ' LỚP GIAO DIỆN
 ' =====================
 
-package "Lớp giao diện" #EBF5FB {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
 
-    class MHThanhToanTraPhong {
+    class MHThanhToanTraPhong #BFE8BA {
     ' --- Danh sách phiếu ---
     +grvDSPhieuDoiSoat : DataGridView
     +txtTimKiem : TextBox
@@ -62,9 +62,9 @@ package "Lớp giao diện" #EBF5FB {
 ' LỚP NGHIỆP VỤ
 ' =====================
 
-package "Lớp nghiệp vụ" #FEF9E7 {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
 
-    class PhieuDoiSoat {
+    class PhieuDoiSoat #F4E3A2 {
         +maPDS : String
         +ngayDoiSoat : DateTime
         +tyLeHoanCoc : Decimal
@@ -84,7 +84,7 @@ package "Lớp nghiệp vụ" #FEF9E7 {
         +chuyenSangDaTatToan(maPDS : String) : Task
     }
 
-    class HoaDon {
+    class HoaDon #F4E3A2 {
         +maHoaDon : String
         +ngayLap : DateTime
         +hanThanhToan : DateTime
@@ -99,7 +99,7 @@ package "Lớp nghiệp vụ" #FEF9E7 {
         +tinhTongKhauTru(maPDS : String) : Decimal
     }
 
-    class PhieuThu {
+    class PhieuThu #F4E3A2 {
         +maPT : String
         +soTienThu : Decimal
         +thoiGian : DateTime
@@ -114,14 +114,14 @@ package "Lớp nghiệp vụ" #FEF9E7 {
         +daTonTaiChoPhieuDoiSoat(maPDS : String) : Boolean
     }
 
-    class ChiTietDoiSoat {
+    class ChiTietDoiSoat #F4E3A2 {
         +maPDS : String
         +maHoaDon : String
         ' ---
         +layDSHoaDonThuocPhieuDoiSoat(maPDS : String) : List<HoaDon>
     }
 
-    class NhanVien {
+    class NhanVien #F4E3A2 {
         +maNV : String
         +hoTen : String
         +sdt : String
@@ -136,29 +136,29 @@ package "Lớp nghiệp vụ" #FEF9E7 {
 ' LỚP TRUY XUẤT DỮ LIỆU
 ' =====================
 
-package "Lớp truy xuất dữ liệu" #FDF2F8 {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
 
-    class PhieuDoiSoatDB {
+    class PhieuDoiSoatDB #BFDCF0 {
         +getDSPhieuDoiSoatDaChot() : List<PhieuDoiSoat>
         +getPhieuDoiSoatTheoMaPDS(maPDS : String) : PhieuDoiSoat
         +updateTrangThai(maPDS : String, trangThaiHienTai : String, trangThaiMoi : String) : Integer
     }
 
-    class HoaDonDB {
+    class HoaDonDB #BFDCF0 {
         +getDSHoaDonTheoMaPDS(maPDS : String) : List<HoaDon>
         +tinhTongKhauTru(maPDS : String) : Decimal
     }
 
-    class PhieuThuDB {
+    class PhieuThuDB #BFDCF0 {
         +insertPhieuThu(phieuThu : PhieuThu) : String
         +tonTaiTheoMaPhieuDoiSoat(maPDS : String) : Boolean
     }
 
-    class ChiTietDoiSoatDB {
+    class ChiTietDoiSoatDB #BFDCF0 {
         +getDSHoaDonThuocPhieuDoiSoat(maPDS : String) : List<HoaDon>
     }
 
-    class NhanVienDB {
+    class NhanVienDB #BFDCF0 {
         +getNhanVienTheoMaNV(maNV : String) : NhanVien
     }
 }
@@ -179,4 +179,9 @@ PhieuThu       o-- PhieuThuDB
 ChiTietDoiSoat o-- ChiTietDoiSoatDB
 NhanVien       o-- NhanVienDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+PhieuDoiSoat -[hidden]down- PhieuDoiSoatDB
+NhanVien -[hidden]down- PhieuDoiSoatDB
 @enduml

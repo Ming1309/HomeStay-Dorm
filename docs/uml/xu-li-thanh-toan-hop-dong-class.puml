@@ -11,8 +11,8 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHXuLyThanhToanHopDong {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHXuLyThanhToanHopDong #BFE8BA {
     - txtTimKiemHopDong: TextBox
     - pnlDanhSachHopDong: Panel
     - cardHopDong: Panel
@@ -34,7 +34,7 @@ package "TANG GIAO DIEN" #EAF2F8 {
     - lblTongConLaiCanThu: Label
     - btnTienHanhThuTien: Button
     --
-    + loadHangDoiThuTien()
+    + taiHangDoiThuTien()
     + timKiemHopDong()
     + clickChonHopDong()
     + hienThiChiTietThanhToan()
@@ -45,14 +45,14 @@ package "TANG GIAO DIEN" #EAF2F8 {
   }
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class XuLyThanhToanHopDong {
-    + LayDSChoThanhToan(): IReadOnlyList<HopDongDto>
-    + LayChiTietThanhToan(maHD: String): ChiTietThanhToanDto
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class XuLyThanhToanHopDong #F4E3A2 {
+    + LayDSChoThanhToan()
+    + LayChiTietThanhToan(maHD: String)
     + TienHanhThuTien(maHD: String, phuongThuc: String, anhMinhChung: String, maNV: String): PhieuThu
   }
 
-  class HopDong {
+  class HopDong #F4E3A2 {
     - MaHD: String
     - NgayKy: DateTime
     - NgayBatDau: DateTime
@@ -72,7 +72,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + CapNhatTrangThaiChoBanGiao(maHD: String)
   }
 
-  class HoaDon {
+  class HoaDon #F4E3A2 {
     - MaHoaDon: String
     - NgayLap: DateTime
     - HanThanhToan: DateTime
@@ -84,11 +84,11 @@ package "TANG NGHIEP VU" #FCF3CF {
     - MaNV: String
     --
     + TinhTongTienKyDau(dsChiTiet: IReadOnlyList<ChiTietHoaDon>): Decimal
-    + TaoHoaDonKyDauDaThanhToan(maHD: String, tongTien: Decimal, maNV: String, ngayLap: DateTime, dsChiTiet: IReadOnlyList<ChiTietHoaDon>): HoaDon
+    + TaoHoaDonKyDauDaThanhToan(maHD: String, tongTien: Decimal, maNV: String,\n  ngayLap: DateTime, dsChiTiet: IReadOnlyList<ChiTietHoaDon>): HoaDon
     + KiemTraChuaCoHoaDonKyDau(maHD: String): Boolean
   }
 
-  class ChiTietHoaDon {
+  class ChiTietHoaDon #F4E3A2 {
     - MaHoaDon: String
     - STT: Integer
     - LoaiKhoanThu: String
@@ -100,12 +100,12 @@ package "TANG NGHIEP VU" #FCF3CF {
     - DonGia: Decimal
     - ThanhTien: Decimal
     --
-    + TaoDongTienThueKyDau(maHoaDon: String, stt: Integer, donGia: Decimal, soLuong: Integer): ChiTietHoaDon
-    + TaoDongDichVu(maHoaDon: String, dichVus: IReadOnlyList<DichVuHopDong>, sttBatDau: Integer): List<ChiTietHoaDon>
+    + TaoDongTienThueKyDau(maHoaDon: String, stt: Integer,\n  donGia: Decimal, soLuong: Integer): ChiTietHoaDon
+    + TaoDongDichVu(maHoaDon: String, dichVus: IReadOnlyList<DichVuHopDong>,\n  sttBatDau: Integer): List<ChiTietHoaDon>
     + LuuDanhSachChiTietHoaDon(dsChiTiet: IReadOnlyList<ChiTietHoaDon>)
   }
 
-  class PhieuThu {
+  class PhieuThu #F4E3A2 {
     - MaPT: String
     - SoTienThu: Decimal
     - ThoiGian: DateTime
@@ -116,11 +116,11 @@ package "TANG NGHIEP VU" #FCF3CF {
     - MaPDS: String
     - MaNV: String
     --
-    + TaoPhieuThuTienHoaDon(maHoaDon: String, soTienThu: Decimal, phuongThuc: String, anhMinhChung: String, maNV: String, thoiDiem: DateTime): PhieuThu
+    + TaoPhieuThuTienHoaDon(maHoaDon: String, soTienThu: Decimal,\n  phuongThuc: String, anhMinhChung: String, maNV: String,\n  thoiDiem: DateTime): PhieuThu
     + LuuPhieu()
   }
 
-  class DichVuHopDong {
+  class DichVuHopDong #F4E3A2 {
     - MaHD: String
     - MaDV: String
     - DonGiaKyKet: Decimal
@@ -129,14 +129,14 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<DichVuHopDong>
   }
 
-  class DichVu {
+  class DichVu #F4E3A2 {
     - MaDV: String
     - TenDV: String
     - DonGia: Decimal
     - DonViTinh: String
   }
 
-  class KhachHang {
+  class KhachHang #F4E3A2 {
     - MaKH: String
     - HoTen: String
     - NgaySinh: DateTime
@@ -149,7 +149,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     - Email: String
   }
 
-  class Phong {
+  class Phong #F4E3A2 {
     - MaPhong: String
     - SoPhong: String
     - ToaNha: String
@@ -161,27 +161,27 @@ package "TANG NGHIEP VU" #FCF3CF {
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class HopDongDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class HopDongDB #BFDCF0 {
     + LayDanhSachChoThanhToan(): IReadOnlyList<HopDong>
     + DocChiTiet(maHD: String): HopDong
     + UpdateTrangThai(maHD: String, trangThai: String): Boolean
   }
 
-  class HoaDonDB {
+  class HoaDonDB #BFDCF0 {
     + ExistsHoaDonKyDau(maHD: String): Boolean
     + Insert(hoaDon: HoaDon): String
   }
 
-  class ChiTietHoaDonDB {
+  class ChiTietHoaDonDB #BFDCF0 {
     + InsertBatch(dsChiTiet: IReadOnlyList<ChiTietHoaDon>)
   }
 
-  class PhieuThuDB {
+  class PhieuThuDB #BFDCF0 {
     + InsertPhieuThu(phieuThu: PhieuThu)
   }
 
-  class DichVuHopDongDB {
+  class DichVuHopDongDB #BFDCF0 {
     + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<DichVuHopDong>
   }
 }
@@ -212,4 +212,17 @@ ChiTietHoaDon o-- ChiTietHoaDonDB
 PhieuThu o-- PhieuThuDB
 DichVuHopDong o-- DichVuHopDongDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+XuLyThanhToanHopDong -[hidden]down- HopDong
+HopDong -[hidden]down- HoaDon
+HoaDon -[hidden]down- PhieuThu
+HopDong -[hidden]right- DichVuHopDong
+DichVuHopDong -[hidden]down- ChiTietHoaDon
+ChiTietHoaDon -[hidden]down- KhachHang
+KhachHang -[hidden]down- Phong
+DichVuHopDong -[hidden]right- DichVu
+XuLyThanhToanHopDong -[hidden]down- HopDongDB
+Phong -[hidden]down- HopDongDB
 @enduml

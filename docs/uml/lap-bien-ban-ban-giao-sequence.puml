@@ -1,4 +1,4 @@
-@startuml LapBienBanBanGiao_Sequence
+@startuml
 title SO DO TUAN TU - LAP BIEN BAN BAN GIAO
 
 hide footbox
@@ -129,10 +129,6 @@ activate PTSDB
 deactivate PTSDB
 deactivate PTS
 
-note over LBB
-  LBB thực hiện kiểm tra dữ liệu đầu vào
-  và khởi tạo các đối tượng ChiTietGiaoNhan
-end note
 
 LBB -> CT : KiemTraHopLe()
 activate CT

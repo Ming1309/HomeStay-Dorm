@@ -11,8 +11,8 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHXacNhanKhoanTienCoc {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHXacNhanKhoanTienCoc #BFE8BA {
     - txtTimKiemPhieu: TextBox
     - grvPhieuChoDoiChieu: GridView
     - lblMaPhieuCoc: Label
@@ -40,15 +40,15 @@ package "TANG GIAO DIEN" #EAF2F8 {
   }
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class XacNhanKhoanTienCoc {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class XacNhanKhoanTienCoc #F4E3A2 {
     + LayDanhSachChoDoiChieu(text: String): IReadOnlyList<PhieuCoc>
     + LayChiTiet(maPhieuCoc: String): PhieuCoc
     + XacNhanHopLe(maPhieuCoc: String, maNhanVienQuanLy: String): KetQuaXacNhanKhoanTienCoc
     + YeuCauBoSung(maPhieuCoc: String, lyDo: String): PhieuCoc
   }
 
-  class PhieuCoc {
+  class PhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
     - TongTien: Decimal
     - AnhMinhChung: String
@@ -67,7 +67,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + CapNhatYeuCauBoSung()
   }
 
-  class PhieuThu {
+  class PhieuThu #F4E3A2 {
     - MaPT: String
     - SoTienThu: Decimal
     - ThoiGian: DateTime
@@ -78,7 +78,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + Them()
   }
 
-  class Phong {
+  class Phong #F4E3A2 {
     - MaPhong: String
     - TrangThai: String
     - Giuongs: List<Giuong>
@@ -88,7 +88,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + CapNhatDatCoc()
   }
 
-  class Giuong {
+  class Giuong #F4E3A2 {
     - MaGiuong: String
     - MaPhong: String
     - TrangThai: String
@@ -97,17 +97,17 @@ package "TANG NGHIEP VU" #FCF3CF {
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class PhieuCocDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class PhieuCocDB #BFDCF0 {
     + LayDanhSachChoDoiChieu(text: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
     + CapNhatXacNhanThanhToan(phieu: PhieuCoc)
     + CapNhatYeuCauBoSung(phieu: PhieuCoc)
   }
-  class PhieuThuDB {
+  class PhieuThuDB #BFDCF0 {
     + Them(phieuThu: PhieuThu)
   }
-  class PhongDB {
+  class PhongDB #BFDCF0 {
     + DocChiTiet(maPhong: String): Phong
     + CapNhatDatCoc(phong: Phong)
   }
@@ -123,4 +123,9 @@ Phong o-- PhongDB
 Phong "1" -- "1..*" Giuong : quan ly
 PhieuCoc "1" -- "1..*" Giuong : dat coc
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+XacNhanKhoanTienCoc -[hidden]down- PhieuCocDB
+Giuong -[hidden]down- PhieuCocDB
 @enduml

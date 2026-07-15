@@ -10,20 +10,20 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHHoanCoc {
-    + fetchQueue()
-    + fetchDetails(maPDS: String)
-    + handleSubmit(values: RefundFormValues)
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHHoanCoc #BFE8BA {
+    + taiDanhSachChoHoan()
+    + taiChiTiet(maPDS: String)
+    + lapPhieuHoanCoc()
   }
 }
-package "TANG NGHIEP VU" #FCF3CF {
-  class LapPhieuHoanCoc {
-    + LayDSPhieuDoiSoatCanHoan(): IReadOnlyList<DoiSoatChoHoanCocDto>
-    + LayChiTietPhieuDoiSoatDto(maPDS: String): ChiTietHoanCocDto
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class LapPhieuHoanCoc #F4E3A2 {
+    + LayDSPhieuDoiSoatCanHoan()
+    + LayChiTietPhieuDoiSoatDto(maPDS: String)
     + ThucHienHoanCoc(maPDS: String, phuongThuc: String, thongTinNhanTien: String, maGiaoDich: String, minhChung: String, maNV: String): PhieuHoanCoc
   }
-  class PhieuDoiSoat {
+  class PhieuDoiSoat #F4E3A2 {
     - TienHoan: Decimal
     - TrangThai: String
     + LayDSPhieuDoiSoatCanHoan(): IReadOnlyList<PhieuDoiSoat>
@@ -31,7 +31,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayChiTietChoCapNhat(maPDS: String): PhieuDoiSoat
     + ChuyenSangDaTatToan(maPDS: String)
   }
-  class PhieuHoanCoc {
+  class PhieuHoanCoc #F4E3A2 {
     - MaGiaoDich: String
     - MinhChung: String
     + TaoPhieuHoanCoc(maPDS: String, soTien: Decimal, phuongThuc: String, thongTinNhanTien: String, maGiaoDich: String, minhChung: String, maNV: String, thoiDiem: DateTime): PhieuHoanCoc
@@ -39,13 +39,14 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LuuPhieu()
   }
 }
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class PhieuDoiSoatDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class PhieuDoiSoatDB #BFDCF0 {
     + GetDSPhieuDoiSoatCanHoan(): IReadOnlyList<PhieuDoiSoat>
+    + GetPhieuDoiSoatTheoMaPDS(maPDS: String): PhieuDoiSoat
     + GetPhieuDoiSoatChoCapNhat(maPDS: String): PhieuDoiSoat
     + UpdateTrangThai(maPDS: String, trangThaiHienTai: String, trangThaiMoi: String): Boolean
   }
-  class PhieuHoanCocDB {
+  class PhieuHoanCocDB #BFDCF0 {
     + TonTaiTheoMaPhieuDoiSoat(maPDS: String): Boolean
     + InsertPhieuHoanCoc(phieu: PhieuHoanCoc)
   }
@@ -55,4 +56,8 @@ LapPhieuHoanCoc o-- PhieuDoiSoat
 LapPhieuHoanCoc o-- PhieuHoanCoc
 PhieuDoiSoat o-- PhieuDoiSoatDB
 PhieuHoanCoc o-- PhieuHoanCocDB
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+LapPhieuHoanCoc -[hidden]down- PhieuDoiSoatDB
 @enduml

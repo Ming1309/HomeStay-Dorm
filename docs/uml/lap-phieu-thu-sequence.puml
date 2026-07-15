@@ -1,4 +1,4 @@
-@startuml LapPhieuThu_Sequence
+@startuml
 
 skinparam sequenceArrowThickness 1.2
 skinparam shadowing false
@@ -85,7 +85,7 @@ activate PTDB
 deactivate PTDB
 deactivate PT
 
-PT -> PT : 5.5 kiemTraTrungTheoMaPDS()
+PT -> PT : daTonTaiChoPhieuDoiSoat(maPDS)
 MH -> PDS : 5.6 chuyenSangDaTatToan(maPDS)
 activate PDS
 PDS -> PDSDB : 5.7 updateTrangThai(maPDS, "DaChot", "DaTatToan")

@@ -1,322 +1,189 @@
 @startuml
-title Sequence Diagram - UC Xét duyệt hồ sơ nhận phòng
-
-skinparam sequence {
-    ActivationBackgroundColor White
-    ActivationBorderColor Black
-    LifeLineBorderColor Black
-    LifeLineBackgroundColor White
-}
-
-actor "Quản lý" as QL
-
+title SO DO TUAN TU - XET DUYET HO SO NHAN PHONG
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+actor "Quan ly" as QL
 box "GUI" #D5F5D3
-boundary "MH_XetDuyetHoSo" as MH
-boundary "Popup_ChiTietThanhVien" as POPCT
-boundary "Popup_XacNhanTuChoiHoSo" as POPTC
+boundary ": MHXetDuyetHoSo" as MH
+boundary ": PopupChiTietThanhVien" as POP
 end box
-
 box "BUS" #FCF3CF
-control "PhieuCoc" as PC
-control "ThanhVienDangKy" as TV
-control "KhachHang" as KH
-control "Phong" as PH
-control "ChiTietPhieuCoc" as CTPC
-control "Giuong" as G
+control ": XetDuyetHoSo" as UC
+control ": PhieuCoc" as PC
+control ": ThanhVienDangKy" as TV
+control ": KhachHang" as KH
+control ": Phong" as P
+control ": Giuong" as G
 end box
-
 box "DB" #D6EAF8
-entity "PhieuCocDB" as PCDB
-entity "ThanhVienDangKyDB" as TVDB
-entity "KhachHangDB" as KHDB
-entity "PhongDB" as PHDB
-entity "ChiTietPhieuCocDB" as CTPCDB
-entity "GiuongDB" as GDB
+entity ": PhieuCocDB" as PCDB
+entity ": ThanhVienDangKyDB" as TVDB
+entity ": KhachHangDB" as KHDB
+entity ": GiuongDB" as GDB
 end box
 
-
-
-
-' =====================================================
-' 1. MỞ MÀN HÌNH VÀ HIỂN THỊ HỒ SƠ CHỜ DUYỆT
-' =====================================================
-
-QL -> MH : Chon chuc nang va mo man hinh
-MH -> MH : 1. loadDanhSachHoSoChoDuyet()
+QL -> MH : Chon chuc nang "Xet duyet ho so"
 activate MH
-
-MH -> PC: 2. layHoSoChoDuyet()
+MH -> MH : taiDanhSachHoSoChoDuyet()
+MH -> UC : LayDanhSachChoDuyet(tuKhoa)
+activate UC
+UC -> PC : LayDanhSachChoDuyet(tuKhoa)
 activate PC
-
-PC -> PCDB: 3. getHoSoChoDuyet()
+PC -> PCDB : LayDanhSachChoDuyet(tuKhoa)
 activate PCDB
 deactivate PCDB
-
 deactivate PC
+deactivate UC
 
-MH -> MH: 4. hienThiDanhSachHoSo()
-
-' =====================================================
-' 2. QUẢN LÝ CHỌN MỘT HỒ SƠ
-' =====================================================
-
-QL -> MH : Nhan "Chon Ho So"
-MH -> MH : 5. clickChonHoSo(maPhieuCoc)
-
-MH -> PC: 6. layThongTinHoSo(maPhieuCoc)
+QL -> MH : Chon ho so cho duyet
+MH -> MH : clickChonHoSo()
+MH -> UC : LayChiTiet(maPhieuCoc)
+activate UC
+UC -> PC : LayChiTietChoDuyet(maPhieuCoc)
 activate PC
-
-PC -> PCDB: 7. getByMaPhieuCoc(maPhieuCoc)
+PC -> PCDB : LayChiTietChoDuyet(maPhieuCoc)
 activate PCDB
 deactivate PCDB
-
 deactivate PC
-
-MH -> TV: 8. layDanhSachThanhVien(maPhieuCoc)
-activate TV
-
-TV -> TVDB: 9. getByMaPhieuCoc(maPhieuCoc)
-activate TVDB
-deactivate TVDB
-
-deactivate TV
-
-MH -> KH: 10. layDanhSachKhachTheoPhieuCoc(maPhieuCoc)
-activate KH
-
-KH -> KHDB: 11. getByMaPhieuCoc(maPhieuCoc)
-activate KHDB
-deactivate KHDB
-
-deactivate KH
-
-MH -> PH: 12. layThongTinPhong(maPhong)
-activate PH
-
-PH -> PHDB: 13. getByMaPhong(maPhong)
-activate PHDB
-deactivate PHDB
-
-deactivate PH
-
-MH -> CTPC: 14. layDanhSachGiuongTheoPhieuCoc(maPhieuCoc)
-activate CTPC
-
-CTPC -> CTPCDB: 15. getByMaPhieuCoc(maPhieuCoc)
-activate CTPCDB
-deactivate CTPCDB
-
-deactivate CTPC
-
-MH -> MH: 16. hienThiDanhSachThanhVien()
-
-' =====================================================
-' 3. XEM CHI TIẾT THÀNH VIÊN
-' =====================================================
-
-opt 17. Quản lý xem chi tiết thành viên
-    QL -> MH : Nhan "Xem Chi Tiet Thanh Vien"
-    MH -> MH : 17. clickXemChiTietThanhVien(maKH)
-
-    MH -> KH: 18. layThongTinKhachHang(maKH)
-    activate KH
-
-    KH -> KHDB: 19. getByMaKH(maKH)
-    activate KHDB
-    deactivate KHDB
-
-    deactivate KH
-
-    MH -> POPCT: 20. hienThiPopup()
-    activate POPCT
-
-    POPCT -> POPCT: 21. hienThiThongTinThanhVien()
-
-    QL -> POPCT : Nhan "Dong Popup"
-    POPCT -> POPCT : 22. clickDongPopup()
-    deactivate POPCT
+deactivate UC
+opt Quan ly xem chi tiet thanh vien
+  QL -> MH : Nhan "Xem chi tiet"
+  MH -> MH : clickXemChiTietThanhVien()
+  MH -> POP : hienThiPopup()
+  activate POP
+  POP -> POP : hienThiThongTinThanhVien()
+  QL -> POP : Nhan "Dong"
+  POP -> POP : clickDongPopup()
+  deactivate POP
 end
 
-' =====================================================
-' 4. QUẢN LÝ CHỌN HƯỚNG XÉT DUYỆT
-' =====================================================
-
-alt 23a. Duyệt toàn bộ hồ sơ
-
-    QL -> MH : Nhan "Duyet Toan Bo"
-    MH -> MH : 23. clickDuyetToanBo()
-
-    MH -> PC: 24. kiemTraTrangThaiChoDuyet()
-    activate PC
-    deactivate PC
-
-    MH -> TV: 25. kiemTraTonTaiDaiDien(maPhieuCoc)
-    activate TV
-    deactivate TV
-
-    MH -> KH: 26. kiemTraDieuKienLuuTru()
-    activate KH
-    deactivate KH
-
-    MH -> PH: 27. kiemTraSucChua(soLuongThanhVien)
-    activate PH
-    deactivate PH
-
-    MH -> PH: 28. kiemTraGioiTinhChoPhep(dsKhachHang)
-    activate PH
-    deactivate PH
-
-    alt 29. Hồ sơ hợp lệ
-
-        MH -> TV: 30. duyetTatCaThanhVien(maPhieuCoc)
-        activate TV
-
-        TV -> TVDB: 31. updateTatCaTrangThaiDuyet(maPhieuCoc, "HopLe")
-        activate TVDB
-        deactivate TVDB
-
-        deactivate TV
-
-        MH -> PC: 33. capNhatTrangThaiDaDuyet()
-        activate PC
-
-        PC -> PCDB: 34. updateTrangThai(maPhieuCoc, "DaDuyet")
-        activate PCDB
-        deactivate PCDB
-
-        deactivate PC
-
-        MH -> G: 35. capNhatDanhSachGiuongDaCoc(dsMaGiuong)
-        activate G
-
-        G -> GDB: 36. updateTrangThaiBatch(dsMaGiuong, "DaCoc")
-        activate GDB
-        deactivate GDB
-
-        deactivate G
-
-        MH -> MH: 37. hienThiThongBao()
-        MH -> QL: 38. hienThiThongBao("Duyệt hồ sơ thành công")
-    end
-
-else 23b. Từ chối một thành viên, sau đó duyệt các thành viên còn lại
-
-    QL -> MH : Nhan "Tu Choi Thanh Vien"
-    MH -> MH : 23. clickTuChoiThanhVien(maKH)
-
-    MH -> TV: 24. danhDauTuChoi(maPhieuCoc, maKH)
-    activate TV
-
-    TV -> TVDB: 25. updateTrangThaiDuyet(maPhieuCoc, maKH, "TuChoi")
-    activate TVDB
-    deactivate TVDB
-
-    deactivate TV
-
-    MH -> MH: 26. capNhatDanhSachThanhVien()
-    MH -> MH: 27. doiNutDuyetToanBoThanhDuyetConLai()
-
-    QL -> MH : Nhan "Duyet Thanh Vien Con Lai"
-    MH -> MH : 28. clickDuyetThanhVienConLai()
-
-    MH -> PC: 29. kiemTraTrangThaiChoDuyet()
-    activate PC
-    deactivate PC
-
-    MH -> TV: 30. kiemTraTonTaiDaiDien(maPhieuCoc)
-    activate TV
-    deactivate TV
-
-    MH -> TV: 31. duyetThanhVienConLai(maPhieuCoc)
-    activate TV
-
-    TV -> TVDB: 32. updateThanhVienConLaiHopLe(maPhieuCoc)
-    activate TVDB
-    deactivate TVDB
-
-    deactivate TV
-
-    MH -> TV: 33. demThanhVienHopLe(maPhieuCoc)
-    activate TV
-
-    TV -> TVDB: 34. countThanhVienHopLe(maPhieuCoc)
-    activate TVDB
-    deactivate TVDB
-
-    deactivate TV
-
-    MH -> PH: 35. kiemTraSucChua(soLuongHopLe)
-    activate PH
-    deactivate PH
-
-    MH -> PH: 36. kiemTraGioiTinhChoPhep(dsKhachHangHopLe)
-    activate PH
-    deactivate PH
-
-    MH -> PC: 37. capNhatTrangThaiDaDuyet()
-    activate PC
-
-    PC -> PCDB: 38. updateTrangThai(maPhieuCoc, "DaDuyet")
-    activate PCDB
-    deactivate PCDB
-
-    deactivate PC
-
-    MH -> G: 39. capNhatDanhSachGiuongDaCoc(dsMaGiuong)
-    activate G
-
-    G -> GDB: 40. updateTrangThaiBatch(dsMaGiuong, "DaCoc")
-    activate GDB
-    deactivate GDB
-
-    deactivate G
-
-    MH -> MH: 41. hienThiThongBao()
-    MH -> QL: 42. hienThiThongBao("Duyệt các thành viên còn lại thành công")
-
-else 23c. Từ chối toàn bộ hồ sơ
-
-    QL -> MH : Nhan "Tu Choi Ho So"
-    MH -> MH : 23. clickTuChoiHoSo()
-
-    MH -> POPTC: 24. hienThiPopup()
-    activate POPTC
-
-    QL -> POPTC : Nhan "Xac Nhan"
-    POPTC -> POPTC : 25. clickXacNhan()
-    deactivate POPTC
-
-    MH -> TV: 26. danhDauTatCaThanhVienTuChoi(maPhieuCoc)
-    activate TV
-
-    TV -> TVDB: 27. updateTatCaTrangThaiDuyet(maPhieuCoc, "TuChoi")
-    activate TVDB
-    deactivate TVDB
-
-    deactivate TV
-
-    MH -> PC: 28. capNhatTrangThaiDaHuy()
-    activate PC
-    
-    PC -> PCDB: 29. updateTrangThai(maPhieuCoc, "DaHuy")
-    activate PCDB
-    deactivate PCDB
-
-    deactivate PC
-
-    MH -> G: 30. capNhatDanhSachGiuongTrong(dsMaGiuong)
-    activate G
-
-    G -> GDB: 31. updateTrangThaiBatch(dsMaGiuong, "Trong")
-    activate GDB
-    deactivate GDB
-
-    deactivate G
-
-    MH -> MH: 32. hienThiThongBao()
-    MH -> QL: 33. hienThiThongBao("Đã hủy hồ sơ")
+alt Duyet toan bo ho so
+  QL -> MH : Nhan "Duyet toan bo"
+  MH -> MH : clickDuyetToanBo()
+  MH -> UC : DuyetToanBo(maPhieuCoc, maNV)
+  activate UC
+  UC -> PC : LayChiTietChoDuyet(maPhieuCoc)
+  activate PC
+  PC -> PCDB : LayChiTietChoDuyet(maPhieuCoc)
+  activate PCDB
+  deactivate PCDB
+  PC -> PC : KiemTraCoTheXetDuyet()
+  deactivate PC
+  UC -> TV : KiemTraTonTaiDaiDien(maPhieuCoc)
+  activate TV
+  TV -> TVDB : GetByMaPhieuCoc(maPhieuCoc)
+  activate TVDB
+  deactivate TVDB
+  deactivate TV
+  UC -> KH : LayDanhSachKhachTheoPhieuCoc(maPhieuCoc)
+  activate KH
+  KH -> KHDB : GetByMaPhieuCoc(maPhieuCoc)
+  activate KHDB
+  deactivate KHDB
+  deactivate KH
+  UC -> P : KiemTraSucChua(soLuongThanhVien, soGiuongThue, sucChuaPhong, hinhThucThue)
+  activate P
+  P -> P : KiemTraGioiTinhChoPhep(dsKhach)
+  deactivate P
+  UC -> TV : DuyetTatCaThanhVien(maPhieuCoc)
+  activate TV
+  TV -> TVDB : UpdateTatCaTrangThaiDuyet(maPhieuCoc, "HopLe")
+  activate TVDB
+  deactivate TVDB
+  deactivate TV
+  UC -> PC : CapNhatTrangThaiDaDuyetDB()
+  activate PC
+  PC -> PCDB : CapNhatDaDuyet(phieuCoc)
+  activate PCDB
+  deactivate PCDB
+  deactivate PC
+  UC -> G : CapNhatDanhSachDaCoc(dsMaGiuong)
+  activate G
+  G -> GDB : UpdateTrangThaiBatch(dsMaGiuong, "DaCoc")
+  activate GDB
+  deactivate GDB
+  deactivate G
+  deactivate UC
+else Tu choi mot thanh vien
+  QL -> MH : Nhan "Tu choi" tai thanh vien
+  MH -> MH : clickTuChoiThanhVien()
+  MH -> UC : TuChoiThanhVien(maPhieuCoc, maKH)
+  activate UC
+  UC -> PC : DocChiTiet(maPhieuCoc)
+  activate PC
+  PC -> PCDB : DocChiTiet(maPhieuCoc)
+  activate PCDB
+  deactivate PCDB
+  PC -> PC : KiemTraCoTheXetDuyet()
+  deactivate PC
+  UC -> TV : LayDanhSachThanhVien(maPhieuCoc)
+  activate TV
+  TV -> TVDB : GetByMaPhieuCoc(maPhieuCoc)
+  activate TVDB
+  deactivate TVDB
+  deactivate TV
+  UC -> TV : DanhDauTuChoi(maPhieuCoc, maKH)
+  activate TV
+  TV -> TVDB : UpdateTrangThaiDuyet(maPhieuCoc, maKH, "TuChoi")
+  activate TVDB
+  deactivate TVDB
+  deactivate TV
+  deactivate UC
+else Duyet cac thanh vien con lai
+  QL -> MH : Nhan "Duyet thanh vien con lai"
+  MH -> MH : clickDuyetThanhVienConLai()
+  MH -> UC : DuyetThanhVienConLai(maPhieuCoc, maNV)
+  activate UC
+  UC -> TV : DuyetThanhVienConLai(maPhieuCoc)
+  activate TV
+  TV -> TVDB : UpdateThanhVienConLaiHopLe(maPhieuCoc)
+  activate TVDB
+  deactivate TVDB
+  deactivate TV
+  UC -> PC : CapNhatTrangThaiDaDuyetDB()
+  activate PC
+  PC -> PCDB : CapNhatDaDuyet(phieuCoc)
+  activate PCDB
+  deactivate PCDB
+  deactivate PC
+  UC -> G : CapNhatDanhSachDaCoc(dsMaGiuong)
+  activate G
+  G -> GDB : UpdateTrangThaiBatch(dsMaGiuong, "DaCoc")
+  activate GDB
+  deactivate GDB
+  deactivate G
+  deactivate UC
+else Tu choi toan bo ho so
+  QL -> MH : Nhan "Tu choi ho so"
+  MH -> MH : clickTuChoiHoSo()
+  MH -> UC : TuChoiHoSo(maPhieuCoc, maNV)
+  activate UC
+  UC -> PC : LayChiTietChoDuyet(maPhieuCoc)
+  activate PC
+  PC -> PCDB : LayChiTietChoDuyet(maPhieuCoc)
+  activate PCDB
+  deactivate PCDB
+  deactivate PC
+  UC -> TV : TuChoiTatCaThanhVien(maPhieuCoc)
+  activate TV
+  TV -> TVDB : UpdateTatCaTrangThaiDuyet(maPhieuCoc, "TuChoi")
+  activate TVDB
+  deactivate TVDB
+  deactivate TV
+  UC -> PC : CapNhatTrangThaiDaHuyDB()
+  activate PC
+  PC -> PCDB : CapNhatDaHuy(phieuCoc)
+  activate PCDB
+  deactivate PCDB
+  deactivate PC
+  UC -> G : CapNhatDanhSachTrong(dsMaGiuong)
+  activate G
+  G -> GDB : UpdateTrangThaiBatch(dsMaGiuong, "Trong")
+  activate GDB
+  deactivate GDB
+  deactivate G
+  deactivate UC
 end
-
 deactivate MH
-
 @enduml

@@ -1,281 +1,119 @@
 @startuml
-title Sequence Diagram - UC Xử lý thanh toán hợp đồng
-
-skinparam dpi 170
-
-skinparam sequence{
-    ActivationBackgroundColor White
-    ActivationBorderColor Black
-    LifeLineBorderColor Black
-    LifeLineBackgroundColor White
-}
-
-actor "Kế toán" as KT
-
+title SO DO TUAN TU - XU LY THANH TOAN HOP DONG
+hide footbox
+autonumber 1 1
+skinparam shadowing false
+actor "Ke toan" as KT
 box "GUI" #D5F5D3
-boundary "MH_XuLyThanhToanHopDong" as MH
+boundary ": MHXuLyThanhToanHopDong" as MH
 end box
-
 box "BUS" #FCF3CF
-control "HopDong" as HD
-control "KhachHang" as KH
-control "Phong" as PH
-control "ChiTietHopDong" as CTHD
-control "HopDong_DichVu" as HDDV
-control "DichVu" as DV
-control "ChiTietHoaDon" as CTHDon
-control "HoaDon" as HDon
-control "PhieuThu" as PT
+control ": XuLyThanhToanHopDong" as UC
+control ": HopDong" as HD
+control ": DichVuHopDong" as DVHD
+control ": HoaDon" as HDon
+control ": ChiTietHoaDon" as CT
+control ": PhieuThu" as PT
 end box
-
 box "DB" #D6EAF8
-entity "HopDongDB" as HDDB
-entity "KhachHangDB" as KHDB
-entity "PhongDB" as PHDB
-entity "ChiTietHopDongDB" as CTHDDB
-entity "HopDong_DichVuDB" as HDDVDB
-entity "DichVuDB" as DVDB
-entity "ChiTietHoaDonDB" as CTHDonDB
-entity "HoaDonDB" as HDonDB
-entity "PhieuThuDB" as PTDB
+entity ": HopDongDB" as HDDB
+entity ": DichVuHopDongDB" as DVHDDB
+entity ": HoaDonDB" as HDonDB
+entity ": ChiTietHoaDonDB" as CTDB
+entity ": PhieuThuDB" as PTDB
 end box
 
-
-
-
-'====================================================
-' LOAD DANH SÁCH HỢP ĐỒNG
-'====================================================
-
-KT -> MH : Chon chuc nang va mo man hinh
-MH -> MH : 1. loadHangDoiThuTien()
+KT -> MH : Chon chuc nang "Thanh toan hop dong"
 activate MH
-
-MH -> HD : 2. layHopDongChoThanhToan()
+MH -> MH : taiHangDoiThuTien()
+MH -> UC : LayDSChoThanhToan()
+activate UC
+UC -> HD : LayDanhSachChoThanhToan()
 activate HD
-
-HD -> HDDB : 3. getHopDongChoThanhToan()
+HD -> HDDB : LayDanhSachChoThanhToan()
 activate HDDB
-
-
 deactivate HDDB
-
 deactivate HD
+deactivate UC
 
-MH -> MH : 4. hienThiDanhSachHopDong()
-
-'====================================================
-' CHỌN HỢP ĐỒNG
-'====================================================
-
-KT -> MH : Nhan "Chon Hop Dong"
-MH -> MH : 5. clickChonHopDong(maHD)
-
-MH -> HD : 6. layThongTinHopDong(maHD)
+KT -> MH : Chon hop dong cho thanh toan
+MH -> MH : clickChonHopDong()
+MH -> UC : LayChiTietThanhToan(maHD)
+activate UC
+UC -> HD : DocChiTiet(maHD)
 activate HD
-
-HD -> HDDB : 7. getByMaHD(maHD)
+HD -> HDDB : DocChiTiet(maHD)
 activate HDDB
-
-
 deactivate HDDB
-
-
+HD -> HD : KiemTraChoThanhToan()
 deactivate HD
-
-MH -> KH : 8. layNguoiDaiDienTheoHopDong(maHD)
-activate KH
-
-KH -> KHDB : 9. getDaiDienByMaHD(maHD)
-activate KHDB
-
-
-deactivate KHDB
-
-
-deactivate KH
-
-MH -> PH : 10. layPhongTheoHopDong(maHD)
-activate PH
-
-PH -> PHDB : 11. getPhongByMaHD(maHD)
-activate PHDB
-
-
-deactivate PHDB
-
-
-deactivate PH
-
-MH -> CTHD : 12. demSoNguoiTheoHopDong(maHD)
-activate CTHD
-
-CTHD -> CTHDDB : 13. countKhachByMaHD(maHD)
-activate CTHDDB
-
-
-deactivate CTHDDB
-
-
-deactivate CTHD
-
-'====================================================
-' LẤY DỊCH VỤ HỢP ĐỒNG
-'====================================================
-
-MH -> HDDV : 14. layDichVuTheoHopDong(maHD)
-activate HDDV
-
-HDDV -> HDDVDB : 15. getByMaHD(maHD)
-activate HDDVDB
-
-
-deactivate HDDVDB
-
-
-deactivate HDDV
-
-MH -> DV : 16. layThongTinDichVu(dsMaDV)
-activate DV
-
-DV -> DVDB : 17. getByIds(dsMaDV)
-activate DVDB
-
-
-deactivate DVDB
-
-
-deactivate DV
-
-'====================================================
-' HIỂN THỊ CHI TIẾT THANH TOÁN
-'====================================================
-
-MH -> MH : 18. hienThiChiTietThanhToan()
-
-'====================================================
-' TÍNH CÁC KHOẢN THU
-'====================================================
-
-MH -> CTHDon : 19. taoDongTienThueKyDau()
-activate CTHDon
-
-
-deactivate CTHDon
-
-MH -> CTHDon : 20. taoDongDichVu()
-activate CTHDon
-
-
-deactivate CTHDon
-
-MH -> CTHDon : 21. tinhThanhTien()
-activate CTHDon
-
-
-deactivate CTHDon
-
-MH -> HDon : 22. tinhTongTienKyDau(dsChiTiet)
-activate HDon
-
-
-deactivate HDon
-
-MH -> MH : 23. hienThiBangKhoanThu()
-
-MH -> MH : 24. hienThiTongTien()
-
-'====================================================
-' TIẾN HÀNH THU TIỀN
-'====================================================
-
-KT -> MH : Nhan "Tien Hanh Thu Tien"
-MH -> MH : 25. clickTienHanhThuTien()
-
-MH -> HD : 26. kiemTraChoThanhToan()
-activate HD
-
-deactivate HD
-
-MH -> HDon : 27. kiemTraChuaCoHoaDonKyDau(maHD)
-activate HDon
-
-HDon -> HDonDB : 28. existsHoaDonKyDau(maHD)
-activate HDonDB
-
-
-deactivate HDonDB
-
-alt Chưa tồn tại hóa đơn kỳ đầu
-
-MH -> HDon : 29. taoHoaDonKyDauDaThanhToan()
-activate HDon
-
-HDon -> HDonDB : 30. insert(hoaDon)
-activate HDonDB
-
-
-deactivate HDonDB
-
-
-deactivate HDon
-
-MH -> CTHDon : 31. luuDanhSachChiTietHoaDon()
-activate CTHDon
-
-CTHDon -> CTHDonDB : 32. insertBatch(dsChiTietHoaDon)
-activate CTHDonDB
-
-
-deactivate CTHDonDB
-
-
-deactivate CTHDon
-
-ref over MH,PT
-UC - Lập phiếu thu
-end ref
-
-MH -> PT : 33. lapPhieuThuTienHoaDon(maHoaDon, soTienThu)
-activate PT
-
-PT -> PTDB : 34. insert(phieuThu)
-activate PTDB
-
-
-deactivate PTDB
-
-
-deactivate PT
-
-MH -> HD : 35. capNhatTrangThaiChoBanGiao()
-activate HD
-
-HD -> HDDB : 36. updateTrangThai(maHD,"ChoBanGiao")
-activate HDDB
-
-
-deactivate HDDB
-
-
-deactivate HD
-
-MH -> MH : 37. loadHangDoiThuTien()
-
-MH -> MH : 38. hienThiThongBao()
-
-MH -> KT : 39. "Thanh toán thành công"
-
-else Đã tồn tại hóa đơn kỳ đầu
-
-
-MH -> MH : 40. hienThiThongBao()
-
-MH -> KT : 41. "Hợp đồng đã được thanh toán"
-
+opt Hop dong chua nap san danh sach dich vu
+  UC -> DVHD : LayDanhSachTheoHopDong(maHD)
+  activate DVHD
+  DVHD -> DVHDDB : LayDanhSachTheoHopDong(maHD)
+  activate DVHDDB
+  deactivate DVHDDB
+  deactivate DVHD
 end
+deactivate UC
 
+KT -> MH : Nhan "Tien hanh thu tien"
+MH -> MH : clickTienHanhThuTien()
+KT -> MH : Chon phuong thuc va cung cap minh chung
+KT -> MH : Xac nhan thu tien
+MH -> UC : TienHanhThuTien(maHD, phuongThuc, anhMinhChung, maNV)
+activate UC
+UC -> HD : DocChiTiet(maHD)
+activate HD
+HD -> HDDB : DocChiTiet(maHD)
+activate HDDB
+deactivate HDDB
+HD -> HD : KiemTraChoThanhToan()
+deactivate HD
+UC -> HDon : KiemTraChuaCoHoaDonKyDau(maHD)
+activate HDon
+HDon -> HDonDB : ExistsHoaDonKyDau(maHD)
+activate HDonDB
+deactivate HDonDB
 deactivate HDon
+opt Hop dong chua nap san danh sach dich vu
+  UC -> DVHD : LayDanhSachTheoHopDong(maHD)
+  activate DVHD
+  DVHD -> DVHDDB : LayDanhSachTheoHopDong(maHD)
+  activate DVHDDB
+  deactivate DVHDDB
+  deactivate DVHD
+end
+UC -> CT : TaoDongTienThueKyDau("TEMP", 1, giaThue, kyThanhToan)
+activate CT
+deactivate CT
+UC -> CT : TaoDongDichVu("TEMP", dichVus, 2)
+activate CT
+deactivate CT
+UC -> HDon : TaoHoaDonKyDauDaThanhToan(maHD, tongCong, maNV, thoiDiem, chiTiet)
+activate HDon
+HDon -> HDonDB : Insert(hoaDon)
+activate HDonDB
+deactivate HDonDB
+deactivate HDon
+UC -> CT : LuuDanhSachChiTietHoaDon(chiTiet)
+activate CT
+CT -> CTDB : InsertBatch(chiTiet)
+activate CTDB
+deactivate CTDB
+deactivate CT
+UC -> PT : TaoPhieuThuTienHoaDon(maHoaDon, tongCong, phuongThuc, anhMinhChung, maNV, thoiDiem)
+activate PT
+PT -> PTDB : InsertPhieuThu(phieuThu)
+activate PTDB
+deactivate PTDB
+deactivate PT
+UC -> HD : CapNhatTrangThaiChoBanGiao(maHD)
+activate HD
+HD -> HDDB : UpdateTrangThai(maHD, "ChoBanGiao")
+activate HDDB
+deactivate HDDB
+deactivate HD
+deactivate UC
 deactivate MH
-
 @enduml

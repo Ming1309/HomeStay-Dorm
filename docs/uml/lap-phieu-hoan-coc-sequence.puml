@@ -22,7 +22,7 @@ end box
 
 KT -> MH : mo man hinh hoan coc
 activate MH
-MH -> MH : fetchQueue()
+MH -> MH : taiDanhSachChoHoan()
 MH -> LPHC : LayDSPhieuDoiSoatCanHoan()
 activate LPHC
 LPHC -> PDS : LayDSPhieuDoiSoatCanHoan()
@@ -33,7 +33,7 @@ deactivate PDSDB
 deactivate PDS
 deactivate LPHC
 KT -> MH : chon phieu doi soat
-MH -> MH : fetchDetails(maPDS)
+MH -> MH : taiChiTiet(maPDS)
 MH -> LPHC : LayChiTietPhieuDoiSoatDto(maPDS)
 activate LPHC
 LPHC -> PDS : LayChiTietPhieuDoiSoat(maPDS)
@@ -45,7 +45,7 @@ deactivate PDSDB
 deactivate PDS
 deactivate LPHC
 KT -> MH : nhap phuong thuc va xac nhan hoan
-MH -> MH : handleSubmit(values)
+MH -> MH : lapPhieuHoanCoc()
 MH -> LPHC : ThucHienHoanCoc(maPDS, phuongThuc, thongTinNhanTien, maGiaoDich, minhChung, maNV)
 activate LPHC
 LPHC -> PDS : LayChiTietChoCapNhat(maPDS)

@@ -20,7 +20,7 @@ end box
 
 QTV -> MH : Mo man hinh chuc nang
 activate MH
-MH -> MH : loadAssets()
+MH -> MH : taiDanhSachTaiSan()
 MH -> QL : LayDanhSach()
 activate QL
 QL -> TS : LayDanhSach()
@@ -33,7 +33,7 @@ deactivate QL
 MH -> MH : hien thi danh sach
 
 QTV -> MH : Nhap thong tin va nhan "Luu"
-MH -> MH : onSubmit(values)
+MH -> MH : luuTaiSan(taiSan)
 MH -> MH : validate form
 alt them moi
   MH -> QL : Them(taiSan)
@@ -88,7 +88,7 @@ deactivate QL
 end
 
 QTV -> MH : Chon ban ghi va xac nhan xoa
-MH -> MH : confirmDelete()
+MH -> MH : xacNhanXoa()
 MH -> QL : Xoa(maTS)
 activate QL
 QL -> TS : Doc(maTS)

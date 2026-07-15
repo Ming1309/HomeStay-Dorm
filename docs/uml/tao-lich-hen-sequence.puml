@@ -32,10 +32,6 @@ TLH -> NV : DocPhamVi(maNV)
 activate NV
 NV -> NVDB : DocChiTiet(maNV)
 activate NVDB
-note right of TLH
-  Danh sach chung tu duoc loc theo MaCN
-  cua nhan vien doc lai tu database.
-end note
 
 deactivate NVDB
 deactivate NV
@@ -73,7 +69,6 @@ deactivate LH
 else Sai chi nhanh, trang thai hoac trung lich
 deactivate LHDB
 deactivate LH
-  TLH -> MH : HienThiLoi()
 end
 deactivate TLH
 deactivate MH

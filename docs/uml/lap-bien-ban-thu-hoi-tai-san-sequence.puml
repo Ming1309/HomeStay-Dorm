@@ -1,156 +1,112 @@
-@startuml LapBienBanThuHoiTaiSan_Sequence
-
-skinparam sequenceArrowThickness 1.2
+@startuml
+title SO DO TUAN TU - LAP BIEN BAN THU HOI TAI SAN
+hide footbox
+autonumber 1 1
 skinparam shadowing false
-skinparam sequenceMessageAlign left
-skinparam maxMessageSize 80
-
-title Lập biên bản thu hồi tài sản
-
-actor "Quản lý" as QL
-
+actor "Quan ly" as QL
 box "GUI" #D5F5D3
-boundary "MHLapBienBanThuHoi" as MH
+boundary ": MHLapBienBanThuHoiTaiSan" as MH
 end box
-
 box "BUS" #FCF3CF
-control "DieuKhienLapBienBanThuHoi" as DK
-control "HopDong" as HD
-control "LichHen" as LH
-control "BienBanGiaoNhan" as BB
-control "ChiTietGiaoNhan" as CTGN
-control "DichVuThongBao" as TB
+control ": LapBienBanThuHoiTaiSan" as UC
+control ": HopDong" as HD
+control ": PhongTaiSan" as PTS
+control ": BienBanGiaoNhan" as BB
+control ": ChiTietGiaoNhan" as CT
 end box
-
 box "DB" #D6EAF8
-entity "NhanVienDB" as NVDB
-entity "HopDongDB" as HDDB
-entity "LichHenDB" as LHDB
-entity "BienBanGiaoNhanDB" as BBDB
-entity "ChiTietGiaoNhanDB" as CTGNDB
+entity ": HopDongDB" as HDDB
+entity ": PhongTaiSanDB" as PTSDB
+entity ": BienBanGiaoNhanDB" as BBDB
+entity ": ChiTietGiaoNhanDB" as CTDB
 end box
 
-
-'=====================
-' TẢI DANH SÁCH HỢP ĐỒNG TRẢ PHÒNG
-'=====================
-
-QL -> MH : 1.0 Truy cập chức năng
+QL -> MH : Chon chuc nang "Thu hoi tai san"
 activate MH
-
-MH -> DK : 1.1 khoiTaoForm(maNVDangNhap)
-activate DK
-
-DK -> NVDB : 1.2 getNhanVien(maNVDangNhap)
-activate NVDB
-deactivate NVDB
-
-DK -> LH : 1.3 layLichTraPhongTrongNgay()
-activate LH
-
-LH -> LHDB : 1.4 getLichTraPhongTrongNgay()
-activate LHDB
-deactivate LHDB
-
-deactivate LH
-
-DK -> HD : 1.5 layDanhSachCoLichTraTrongNgay()
+MH -> MH : HienThi()
+MH -> UC : LayDanhSachHopDongTraPhongHomNay(tuKhoa)
+activate UC
+UC -> HD : LayDanhSachCoLichTraTrongNgay(tuKhoa)
 activate HD
-
-HD -> HDDB : 1.6 getDanhSachCoLichTraTrongNgay()
+HD -> HDDB : LayDanhSachCoLichTraTrongNgay(tuKhoa)
 activate HDDB
 deactivate HDDB
-
 deactivate HD
-
-DK -> MH : 1.7 hienThiDanhSachHopDong()
-
-deactivate DK
-
-
-'=====================
-' CHỌN HỢP ĐỒNG VÀ TẢI TÀI SẢN
-'=====================
-
-QL -> MH : 2.0 Chọn hợp đồng
-
-MH -> DK : 2.1 layChiTietHopDongThuHoi(maHD)
-activate DK
-
-DK -> HD : 2.2 layThongTinChiTiet(maHD)
+deactivate UC
+QL -> MH : Chon hop dong tra phong
+MH -> MH : chonHopDong(maHD)
+MH -> UC : LayChiTietHopDongThuHoi(maHD)
+activate UC
+UC -> HD : DocChiTiet(maHD)
 activate HD
-
-HD -> HDDB : 2.3 getChiTiet(maHD)
+HD -> HDDB : DocChiTiet(maHD)
 activate HDDB
 deactivate HDDB
-
-HD -> HDDB : 2.4 checkTrangThai(maHD, "DangHieuLuc")
-activate HDDB
-deactivate HDDB
-
+HD -> HD : KiemTraDangHieuLuc()
 deactivate HD
-
-DK -> CTGN : 2.5 napDanhSachTaiSan(maHD)
-activate CTGN
-
-CTGN -> CTGNDB : 2.6 getTaiSanTheoPhong(maHD)
-activate CTGNDB
-deactivate CTGNDB
-
-deactivate CTGN
-
-DK -> MH : 2.7 hienThiDanhSachTaiSan()
-
-deactivate DK
-
-
-'=====================
-' LƯU BIÊN BẢN THU HỒI
-'=====================
-
-QL -> MH : Nhap thong tin tren giao dien
-MH -> MH : 3.0 nhapSoLuongTinhTrangMinhChung()
-
-QL -> MH : Nhan "Luu Bien Ban"
-MH -> MH : 3.1 btnLuuBienBan_Click()
-
-MH -> DK : 3.2 luuBienBanThuHoi(maHD, dsTaiSan)
-activate DK
-
-DK -> BB : 3.3 kiemTraDuLieuTaiSan(dsTaiSan)
+UC -> HD : CoLichTraPhongTrongNgay(maHD)
+activate HD
+HD -> HDDB : CoLichTraPhongTrongNgay(maHD)
+activate HDDB
+deactivate HDDB
+deactivate HD
+UC -> BB : TonTaiThuHoiTheoHD(maHD)
 activate BB
-
-alt A4 Thiếu tình trạng / dữ liệu bắt buộc
-
-DK -> MH : A4.1 hienThiLoiDuLieu()
-
-else Dữ liệu hợp lệ
-
-DK -> BB : 3.4 khoiTaoThuHoi(maHD, maNV)
-BB -> BBDB : 3.5 insertBienBan()
+BB -> BBDB : TonTaiThuHoiTheoHD(maHD)
 activate BBDB
 deactivate BBDB
-
 deactivate BB
+UC -> PTS : LayTaiSanTheoPhong(maPhong)
+activate PTS
+PTS -> PTSDB : LayTaiSanTheoPhong(maPhong)
+activate PTSDB
+deactivate PTSDB
+deactivate PTS
+deactivate UC
 
-DK -> CTGN : 3.6 luuChiTiet(maBienBan, dsTaiSan)
-activate CTGN
-
-CTGN -> CTGNDB : 3.7 insertChiTiet()
-activate CTGNDB
-deactivate CTGNDB
-
-deactivate CTGN
-
-DK -> TB : 3.8 guiThongBaoKeToan(maHD, maBienBan)
-activate TB
-deactivate TB
-
-DK -> MH : 3.9 hienThiThongBaoThanhCong()
-
+QL -> MH : Nhap so luong va tinh trang tai san
+MH -> MH : capNhatTaiSan(maTS, soLuong, tinhTrang)
+QL -> MH : Nhan "Luu bien ban"
+MH -> MH : lapBienBan()
+MH -> UC : LapBienBan(maHD, maNV, taiSan)
+activate UC
+UC -> HD : DocChiTiet(maHD)
+activate HD
+HD -> HDDB : DocChiTiet(maHD)
+activate HDDB
+deactivate HDDB
+HD -> HD : KiemTraDangHieuLuc()
+deactivate HD
+UC -> BB : TonTaiThuHoiTheoHD(maHD)
+activate BB
+BB -> BBDB : TonTaiThuHoiTheoHD(maHD)
+activate BBDB
+deactivate BBDB
+deactivate BB
+UC -> PTS : LayTaiSanTheoPhong(maPhong)
+activate PTS
+PTS -> PTSDB : LayTaiSanTheoPhong(maPhong)
+activate PTSDB
+deactivate PTSDB
+deactivate PTS
+loop Moi tai san thu hoi
+  UC -> CT : KiemTraHopLe()
+  activate CT
+  deactivate CT
 end
-
-deactivate DK
+UC -> BB : KhoiTaoThuHoi(maHD, maNV, ngayBanGiao, chiTiet)
+activate BB
+BB -> BB : KiemTraDuLieuTaiSan()
+BB -> BBDB : Them(bienBan)
+activate BBDB
+deactivate BBDB
+deactivate BB
+UC -> CT : ThemNhieu(chiTiet)
+activate CT
+CT -> CTDB : ThemNhieu(chiTiet)
+activate CTDB
+deactivate CTDB
+deactivate CT
+deactivate UC
 deactivate MH
-
 @enduml

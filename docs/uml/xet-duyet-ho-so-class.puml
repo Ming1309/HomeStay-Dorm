@@ -11,8 +11,8 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHXetDuyetHoSo {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHXetDuyetHoSo #BFE8BA {
     - lblTieuDeHoSoChoDuyet: Label
     - lblSoLuongHoSoChoDuyet: Label
     - txtTimKiemHoSo: TextBox
@@ -42,7 +42,7 @@ package "TANG GIAO DIEN" #EAF2F8 {
     - btnDuyetThanhVienConLai: Button
     - btnTuChoiHoSo: Button
     --
-    + loadDanhSachHoSoChoDuyet()
+    + taiDanhSachHoSoChoDuyet()
     + timKiemHoSo()
     + clickChonHoSo()
     + hienThiDanhSachThanhVien()
@@ -56,7 +56,7 @@ package "TANG GIAO DIEN" #EAF2F8 {
     + hienThiLoi()
   }
 
-  class PopupChiTietThanhVien {
+  class PopupChiTietThanhVien #BFE8BA {
     - lblTieuDePopup: Label
     - btnDongPopup: Button
     - txtHoTen: TextBox
@@ -74,8 +74,8 @@ package "TANG GIAO DIEN" #EAF2F8 {
   }
 }
 
-package "TANG NGHIEP VU" #cbf9c8 {
-  class XetDuyetHoSo {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class XetDuyetHoSo #F4E3A2 {
     + LayDanhSachChoDuyet(text: String): IReadOnlyList<PhieuCoc>
     + LayChiTiet(maPhieuCoc: String): PhieuCoc
     + DuyetToanBo(maPhieuCoc: String): PhieuCoc
@@ -85,7 +85,7 @@ package "TANG NGHIEP VU" #cbf9c8 {
     + HoanTacThanhVien(maPhieuCoc: String, maKH: String)
   }
 
-  class PhieuCoc {
+  class PhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
     - HanThanhToan: DateTime
     - HinhThucThue: String
@@ -114,7 +114,7 @@ package "TANG NGHIEP VU" #cbf9c8 {
     + CapNhatTrangThaiDaHuyDB()
   }
 
-  class ThanhVienDangKy {
+  class ThanhVienDangKy #F4E3A2 {
     - MaPhieuCoc: String
     - MaKH: String
     - VaiTro: String
@@ -132,7 +132,7 @@ package "TANG NGHIEP VU" #cbf9c8 {
     + HoanTac(maPhieuCoc: String, maKH: String): Boolean
   }
 
-  class KhachHang {
+  class KhachHang #F4E3A2 {
     - MaKH: String
     - HoTen: String
     - NgaySinh: DateTime
@@ -148,7 +148,7 @@ package "TANG NGHIEP VU" #cbf9c8 {
     + LayDanhSachKhachTheoPhieuCoc(maPhieuCoc: String): List<KhachHang>
   }
 
-  class Phong {
+  class Phong #F4E3A2 {
     - MaPhong: String
     - SoPhong: String
     - ToaNha: String
@@ -164,14 +164,14 @@ package "TANG NGHIEP VU" #cbf9c8 {
     + KiemTraGioiTinhChoPhep(dsKhach: IReadOnlyList<KhachHang>): Boolean
   }
 
-  class LoaiPhong {
+  class LoaiPhong #F4E3A2 {
     - MaLP: String
     - TenLoaiPhong: String
     - SucChua: Integer
     - GiaThue: Decimal
   }
 
-  class ChiTietPhieuCoc {
+  class ChiTietPhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
     - MaGiuong: String
     --
@@ -179,7 +179,7 @@ package "TANG NGHIEP VU" #cbf9c8 {
     + DemSoGiuongDaCoc(maPhieuCoc: String): Integer
   }
 
-  class Giuong {
+  class Giuong #F4E3A2 {
     - MaGiuong: String
     - SoGiuong: String
     - TrangThai: String
@@ -190,8 +190,8 @@ package "TANG NGHIEP VU" #cbf9c8 {
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class PhieuCocDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class PhieuCocDB #BFDCF0 {
     + LayDanhSachChoDuyet(text: String): IReadOnlyList<PhieuCoc>
     + LayChiTietChoDuyet(maPhieuCoc: String): PhieuCoc
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
@@ -200,7 +200,7 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + CapNhatTrangThai(maPhieuCoc: String, trangThai: String): Boolean
   }
 
-  class ThanhVienDangKyDB {
+  class ThanhVienDangKyDB #BFDCF0 {
     + GetByMaPhieuCoc(maPhieuCoc: String): IReadOnlyList<ThanhVienDangKy>
     + UpdateTrangThaiDuyet(maPhieuCoc: String, maKH: String, trangThaiDuyet: String): Boolean
     + UpdateTatCaTrangThaiDuyet(maPhieuCoc: String, trangThaiDuyet: String): Boolean
@@ -208,21 +208,21 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + CountThanhVienHopLe(maPhieuCoc: String): Integer
   }
 
-  class KhachHangDB {
+  class KhachHangDB #BFDCF0 {
     + GetByMaKH(maKH: String): KhachHang
     + GetByMaPhieuCoc(maPhieuCoc: String): List<KhachHang>
   }
 
-  class PhongDB {
+  class PhongDB #BFDCF0 {
     + DocChiTiet(maPhong: String): Phong
   }
 
-  class ChiTietPhieuCocDB {
+  class ChiTietPhieuCocDB #BFDCF0 {
     + GetByMaPhieuCoc(maPhieuCoc: String): IReadOnlyList<ChiTietPhieuCoc>
     + CountByMaPhieuCoc(maPhieuCoc: String): Integer
   }
 
-  class GiuongDB {
+  class GiuongDB #BFDCF0 {
     + UpdateTrangThai(maGiuong: String, trangThai: String): Boolean
     + UpdateTrangThaiBatch(dsMaGiuong: IReadOnlyList<String>, trangThai: String)
   }
@@ -255,4 +255,9 @@ Phong  o--  PhongDB
 ChiTietPhieuCoc  o--  ChiTietPhieuCocDB
 Giuong  o--  GiuongDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+XetDuyetHoSo -[hidden]down- PhieuCocDB
+Giuong -[hidden]down- PhieuCocDB
 @enduml

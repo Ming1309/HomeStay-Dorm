@@ -1,201 +1,82 @@
-@startuml LapBienBanThuHoiTaiSan_3Lop
-
-skinparam classAttributeIconSize 0
-skinparam classFontSize 12
-skinparam classHeaderBackgroundColor #AED6F1
-skinparam classBorderColor #2980B9
-skinparam classBackgroundColor #EBF5FB
-skinparam ArrowColor #2C3E50
-skinparam ArrowThickness 1.5
+@startuml
+title SO DO LOP 3 TANG - LAP BIEN BAN THU HOI TAI SAN
+top to bottom direction
 skinparam shadowing false
-skinparam roundcorner 6
 skinparam linetype ortho
-
-
-'=====================
-' LỚP GIAO DIỆN
-'=====================
-
-package "Lớp giao diện" #EBF5FB {
-
-class MHLapBienBanThuHoi {
-
-+txtTimKiem : TextBox
-+grvDSHopDongTraPhong : DataGridView
-+lblThongTinHopDong : Label
-+grvTaiSanThuHoi : DataGridView
-+txtSoLuongThuHoi : TextBox
-+cbTinhTrang : ComboBox
-+uplMinhChung : FileUpload
-+txtGhiChu : TextBox
-+btnLuuBienBan : Button
-
-'---
-+hienThiForm()
-+nhapTuKhoaTimKiem()
-+hienThiDanhSachHopDong()
-+chonHopDong()
-+hienThiDanhSachTaiSan()
-+nhapSoLuongTinhTrangMinhChung()
-+btnLuuBienBan_Click()
-+hienThiThongBaoThanhCong()
-+hienThiLoiDuLieu()
-
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam class {
+  BorderColor #7F8C8D
 }
 
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHLapBienBanThuHoiTaiSan #BFE8BA {
+    - grvHopDongTraPhong: GridView
+    - grvTaiSanThuHoi: GridView
+    - btnLuuBienBan: Button
+    --
+    + HienThi()
+    + chonHopDong(maHD: String)
+    + capNhatTaiSan(maTS: String, soLuong: Integer, tinhTrang: String)
+    + lapBienBan()
+  }
 }
-
-
-'=====================
-' LỚP NGHIỆP VỤ
-'=====================
-
-package "Lớp nghiệp vụ" #FEF9E7 {
-
-class DieuKhienLapBienBanThuHoi {
-
-+maNVDangNhap : String
-
-'---
-+khoiTaoForm()
-+timKiemHopDongTraPhongTrongNgay()
-+layChiTietHopDongThuHoi()
-+luuBienBanThuHoi()
-
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class LapBienBanThuHoiTaiSan #F4E3A2 {
+    + LayDanhSachHopDongTraPhongHomNay(tuKhoa: String): IReadOnlyList<HopDong>
+    + LayChiTietHopDongThuHoi(maHD: String): ChiTietThuHoi
+    + LapBienBan(maHD: String, maNV: String, taiSan: IReadOnlyList<TaiSanThuHoiInput>): BienBanGiaoNhan
+  }
+  class HopDong #F4E3A2 {
+    + LayDanhSachCoLichTraTrongNgay(tuKhoa: String): IReadOnlyList<HopDong>
+    + DocChiTiet(maHD: String): HopDong
+    + CoLichTraPhongTrongNgay(maHD: String): Boolean
+    + KiemTraDangHieuLuc()
+  }
+  class PhongTaiSan #F4E3A2 {
+    + LayTaiSanTheoPhong(maPhong: String): IReadOnlyList<PhongTaiSan>
+  }
+  class BienBanGiaoNhan #F4E3A2 {
+    + TonTaiThuHoiTheoHD(maHD: String): Boolean
+    + KhoiTaoThuHoi(maHD: String, maNV: String, ngayBanGiao: DateTime, chiTiet: IEnumerable<ChiTietGiaoNhan>): BienBanGiaoNhan
+    + KiemTraDuLieuTaiSan()
+    + LuuBienBan()
+  }
+  class ChiTietGiaoNhan #F4E3A2 {
+    + KiemTraHopLe()
+    + ThemNhieu(chiTiet: IEnumerable<ChiTietGiaoNhan>)
+  }
 }
-
-
-class HopDong {
-
-+maHD : String
-+trangThai : String
-
-'---
-+layDanhSachCoLichTraTrongNgay()
-+timKiem()
-+layThongTinChiTiet()
-+kiemTraDangHieuLuc()
-
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class HopDongDB #BFDCF0 {
+    + LayDanhSachCoLichTraTrongNgay(tuKhoa: String): IReadOnlyList<HopDong>
+    + DocChiTiet(maHD: String): HopDong
+    + CoLichTraPhongTrongNgay(maHD: String): Boolean
+  }
+  class PhongTaiSanDB #BFDCF0 {
+    + LayTaiSanTheoPhong(maPhong: String): IReadOnlyList<PhongTaiSan>
+  }
+  class BienBanGiaoNhanDB #BFDCF0 {
+    + TonTaiThuHoiTheoHD(maHD: String): Boolean
+    + Them(bienBan: BienBanGiaoNhan)
+  }
+  class ChiTietGiaoNhanDB #BFDCF0 {
+    + ThemNhieu(chiTiet: IEnumerable<ChiTietGiaoNhan>)
+  }
 }
-
-
-class LichHen {
-
-+maLH : String
-+ngayHen : Date
-+loaiLichHen : String
-+trangThai : String
-+maHD : String
-
-'---
-+layLichTraPhongTrongNgay()
-
-}
-
-
-class BienBanGiaoNhan {
-
-+maBienBan : String
-+ngayBanGiao : DateTime
-+loaiBienBan : String
-+maHD : String
-+maNV : String
-
-'---
-+khoiTaoThuHoi()
-+kiemTraDuLieuTaiSan()
-+luuBienBan()
-
-}
-
-
-class ChiTietGiaoNhan {
-
-+maBienBan : String
-+maTS : String
-+tinhTrang : String
-+soLuong : int
-+ghiChu : String
-+minhChung : String
-
-'---
-+napDanhSachTaiSan()
-+capNhatThuHoi()
-+kiemTraHopLe()
-+luuChiTiet()
-
-}
-
-
-class DichVuThongBao {
-
-'---
-+guiThongBaoKeToan()
-
-}
-
-}
-
-
-'=====================
-' LỚP TRUY XUẤT DỮ LIỆU
-'=====================
-
-package "Lớp truy xuất dữ liệu" #FDF2F8 {
-
-class HopDongDB {
-
-+getDanhSachCoLichTraTrongNgay()
-+search()
-+getChiTiet()
-+checkTrangThai()
-
-}
-
-class LichHenDB {
-
-+getLichTraPhongTrongNgay()
-
-}
-
-class BienBanGiaoNhanDB {
-
-+insertBienBan()
-
-}
-
-class ChiTietGiaoNhanDB {
-
-+getTaiSanTheoPhong()
-+insertChiTiet()
-
-}
-
-class NhanVienDB {
-
-+getNhanVien()
-
-}
-
-}
-
-
-'=====================
-' QUAN HỆ
-'=====================
-
-MHLapBienBanThuHoi o-- DieuKhienLapBienBanThuHoi
-
-DieuKhienLapBienBanThuHoi o-- HopDong
-DieuKhienLapBienBanThuHoi o-- LichHen
-DieuKhienLapBienBanThuHoi o-- BienBanGiaoNhan
-DieuKhienLapBienBanThuHoi o-- ChiTietGiaoNhan
-DieuKhienLapBienBanThuHoi o-- DichVuThongBao
-DieuKhienLapBienBanThuHoi o-- NhanVienDB
-
-HopDong o-- HopDongDB
-LichHen o-- LichHenDB
-BienBanGiaoNhan o-- BienBanGiaoNhanDB
-ChiTietGiaoNhan o-- ChiTietGiaoNhanDB
-
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+MHLapBienBanThuHoiTaiSan o-down- LapBienBanThuHoiTaiSan
+LapBienBanThuHoiTaiSan o-- HopDong
+LapBienBanThuHoiTaiSan o-- PhongTaiSan
+LapBienBanThuHoiTaiSan o-- BienBanGiaoNhan
+LapBienBanThuHoiTaiSan o-- ChiTietGiaoNhan
+HopDong o-down- HopDongDB
+PhongTaiSan o-down- PhongTaiSanDB
+BienBanGiaoNhan o-down- BienBanGiaoNhanDB
+ChiTietGiaoNhan o-down- ChiTietGiaoNhanDB
+LapBienBanThuHoiTaiSan -[hidden]down- HopDongDB
+ChiTietGiaoNhan -[hidden]down- HopDongDB
 @enduml

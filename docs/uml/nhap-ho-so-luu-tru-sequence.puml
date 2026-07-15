@@ -1,4 +1,4 @@
-@startuml UC11_SequenceDiagram_NhapHoSoLuuTru
+@startuml
 title SEQUENCE DIAGRAM - NHAP HO SO LUU TRU
 
 skinparam sequenceMessageAlign center
@@ -29,7 +29,7 @@ end box
 
 NV -> MH : Mo man hinh chuc nang
 activate MH
-MH -> MH : loadDanhSachPhieuCoc()
+MH -> MH : taiDanhSachPhieuCoc()
 MH -> UC : LayDanhSachChoNhap(text)
 activate UC
 UC -> PhieuCoc : LayPhieuCocDaThanhToanNhanPhongHomNay(text)

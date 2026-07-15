@@ -27,10 +27,6 @@ MH -> MH : btnTimKiem_Click()
 MH -> TC : TimKiem(maPhieuCoc, sdt, email, soGiayTo)
 activate TC
 alt Khong co tieu chi tim kiem
-  note right of TC
-    TimKiem tu choi yeu cau va tra thong bao
-    "Vui long nhap it nhat mot tieu chi tim kiem"
-  end note
 else Co it nhat mot tieu chi
   TC -> PC : TraCuu(maPhieuCoc, sdt, email, soGiayTo)
   activate PC
@@ -48,10 +44,6 @@ deactivate TC
     activate PC
     PC -> PCDB : DocChiTiet(maPhieuCoc)
     activate PCDB
-    note right of PCDB
-      Doc thong tin PhieuCoc, KhachHang, Phong
-      va danh sach Giuong lien quan
-    end note
   end
 deactivate PCDB
 deactivate PC

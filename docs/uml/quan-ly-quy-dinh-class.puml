@@ -11,8 +11,8 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHQuanLyQuyDinh {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHQuanLyQuyDinh #BFE8BA {
     - txtTimKiem: TextBox
     - lstLoaiQuyDinh: ListBox
     - lstTrangThai: ListBox
@@ -33,8 +33,8 @@ package "TANG GIAO DIEN" #EAF2F8 {
   }
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class QuanLyQuyDinh {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class QuanLyQuyDinh #F4E3A2 {
     + LayDanhSach(): IReadOnlyList<QuyDinh>
     + Them(quyDinh: QuyDinh, tep: TepQuyDinh): QuyDinh
     + CapNhat(maQD: String, thongTin: QuyDinh, tepMoi: TepQuyDinh): QuyDinh
@@ -42,7 +42,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + DocVanBan(tenTep: String): NoiDungQuyDinh
   }
 
-  class QuyDinh {
+  class QuyDinh #F4E3A2 {
     - MaQD: String
     - TenQD: String
     - LoaiQD: String
@@ -62,8 +62,8 @@ package "TANG NGHIEP VU" #FCF3CF {
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class QuyDinhDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class QuyDinhDB #BFDCF0 {
     + LayDanhSach(): IReadOnlyList<QuyDinh>
     + Doc(maQD: String): QuyDinh
     + DangDuocThamChieu(maQD: String): Boolean
@@ -72,7 +72,7 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + Xoa(maQD: String)
   }
 
-  class QuyDinhFileStorage {
+  class QuyDinhFileStorage #BFDCF0 {
     + Luu(tep: TepQuyDinh): String
     + Doc(tenTep: String): NoiDungQuyDinh
     + Xoa(duongDan: String)
@@ -83,4 +83,8 @@ MHQuanLyQuyDinh o-- QuanLyQuyDinh
 QuanLyQuyDinh o-- QuyDinh : quan ly
 QuanLyQuyDinh o-- QuyDinhFileStorage : quan ly PDF
 QuyDinh o-- QuyDinhDB
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+QuanLyQuyDinh -[hidden]down- QuyDinhDB
 @enduml

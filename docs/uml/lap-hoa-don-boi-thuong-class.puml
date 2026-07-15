@@ -1,4 +1,4 @@
-@startuml LapHoaDonBoiThuong_3Lop
+@startuml
 
 skinparam classAttributeIconSize 0
 skinparam classFontSize 12
@@ -15,9 +15,9 @@ skinparam linetype ortho
 ' LỚP GIAO DIỆN
 ' =====================
 
-package "Lớp giao diện" #EBF5FB {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
 
-    class MHLapHoaDonBoiThuong {
+    class MHLapHoaDonBoiThuong #BFE8BA {
         ' --- Danh sách biên bản ---
         +dgvDSBienBan : DataGridView
         +txtTimKiem : TextBox
@@ -50,6 +50,7 @@ package "Lớp giao diện" #EBF5FB {
         +kiemTraTinhHopLe() : Boolean
         +btnLapHoaDonBoiThuong_Click()
         +hienThiDialogThanhCong()
+        +boiDoTruongBiLoi()
         +btnHoanTat_Click()
     }
 }
@@ -58,9 +59,9 @@ package "Lớp giao diện" #EBF5FB {
 ' LỚP NGHIỆP VỤ
 ' =====================
 
-package "Lớp nghiệp vụ" #FEF9E7 {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
 
-    class BienBanGiaoNhan {
+    class BienBanGiaoNhan #F4E3A2 {
         +maBienBan : String
         +ngayBanGiao : DateTime
         +loaiBienBan : String
@@ -71,7 +72,7 @@ package "Lớp nghiệp vụ" #FEF9E7 {
         +layChiTietBienBan(maBienBan : String) : BienBanGiaoNhan
     }
 
-    class ChiTietGiaoNhan {
+    class ChiTietGiaoNhan #F4E3A2 {
         +maBienBan : String
         +maTS : String
         +tinhTrang : String
@@ -82,7 +83,7 @@ package "Lớp nghiệp vụ" #FEF9E7 {
         +layDSTaiSanHuHongTheoBienBan(maBienBan : String) : List<ChiTietGiaoNhan>
     }
 
-    class TaiSan {
+    class TaiSan #F4E3A2 {
         +maTS : String
         +tenTaiSan : String
         +giaTri : Decimal
@@ -90,7 +91,7 @@ package "Lớp nghiệp vụ" #FEF9E7 {
         +layThongTinTaiSan(maTS : String) : TaiSan
     }
 
-    class HoaDon {
+    class HoaDon #F4E3A2 {
         +maHoaDon : String
         +ngayLap : DateTime
         +hanThanhToan : DateTime
@@ -105,7 +106,7 @@ package "Lớp nghiệp vụ" #FEF9E7 {
         +kiemTraTinhHopLe(dsSoTien : List) : Boolean
     }
 
-    class ChiTietHoaDon {
+    class ChiTietHoaDon #F4E3A2 {
         +maHoaDon : String
         +stt : Integer
         +loaiKhoanThu : String
@@ -118,7 +119,7 @@ package "Lớp nghiệp vụ" #FEF9E7 {
         +taoChiTietHoaDon(maHoaDon : String, dsChiTiet : List) : Boolean
     }
 
-    class NhanVien {
+    class NhanVien #F4E3A2 {
         +maNV : String
         +hoTen : String
         +sdt : String
@@ -133,30 +134,30 @@ package "Lớp nghiệp vụ" #FEF9E7 {
 ' LỚP TRUY XUẤT DỮ LIỆU
 ' =====================
 
-package "Lớp truy xuất dữ liệu" #FDF2F8 {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
 
-    class BienBanGiaoNhanDB {
+    class BienBanGiaoNhanDB #BFDCF0 {
         +getDSBienBanThuHoiChuaXuLy() : List<BienBanGiaoNhan>
         +getBienBanTheoMaBienBan(maBienBan : String) : BienBanGiaoNhan
     }
 
-    class ChiTietGiaoNhanDB {
+    class ChiTietGiaoNhanDB #BFDCF0 {
         +getDSTaiSanHuHongTheoBienBan(maBienBan : String) : List<ChiTietGiaoNhan>
     }
 
-    class TaiSanDB {
+    class TaiSanDB #BFDCF0 {
         +getTaiSanTheoMaTS(maTS : String) : TaiSan
     }
 
-    class HoaDonDB {
+    class HoaDonDB #BFDCF0 {
         +insertHoaDon(hoaDon : HoaDon) : String
     }
 
-    class ChiTietHoaDonDB {
+    class ChiTietHoaDonDB #BFDCF0 {
         +insertChiTietHoaDon(chiTiet : ChiTietHoaDon) : Boolean
     }
 
-    class NhanVienDB {
+    class NhanVienDB #BFDCF0 {
         +getNhanVienTheoMaNV(maNV : String) : NhanVien
     }
 }
@@ -179,4 +180,9 @@ HoaDon           o-- HoaDonDB
 ChiTietHoaDon    o-- ChiTietHoaDonDB
 NhanVien         o-- NhanVienDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+BienBanGiaoNhan -[hidden]down- BienBanGiaoNhanDB
+NhanVien -[hidden]down- BienBanGiaoNhanDB
 @enduml

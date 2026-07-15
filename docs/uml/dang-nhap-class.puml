@@ -11,8 +11,8 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHDangNhap {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHDangNhap #BFE8BA {
     - txtTenDangNhap: TextBox
     - txtMatKhau: TextBox
     - btnDangNhap: Button
@@ -24,13 +24,13 @@ package "TANG GIAO DIEN" #EAF2F8 {
 
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class XacThucNguoiDung {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class XacThucNguoiDung #F4E3A2 {
     + DangNhap(tenDangNhap: String, matKhau: String): TaiKhoan
     + DangXuat()
   }
 
-  class TaiKhoan {
+  class TaiKhoan #F4E3A2 {
     - MaTK: String
     - TenDangNhap: String
     - MatKhauHash: String
@@ -44,7 +44,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + CapNhatLanDangNhap()
   }
 
-  class NhanVien {
+  class NhanVien #F4E3A2 {
     - MaNV: String
     - HoTen: String
     - VaiTro: String
@@ -52,8 +52,8 @@ package "TANG NGHIEP VU" #FCF3CF {
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class TaiKhoanDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class TaiKhoanDB #BFDCF0 {
     + DocTheoTenDangNhap(tenDangNhap: String): TaiKhoan
     + CapNhatLanDangNhap(taiKhoan: TaiKhoan)
   }
@@ -68,4 +68,9 @@ TaiKhoan "0..*" -- "1" NhanVien : so huu
 
 ' Aggregation giua business va data access.
 TaiKhoan o-- TaiKhoanDB
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+XacThucNguoiDung -[hidden]down- TaiKhoanDB
+NhanVien -[hidden]down- TaiKhoanDB
 @enduml

@@ -14,8 +14,8 @@ skinparam class {
 '=====================
 ' TANG GIAO DIEN
 '=====================
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHLapHopDongThue {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHLapHopDongThue #BFE8BA {
     - txtTimKiemPhieuCoc: TextBox
     - grvDanhSachPhieuCoc: GridView
     - dtpNgayBatDau: DateTimePicker
@@ -45,8 +45,8 @@ package "TANG GIAO DIEN" #EAF2F8 {
 '=====================
 ' TANG NGHIEP VU
 '=====================
-package "TANG NGHIEP VU" #FCF3CF {
-  class LapHopDongThue {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class LapHopDongThue #F4E3A2 {
     + LayDanhSachPhieuCocDaDuyet(text: String): IReadOnlyList<PhieuCoc>
     + LayThongTinPhieuCoc(maPhieuCoc: String): Object
     + TaoHopDong(maPhieuCoc: String, maNV: String, ngayBatDau: DateTime, ngayKetThuc: DateTime, kyThanhToan: int?, giaThue: decimal, maQD: String, dsMaDV: List<string>): HopDong
@@ -54,7 +54,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + HuyHopDong(maHD: String)
   }
 
-  class PhieuCoc {
+  class PhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
     - HanThanhToan: DateTime?
     - HinhThucThue: String
@@ -70,7 +70,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + DocChiTiet(maPhieuCoc: string): PhieuCoc
   }
 
-  class HopDong {
+  class HopDong #F4E3A2 {
     - MaHD: String
     - NgayKy: DateTime?
     - NgayBatDau: DateTime
@@ -82,7 +82,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     - MaPhieuCoc: String
   }
 
-  class ThanhVienDangKy {
+  class ThanhVienDangKy #F4E3A2 {
     - MaPhieuCoc: String
     - MaKH: String
     - VaiTro: String
@@ -91,7 +91,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayDanhSachThanhVien(maPhieuCoc: string): IReadOnlyList<ThanhVienDangKy>
   }
 
-  class DichVu {
+  class DichVu #F4E3A2 {
     - MaDV: String
     - TenDV: String
     - DonGia: decimal
@@ -101,13 +101,13 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayDanhSach(): IReadOnlyList<DichVu>
   }
 
-  class DichVuHopDong {
+  class DichVuHopDong #F4E3A2 {
     - MaHD: String
     - MaDV: String
     - DonGiaKyKet: decimal
   }
 
-  class QuyDinh {
+  class QuyDinh #F4E3A2 {
     - MaQD: String
     - TenQD: String
     - LoaiQD: String
@@ -118,7 +118,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayDanhSach(): IReadOnlyList<QuyDinh>
   }
 
-  class ChinhSachHoanCoc {
+  class ChinhSachHoanCoc #F4E3A2 {
     - MaChinhSach: String
     - TenChinhSach: String
     - TiLe_ChuaKy: decimal
@@ -134,35 +134,35 @@ package "TANG NGHIEP VU" #FCF3CF {
 '=====================
 ' TANG TRUY CAP DU LIEU
 '=====================
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class PhieuCocDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class PhieuCocDB #BFDCF0 {
     + LayDanhSachDaDuyet(text: string): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: string): PhieuCoc
   }
 
-  class HopDongDB {
+  class HopDongDB #BFDCF0 {
     + TonTaiTheoPhieuCoc(maPhieuCoc: string): boolean
     + Them(hd: HopDong)
     + UpdateTrangThai(maHD: string, trangThai: string): boolean
   }
 
-  class ThanhVienDangKyDB {
+  class ThanhVienDangKyDB #BFDCF0 {
     + LayTheoMaPhieuCoc(maPhieuCoc: string): List<ThanhVienDangKy>
   }
 
-  class DichVuDB {
+  class DichVuDB #BFDCF0 {
     + LayDanhSach(): IReadOnlyList<DichVu>
   }
 
-  class DichVuHopDongDB {
+  class DichVuHopDongDB #BFDCF0 {
     + Them(maHD: string, maDV: string, donGiaKyKet: decimal)
   }
 
-  class QuyDinhDB {
+  class QuyDinhDB #BFDCF0 {
     + LayDanhSach(): IReadOnlyList<QuyDinh>
   }
 
-  class ChinhSachHoanCocDB {
+  class ChinhSachHoanCocDB #BFDCF0 {
     + LayChinhSachDangApDung(ngay: DateOnly): ChinhSachHoanCoc
   }
 }
@@ -188,4 +188,9 @@ DichVuHopDong o-- DichVuHopDongDB
 QuyDinh o-- QuyDinhDB
 ChinhSachHoanCoc o-- ChinhSachHoanCocDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+LapHopDongThue -[hidden]down- PhieuCocDB
+ChinhSachHoanCoc -[hidden]down- PhieuCocDB
 @enduml

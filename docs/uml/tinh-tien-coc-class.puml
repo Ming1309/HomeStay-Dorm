@@ -11,8 +11,8 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHTinhTienCoc {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHTinhTienCoc #BFE8BA {
     - txtTimKiemPhieu: TextBox
     - grvPhieuCocKhoiTao: GridView
     - lblMaPhieuCoc: Label
@@ -32,14 +32,14 @@ package "TANG GIAO DIEN" #EAF2F8 {
   }
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class TinhTienCoc {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class TinhTienCoc #F4E3A2 {
     + LayDanhSachKhoiTao(text: String): IReadOnlyList<PhieuCoc>
     + LayChiTietVaTinhTien(maPhieuCoc: String): PhieuCoc
     + XacNhanTinhTien(maPhieuCoc: String): PhieuCoc
   }
 
-  class PhieuCoc {
+  class PhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
     - HinhThucThue: String
     - SoGiuongThue: Integer
@@ -56,32 +56,32 @@ package "TANG NGHIEP VU" #FCF3CF {
     + CapNhatTinhTien()
   }
 
-  class KhachHang {
+  class KhachHang #F4E3A2 {
     - MaKH: String
     - HoTen: String
     - SDT: String
     - Email: String
   }
-  class Phong {
+  class Phong #F4E3A2 {
     - MaPhong: String
     - SoPhong: String
     - ToaNha: String
     - LoaiPhong: LoaiPhong
     + TinhTienCoc(soGiuong: Integer): Decimal
   }
-  class LoaiPhong {
+  class LoaiPhong #F4E3A2 {
     - SucChua: Integer
     - GiaThue: Decimal
   }
-  class Giuong {
+  class Giuong #F4E3A2 {
     - MaGiuong: String
     - SoGiuong: String
     - TrangThai: String
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class PhieuCocDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class PhieuCocDB #BFDCF0 {
     + LayDanhSachKhoiTao(text: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
     + CapNhatTinhTien(phieu: PhieuCoc)
@@ -96,4 +96,9 @@ PhieuCoc "0..*" -- "1" Phong : dat
 PhieuCoc "0..*" -- "1..*" Giuong : chi tiet
 Phong "0..*" -- "1" LoaiPhong : thuoc
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+TinhTienCoc -[hidden]down- PhieuCocDB
+Giuong -[hidden]down- PhieuCocDB
 @enduml

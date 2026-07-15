@@ -11,8 +11,8 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHQuanLyChinhSachHoanCoc {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHQuanLyChinhSachHoanCoc #BFE8BA {
     - txtTenChinhSach: TextBox
     - dtNgayApDung: DateInput
     - dtNgayKetThuc: DateInput
@@ -24,20 +24,20 @@ package "TANG GIAO DIEN" #EAF2F8 {
     - tblLichSuApDung: Table
     - btnTaoPhienBan: Button
     --
-    + loadPolicies()
-    + onSubmit(values)
-    + handleConfirmCreate()
+    + taiDanhSachChinhSach()
+    + nhapPhienBanMoi(chinhSach: ChinhSachHoanCoc)
+    + xacNhanTaoPhienBan()
   }
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class QuanLyChinhSachHoanCoc {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class QuanLyChinhSachHoanCoc #F4E3A2 {
     + LayDanhSach(): List<ChinhSachHoanCoc>
     + LayChinhSachHienHanh(): ChinhSachHoanCoc
     + TaoPhienBan(chinhSachMoi: ChinhSachHoanCoc): ChinhSachHoanCoc
   }
 
-  class ChinhSachHoanCoc {
+  class ChinhSachHoanCoc #F4E3A2 {
     - MaChinhSach: String
     - TenChinhSach: String
     - TiLe_ChuaKy: Decimal
@@ -59,8 +59,8 @@ package "TANG NGHIEP VU" #FCF3CF {
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class ChinhSachHoanCocDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class ChinhSachHoanCocDB #BFDCF0 {
     + LayDanhSach(): List<ChinhSachHoanCoc>
     + LayChinhSachDangApDung(ngay: Date): ChinhSachHoanCoc
     + LayPhienBanMoiNhat(): ChinhSachHoanCoc
@@ -73,4 +73,8 @@ MHQuanLyChinhSachHoanCoc o-- QuanLyChinhSachHoanCoc
 QuanLyChinhSachHoanCoc o-- ChinhSachHoanCoc
 ChinhSachHoanCoc o-- ChinhSachHoanCocDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+QuanLyChinhSachHoanCoc -[hidden]down- ChinhSachHoanCocDB
 @enduml

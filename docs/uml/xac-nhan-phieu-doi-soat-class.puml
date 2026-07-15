@@ -5,55 +5,59 @@ skinparam shadowing false
 skinparam linetype ortho
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
-skinparam class { BackgroundColor #FFFACD BorderColor #9B7B7B }
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHXacNhanPhieuDoiSoat {
+skinparam class {
+  BorderColor #7F8C8D
+}
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHXacNhanPhieuDoiSoat #BFE8BA {
     + HienThi()
     + grvChoXacNhan_CellClick(maPDS: String)
     + btnXacNhan_Click()
   }
 }
-package "TANG NGHIEP VU" #FCF3CF {
-  class XacNhanPhieuDoiSoat {
-    + LayDanhSachChoXacNhan(): IReadOnlyList<DoiSoatChoXacNhanItemDto>
-    + LayChiTiet(maPDS: String): ChiTietDoiSoatChoXacNhanDto
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class XacNhanPhieuDoiSoat #F4E3A2 {
+    + LayDanhSachChoXacNhan()
+    + LayChiTiet(maPDS: String)
     + XacNhan(maPDS: String, khachHangDongY: Boolean, maNhanVien: String): PhieuDoiSoat
   }
-  class PhieuDoiSoat {
+  class PhieuDoiSoat #F4E3A2 {
     - TrangThai: String
     - TienHoan: Decimal
     - TienThuThem: Decimal
     + LayDanhSachChoXacNhan(): IReadOnlyList<PhieuDoiSoat>
+    + LayChiTietPhieuDoiSoat(maPDS: String): PhieuDoiSoat
     + LayChiTietChoCapNhat(maPDS: String): PhieuDoiSoat
     + XacDinhKetQua(): ValueTuple
     + XacNhanKhachHangDongY(maNhanVien: String, thoiDiem: DateTime)
   }
-  class PhieuCoc {
+  class PhieuCoc #F4E3A2 {
     - TongTien: Decimal
     - KhachHang: KhachHang
     - Phong: Phong
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
   }
-  class KhachHang {
+  class KhachHang #F4E3A2 {
     - SDT: String
     - Email: String
     + CoKenhLienHe(): Boolean
   }
-  class HoaDon {
+  class HoaDon #F4E3A2 {
     - TongTien: Decimal
     + LayDSHoaDonTheoPhieuDoiSoat(maPDS: String): IReadOnlyList<HoaDon>
   }
 }
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class PhieuDoiSoatDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class PhieuDoiSoatDB #BFDCF0 {
     + GetDanhSachChoXacNhan(): IReadOnlyList<PhieuDoiSoat>
+    + GetPhieuDoiSoatTheoMaPDS(maPDS: String): PhieuDoiSoat
     + GetPhieuDoiSoatChoCapNhat(maPDS: String): PhieuDoiSoat
     + XacNhan(phieu: PhieuDoiSoat, trangThaiMoi: String): Boolean
   }
-  class PhieuCocDB {
+  class PhieuCocDB #BFDCF0 {
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
   }
-  class HoaDonDB {
+  class HoaDonDB #BFDCF0 {
     + GetDSHoaDonTheoMaPDS(maPDS: String): IReadOnlyList<HoaDon>
   }
 }
@@ -65,4 +69,9 @@ PhieuDoiSoat o-- PhieuDoiSoatDB
 PhieuCoc o-- PhieuCocDB
 PhieuCoc -- KhachHang
 HoaDon o-- HoaDonDB
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+XacNhanPhieuDoiSoat -[hidden]down- PhieuDoiSoatDB
+HoaDon -[hidden]down- PhieuDoiSoatDB
 @enduml

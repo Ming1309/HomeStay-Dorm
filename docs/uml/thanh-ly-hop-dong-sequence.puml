@@ -1,4 +1,4 @@
-@startuml ThanhLyHopDong_Sequence
+@startuml
 
 skinparam sequenceArrowThickness 1.2
 skinparam shadowing false
@@ -56,7 +56,7 @@ MH -> HD : 2.1 layThongTinHopDong(maHD)
 
 activate HD
 
-HD -> HDDB : 2.2 docChiTiet(maHD)
+HD -> HDDB : DocChiTiet(maHD)
 
 activate HDDB
 deactivate HDDB

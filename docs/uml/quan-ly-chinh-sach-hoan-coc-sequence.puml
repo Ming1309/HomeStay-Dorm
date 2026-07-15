@@ -22,7 +22,7 @@ end box
 
 ' === Luong 1: Tai lich su khi mo man hinh ===
 QTV -> MH : Chon chuc nang va mo man hinh
-MH -> MH : loadPolicies()
+MH -> MH : taiDanhSachChinhSach()
 activate MH
 MH -> QLCSHC : LayDanhSach()
 activate QLCSHC
@@ -37,10 +37,10 @@ MH -> MH : hien thi tblLichSuApDung
 
 ' === Luong 2: Tao phien ban chinh sach moi ===
 QTV -> MH : nhap thong tin chinh sach moi
-MH -> MH : onSubmit(values)
+MH -> MH : nhapPhienBanMoi(chinhSach)
 MH -> MH : validate zod va hien xac nhan
 QTV -> MH : Xac nhan luu chinh sach
-MH -> MH : handleConfirmCreate()
+MH -> MH : xacNhanTaoPhienBan()
 MH -> QLCSHC : TaoPhienBan(chinhSachMoi)
 activate QLCSHC
 QLCSHC -> CS : KiemTraDuLieuHopLe()
@@ -73,7 +73,7 @@ else ngay ap dung hop le
   deactivate CS
 end
 deactivate QLCSHC
-MH -> MH : loadPolicies() va hien toast thanh cong
+MH -> MH : taiDanhSachChinhSach()
 deactivate MH
 
 @enduml

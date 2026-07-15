@@ -22,7 +22,7 @@ end box
 
 NV -> MH : Mo man hinh chuc nang
 activate MH
-MH -> MH : loadPendingDeposits(text)
+MH -> MH : taiDanhSachChoGhiNhan(text)
 MH -> GNTT : LayDanhSachChoThanhToan(text)
 activate GNTT
 GNTT -> PC : LayDanhSachChoThanhToan(thoiDiemHienTai, text)
@@ -50,10 +50,6 @@ GNTT -> PC : KiemTraConHanThanhToan(thoiDiemHienTai)
 activate PC
 
 alt Khach thanh toan tien mat
-  note over NV,MH
-    Sale nhan tien, lap va ky bien nhan
-    cung khach hang o ngoai he thong.
-  end note
 deactivate PC
 deactivate GNTT
   NV -> MH : Chon tep minh chung

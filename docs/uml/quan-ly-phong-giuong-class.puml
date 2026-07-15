@@ -11,28 +11,28 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHQuanLyPhongGiuong {
-    - rooms: PhongResponse[]
-    - beds: GiuongResponse[]
-    - roomTypes: LoaiPhongResponse[]
-    - branches: ChiNhanhResponse[]
-    - roomForm: RoomFormValues
-    - bedForm: BedFormValues
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHQuanLyPhongGiuong #BFE8BA {
+    - grvDanhSachPhong: GridView
+    - grvDanhSachGiuong: GridView
+    - lstLoaiPhong: ListBox
+    - lstChiNhanh: ListBox
+    - frmPhong: Form
+    - frmGiuong: Form
     --
-    + loadData()
-    + openCreateRoom()
-    + openEditRoom(room: PhongResponse)
-    + openCreateBed()
-    + openEditBed(bed: GiuongResponse)
-    + submitRoom(values: RoomFormValues)
-    + submitBed(values: BedFormValues)
-    + confirmDelete()
+    + HienThi()
+    + moFormThemPhong()
+    + moFormSuaPhong(phong: Phong)
+    + moFormThemGiuong()
+    + moFormSuaGiuong(giuong: Giuong)
+    + luuPhong(phong: Phong)
+    + luuGiuong(giuong: Giuong)
+    + xacNhanXoa()
   }
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class QuanLyPhongGiuong {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class QuanLyPhongGiuong #F4E3A2 {
     + LayDanhSachLoaiPhong(): IReadOnlyList<LoaiPhong>
     + LayDanhSachChiNhanh(): IReadOnlyList<ChiNhanh>
     + LayDanhSachPhong(text: String, maCN: String, toaNha: String, trangThai: String): IReadOnlyList<Phong>
@@ -47,7 +47,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + XoaGiuong(maGiuong: String)
   }
 
-  class Phong {
+  class Phong #F4E3A2 {
     - MaPhong: String
     - SoPhong: String
     - TrangThai: String
@@ -71,7 +71,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + Xoa()
   }
 
-  class Giuong {
+  class Giuong #F4E3A2 {
     - MaGiuong: String
     - SoGiuong: String
     - TrangThai: String
@@ -92,7 +92,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + Xoa()
   }
 
-  class LoaiPhong {
+  class LoaiPhong #F4E3A2 {
     - MaLP: String
     - TenLoaiPhong: String
     - SucChua: Integer
@@ -102,7 +102,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayTheoMa(maLP: String): LoaiPhong
   }
 
-  class ChiNhanh {
+  class ChiNhanh #F4E3A2 {
     - MaCN: String
     - TenChiNhanh: String
     --
@@ -111,8 +111,8 @@ package "TANG NGHIEP VU" #FCF3CF {
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class PhongDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class PhongDB #BFDCF0 {
     + LayDanhSachQuanTri(text: String, maCN: String, toaNha: String, trangThai: String): IReadOnlyList<Phong>
     + DocChiTiet(maPhong: String): Phong
     + TrungSoPhong(maCN: String, soPhong: String, maPhongBoQua: String): Boolean
@@ -122,7 +122,7 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + Xoa(maPhong: String)
   }
 
-  class GiuongDB {
+  class GiuongDB #BFDCF0 {
     + LayDanhSachQuanTri(text: String, maPhong: String, trangThai: String): IReadOnlyList<Giuong>
     + DocChiTiet(maGiuong: String): Giuong
     + TrungSoGiuong(maPhong: String, soGiuong: String, maGiuongBoQua: String): Boolean
@@ -132,12 +132,12 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + Xoa(maGiuong: String)
   }
 
-  class LoaiPhongDB {
+  class LoaiPhongDB #BFDCF0 {
     + LayDanhSach(): IReadOnlyList<LoaiPhong>
     + LayTheoMa(maLP: String): LoaiPhong
   }
 
-  class ChiNhanhDB {
+  class ChiNhanhDB #BFDCF0 {
     + LayDanhSach(): IReadOnlyList<ChiNhanh>
     + TonTai(maCN: String): Boolean
   }
@@ -158,4 +158,9 @@ Giuong o-- GiuongDB
 LoaiPhong o-- LoaiPhongDB
 ChiNhanh o-- ChiNhanhDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+QuanLyPhongGiuong -[hidden]down- PhongDB
+ChiNhanh -[hidden]down- PhongDB
 @enduml

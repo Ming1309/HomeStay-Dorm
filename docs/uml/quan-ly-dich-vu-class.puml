@@ -10,25 +10,25 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHQuanLyDichVu {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHQuanLyDichVu #BFE8BA {
     - txtTimKiem: TextBox
     - cboTrangThai: ComboBox
     - tblDichVu: Table
     - dlgDichVu: Dialog
-    + loadServices()
-    + onSubmit(values)
-    + confirmDelete()
+    + taiDanhSachDichVu()
+    + luuDichVu(dichVu: DichVu)
+    + xacNhanXoa()
   }
 }
-package "TANG NGHIEP VU" #FCF3CF {
-  class QuanLyDichVu {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class QuanLyDichVu #F4E3A2 {
     + LayDanhSach(): List<DichVu>
     + Them(dichVu: DichVu): DichVu
     + CapNhat(maDV: String, thongTin: DichVu): DichVu
     + Xoa(maDV: String)
   }
-  class DichVu {
+  class DichVu #F4E3A2 {
     - MaDV: String
     - TenDV: String
     - DonViTinh: String
@@ -44,8 +44,8 @@ package "TANG NGHIEP VU" #FCF3CF {
     + Xoa()
   }
 }
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class DichVuDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class DichVuDB #BFDCF0 {
     + LayDanhSach(): List<DichVu>
     + Doc(maDV: String): DichVu
     + DangDuocThamChieu(maDV: String): Boolean
@@ -57,4 +57,8 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
 MHQuanLyDichVu o-- QuanLyDichVu
 QuanLyDichVu o-- DichVu
 DichVu o-- DichVuDB
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+QuanLyDichVu -[hidden]down- DichVuDB
 @enduml

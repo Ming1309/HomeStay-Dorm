@@ -1,4 +1,4 @@
-@startuml ThanhLyHopDong_3Layer
+@startuml
 
 skinparam classAttributeIconSize 0
 skinparam classFontSize 12
@@ -15,9 +15,9 @@ skinparam linetype ortho
 ' LỚP GIAO DIỆN
 '=====================
 
-package "Lớp giao diện" #EBF5FB {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
 
-class MHThanhLyHopDong{
+class MHThanhLyHopDong #BFE8BA {
 
 +lblMaHopDong
 +lblKhachHang
@@ -42,6 +42,7 @@ class MHThanhLyHopDong{
 +hienThiThongTinHopDong(maHD:String)
 +kiemTraDieuKienThanhLy(maHD:String)
 +btnThanhLy_Click()
++hienThiThongBaoThanhCong()
 
 }
 
@@ -51,9 +52,9 @@ class MHThanhLyHopDong{
 ' LỚP NGHIỆP VỤ
 '=====================
 
-package "Lớp nghiệp vụ" #FEF9E7 {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
 
-class HopDong{
+class HopDong #F4E3A2 {
 
 +maHD:String
 +trangThai:String
@@ -66,7 +67,7 @@ class HopDong{
 
 }
 
-class PhieuDoiSoat{
+class PhieuDoiSoat #F4E3A2 {
 
 +maPDS:String
 +tienHoan:Decimal
@@ -80,7 +81,7 @@ class PhieuDoiSoat{
 
 }
 
-class ThanhVienHopDong{
+class ThanhVienHopDong #F4E3A2 {
 
 +maHD:String
 +maGiuong:String
@@ -93,7 +94,7 @@ class ThanhVienHopDong{
 
 }
 
-class Giuong{
+class Giuong #F4E3A2 {
 
 +maGiuong:String
 +trangThai:String
@@ -111,29 +112,30 @@ class Giuong{
 ' LỚP DỮ LIỆU
 '=====================
 
-package "Lớp truy xuất dữ liệu" #FDF2F8 {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
 
-class HopDongDB{
+class HopDongDB #BFDCF0 {
 
 +getDanhSachChoThanhLy(tuKhoa:String) : List
++DocChiTiet(maHD:String) : HopDong
 +updateTrangThaiThanhLy(maHD:String) : Boolean
 
 }
 
-class PhieuDoiSoatDB{
+class PhieuDoiSoatDB #BFDCF0 {
 
 +getPhieuDoiSoatTheoMaHD(maHD:String) : PhieuDoiSoat
 
 }
 
-class ThanhVienHopDongDB{
+class ThanhVienHopDongDB #BFDCF0 {
 
 +layDanhSachTheoHopDong(maHD:String) : List
 +updateTrangThaiDaTra(maHD:String,ngayTra:DateTime) : Boolean
 
 }
 
-class GiuongDB{
+class GiuongDB #BFDCF0 {
 
 +updateTrangThai(maGiuong:String,trangThai:String) : Boolean
 +updateTrangThaiBatch(dsMaGiuong:List,trangThai:String)
@@ -152,4 +154,9 @@ PhieuDoiSoat o-- PhieuDoiSoatDB
 ThanhVienHopDong o-- ThanhVienHopDongDB
 Giuong o-- GiuongDB
 
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+HopDong -[hidden]down- HopDongDB
+Giuong -[hidden]down- HopDongDB
 @enduml

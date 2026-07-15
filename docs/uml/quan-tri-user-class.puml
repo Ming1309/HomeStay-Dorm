@@ -11,8 +11,8 @@ skinparam class {
   BorderColor #9B7B7B
 }
 
-package "TANG GIAO DIEN" #EAF2F8 {
-  class MHQuanLyNguoiDung {
+package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
+  class MHQuanLyNguoiDung #BFE8BA {
     - txtTimKiem: TextBox
     - grvDanhSachTaiKhoan: GridView
     - txtHoTen: TextBox
@@ -37,8 +37,8 @@ package "TANG GIAO DIEN" #EAF2F8 {
 
 }
 
-package "TANG NGHIEP VU" #FCF3CF {
-  class QuanLyNguoiDung {
+package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class QuanLyNguoiDung #F4E3A2 {
     + LayDanhSach(): IReadOnlyList<TaiKhoan>
     + LayDanhSachChiNhanh(): IReadOnlyList<ChiNhanh>
     + Tao(taiKhoan: TaiKhoan, nhanVien: NhanVien, matKhauTam: String): TaiKhoan
@@ -47,7 +47,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + DatLaiMatKhau(maTK: String, matKhauTam: String)
   }
 
-  class TaiKhoan {
+  class TaiKhoan #F4E3A2 {
     - MaTK: String
     - TenDangNhap: String
     - MatKhauHash: String
@@ -68,7 +68,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + DatMatKhau()
   }
 
-  class NhanVien {
+  class NhanVien #F4E3A2 {
     - MaNV: String
     - HoTen: String
     - SDT: String
@@ -79,7 +79,7 @@ package "TANG NGHIEP VU" #FCF3CF {
     + CapNhat()
   }
 
-  class ChiNhanh {
+  class ChiNhanh #F4E3A2 {
     - MaCN: String
     - TenChiNhanh: String
     --
@@ -87,8 +87,8 @@ package "TANG NGHIEP VU" #FCF3CF {
   }
 }
 
-package "TANG TRUY CAP DU LIEU" #FDEDEC {
-  class TaiKhoanDB {
+package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class TaiKhoanDB #BFDCF0 {
     + Doc(maTK: String): TaiKhoan
     + LayDanhSach(): IReadOnlyList<TaiKhoan>
     + Them(taiKhoan: TaiKhoan)
@@ -97,12 +97,12 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + DatMatKhau(taiKhoan: TaiKhoan)
   }
 
-  class NhanVienDB {
+  class NhanVienDB #BFDCF0 {
     + Them(nhanVien: NhanVien)
     + CapNhat(nhanVien: NhanVien)
   }
 
-  class ChiNhanhDB {
+  class ChiNhanhDB #BFDCF0 {
     + LayDanhSach(): IReadOnlyList<ChiNhanh>
   }
 }
@@ -120,4 +120,9 @@ TaiKhoan "0..*" -- "1" NhanVien : thuoc
 TaiKhoan o-- TaiKhoanDB
 NhanVien o-- NhanVienDB
 ChiNhanh o-- ChiNhanhDB
+
+GUI_LAYER -[hidden]down- BUS_LAYER
+BUS_LAYER -[hidden]down- DAL_LAYER
+QuanLyNguoiDung -[hidden]down- TaiKhoanDB
+ChiNhanh -[hidden]down- TaiKhoanDB
 @enduml
