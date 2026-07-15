@@ -119,7 +119,7 @@ function RootComponent() {
       <AuthProvider>
         <WorkflowProvider>
           <Outlet />
-          <Toaster position="top-right" richColors />
+          <Toaster richColors />
         </WorkflowProvider>
       </AuthProvider>
     </QueryClientProvider>
