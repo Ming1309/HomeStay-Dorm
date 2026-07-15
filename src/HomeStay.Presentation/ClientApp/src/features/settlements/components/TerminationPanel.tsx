@@ -40,17 +40,18 @@ import {
 const formSchema = z
   .object({
     confirmations: z.object({
-      customerAgreed: z.boolean().refine((v) => v === true, "Bắt buộc xác nhận"),
       liquidationSigned: z.boolean().refine((v) => v === true, "Bắt buộc xác nhận"),
       keysRecovered: z.boolean().refine((v) => v === true, "Bắt buộc xác nhận"),
     }),
   })
   .refine(
     (data) =>
-      data.confirmations.customerAgreed &&
       data.confirmations.liquidationSigned &&
       data.confirmations.keysRecovered,
-    { message: "Cần xác nhận đủ 3 mục trước khi thanh lý", path: ["confirmations"] },
+    {
+      message: "Cần xác nhận khách đã ký biên bản và trả lại chìa khóa/thẻ",
+      path: ["confirmations"],
+    },
   );
 
 type FormValues = z.infer<typeof formSchema>;
@@ -60,11 +61,6 @@ const CONFIRMATION_ITEMS: Array<{
   label: string;
   hint: string;
 }> = [
-  {
-    key: "customerAgreed",
-    label: "Khách hàng đã xem và đồng ý với kết quả đối soát",
-    hint: "Khách đã được thông báo số tiền hoàn hoặc khoản cần thu thêm.",
-  },
   {
     key: "liquidationSigned",
     label: "Khách đã ký biên bản thanh lý giấy",
@@ -95,7 +91,6 @@ export function TerminationPanel({
     resolver: zodResolver(formSchema),
     defaultValues: {
       confirmations: {
-        customerAgreed: false,
         liquidationSigned: false,
         keysRecovered: false,
       },
@@ -109,7 +104,6 @@ export function TerminationPanel({
       setLoadError(null);
       form.reset({
         confirmations: {
-          customerAgreed: false,
           liquidationSigned: false,
           keysRecovered: false,
         },
@@ -122,7 +116,6 @@ export function TerminationPanel({
     setLoadError(null);
     form.reset({
       confirmations: {
-        customerAgreed: false,
         liquidationSigned: false,
         keysRecovered: false,
       },
@@ -273,7 +266,8 @@ export function TerminationPanel({
                   </span>
                 </div>
                 <p className="text-xs text-gray-600">
-                  Dữ liệu do Kế toán lập, Quản lý chỉ xem và xác nhận trước khi thanh lý.
+                  Kết quả đã được Quản lý xác nhận với khách hàng và chỉ hiển thị để đối chiếu
+                  trước khi thanh lý.
                 </p>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="rounded-md border border-gray-200 bg-white p-3">
@@ -370,7 +364,7 @@ export function TerminationPanel({
               {form.formState.errors.confirmations && (
                 <p className="mt-2 text-[11px] text-rose-600">
                   {form.formState.errors.confirmations.message ??
-                    "Cần xác nhận đủ 3 mục trước khi thanh lý."}
+                    "Cần xác nhận khách đã ký biên bản và trả lại chìa khóa/thẻ."}
                 </p>
               )}
             </div>

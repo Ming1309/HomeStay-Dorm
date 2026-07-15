@@ -125,11 +125,10 @@ public sealed class ThanhLyHopDongController(
             return BadRequest(new { Message = "Mã hợp đồng không được để trống." });
 
         if (request.Confirmations is null
-            || !request.Confirmations.CustomerAgreed
             || !request.Confirmations.LiquidationSigned
             || !request.Confirmations.KeysRecovered)
         {
-            return BadRequest(new { Message = "Cần xác nhận đủ 3 mục trước khi thanh lý." });
+            return BadRequest(new { Message = "Cần xác nhận khách đã ký biên bản và trả lại chìa khóa/thẻ trước khi thanh lý." });
         }
 
         using var phien = taoPhienDuLieu();

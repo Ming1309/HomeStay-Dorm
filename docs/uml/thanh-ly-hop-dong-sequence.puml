@@ -95,7 +95,7 @@ deactivate MH
 ' KIỂM TRA ĐIỀU KIỆN + THANH LÝ
 '=========================
 
-QL -> MH : 3.0 Tích các điều kiện thanh lý
+QL -> MH : 3.0 Xác nhận đã ký biên bản và thu hồi chìa khóa/thẻ
 
 activate MH
 

@@ -44,7 +44,6 @@ export type ChiTietThanhLyHopDong = {
 };
 
 export type ThanhLyConfirmations = {
-  customerAgreed: boolean;
   liquidationSigned: boolean;
   keysRecovered: boolean;
 };

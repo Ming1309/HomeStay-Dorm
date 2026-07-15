@@ -15,7 +15,7 @@
 | 1.0–1.2 Load HĐ chờ thanh lý | `DangHieuLuc` + EXISTS PDS | `HopDong.LayDanhSachChoThanhLy` → `HopDongDB.LayDanhSachChoThanhLy` |
 | 2.0–2.2 Chọn HĐ | Chi tiết HĐ + thành viên | `HopDong.LayThongTinHopDong` → `DocChiTiet` + `ThanhVienHopDong` |
 | 2.5–2.6 Đối soát | PDS theo MaHD | `PhieuDoiSoat.LayThongTinDoiSoat` → `GetPhieuDoiSoatTheoMaHD` |
-| 2.7 UI | Tổng kết tài chính + 3 checkbox | `TerminationPanel` |
+| 2.7 UI | Tổng kết tài chính chỉ đọc + 2 checkbox thanh lý | `TerminationPanel` |
 | 3.1–3.2 Công nợ | Mở khóa nếu đủ điều kiện | `PhieuDoiSoat.KiemTraCongNo` |
 | 3.3–3.5 Thanh lý HĐ | `DaThanhLy` | `HopDong.ThanhLyHopDong` → `UpdateTrangThaiThanhLy` |
 | 3.6–3.7 Chi tiết HĐ | `DaTra` + `NgayTra` | `ThanhVienHopDong.CapNhatTrangThaiDaTra` |
@@ -45,7 +45,7 @@
 | POST | `/api/terminations` | QuanLy | `ThanhLyHopDong` + `CapNhatTrangThaiDaTra` + `CapNhatDanhSachTrong` + notify |
 
 - `ArgumentException` → 400; `KeyNotFoundException` → 404; `InvalidOperationException` → 409.
-- Body confirmations: `customerAgreed`, `liquidationSigned`, `keysRecovered` (cả 3 phải `true`).
+- Body confirmations: `liquidationSigned`, `keysRecovered` (cả 2 phải `true`). Việc khách đồng ý kết quả đối soát đã được ghi nhận ở UC Xác nhận phiếu đối soát và không được xác nhận lặp tại đây.
 
 ## UI
 

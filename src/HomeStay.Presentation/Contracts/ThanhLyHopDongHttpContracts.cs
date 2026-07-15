@@ -43,7 +43,6 @@ public sealed record ChiTietThanhLyHopDongHttpResponse(
     IReadOnlyList<GiuongThanhLyHttpResponse> Giuongs);
 
 public sealed record XacNhanThanhLyHttpRequest(
-    bool CustomerAgreed,
     bool LiquidationSigned,
     bool KeysRecovered);
 
