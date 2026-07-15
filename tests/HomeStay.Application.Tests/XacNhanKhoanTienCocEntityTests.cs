@@ -72,7 +72,7 @@ public sealed class XacNhanKhoanTienCocEntityTests
 
         var phieuThu = PhieuThu.TaoChoTienCoc(phieu, "NV_QUAN_LY", now);
 
-        Assert.Equal("PT20260713103000123", phieuThu.MaPT);
+        Assert.Empty(phieuThu.MaPT); // Database cấp mã khi lưu.
         Assert.Equal(phieu.MaPhieuCoc, phieuThu.MaPhieuCoc);
         Assert.Equal(phieu.TongTien, phieuThu.SoTienThu);
         Assert.Equal(phieu.PhuongThucThanhToan, phieuThu.PhuongThucThanhToan);

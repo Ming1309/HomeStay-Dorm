@@ -19,7 +19,6 @@ public sealed class QuanLyDichVu(Func<PhienDuLieu> taoPhienDuLieu)
         phien.BatDauGiaoDich();
         try
         {
-            dichVu.MaDV = await DichVu.TaoMaMoi();
             await dichVu.Them();
             phien.Commit();
             return dichVu;

@@ -33,7 +33,7 @@
 - Form dung `react-hook-form` va `zod`, co gioi han do dai phu hop backend.
 - Khi them phong, trang thai duoc co dinh la `Trong` tai control va khong hien truong chon tren form; chi form chinh sua moi cho doi trang thai.
 - Khi them giuong, trang thai cung duoc co dinh la `Trong`; API tao va form tao khong nhan trang thai.
-- Ma phong/giuong moi dung dang tuan tu `P012`, `G043` theo du lieu hien co. Truy van sinh ma dung `UPDLOCK, HOLDLOCK` trong transaction va bo qua cac ma timestamp cu; khong can thay doi schema.
+- `PhongDB.Them` và `GiuongDB.Them` cấp mã tuần tự bằng SQL sequence trong transaction.
 - Trang thai workflow (`GiuCho`, `DaCoc`, `DangSuDung`, `ConGiuongTrong`) duoc hien thi va giu nguyen khi sua; giao dien khong cho admin tu chon cac trang thai nay.
 - Toast thanh cong chi hien thi sau khi request ghi thanh cong. Xoa luon qua `AlertDialog`; loading, empty state, retry error va phim tat `Ctrl/Cmd + N` duoc ho tro.
 - Thanh cong cu chi hien mot nut hanh dong chinh theo tab dang mo: them phong o tab Phong, them giuong o tab Giuong.

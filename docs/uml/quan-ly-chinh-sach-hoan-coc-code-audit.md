@@ -27,7 +27,7 @@ Chính sách hoàn cọc là dữ liệu có phiên bản. Mỗi lần quản tr
 3. `QuanLyChinhSachHoanCoc.TaoPhienBan()` kiểm tra entity trước khi mở transaction.
 4. Control đọc phiên bản mới nhất. `NgayApDung` mới phải lớn hơn ngày áp dụng của phiên bản đó.
 5. Nếu phiên bản trước chưa kết thúc trước ngày áp dụng mới, entity cập nhật riêng `NgayKetThuc = NgayApDungMoi - 1 ngày`.
-6. Entity sinh mã tuần tự, `INSERT` phiên bản mới và transaction hoàn tất nguyên khối.
+6. `ChinhSachHoanCocDB.Them` cấp mã bằng SQL sequence, `INSERT` phiên bản mới và transaction hoàn tất nguyên khối.
 
 Không có endpoint `PUT` cập nhật nội dung phiên bản cũ.
 

@@ -49,7 +49,6 @@ public sealed class PhieuHoanCoc
 
         return new PhieuHoanCoc
         {
-            MaPHC = $"PHC{thoiDiem:yyyyMMddHHmmssfff}",
             SoTienHoan = soTien,
             PhuongThucHoan = phuongThucHoan,
             ThongTinNhanTien = thongTin,

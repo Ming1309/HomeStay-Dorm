@@ -51,8 +51,9 @@ done
 Bộ seed này cố định ngày giờ để kết quả kiểm thử không thay đổi theo ngày chạy. Không chạy lặp trên database đã có dữ liệu vì các script seed nghiệp vụ không có mục đích migration (ngoại trừ `01_InitTables.sql` vốn drop/create).
 Schema trong `01_InitTables.sql` là nguồn cấu trúc database duy nhất. Khi cấu trúc thay đổi,
 tạo lại database và chạy đầy đủ các script theo thứ tự trên; không chạy lại seed trên database đã có dữ liệu.
-`Seq_KhachHang` (mã khách hàng tuần tự) được tạo trong `01_InitTables.sql`; sau seed demo,
-`04_DemoScenarios.sql` restart sequence `WITH 16` để mã runtime không trùng `KH0001`–`KH0015`.
+Các SQL sequence cấp mã được tạo trong `01_InitTables.sql`. Sau seed demo,
+`04_DemoScenarios.sql` restart từng sequence sau mã lớn nhất để dữ liệu runtime không trùng seed.
+Sequence là chi tiết hạ tầng database, không phải participant trong UML nghiệp vụ.
 
 ## Quy ước mã
 
@@ -69,7 +70,11 @@ Mã nghiệp vụ chỉ là số thứ tự, không mã hóa trạng thái hay u
 | Phiếu đối soát | `PDS0001` - `PDS0004` |
 | Phiếu thu | `PT0001` - `PT0007` |
 | Phiếu hoàn cọc | `PHC0001` - `PHC0002` |
-| Biên bản giao nhận | `BBGN0001` - `BBGN0003`, `BBTH0001` (UC 1.4.20) |
+
+Runtime tiếp tục dùng đúng prefix và độ rộng tối thiểu trong bảng trên. Mã có thể nhảy số khi
+transaction rollback vì SQL sequence không hoàn lại giá trị đã cấp; đây là hành vi chủ đích.
+| Phiếu hoàn cọc | `PHC0001` - `PHC0002` |
+| Biên bản giao nhận | `BBBG0001` - `BBBG0002`, `BBTH0001` - `BBTH0003` |
 | Thông báo | `TBDEMO0001` - `TBDEMO0005`, các mã `TB...` khác sinh runtime |
 
 ## Phạm vi kiểm thử
@@ -84,7 +89,7 @@ Mã nghiệp vụ chỉ là số thứ tự, không mã hóa trạng thái hay u
 - `HDON0001` - `HDON0004` phủ hóa đơn chưa thanh toán, thanh toán một phần, đã thanh toán và bồi thường.
 - `PDS0001` - `PDS0002` đã tất toán và có PHC; `PDS0003` đã được khách đồng ý, chờ thanh lý; `PDS0004` ở `ChoXacNhan` để Quản lý thao tác.
 - `PT0001` - `PT0007` đều có minh chứng; `PHC0001` - `PHC0002` có chứng từ giao/chuyển tiền, trong đó chuyển khoản có mã giao dịch.
-- `BBGN0001` - `BBGN0003` phục vụ bàn giao và thu hồi tài sản.
+- `BBBG0001` - `BBBG0002` phục vụ bàn giao; `BBTH0001` - `BBTH0003` phục vụ thu hồi tài sản.
 - `BBTH0001` là biên bản thu hồi `HD0004` có tài sản `Hư hỏng`/`Mất mát`, **chưa** có hóa đơn bồi thường — phục vụ UC 1.4.20.
 - `TBDEMO0001`/`TBDEMO0002` là tác vụ CN01; `TBDEMO0003`/`TBDEMO0004` là tác vụ CN02;
   `TBDEMO0005` minh họa tác vụ đã được một Quản lý xử lý. Thông báo trực tiếp và theo vai trò

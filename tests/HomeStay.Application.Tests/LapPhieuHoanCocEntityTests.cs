@@ -15,7 +15,7 @@ public sealed class LapPhieuHoanCocEntityTests
         var phieuHoanCoc = PhieuHoanCoc.TaoPhieuHoanCoc("PDS0001", 1060000m, "ChuyenKhoan", "Tài khoản nhận", "GD001", "/proof.png", "NV02", now);
 
         Assert.NotNull(phieuHoanCoc);
-        Assert.StartsWith("PHC20260713120000", phieuHoanCoc.MaPHC);
+        Assert.Empty(phieuHoanCoc.MaPHC); // Database cấp mã khi lưu.
         Assert.Equal(1060000m, phieuHoanCoc.SoTienHoan);
         Assert.Equal("PDS0001", phieuHoanCoc.MaPDS);
         Assert.Equal("ChuyenKhoan", phieuHoanCoc.PhuongThucHoan);

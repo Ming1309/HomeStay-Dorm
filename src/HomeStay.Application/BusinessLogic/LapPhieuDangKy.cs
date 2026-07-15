@@ -36,7 +36,7 @@ public sealed class LapPhieuDangKy
             if (khachHang is null)
             {
                 // Tạo mới khách hàng nếu chưa tồn tại
-                khachHang = KhachHang.TaoMoi(await KhachHang.TaoMaMoi(), hoTen, gioiTinh, sdt, email,
+                khachHang = KhachHang.TaoMoi(hoTen, gioiTinh, sdt, email,
                     diaChiThuongTru, loaiGiayTo, soGiayTo);
                 await khachHang.Them();
             }

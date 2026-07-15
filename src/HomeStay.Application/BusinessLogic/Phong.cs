@@ -58,7 +58,6 @@ public sealed class Phong
 
     public static Task<bool> DangDuocThamChieu(string maPhong) => PhongDB.DangDuocThamChieu(maPhong);
 
-    public static Task<string> TaoMaMoi() => PhongDB.TaoMaMoi();
 
     // Do dai toi da theo schema (01_InitTables.sql).
     private const int MaxSoPhong = 20;

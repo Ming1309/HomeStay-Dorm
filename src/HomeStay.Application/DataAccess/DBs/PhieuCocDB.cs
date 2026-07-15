@@ -385,6 +385,10 @@ public static class PhieuCocDB
 
     public static async Task Them(PhieuCoc phieu)
     {
+        phieu.MaPhieuCoc = await MaSoDB.LayMaMoi("PhieuCoc");
+        foreach (var thanhVien in phieu.ThanhViens)
+            thanhVien.MaPhieuCoc = phieu.MaPhieuCoc;
+
         const string insertDeposit = """
             INSERT INTO PhieuCoc (MaPhieuCoc,HanThanhToan,HinhThucThue,SoGiuongThue,TongTien,ThoiDiemCoc,AnhMinhChung,PhuongThucThanhToan,LyDoYeuCauBoSung,TrangThai,MaKH,MaPhong,MaNV,MaCN)
             VALUES (@MaPhieuCoc,@HanThanhToan,@HinhThucThue,@SoGiuongThue,@TongTien,@ThoiDiemCoc,@AnhMinhChung,@PhuongThucThanhToan,@LyDoYeuCauBoSung,@TrangThai,@MaKH,@MaPhong,@MaNV,@MaCN)

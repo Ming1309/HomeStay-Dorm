@@ -38,7 +38,6 @@ package "TANG NGHIEP VU" #FCF3CF {
     + KiemTraDuLieuHopLe()
     + LayDanhSach(): List<DichVu>
     + Doc(maDV: String): DichVu
-    + TaoMaMoi(): String
     + DangDuocThamChieu(maDV: String): Boolean
     + Them()
     + CapNhat()
@@ -49,7 +48,6 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
   class DichVuDB {
     + LayDanhSach(): List<DichVu>
     + Doc(maDV: String): DichVu
-    + TaoMaMoi(): String
     + DangDuocThamChieu(maDV: String): Boolean
     + Them(dichVu: DichVu)
     + CapNhat(dichVu: DichVu)

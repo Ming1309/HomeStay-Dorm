@@ -55,7 +55,6 @@ package "TANG NGHIEP VU" #FCF3CF {
     + TinhTrangThai(homNay: DateOnly): String
     + LayDanhSach(): IReadOnlyList<QuyDinh>
     + Doc(maQD: String): QuyDinh
-    + TaoMaMoi(): String
     + DangDuocThamChieu(maQD: String): Boolean
     + Them()
     + CapNhat()
@@ -67,7 +66,6 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
   class QuyDinhDB {
     + LayDanhSach(): IReadOnlyList<QuyDinh>
     + Doc(maQD: String): QuyDinh
-    + TaoMaMoi(): String
     + DangDuocThamChieu(maQD: String): Boolean
     + Them(quyDinh: QuyDinh)
     + CapNhat(quyDinh: QuyDinh)

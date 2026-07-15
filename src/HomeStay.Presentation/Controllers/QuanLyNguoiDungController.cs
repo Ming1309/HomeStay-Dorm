@@ -29,8 +29,8 @@ public sealed class QuanLyNguoiDungController(QuanLyNguoiDung quanLy) : Controll
         {
             var taiKhoan = await quanLy.Tao(new TaiKhoan
             {
-                MaTK = $"TK_{request.MaNV}", TenDangNhap = request.TenDangNhap, Email = request.Email,
-            }, new NhanVien { MaNV = request.MaNV, HoTen = request.HoTen, SDT = request.SDT, VaiTro = request.VaiTro, MaCN = request.MaCN }, request.MatKhauTam);
+                TenDangNhap = request.TenDangNhap, Email = request.Email,
+            }, new NhanVien { HoTen = request.HoTen, SDT = request.SDT, VaiTro = request.VaiTro, MaCN = request.MaCN }, request.MatKhauTam);
             return Ok(TaoResponse(taiKhoan));
         }
         catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }

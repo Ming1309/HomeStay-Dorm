@@ -26,7 +26,6 @@ public sealed class ChinhSachHoanCoc
     public static Task<ChinhSachHoanCoc?> LayPhienBanMoiNhat() =>
         ChinhSachHoanCocDB.LayPhienBanMoiNhat();
 
-    public static Task<string> TaoMaMoi() => ChinhSachHoanCocDB.TaoMaMoi();
 
     // UC 1.4.28
     public void KiemTraTyLeHopLe()

@@ -97,7 +97,6 @@ public sealed class NhapHoSoLuuTru
 
             foreach (var tv in cacThanhVien)
             {
-                tv.MaKH = await KhachHang.TaoMaMoi();
                 await tv.Them();
                 var tvDangKy = ThanhVienDangKy.TaoThanhVien(maPhieuCoc, tv.MaKH);
                 tvDangKy.KiemTraVaiTroHopLe();

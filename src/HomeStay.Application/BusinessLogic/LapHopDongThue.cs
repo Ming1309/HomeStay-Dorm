@@ -65,11 +65,8 @@ public sealed class LapHopDongThue
             if (ngayKetThuc <= ngayBatDau)
                 throw new InvalidOperationException("Ngày kết thúc phải lớn hơn ngày bắt đầu.");
 
-            var thoiDiem = _timeProvider.GetLocalNow().DateTime;
-            var maHD = $"HD{thoiDiem:yyyyMMddHHmmssfff}";
             var hopDong = new HopDong
             {
-                MaHD = maHD,
                 NgayBatDau = ngayBatDau,
                 NgayKetThuc = ngayKetThuc,
                 KyThanhToan = kyThanhToan,
@@ -87,7 +84,7 @@ public sealed class LapHopDongThue
                 var selectedDv = dichVus.Where(d => dsMaDV.Contains(d.MaDV)).ToList();
                 foreach (var dv in selectedDv)
                 {
-                    await DichVuHopDongDB.Them(maHD, dv.MaDV, dv.DonGia);
+                    await DichVuHopDongDB.Them(hopDong.MaHD, dv.MaDV, dv.DonGia);
                 }
             }
 

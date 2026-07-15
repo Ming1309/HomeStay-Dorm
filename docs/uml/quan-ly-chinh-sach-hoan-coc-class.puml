@@ -51,7 +51,6 @@ package "TANG NGHIEP VU" #FCF3CF {
     + LayDanhSach(): List<ChinhSachHoanCoc>
     + LayChinhSachDangApDung(ngay: Date): ChinhSachHoanCoc
     + LayPhienBanMoiNhat(): ChinhSachHoanCoc
-    + TaoMaMoi(): String
     + KiemTraDuLieuHopLe()
     + Them()
     + CapNhatNgayKetThuc(ngayKetThuc: Date)
@@ -65,7 +64,6 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + LayDanhSach(): List<ChinhSachHoanCoc>
     + LayChinhSachDangApDung(ngay: Date): ChinhSachHoanCoc
     + LayPhienBanMoiNhat(): ChinhSachHoanCoc
-    + TaoMaMoi(): String
     + Them(chinhSach: ChinhSachHoanCoc)
     + CapNhatNgayKetThuc(maChinhSach: String, ngayKetThuc: Date)
   }

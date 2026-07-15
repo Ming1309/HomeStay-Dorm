@@ -22,7 +22,6 @@ public sealed class PhieuDangKy
         string? loaiDichVu, decimal? mucGia, DateTime? thoiGianDuKienVao, int? thoiHanThue,
         string? yeuCauKhac, DateTime thoiDiem) => new()
     {
-        MaPDK = $"PDK{thoiDiem:yyyyMMddHHmmssfff}",
         MaKH = maKH,
         MaNV = maNV,
         MaCN = maCN,

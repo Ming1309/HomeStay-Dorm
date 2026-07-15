@@ -8,6 +8,11 @@ public static class BienBanGiaoNhanDB
 {
     public static async Task Them(BienBanGiaoNhan bienBan)
     {
+        bienBan.MaBienBan = await MaSoDB.LayMaMoi(
+            bienBan.LoaiBienBan == "BanGiao" ? "BienBanBanGiao" : "BienBanThuHoi");
+        foreach (var chiTiet in bienBan.ChiTiet)
+            chiTiet.MaBienBan = bienBan.MaBienBan;
+
         const string sql = """
             INSERT INTO BienBanGiaoNhan (MaBienBan, NgayBanGiao, LoaiBienBan, MaHD, MaNV)
             VALUES (@MaBienBan, @NgayBanGiao, @LoaiBienBan, @MaHD, @MaNV)

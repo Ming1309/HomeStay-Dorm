@@ -6,20 +6,6 @@ using HomeStay.Application.DataAccess.DbConnections;
 
 public static class PhongDB
 {
-    public static async Task<string> TaoMaMoi()
-    {
-        const string sql = """
-            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(MaPhong, 2, 6))), 0) + 1
-            FROM Phong WITH (UPDLOCK, HOLDLOCK)
-            WHERE MaPhong LIKE N'P%'
-              AND LEN(MaPhong) BETWEEN 2 AND 7
-              AND SUBSTRING(MaPhong, 2, 6) NOT LIKE N'%[^0-9]%'
-            """;
-        var soThuTu = await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(sql,
-            transaction: PhienDuLieu.Session.Transaction);
-        return $"P{soThuTu:D3}";
-    }
-
     public static async Task<IReadOnlyList<Phong>> LayPhongOGhep(int soLuong, string? toaNha,
         string? loaiPhong, decimal giaMin, decimal giaMax)
     {
@@ -189,6 +175,7 @@ public static class PhongDB
 
     public static async Task Them(Phong phong)
     {
+        phong.MaPhong = await MaSoDB.LayMaMoi("Phong");
         const string sql = """
             INSERT INTO Phong (MaPhong,SoPhong,ToaNha,Tang,GioiTinhChoPhep,TrangThai,MaLP,MaCN)
             VALUES (@MaPhong,@SoPhong,@ToaNha,@Tang,@GioiTinhChoPhep,@TrangThai,@MaLP,@MaCN)

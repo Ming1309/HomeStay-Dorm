@@ -6,20 +6,6 @@ using HomeStay.Application.DataAccess.DbConnections;
 
 public static class GiuongDB
 {
-    public static async Task<string> TaoMaMoi()
-    {
-        const string sql = """
-            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(MaGiuong, 2, 6))), 0) + 1
-            FROM Giuong WITH (UPDLOCK, HOLDLOCK)
-            WHERE MaGiuong LIKE N'G%'
-              AND LEN(MaGiuong) BETWEEN 2 AND 7
-              AND SUBSTRING(MaGiuong, 2, 6) NOT LIKE N'%[^0-9]%'
-            """;
-        var soThuTu = await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(sql,
-            transaction: PhienDuLieu.Session.Transaction);
-        return $"G{soThuTu:D3}";
-    }
-
     // ---- UC 1.4.25: Quan ly giuong (QuanTri) ----
 
     public static async Task<IReadOnlyList<Giuong>> LayDanhSachQuanTri(string? text, string? maPhong,
@@ -90,6 +76,7 @@ public static class GiuongDB
 
     public static async Task Them(Giuong giuong)
     {
+        giuong.MaGiuong = await MaSoDB.LayMaMoi("Giuong");
         const string sql = """
             INSERT INTO Giuong (MaGiuong,SoGiuong,TrangThai,MaPhong)
             VALUES (@MaGiuong,@SoGiuong,@TrangThai,@MaPhong)

@@ -16,8 +16,6 @@ MHQuanLyQuyDinh -> QuanLyQuyDinh: Them(quyDinh, tep)
 QuanLyQuyDinh -> QuyDinh: ChuanHoa()
 QuanLyQuyDinh -> QuyDinh: KiemTraDuLieuHopLe(false)
 QuanLyQuyDinh -> QuyDinhFileStorage: Luu(tep)
-QuanLyQuyDinh -> QuyDinh: TaoMaMoi()
-QuyDinh -> QuyDinhDB: TaoMaMoi()
 QuanLyQuyDinh -> QuyDinh: Them()
 QuyDinh -> QuyDinhDB: Them(quyDinh)
 

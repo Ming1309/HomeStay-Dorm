@@ -51,12 +51,6 @@ else ngay ap dung hop le
     deactivate CSDB
     deactivate CS
   end
-  QLCSHC -> CS : TaoMaMoi()
-  activate CS
-  CS -> CSDB : TaoMaMoi()
-  activate CSDB
-  deactivate CSDB
-  deactivate CS
   QLCSHC -> CS : Them()
   activate CS
   CS -> CS : KiemTraDuLieuHopLe()

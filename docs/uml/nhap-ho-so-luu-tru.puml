@@ -160,7 +160,6 @@ package "TANG NGHIEP VU" #FCF3CF {
     - Email: String
     --
     + TimTheoSoGiayTo(soGiayTo: String): KhachHang
-    + TaoMaMoi(): String
     + DinhDangMa(soThuTu: Long): String
     + KiemTraThongTinBatBuoc(kh: KhachHang)
     + KiemTraDinhDangEmail(email: String): Boolean
@@ -229,7 +228,6 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
   }
 
   class KhachHangDB {
-    + LaySoThuTuMoi(): Long
     + TimTheoSoGiayTo(soGiayTo: String): KhachHang
     + Them(khachHang: KhachHang)
     + CapNhatDiaChiThuongTru(maKH: String, diaChiThuongTru: String)

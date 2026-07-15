@@ -52,7 +52,6 @@ public sealed class TaiSan
     public static Task<TaiSan?> Doc(string maTS) => TaiSanDB.Doc(maTS);
     public static Task<TaiSan?> LayThongTinTaiSan(string maTS) =>
         TaiSanDB.GetTaiSanTheoMaTS(maTS);
-    public static Task<string> TaoMaMoi() => TaiSanDB.TaoMaMoi();
     public static Task<bool> TrungTen(string tenTaiSan, string? maLoaiTru) =>
         TaiSanDB.TrungTen(tenTaiSan, maLoaiTru);
     public static Task<bool> DangDuocThamChieu(string maTS) => TaiSanDB.DangDuocThamChieu(maTS);

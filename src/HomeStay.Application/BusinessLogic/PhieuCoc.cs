@@ -33,10 +33,8 @@ public sealed class PhieuCoc
     {
         if (hinhThucThue is not ("NguyenCan" or "OGhep"))
             throw new InvalidOperationException("Hình thức thuê không hợp lệ.");
-        var maPhieu = $"PC{thoiDiem:yyyyMMddHHmmssfff}";
         return new PhieuCoc
         {
-            MaPhieuCoc = maPhieu,
             HanThanhToan = null,
             HinhThucThue = hinhThucThue,
             SoGiuongThue = giuongs.Count,
@@ -49,7 +47,7 @@ public sealed class PhieuCoc
             KhachHang = khachHang,
             Phong = phong,
             Giuongs = giuongs.ToList(),
-            ThanhViens = [new ThanhVienDangKy { MaPhieuCoc = maPhieu, MaKH = khachHang.MaKH }]
+            ThanhViens = [new ThanhVienDangKy { MaKH = khachHang.MaKH }]
         };
     }
 

@@ -60,7 +60,6 @@ package "TANG NGHIEP VU" #FCF3CF {
     + DocChiTiet(maPhong: String): Phong
     + TrungSoPhong(maCN: String, soPhong: String, maPhongBoQua: String): Boolean
     + DangDuocThamChieu(maPhong: String): Boolean
-    + TaoMaMoi(): String
     + ChuanHoa()
     + KiemTraDuLieuHopLe()
     + KiemTraCoTheXoa()
@@ -82,7 +81,6 @@ package "TANG NGHIEP VU" #FCF3CF {
     + DocChiTiet(maGiuong: String): Giuong
     + TrungSoGiuong(maPhong: String, soGiuong: String, maGiuongBoQua: String): Boolean
     + DangDuocThamChieu(maGiuong: String): Boolean
-    + TaoMaMoi(): String
     + ChuanHoa()
     + KiemTraDuLieuHopLe()
     + KiemTraCoTheXoa()
@@ -119,7 +117,6 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + DocChiTiet(maPhong: String): Phong
     + TrungSoPhong(maCN: String, soPhong: String, maPhongBoQua: String): Boolean
     + DangDuocThamChieu(maPhong: String): Boolean
-    + TaoMaMoi(): String
     + Them(phong: Phong)
     + CapNhatThongTin(phong: Phong)
     + Xoa(maPhong: String)
@@ -130,7 +127,6 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
     + DocChiTiet(maGiuong: String): Giuong
     + TrungSoGiuong(maPhong: String, soGiuong: String, maGiuongBoQua: String): Boolean
     + DangDuocThamChieu(maGiuong: String): Boolean
-    + TaoMaMoi(): String
     + Them(giuong: Giuong)
     + CapNhatThongTin(giuong: Giuong)
     + Xoa(maGiuong: String)

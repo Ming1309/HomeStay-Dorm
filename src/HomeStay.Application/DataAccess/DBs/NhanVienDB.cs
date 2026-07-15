@@ -8,6 +8,7 @@ public static class NhanVienDB
 {
     public static async Task Them(NhanVien nhanVien)
     {
+        nhanVien.MaNV = await MaSoDB.LayMaMoi("NhanVien");
         const string sql = "INSERT INTO NhanVien (MaNV,HoTen,SDT,VaiTro,MaCN) VALUES (@MaNV,@HoTen,@SDT,@VaiTro,@MaCN)";
         if (await PhienDuLieu.Session.Connection.ExecuteAsync(sql, nhanVien, PhienDuLieu.Session.Transaction) != 1)
             throw new InvalidOperationException("Không thể tạo nhân viên.");

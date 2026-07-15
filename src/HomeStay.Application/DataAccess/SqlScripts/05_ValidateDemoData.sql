@@ -385,5 +385,30 @@ IF EXISTS (
     THROW 51026, 'Vong doi thong bao khong khop dau vet nguoi xu ly.', 1;
 GO
 
+-- Mã seed phải theo đúng prefix chuẩn; không chấp nhận mã timestamp hoặc prefix BBGN cũ.
+IF EXISTS (
+    SELECT MaKH AS Ma FROM KhachHang WHERE MaKH NOT LIKE 'KH[0-9][0-9][0-9][0-9]'
+    UNION ALL SELECT MaNV FROM NhanVien WHERE MaNV<>N'NV_ADMIN' AND MaNV NOT LIKE 'NV[0-9][0-9]'
+    UNION ALL SELECT MaPhong FROM Phong WHERE MaPhong NOT LIKE 'P[0-9][0-9][0-9]'
+    UNION ALL SELECT MaGiuong FROM Giuong WHERE MaGiuong NOT LIKE 'G[0-9][0-9][0-9]'
+    UNION ALL SELECT MaDV FROM DichVu WHERE MaDV NOT LIKE 'DV[0-9][0-9]'
+    UNION ALL SELECT MaTS FROM TaiSan WHERE MaTS NOT LIKE 'TS[0-9][0-9]'
+    UNION ALL SELECT MaQD FROM QuyDinh WHERE MaQD NOT LIKE 'QD[0-9][0-9]'
+    UNION ALL SELECT MaChinhSach FROM ChinhSachHoanCoc WHERE MaChinhSach NOT LIKE 'CS[0-9][0-9]'
+    UNION ALL SELECT MaPDK FROM PhieuDangKy WHERE MaPDK NOT LIKE 'PDK[0-9][0-9][0-9][0-9]'
+    UNION ALL SELECT MaLH FROM LichHen WHERE MaLH NOT LIKE 'LH[0-9][0-9][0-9][0-9]'
+    UNION ALL SELECT MaPhieuCoc FROM PhieuCoc WHERE MaPhieuCoc NOT LIKE 'PC[0-9][0-9][0-9][0-9]'
+    UNION ALL SELECT MaHD FROM HopDong WHERE MaHD NOT LIKE 'HD[0-9][0-9][0-9][0-9]'
+    UNION ALL SELECT MaPDS FROM PhieuDoiSoat WHERE MaPDS NOT LIKE 'PDS[0-9][0-9][0-9][0-9]'
+    UNION ALL SELECT MaPT FROM PhieuThu WHERE MaPT NOT LIKE 'PT[0-9][0-9][0-9][0-9]'
+    UNION ALL SELECT MaPHC FROM PhieuHoanCoc WHERE MaPHC NOT LIKE 'PHC[0-9][0-9][0-9][0-9]'
+    UNION ALL SELECT MaHoaDon FROM HoaDon WHERE MaHoaDon NOT LIKE 'HDON[0-9][0-9][0-9][0-9]'
+    UNION ALL SELECT MaBienBan FROM BienBanGiaoNhan
+        WHERE (LoaiBienBan=N'BanGiao' AND MaBienBan NOT LIKE 'BBBG[0-9][0-9][0-9][0-9]')
+           OR (LoaiBienBan=N'ThuHoi' AND MaBienBan NOT LIKE 'BBTH[0-9][0-9][0-9][0-9]')
+)
+    THROW 51027, 'Ma nghiep vu seed khong dung prefix hoac do rong chuan.', 1;
+GO
+
 PRINT N'05_ValidateDemoData.sql: dữ liệu mẫu hợp lệ.';
 GO

@@ -19,6 +19,7 @@ public static class PhieuThuDB
     // ==========================================================
     public static async Task InsertPhieuThu(PhieuThu phieuThu)
     {
+        phieuThu.MaPT = await MaSoDB.LayMaMoi("PhieuThu");
         const string sql = """
             INSERT INTO PhieuThu (MaPT, SoTienThu, ThoiGian, PhuongThucThanhToan, AnhMinhChung, MaHoaDon, MaPhieuCoc, MaPDS, MaNV)
             VALUES (@MaPT, @SoTienThu, @ThoiGian, @PhuongThucThanhToan, @AnhMinhChung, @MaHoaDon, @MaPhieuCoc, @MaPDS, @MaNV)
@@ -52,6 +53,7 @@ public static class PhieuThuDB
     // ==========================================================
     public static async Task Them(PhieuThu phieuThu)
     {
+        phieuThu.MaPT = await MaSoDB.LayMaMoi("PhieuThu");
         const string sql = """
             INSERT INTO PhieuThu
                 (MaPT,SoTienThu,ThoiGian,PhuongThucThanhToan,AnhMinhChung,MaHoaDon,MaPhieuCoc,MaPDS,MaNV)

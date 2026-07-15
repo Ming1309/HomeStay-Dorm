@@ -16,6 +16,7 @@ public static class PhieuHoanCocDB
     }
     public static async Task InsertPhieuHoanCoc(PhieuHoanCoc phc)
     {
+        phc.MaPHC = await MaSoDB.LayMaMoi("PhieuHoanCoc");
         const string sql = """
             INSERT INTO PhieuHoanCoc (MaPHC, SoTienHoan, PhuongThucHoan, ThongTinNhanTien,
                                      MaGiaoDich, MinhChung, ThoiGian, MaPDS, MaNV)

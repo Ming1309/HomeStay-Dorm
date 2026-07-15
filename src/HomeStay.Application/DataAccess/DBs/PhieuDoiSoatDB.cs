@@ -12,6 +12,7 @@ public static class PhieuDoiSoatDB
 {
     public static async Task LuuPhieu(PhieuDoiSoat phieu)
     {
+        phieu.MaPDS = await MaSoDB.LayMaMoi("PhieuDoiSoat");
         const string insertPdsSql = """
             INSERT INTO PhieuDoiSoat
                 (MaPDS, NgayDoiSoat, TyLeHoanCoc, TongKhauTru, TienHoan, TienThuThem,

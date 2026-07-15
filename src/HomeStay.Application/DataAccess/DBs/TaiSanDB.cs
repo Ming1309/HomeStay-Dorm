@@ -25,18 +25,6 @@ public static class TaiSanDB
 
     public static Task<TaiSan?> GetTaiSanTheoMaTS(string maTS) => Doc(maTS);
 
-    public static async Task<string> TaoMaMoi()
-    {
-        const string sql = """
-            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(MaTS, 3, 18))), 0) + 1
-            FROM TaiSan WITH (UPDLOCK, HOLDLOCK)
-            WHERE MaTS LIKE 'TS%'
-            """;
-        var soThuTu = await PhienDuLieu.Session.Connection.QuerySingleAsync<int>(
-            sql, transaction: PhienDuLieu.Session.Transaction);
-        return $"TS{soThuTu:D2}";
-    }
-
     public static Task<bool> TrungTen(string tenTaiSan, string? maLoaiTru) =>
         PhienDuLieu.Session.Connection.ExecuteScalarAsync<bool>(
             """
@@ -62,6 +50,7 @@ public static class TaiSanDB
 
     public static async Task Them(TaiSan taiSan)
     {
+        taiSan.MaTS = await MaSoDB.LayMaMoi("TaiSan");
         const string sql = """
             INSERT INTO TaiSan (MaTS, TenTaiSan, LoaiTaiSan, GiaTri, MoTa, TrangThai)
             VALUES (@MaTS, @TenTaiSan, @LoaiTaiSan, @GiaTri, @MoTa, @TrangThai)

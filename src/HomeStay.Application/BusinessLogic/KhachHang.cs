@@ -15,11 +15,10 @@ public sealed class KhachHang
     public string? SDT { get; set; }
     public string? Email { get; set; }
 
-    public static KhachHang TaoMoi(string maKH, string hoTen, string? gioiTinh, string? sdt, string? email,
+    public static KhachHang TaoMoi(string hoTen, string? gioiTinh, string? sdt, string? email,
         string? diaChiThuongTru, string? loaiGiayTo, string? soGiayTo) =>
         new()
         {
-            MaKH = maKH,
             HoTen = hoTen.Trim(),
             GioiTinh = gioiTinh,
             SDT = sdt,
@@ -30,8 +29,6 @@ public sealed class KhachHang
         };
 
     public static Task<KhachHang?> TimTheoSoGiayTo(string soGiayTo) => KhachHangDB.TimTheoSoGiayTo(soGiayTo);
-
-    public static async Task<string> TaoMaMoi() => DinhDangMa(await KhachHangDB.LaySoThuTuMoi());
 
     public static string DinhDangMa(long soThuTu)
     {

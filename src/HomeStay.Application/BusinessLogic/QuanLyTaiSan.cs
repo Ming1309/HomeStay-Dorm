@@ -21,7 +21,6 @@ public sealed class QuanLyTaiSan(Func<PhienDuLieu> taoPhienDuLieu)
         {
             if (await TaiSan.TrungTen(taiSan.TenTaiSan, null))
                 throw new InvalidOperationException("Loại tài sản này đã tồn tại trong danh mục.");
-            taiSan.MaTS = await TaiSan.TaoMaMoi();
             await taiSan.Them();
             phien.Commit();
             return taiSan;

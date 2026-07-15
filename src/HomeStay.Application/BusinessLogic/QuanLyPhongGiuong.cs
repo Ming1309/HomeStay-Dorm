@@ -51,7 +51,6 @@ public sealed class QuanLyPhongGiuong(Func<PhienDuLieu> taoPhienDuLieu)
                 throw new InvalidOperationException(
                     $"Số phòng {phong.SoPhong} đã tồn tại trong chi nhánh này.");
             phong.LoaiPhong = loaiPhong;
-            phong.MaPhong = await Phong.TaoMaMoi();
             await phong.Them();
             phien.Commit();
             return phong;
@@ -160,7 +159,6 @@ public sealed class QuanLyPhongGiuong(Func<PhienDuLieu> taoPhienDuLieu)
                 throw new InvalidOperationException(
                     $"Số giường {giuong.SoGiuong} đã tồn tại trong phòng này.");
             phong.KiemTraSoGiuongKhongVuotSucChua(phong.Giuongs.Count);
-            giuong.MaGiuong = await Giuong.TaoMaMoi();
             await giuong.Them();
             phien.Commit();
             return await Giuong.DocChiTiet(giuong.MaGiuong) ?? giuong;

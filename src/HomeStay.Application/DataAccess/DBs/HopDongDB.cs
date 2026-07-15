@@ -477,6 +477,7 @@ public static class HopDongDB
 
     public static async Task Them(HopDong hd)
     {
+        hd.MaHD = await MaSoDB.LayMaMoi("HopDong");
         const string sql = """
             INSERT INTO HopDong (MaHD, NgayKy, NgayBatDau, NgayKetThuc, KyThanhToan, GiaThue, TrangThai, MaNV, MaPhieuCoc, MaQLDuyet, MaChinhSach)
             VALUES (@MaHD, @NgayKy, @NgayBatDau, @NgayKetThuc, @KyThanhToan, @GiaThue, @TrangThai, @MaNV, @MaPhieuCoc, @MaQLDuyet, @MaChinhSach)

@@ -75,9 +75,8 @@ public sealed class LapPhieuCoc
 
             var phieuCoc = PhieuCoc.TaoMoi(hinhThucThue, khachHang, phong, giuongs,
                 maNhanVien, _timeProvider.GetLocalNow().DateTime);
-            lichHen.GanPhieuCoc(phieuCoc.MaPhieuCoc);
-
             await phieuCoc.Them();
+            lichHen.GanPhieuCoc(phieuCoc.MaPhieuCoc);
             await phong.CapNhat();
             await lichHen.LuuPhieuCoc();
             await _thongBao.PhatCanXuLyTheoVaiTro(

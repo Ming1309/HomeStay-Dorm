@@ -100,14 +100,14 @@ public sealed class XuLyThanhToanHopDong
             var chiTietList = new List<ChiTietHoaDon>();
 
             var dongThue = ChiTietHoaDon.TaoDongTienThueKyDau(
-                maHoaDon: $"HDON{now:yyMMddHHmmssfff}",
+                maHoaDon: string.Empty,
                 stt: 1,
                 donGia: hopDong.GiaThue,
                 soLuong: kyThanhToan);
             chiTietList.Add(dongThue);
 
             var dongDVs = ChiTietHoaDon.TaoDongDichVu(
-                $"HDON{now:yyMMddHHmmssfff}",
+                string.Empty,
                 dsDV,
                 sttBatDau: 2);
             chiTietList.AddRange(dongDVs);

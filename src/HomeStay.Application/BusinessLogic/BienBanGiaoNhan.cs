@@ -25,16 +25,12 @@ public sealed class BienBanGiaoNhan
     {
         var bienBan = new BienBanGiaoNhan
         {
-            MaBienBan = $"BBBG{DateTime.Now:yyyyMMddHHmmss}",
             NgayBanGiao = ngayBanGiao.Date,
             LoaiBienBan = "BanGiao",
             MaHD = maHD,
             MaNV = maNV,
             ChiTiet = chiTiet.ToList(),
         };
-
-        foreach (var item in bienBan.ChiTiet)
-            item.MaBienBan = bienBan.MaBienBan;
 
         return bienBan;
     }
@@ -47,16 +43,12 @@ public sealed class BienBanGiaoNhan
     {
         var bienBan = new BienBanGiaoNhan
         {
-            MaBienBan = $"BBTH{DateTime.Now:yyyyMMddHHmmss}",
             NgayBanGiao = ngayBanGiao.Date,
             LoaiBienBan = "ThuHoi",
             MaHD = maHD,
             MaNV = maNV,
             ChiTiet = chiTiet.ToList(),
         };
-
-        foreach (var item in bienBan.ChiTiet)
-            item.MaBienBan = bienBan.MaBienBan;
 
         return bienBan;
     }

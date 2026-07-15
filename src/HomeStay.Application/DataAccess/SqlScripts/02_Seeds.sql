@@ -152,8 +152,19 @@ GO
 -- 11. Khách Hàng (Mẫu)
 INSERT INTO KhachHang (MaKH, HoTen, NgaySinh, GioiTinh, QuocTich, LoaiGiayTo, SoGiayTo, DiaChiThuongTru, SDT, Email)
 VALUES 
-('KH01', N'Nguyễn Đức Anh', '2000-05-15', N'Nam', N'Việt Nam', N'CCCD', '001200012345', N'Hà Nội', '0988111222', 'ducanh@gmail.com'),
-('KH02', N'Trần Thị Bé', '2002-10-20', N'Nữ', N'Việt Nam', N'CCCD', '079102012345', N'TP.HCM', '0977222333', 'tranbe@gmail.com');
+('KH0001', N'Nguyễn Đức Anh', '2000-05-15', N'Nam', N'Việt Nam', N'CCCD', '001200012345', N'Hà Nội', '0988111222', 'ducanh@gmail.com'),
+('KH0002', N'Trần Thị Bé', '2002-10-20', N'Nữ', N'Việt Nam', N'CCCD', '079102012345', N'TP.HCM', '0977222333', 'tranbe@gmail.com');
+GO
+
+-- Database vẫn dùng được nếu chỉ chạy init + seed cơ bản, chưa nạp demo scenarios.
+ALTER SEQUENCE dbo.Seq_KhachHang RESTART WITH 3;
+ALTER SEQUENCE dbo.Seq_NhanVien RESTART WITH 7;
+ALTER SEQUENCE dbo.Seq_Phong RESTART WITH 4;
+ALTER SEQUENCE dbo.Seq_Giuong RESTART WITH 15;
+ALTER SEQUENCE dbo.Seq_DichVu RESTART WITH 6;
+ALTER SEQUENCE dbo.Seq_TaiSan RESTART WITH 14;
+ALTER SEQUENCE dbo.Seq_QuyDinh RESTART WITH 4;
+ALTER SEQUENCE dbo.Seq_ChinhSachHoanCoc RESTART WITH 2;
 GO
 
 PRINT N'✅ Đã chèn dữ liệu mẫu (Seed Data) thành công!';

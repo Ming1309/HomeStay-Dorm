@@ -51,4 +51,4 @@
 ## Seed / demo
 
 - `04_DemoScenarios.sql`: `BBTH0001` `ThuHoi` cho `HD0004`, chi tiết `TS01` Hư hỏng + `TS03` Mất mát; **không** có `HoaDon BoiThuong` cho `HD0004`.
-- `BBGN0003`/`HDON0004` (HD0005) giữ nguyên cho demo đối soát đã xử lý.
+- `BBTH0003`/`HDON0004` (HD0005) giữ nguyên cho demo đối soát đã xử lý.

@@ -20,14 +20,24 @@ public sealed class QuanLyNguoiDung(Func<PhienDuLieu> taoPhien, MatKhauHasher ha
     {
         if (matKhauTam.Length < 8) throw new ArgumentException("Mật khẩu tạm phải có ít nhất 8 ký tự.");
         using var phien = taoPhien();
-        nhanVien.MaNV = nhanVien.MaNV.Trim();
-        await nhanVien.Them();
-        taiKhoan.MaNV = nhanVien.MaNV;
-        taiKhoan.MatKhauHash = hasher.TaoHash(matKhauTam);
-        taiKhoan.TrangThai = "HoatDong";
-        await taiKhoan.Them();
-        taiKhoan.NhanVien = nhanVien;
-        return taiKhoan;
+        phien.BatDauGiaoDich();
+        try
+        {
+            await nhanVien.Them();
+            taiKhoan.MaTK = $"TK_{nhanVien.MaNV}";
+            taiKhoan.MaNV = nhanVien.MaNV;
+            taiKhoan.MatKhauHash = hasher.TaoHash(matKhauTam);
+            taiKhoan.TrangThai = "HoatDong";
+            await taiKhoan.Them();
+            taiKhoan.NhanVien = nhanVien;
+            phien.Commit();
+            return taiKhoan;
+        }
+        catch
+        {
+            phien.Rollback();
+            throw;
+        }
     }
 
     public async Task CapNhat(TaiKhoan taiKhoan, NhanVien nhanVien)
