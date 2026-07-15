@@ -8,12 +8,11 @@ public sealed class TaoPhieuDangKyHttpRequest
     public string? GioiTinh { get; set; }
     public string? SDT { get; set; }
     public string? Email { get; set; }
-    public string? DiaChiThuongTru { get; set; }
     public string? LoaiGiayTo { get; set; }
     public string SoGiayTo { get; set; } = string.Empty;
 
     // Thông tin lưu trú mong muốn
-    public string? KhuVuc { get; set; }
+    public string KhuVuc { get; set; } = string.Empty;
     public int? SoLuongNguoi { get; set; }
     public string? LoaiDichVu { get; set; }
     public decimal? MucGia { get; set; }

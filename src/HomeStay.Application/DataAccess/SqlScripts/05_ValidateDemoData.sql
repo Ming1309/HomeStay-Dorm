@@ -102,11 +102,19 @@ IF EXISTS (
     FROM Phong p
     INNER JOIN LoaiPhong lp ON lp.MaLP = p.MaLP
     LEFT JOIN Giuong g ON g.MaPhong = p.MaPhong
-    WHERE p.MaPhong BETWEEN 'P004' AND 'P012'
+    WHERE p.MaPhong BETWEEN 'P004' AND 'P013'
     GROUP BY p.MaPhong, lp.SucChua
     HAVING COUNT(g.MaGiuong) <> lp.SucChua
 )
     THROW 51006, 'So giuong cua phong scenario khong khop suc chua.', 1;
+GO
+
+IF (
+    SELECT COUNT(DISTINCT ToaNha)
+    FROM Phong
+    WHERE MaCN='CN01' AND ToaNha IS NOT NULL
+) < 2
+    THROW 51029, 'CN01 phai co it nhat hai toa nha de kiem thu chon khu vuc dang ky.', 1;
 GO
 
 -- Mỗi phiếu cọc có ít nhất một thành viên đại diện và đủ chi tiết giường.
@@ -183,6 +191,16 @@ IF EXISTS (
         INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc=hd.MaPhieuCoc WHERE lh.MaCN<>pc.MaCN
 )
     THROW 51024, 'Chung tu, lich hen va phong khong cung snapshot chi nhanh.', 1;
+GO
+
+IF EXISTS (
+    SELECT 1
+    FROM PhieuDangKy pdk
+    WHERE pdk.KhuVuc IS NULL OR NOT EXISTS (
+        SELECT 1 FROM Phong p WHERE p.MaCN=pdk.MaCN AND p.ToaNha=pdk.KhuVuc
+    )
+)
+    THROW 51028, 'Khu vuc mong muon cua phieu dang ky khong ton tai trong chi nhanh snapshot.', 1;
 GO
 
 IF EXISTS (

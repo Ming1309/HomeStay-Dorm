@@ -2,36 +2,42 @@
 title LAP PHIEU DANG KY - SO DO TUAN TU
 hide footbox
 autonumber
-actor "Nhan vien Sale" as Sale
-boundary RegistrationForm as UI
-control PhieuDangKyController as API
-control LapPhieuDangKy as UC
-entity KhachHang as KH
-entity PhieuDangKy as PDK
-database PhienDuLieu as DB
 
-Sale -> UI : Nhap va gui phieu dang ky
-UI -> API : POST /api/registrations
-API -> API : Lay MaNV tu JWT claim
-alt Khong co MaNV claim
-  API --> UI : 401 Unauthorized
-else Co MaNV claim
-  API -> UC : TaoPhieuDangKy(..., maNV)
-  UC -> DB : BatDauGiaoDich()
-  UC -> KH : KiemTraTonTai(soGiayTo)
-  alt Khach hang chua ton tai
-    UC -> KH : TaoMoi(...) + Them()
-  end
-  UC -> PDK : TaoMoi(..., thoiDiem)
-  UC -> PDK : KiemTraDieuKien(thoiDiem)
-  alt Du lieu hop le
-    UC -> PDK : Them()
-    UC -> DB : Commit()
-    UC --> API : phieuDangKy
-    API --> UI : 200 OK
-  else Du lieu khong hop le / loi ghi
-    UC -> DB : Rollback()
-    API --> UI : 409 / 500
-  end
+actor "Nhan vien Sale" as Sale
+boundary MHLapPhieuDangKy as MH
+control LapPhieuDangKy as UC
+control NhanVien as NV
+entity NhanVienDB as NVDB
+control Phong as P
+entity PhongDB as PDB
+control KhachHang as KH
+entity KhachHangDB as KHDB
+control PhieuDangKy as PDK
+entity PhieuDangKyDB as PDKDB
+
+Sale -> MH : Mo man hinh lap phieu dang ky
+MH -> MH : RegistrationForm()
+MH -> UC : LayKhuVucDangKy(maNV)
+UC -> NV : DocPhamVi(maNV)
+NV -> NVDB : DocChiTiet(maNV)
+UC -> P : LocPhongTheoTieuChi(null, null, null, maCN, null, 0, 0)
+P -> PDB : LayPhongTheoBoLoc(null, null, null, maCN, null, 0, 0)
+Sale -> MH : Nhap thong tin va chon Luu phieu
+MH -> MH : onSubmit(data)
+MH -> UC : TaoPhieuDangKy(hoTen, gioiTinh, sdt, email, loaiGiayTo, soGiayTo, khuVuc, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, maNV)
+UC -> NV : DocPhamVi(maNV)
+NV -> NVDB : DocChiTiet(maNV)
+UC -> P : LocPhongTheoTieuChi(khuVuc, null, null, maCN, null, 0, 0)
+P -> PDB : LayPhongTheoBoLoc(khuVuc, null, null, maCN, null, 0, 0)
+UC -> KH : KiemTraTonTai(soGiayTo)
+KH -> KHDB : KiemTraTonTai(soGiayTo)
+alt Khach hang chua ton tai
+  UC -> KH : TaoMoi(hoTen, gioiTinh, sdt, email, null, loaiGiayTo, soGiayTo)
+  UC -> KH : Them()
+  KH -> KHDB : Them(khachHang)
 end
+UC -> PDK : TaoMoi(maKH, maNV, maCN, tenChiNhanh, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem)
+UC -> PDK : KiemTraDieuKien(thoiDiem)
+UC -> PDK : Them()
+PDK -> PDKDB : Them(phieuDangKy)
 @enduml

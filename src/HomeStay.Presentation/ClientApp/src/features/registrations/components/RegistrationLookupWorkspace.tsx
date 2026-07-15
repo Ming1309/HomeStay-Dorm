@@ -290,7 +290,7 @@ export function RegistrationLookupWorkspace() {
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm text-gray-700">
                     <div>
-                      <p className="text-xs text-gray-500">Khu vực mong muốn</p>
+                      <p className="text-xs text-gray-500">Khu vực/tòa mong muốn</p>
                       <p className="font-medium text-gray-900">
                         {selectedRegistration.desiredArea}
                       </p>

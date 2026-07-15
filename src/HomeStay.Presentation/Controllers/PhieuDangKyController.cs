@@ -11,6 +11,15 @@ using Microsoft.AspNetCore.Mvc;
 [Authorize(Roles = "Sale")]
 public sealed class PhieuDangKyController(LapPhieuDangKy lapPhieuDangKy) : ControllerBase
 {
+    [HttpGet("areas")]
+    public async Task<IActionResult> LayKhuVucDangKy()
+    {
+        var maNV = User.FindFirstValue("MaNV");
+        if (string.IsNullOrWhiteSpace(maNV))
+            return Unauthorized(new { Message = "Không xác định được Nhân viên Sale đang đăng nhập." });
+        return Ok(await lapPhieuDangKy.LayKhuVucDangKy(maNV));
+    }
+
     // UC1 - Lập phiếu đăng ký
     [HttpPost]
     public async Task<IActionResult> TaoPhieuDangKy([FromBody] TaoPhieuDangKyHttpRequest request)
@@ -23,7 +32,7 @@ public sealed class PhieuDangKyController(LapPhieuDangKy lapPhieuDangKy) : Contr
         {
             var phieu = await lapPhieuDangKy.TaoPhieuDangKy(
                 request.HoTen, request.GioiTinh, request.SDT, request.Email,
-                request.DiaChiThuongTru, request.LoaiGiayTo, request.SoGiayTo,
+                request.LoaiGiayTo, request.SoGiayTo,
                 request.KhuVuc, request.SoLuongNguoi, request.LoaiDichVu, request.MucGia,
                 request.ThoiGianDuKienVao, request.ThoiHanThue, request.YeuCauKhac,
                 maNV);

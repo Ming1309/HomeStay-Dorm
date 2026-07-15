@@ -4,7 +4,6 @@ export interface CustomerInfo {
   customerName: string;
   phone: string;
   email: string;
-  address: string;
   gender: "male" | "female" | "other";
   idType: "cccd" | "passport" | "other";
   idNumber: string;
@@ -116,16 +115,6 @@ function priceCeiling(value: string): number {
   return ceilings[value] ?? 3_000_000;
 }
 
-export function formatArea(area: string): string {
-  const areas: Record<string, string> = {
-    "area-a": "Khu vực A",
-    "area-b": "Khu vực B",
-    "area-c": "Khu vực C",
-    "area-d": "Khu vực D",
-  };
-  return areas[area] ?? area;
-}
-
 export function formatPriceRange(range: string): string {
   const ranges: Record<string, string> = {
     "1-3m": "1 - 3 triệu VNĐ",
@@ -171,10 +160,9 @@ export async function createRegistration(data: RegistrationData): Promise<Regist
         gioiTinh: data.gender === "male" ? "Nam" : data.gender === "female" ? "Nữ" : "Khác",
         sdt: data.phone,
         email: data.email,
-        diaChiThuongTru: data.address,
         loaiGiayTo: data.idType === "cccd" ? "CCCD" : data.idType === "passport" ? "Hộ chiếu" : "Khác",
         soGiayTo: data.idNumber,
-        khuVuc: formatArea(data.desiredArea),
+        khuVuc: data.desiredArea,
         soLuongNguoi: Number.parseInt(data.numberOfPeople, 10) || 1,
         loaiDichVu: data.roomType === "whole-room" ? "NguyenCan" : "OGhep",
         mucGia: priceCeiling(data.priceRange),
@@ -229,6 +217,13 @@ export async function searchRegistrations(paramsValue: RegistrationSearchParams)
 
 export const registrationService = {
   create: createRegistration,
+  async listAreas(): Promise<string[]> {
+    return readJson(
+      await fetch("/api/registrations/areas"),
+      z.array(z.string().min(1)),
+      "Không thể tải danh sách khu vực.",
+    );
+  },
   saveDraft: saveRegistrationDraft,
   async loadDraft(): Promise<RegistrationData | null> {
     return loadRegistrationDraft();

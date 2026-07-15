@@ -40,7 +40,9 @@ VALUES
 ('P010', '208', N'Tòa B', N'Tầng 2', N'Nam', N'GiuCho', 'LP02', 'CN02'),
 ('P011', '209', N'Tòa B', N'Tầng 2', N'Nữ', N'Trong', 'LP08', 'CN02'),
 -- UC 1.4.23: phòng đang dùng, chờ thanh lý sau đối soát
-('P012', '210', N'Tòa A', N'Tầng 2', N'Nam', N'DangSuDung', 'LP04', 'CN01');
+('P012', '210', N'Tòa A', N'Tầng 2', N'Nam', N'DangSuDung', 'LP04', 'CN01'),
+-- Tòa thứ hai của CN01 để khách có lựa chọn khu vực khi lập phiếu đăng ký.
+('P013', '301', N'Tòa C', N'Tầng 3', N'Nam', N'Trong', 'LP04', 'CN01');
 GO
 
 -- P003/G009-G010 có sẵn từ 02_Seeds.sql và được PC0008 giữ cọc.
@@ -103,7 +105,11 @@ VALUES
 ('G043', N'Giường A', N'DangSuDung', 'P012'),
 ('G044', N'Giường B', N'DangSuDung', 'P012'),
 ('G045', N'Giường C', N'Trong', 'P012'),
-('G046', N'Giường D', N'Trong', 'P012');
+('G046', N'Giường D', N'Trong', 'P012'),
+('G047', N'Giường A', N'Trong', 'P013'),
+('G048', N'Giường B', N'Trong', 'P013'),
+('G049', N'Giường C', N'Trong', 'P013'),
+('G050', N'Giường D', N'Trong', 'P013');
 GO
 
 -- ============================================================
@@ -111,16 +117,16 @@ GO
 -- ============================================================
 INSERT INTO PhieuDangKy (MaPDK, KhuVuc, SoLuongNguoi, LoaiDichVu, MucGia, ThoiGianDuKienVao, ThoiHanThue, YeuCauKhac, TrangThai, MaKH, MaNV, MaCN)
 VALUES
-('PDK0001', N'Quận 1', 1, N'Phòng dịch vụ', 950000, '2026-07-20', 6, N'Cần tư vấn phòng', N'DangXuLy', 'KH0001', 'NV03', 'CN01'),
-('PDK0002', N'Thủ Đức', 1, N'Phòng dịch vụ', 950000, '2026-07-21', 6, N'Ưu tiên gần cổng', N'DaHenXemPhong', 'KH0002', 'NV03', 'CN01'),
-('PDK0003', N'Quận 7', 1, N'Phòng dịch vụ', 950000, '2026-07-22', 6, N'Khách hủy yêu cầu', N'DaHuy', 'KH0003', 'NV03', 'CN01'),
-('PDK0004', N'Quận 1', 1, N'Phòng dịch vụ', 950000, '2026-07-23', 6, N'Xem phòng trước khi cọc', N'DaHenXemPhong', 'KH0004', 'NV03', 'CN01'),
-('PDK0005', N'Thủ Đức', 2, N'Phòng dịch vụ', 1900000, '2026-07-24', 6, N'Ở ghép hai người', N'DaHenXemPhong', 'KH0005', 'NV03', 'CN01'),
-('PDK0006', N'Quận 1', 2, N'Phòng dịch vụ', 1900000, '2026-07-25', 6, N'Đăng ký cùng nhóm', N'DaHenXemPhong', 'KH0006', 'NV03', 'CN01'),
-('PDK0007', N'Thủ Đức', 2, N'Phòng dịch vụ', 1900000, '2026-07-26', 6, N'Đã xác nhận phòng', N'DaHenXemPhong', 'KH0007', 'NV03', 'CN01'),
-('PDK0008', N'Thủ Đức', 6, N'Phòng dịch vụ', 1860000, '2026-07-27', 6, N'Thuê nguyên căn', N'DaHenXemPhong', 'KH0008', 'NV04', 'CN02'),
-('PDK0009', N'Thủ Đức', 2, N'Phòng dịch vụ', 1900000, '2026-07-28', 6, N'Đã nhận phòng', N'DaHenXemPhong', 'KH0009', 'NV04', 'CN02'),
-('PDK0010', N'Quận 1', 2, N'Phòng dịch vụ', 1900000, '2026-07-29', 6, N'Đã hoàn tất đặt phòng', N'DaHenXemPhong', 'KH0010', 'NV03', 'CN01');
+('PDK0001', N'Tòa C', 1, N'Phòng dịch vụ', 950000, '2026-07-20', 6, N'Cần tư vấn phòng', N'DangXuLy', 'KH0001', 'NV03', 'CN01'),
+('PDK0002', N'Tòa A', 1, N'Phòng dịch vụ', 950000, '2026-07-21', 6, N'Ưu tiên gần cổng', N'DaHenXemPhong', 'KH0002', 'NV03', 'CN01'),
+('PDK0003', N'Tòa A', 1, N'Phòng dịch vụ', 950000, '2026-07-22', 6, N'Khách hủy yêu cầu', N'DaHuy', 'KH0003', 'NV03', 'CN01'),
+('PDK0004', N'Tòa A', 1, N'Phòng dịch vụ', 950000, '2026-07-23', 6, N'Xem phòng trước khi cọc', N'DaHenXemPhong', 'KH0004', 'NV03', 'CN01'),
+('PDK0005', N'Tòa A', 2, N'Phòng dịch vụ', 1900000, '2026-07-24', 6, N'Ở ghép hai người', N'DaHenXemPhong', 'KH0005', 'NV03', 'CN01'),
+('PDK0006', N'Tòa A', 2, N'Phòng dịch vụ', 1900000, '2026-07-25', 6, N'Đăng ký cùng nhóm', N'DaHenXemPhong', 'KH0006', 'NV03', 'CN01'),
+('PDK0007', N'Tòa A', 2, N'Phòng dịch vụ', 1900000, '2026-07-26', 6, N'Đã xác nhận phòng', N'DaHenXemPhong', 'KH0007', 'NV03', 'CN01'),
+('PDK0008', N'Tòa B', 6, N'Phòng dịch vụ', 1860000, '2026-07-27', 6, N'Thuê nguyên căn', N'DaHenXemPhong', 'KH0008', 'NV04', 'CN02'),
+('PDK0009', N'Tòa B', 2, N'Phòng dịch vụ', 1900000, '2026-07-28', 6, N'Đã nhận phòng', N'DaHenXemPhong', 'KH0009', 'NV04', 'CN02'),
+('PDK0010', N'Tòa A', 2, N'Phòng dịch vụ', 1900000, '2026-07-29', 6, N'Đã hoàn tất đặt phòng', N'DaHenXemPhong', 'KH0010', 'NV03', 'CN01');
 GO
 
 -- ============================================================
@@ -356,8 +362,8 @@ GO
 -- Bắt đầu cấp mã sau toàn bộ dữ liệu seed/demo.
 ALTER SEQUENCE dbo.Seq_KhachHang RESTART WITH 16;
 ALTER SEQUENCE dbo.Seq_NhanVien RESTART WITH 7;
-ALTER SEQUENCE dbo.Seq_Phong RESTART WITH 13;
-ALTER SEQUENCE dbo.Seq_Giuong RESTART WITH 47;
+ALTER SEQUENCE dbo.Seq_Phong RESTART WITH 14;
+ALTER SEQUENCE dbo.Seq_Giuong RESTART WITH 51;
 ALTER SEQUENCE dbo.Seq_DichVu RESTART WITH 6;
 ALTER SEQUENCE dbo.Seq_TaiSan RESTART WITH 14;
 ALTER SEQUENCE dbo.Seq_QuyDinh RESTART WITH 4;

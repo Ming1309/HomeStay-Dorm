@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useForm, Controller, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,7 +27,6 @@ const registrationSchema = z.object({
     .min(1, "Số điện thoại là bắt buộc")
     .regex(/^[0-9]{10,11}$/, "Số điện thoại không hợp lệ"),
   email: z.string().min(1, "Email là bắt buộc").email("Email không hợp lệ"),
-  address: z.string().min(1, "Địa chỉ là bắt buộc"),
   gender: z.enum(["male", "female", "other"], {
     errorMap: () => ({ message: "Giới tính là bắt buộc" }),
   }),
@@ -101,13 +101,6 @@ const RENTAL_DURATIONS = [
   { value: "flexible", label: "Linh hoạt" },
 ];
 
-const AREAS = [
-  { value: "area-a", label: "Khu vực A" },
-  { value: "area-b", label: "Khu vực B" },
-  { value: "area-c", label: "Khu vực C" },
-  { value: "area-d", label: "Khu vực D" },
-];
-
 const PRICE_RANGES = [
   { value: "1-3m", label: "1 - 3 triệu VNĐ" },
   { value: "3-5m", label: "3 - 5 triệu VNĐ" },
@@ -117,13 +110,14 @@ const PRICE_RANGES = [
 ];
 
 export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps) {
+  const [areas, setAreas] = useState<string[]>([]);
+  const [isLoadingAreas, setIsLoadingAreas] = useState(true);
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
     watch,
     reset,
-    getValues,
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     mode: "onBlur",
@@ -133,7 +127,7 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
       roomType: "whole-room",
       rentalType: "short-term",
       rentalDuration: "1-month",
-      desiredArea: "area-a",
+      desiredArea: "",
       priceRange: "1-3m",
       parkingRequired: false,
       acRequired: false,
@@ -148,6 +142,13 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
       notes: "",
     },
   });
+
+  useEffect(() => {
+    registrationService.listAreas()
+      .then(setAreas)
+      .catch((error) => toast.error(error instanceof Error ? error.message : "Không thể tải khu vực"))
+      .finally(() => setIsLoadingAreas(false));
+  }, []);
 
   const watchQuietHours = watch("quietHours");
 
@@ -285,28 +286,6 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
                       )}
                     />
                     {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-                  </div>
-
-                  {/* Địa chỉ */}
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="address" className="text-sm font-medium">
-                      Địa chỉ <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="address"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          id="address"
-                          placeholder="Nhập địa chỉ hiện tại"
-                          className={errors.address ? "border-red-500" : ""}
-                        />
-                      )}
-                    />
-                    {errors.address && (
-                      <p className="text-sm text-red-500">{errors.address.message}</p>
-                    )}
                   </div>
 
                   {/* Loại giấy tờ */}
@@ -499,31 +478,27 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
                   {/* Khu vực mong muốn */}
                   <div className="space-y-2">
                     <Label htmlFor="desiredArea" className="text-sm font-medium">
-                      Khu vực mong muốn <span className="text-red-500">*</span>
+                      Khu vực/tòa mong muốn <span className="text-red-500">*</span>
                     </Label>
                     <Controller
                       name="desiredArea"
                       control={control}
                       render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger
-                            id="desiredArea"
-                            className={errors.desiredArea ? "border-red-500" : ""}
-                          >
-                            <SelectValue placeholder="Chọn khu vực" />
+                        <Select value={field.value} onValueChange={field.onChange} disabled={isLoadingAreas || areas.length === 0}>
+                          <SelectTrigger id="desiredArea" className={errors.desiredArea ? "border-red-500" : ""}>
+                            <SelectValue placeholder={isLoadingAreas ? "Đang tải khu vực..." : "Chọn khu vực/tòa"} />
                           </SelectTrigger>
                           <SelectContent>
-                            {AREAS.map((area) => (
-                              <SelectItem key={area.value} value={area.value}>
-                                {area.label}
-                              </SelectItem>
+                            {areas.map((area) => (
+                              <SelectItem key={area} value={area}>{area}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       )}
                     />
-                    {errors.desiredArea && (
-                      <p className="text-sm text-red-500">{errors.desiredArea.message}</p>
+                    {errors.desiredArea && <p className="text-sm text-red-500">{errors.desiredArea.message}</p>}
+                    {!isLoadingAreas && areas.length === 0 && (
+                      <p className="text-xs text-red-500">Chi nhánh chưa cấu hình tòa nhà để tiếp nhận đăng ký.</p>
                     )}
                   </div>
 

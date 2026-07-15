@@ -13,16 +13,33 @@ public sealed class LapPhieuDangKy
         _timeProvider = timeProvider;
     }
 
+    public async Task<IReadOnlyList<string>> LayKhuVucDangKy(string? maNV)
+    {
+        using var phien = _taoPhienDuLieu();
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        var phongs = await Phong.LocPhongTheoTieuChi(
+            null, null, null, nhanVien.MaCN, null, 0, 0);
+        return phongs
+            .Select(phong => phong.ToaNha?.Trim())
+            .Where(toaNha => !string.IsNullOrWhiteSpace(toaNha))
+            .Select(toaNha => toaNha!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(toaNha => toaNha, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+    }
+
     public async Task<PhieuDangKy> TaoPhieuDangKy(
         string hoTen, string? gioiTinh, string? sdt, string? email,
-        string? diaChiThuongTru, string? loaiGiayTo, string soGiayTo,
-        string? khuVuc, int? soLuongNguoi, string? loaiDichVu, decimal? mucGia,
+        string? loaiGiayTo, string soGiayTo,
+        string khuVuc, int? soLuongNguoi, string? loaiDichVu, decimal? mucGia,
         DateTime? thoiGianDuKienVao, int? thoiHanThue, string? yeuCauKhac, string? maNV)
     {
         if (string.IsNullOrWhiteSpace(hoTen))
             throw new InvalidOperationException("Họ tên khách hàng không được để trống.");
         if (string.IsNullOrWhiteSpace(soGiayTo))
             throw new InvalidOperationException("Số giấy tờ không được để trống.");
+        if (string.IsNullOrWhiteSpace(khuVuc))
+            throw new InvalidOperationException("Khu vực mong muốn không được để trống.");
 
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
@@ -30,6 +47,10 @@ public sealed class LapPhieuDangKy
         {
             var thoiDiem = _timeProvider.GetLocalNow().DateTime;
             var nhanVien = await NhanVien.DocPhamVi(maNV);
+            var phongs = await Phong.LocPhongTheoTieuChi(
+                khuVuc.Trim(), null, null, nhanVien.MaCN, null, 0, 0);
+            if (phongs.Count == 0)
+                throw new InvalidOperationException("Khu vực mong muốn không thuộc chi nhánh tiếp nhận.");
 
             // Kiểm tra khách hàng đã tồn tại theo số giấy tờ
             var khachHang = await KhachHang.KiemTraTonTai(soGiayTo);
@@ -37,11 +58,11 @@ public sealed class LapPhieuDangKy
             {
                 // Tạo mới khách hàng nếu chưa tồn tại
                 khachHang = KhachHang.TaoMoi(hoTen, gioiTinh, sdt, email,
-                    diaChiThuongTru, loaiGiayTo, soGiayTo);
+                    null, loaiGiayTo, soGiayTo);
                 await khachHang.Them();
             }
 
-            var phieuDangKy = PhieuDangKy.TaoMoi(khachHang.MaKH, maNV, nhanVien.MaCN, khuVuc, soLuongNguoi,
+            var phieuDangKy = PhieuDangKy.TaoMoi(khachHang.MaKH, maNV, nhanVien.MaCN, khuVuc.Trim(), soLuongNguoi,
                 loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem);
             phieuDangKy.KiemTraDieuKien(thoiDiem);
             await phieuDangKy.Them();
