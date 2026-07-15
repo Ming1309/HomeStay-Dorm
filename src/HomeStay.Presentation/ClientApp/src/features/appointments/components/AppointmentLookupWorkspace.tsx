@@ -138,7 +138,7 @@ export function AppointmentLookupWorkspace() {
       <aside className="flex w-full max-w-[380px] flex-col border-r border-gray-200 bg-white">
         <div className="sticky top-0 z-10 border-b border-gray-200 bg-white p-4">
           <div className="mb-4">
-            <h1 className="text-lg font-semibold text-gray-900">Tra cứu lịch hẹn</h1>
+            <h1 className="text-lg font-semibold text-gray-900">Quản lý lịch hẹn</h1>
             <p className="mt-1 text-xs text-gray-500">
               Tìm nhanh lịch hẹn theo mã/tên khách hàng, chi nhánh, ngày, giờ hoặc trạng thái.
             </p>

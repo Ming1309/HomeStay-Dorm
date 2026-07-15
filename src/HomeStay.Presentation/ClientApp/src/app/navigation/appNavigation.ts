@@ -110,7 +110,7 @@ export const navGroupsByRole: Record<UserRole, AppNavGroup[]> = {
         { to: "/sale/tra-cuu-phieu-dang-ky", label: "Tra cứu đăng ký", icon: Search },
         { to: "/sale/tra-cuu-phieu-coc", label: "Tra cứu phiếu cọc", icon: Search },
         { to: "/sale/tra-cuu-hop-dong", label: "Tra cứu hợp đồng", icon: Search },
-        { to: "/sale/tra-cuu-lich-hen", label: "Tra cứu lịch hẹn", icon: Search },
+        { to: "/sale/tra-cuu-lich-hen", label: "Quản lý lịch hẹn", icon: Search },
         { to: "/sale/tra-cuu-phong", label: "Tra cứu phòng / giường", icon: Bed },
       ],
     },

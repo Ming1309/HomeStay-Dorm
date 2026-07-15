@@ -343,23 +343,7 @@ export function SaleAppointmentPage() {
                           <p className="text-sm text-red-500">{errors.time.message}</p>
                         )}
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="status" className="text-sm font-medium">
-                          Trạng thái
-                        </Label>
-                        <Select value={status} onValueChange={(v) => setStatus(v)}>
-                          <SelectTrigger id="status" className="h-10 text-sm">
-                            <SelectValue placeholder="Chọn trạng thái" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {APPOINTMENT_STATUSES.map((s) => (
-                              <SelectItem key={s} value={s}>
-                                {s}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+
                     </div>
 
                     <div className="rounded-lg border border-dashed border-gray-200 bg-slate-50 p-3 text-sm text-gray-600">
