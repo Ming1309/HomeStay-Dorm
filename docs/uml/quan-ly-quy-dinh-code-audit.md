@@ -11,7 +11,7 @@
 | Thao tác | Boundary | Control | Entity | Data access / schema |
 |---|---|---|---|---|
 | Xem danh sách | `AdminRegulationsPage` | `LayDanhSach` | `QuyDinh.LayDanhSach` | `QuyDinhDB.LayDanhSach` |
-| Thêm | Form multipart | `Them` | Chuẩn hóa, kiểm tra, sinh mã, `Them` | `QuyDinhDB.Them`, `QuyDinhFileStorage.Luu` |
+| Thêm | Form multipart | `Them` | Chuẩn hóa, kiểm tra, `Them` | `QuyDinhDB.Them` cấp mã, `QuyDinhFileStorage.Luu` |
 | Sửa | Form multipart | `CapNhat` | `Doc`, kiểm tra, `CapNhat` | `QuyDinhDB.CapNhat`, thay PDF khi có |
 | Xóa | Dialog xác nhận | `Xoa` | `DangDuocThamChieu`, `Xoa` | Kiểm tra `HopDong_QuyDinh.MaQD`, xóa DB rồi dọn PDF |
 | Xem PDF | Nút `PDF` | `DocVanBan` | Không thay đổi nghiệp vụ | `QuyDinhFileStorage.Doc` |
@@ -23,4 +23,4 @@
 - `NgayKetThuc` phải lớn hơn `NgayApDung`; ngày kết thúc vẫn được tính là còn hiệu lực.
 - Quan hệ `HopDong` - `QuyDinh` là nhiều-nhiều qua khóa kép `HopDong_QuyDinh(MaHD, MaQD)`.
 - Không xóa bất kỳ quy định nào đã được `HopDong_QuyDinh` tham chiếu để bảo toàn lịch sử hợp đồng.
-- Tạo mới sinh mã tuần tự dưới khóa `UPDLOCK, HOLDLOCK` trong transaction.
+- `QuyDinhDB.Them` cấp mã tuần tự bằng SQL sequence trong transaction.

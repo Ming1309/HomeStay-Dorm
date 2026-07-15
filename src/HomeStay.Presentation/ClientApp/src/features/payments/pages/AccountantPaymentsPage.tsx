@@ -41,7 +41,9 @@ export function AccountantPaymentsPage() {
 
 export function AccountantPaymentsScreen({ currentPath }: { currentPath: string }) {
   const { items: queue, loading, error, refresh } = useContractPaymentQueue();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("maHD"),
+  );
   const selected = queue.find((q) => q.maHD === selectedId) ?? null;
 
   return (

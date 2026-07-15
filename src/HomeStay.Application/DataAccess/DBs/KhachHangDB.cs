@@ -6,11 +6,6 @@ using HomeStay.Application.DataAccess.DbConnections;
 
 public static class KhachHangDB
 {
-    public static Task<long> LaySoThuTuMoi() =>
-        PhienDuLieu.Session.Connection.ExecuteScalarAsync<long>(
-            "SELECT NEXT VALUE FOR dbo.Seq_KhachHang",
-            transaction: PhienDuLieu.Session.Transaction);
-
     public static async Task<KhachHang?> TimTheoSoGiayTo(string soGiayTo)
     {
         const string sql = "SELECT * FROM KhachHang WITH (UPDLOCK, HOLDLOCK) WHERE SoGiayTo=@SoGiayTo";
@@ -20,6 +15,7 @@ public static class KhachHangDB
 
     public static async Task Them(KhachHang khachHang)
     {
+        khachHang.MaKH = await MaSoDB.LayMaMoi("KhachHang");
         const string sql = """
             INSERT INTO KhachHang (MaKH,HoTen,NgaySinh,GioiTinh,QuocTich,LoaiGiayTo,SoGiayTo,DiaChiThuongTru,SDT,Email)
             VALUES (@MaKH,@HoTen,@NgaySinh,@GioiTinh,@QuocTich,@LoaiGiayTo,@SoGiayTo,@DiaChiThuongTru,@SDT,@Email)

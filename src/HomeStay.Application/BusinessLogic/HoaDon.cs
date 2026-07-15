@@ -71,7 +71,6 @@ public sealed class HoaDon
 
         var hoaDon = new HoaDon
         {
-            MaHoaDon = $"HDON{ngayLap:yyMMddHHmmssfff}",
             NgayLap = ngayLap.Date,
             HanThanhToan = ngayLap.Date,
             LoaiHoaDon = "KyDau",
@@ -119,8 +118,6 @@ public sealed class HoaDon
 
         var hoaDon = new HoaDon
         {
-            // VARCHAR(20): "HDON" (4) + yyMMddHHmmssfff (15) = 19
-            MaHoaDon = $"HDON{ngayLap:yyMMddHHmmssfff}",
             NgayLap = ngayLap.Date,
             HanThanhToan = null,
             LoaiHoaDon = "BoiThuong",

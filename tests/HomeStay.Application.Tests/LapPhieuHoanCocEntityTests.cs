@@ -15,7 +15,7 @@ public sealed class LapPhieuHoanCocEntityTests
         var phieuHoanCoc = PhieuHoanCoc.TaoPhieuHoanCoc("PDS0001", 1060000m, "ChuyenKhoan", "Tài khoản nhận", "GD001", "/proof.png", "NV02", now);
 
         Assert.NotNull(phieuHoanCoc);
-        Assert.StartsWith("PHC20260713120000", phieuHoanCoc.MaPHC);
+        Assert.Empty(phieuHoanCoc.MaPHC); // Database cấp mã khi lưu.
         Assert.Equal(1060000m, phieuHoanCoc.SoTienHoan);
         Assert.Equal("PDS0001", phieuHoanCoc.MaPDS);
         Assert.Equal("ChuyenKhoan", phieuHoanCoc.PhuongThucHoan);
@@ -93,9 +93,11 @@ public sealed class LapPhieuHoanCocEntityTests
     public async System.Threading.Tasks.Task LayDSPhieuDoiSoatCanHoan_WithConfiguredDatabase_ReturnsList()
     {
         var factory = new EnvironmentSqlConnectionFactory();
+        Func<PhienDuLieu> taoPhien = () => new PhienDuLieu(new SqlSession(factory));
         var lap = new LapPhieuHoanCoc(
-            () => new PhienDuLieu(new SqlSession(factory)),
-            TimeProvider.System);
+            taoPhien,
+            TimeProvider.System,
+            new DichVuThongBao(taoPhien, TimeProvider.System));
 
         var results = await lap.LayDSPhieuDoiSoatCanHoan();
 

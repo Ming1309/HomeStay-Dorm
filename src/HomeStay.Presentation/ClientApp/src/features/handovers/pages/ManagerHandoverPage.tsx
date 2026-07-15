@@ -51,7 +51,9 @@ type FormValues = z.infer<typeof schema>;
 export function ManagerHandoverPage() {
   const [items, setItems] = useState<HandoverListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("maHD"),
+  );
   const [query, setQuery] = useState("");
 
   useEffect(() => {

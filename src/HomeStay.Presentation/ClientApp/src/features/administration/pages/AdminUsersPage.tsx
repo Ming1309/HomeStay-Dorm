@@ -271,7 +271,6 @@ export function AdminUsersPage() {
           maCN: values.branch,
         }
       : {
-          maNV: `NV${Date.now().toString().slice(-8)}`,
           hoTen: values.fullName,
           sdt: values.phone,
           email: values.email,

@@ -29,7 +29,6 @@ public sealed class QuanLyQuyDinh(
         {
             using var phien = taoPhienDuLieu();
             phien.BatDauGiaoDich();
-            quyDinh.MaQD = await QuyDinh.TaoMaMoi();
             quyDinh.KiemTraDuLieuHopLe();
             await quyDinh.Them();
             phien.Commit();

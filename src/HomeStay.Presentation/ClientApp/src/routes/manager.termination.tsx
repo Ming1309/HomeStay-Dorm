@@ -21,7 +21,9 @@ export const Route = createFileRoute("/manager/termination")({
 
 function ManagerTerminationPage() {
   const [items, setItems] = useState<HopDongChoThanhLy[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("maHD"),
+  );
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
 

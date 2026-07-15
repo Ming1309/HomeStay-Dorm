@@ -86,7 +86,6 @@ public sealed class Giuong
 
     public static Task<bool> DangDuocThamChieu(string maGiuong) => GiuongDB.DangDuocThamChieu(maGiuong);
 
-    public static Task<string> TaoMaMoi() => GiuongDB.TaoMaMoi();
 
     public Task Them() => GiuongDB.Them(this);
 

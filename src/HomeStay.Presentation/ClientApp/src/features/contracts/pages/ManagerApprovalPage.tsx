@@ -53,7 +53,9 @@ export function ManagerApprovalPage() {
 
   const [items, setItems] = useState<PhieuCocChoDuyet[]>([]);
   const [detail, setDetail] = useState<ChiTietXetDuyet | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("maPhieuCoc"),
+  );
   const [query, setQuery] = useState("");
   const [loadingList, setLoadingList] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);

@@ -10,11 +10,13 @@ public sealed class ThanhToanTraPhong
 {
     private readonly Func<PhienDuLieu> _taoPhienDuLieu;
     private readonly TimeProvider _timeProvider;
+    private readonly DichVuThongBao _thongBao;
 
-    public ThanhToanTraPhong(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
+    public ThanhToanTraPhong(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider, DichVuThongBao thongBao)
     {
         _taoPhienDuLieu = taoPhienDuLieu;
         _timeProvider = timeProvider;
+        _thongBao = thongBao;
     }
 
     public async Task<IReadOnlyList<PhieuDoiSoatDto>> LayDSPhieuDoiSoatDaChot()
@@ -158,6 +160,23 @@ public sealed class ThanhToanTraPhong
             await phieuThu.LuuPhieu();
 
             await PhieuDoiSoat.ChuyenSangDaTatToan(maPDS);
+            await _thongBao.DongTacVu(
+                LoaiSuKienThongBao.PhieuDoiSoatChoThuThem, maPDS, maNV);
+            if (!string.IsNullOrWhiteSpace(pds.MaHD))
+            {
+                var phieuCoc = await PhieuCoc.DocChiTiet(pds.MaPhieuCoc)
+                    ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc của phiếu đối soát.");
+                await _thongBao.PhatCanXuLyTheoVaiTro(
+                    LoaiSuKienThongBao.HopDongChoThanhLy,
+                    phieuCoc.MaCN,
+                    "QuanLy",
+                    "Khách đã thanh toán đủ công nợ",
+                    $"Phiếu {pds.MaPDS} đã thu đủ {pds.TienThuThem:N0} VNĐ. Hợp đồng {pds.MaHD} có thể thanh lý.",
+                    $"/manager/termination?maHD={Uri.EscapeDataString(pds.MaHD)}",
+                    pds.MaHD,
+                    maNV,
+                    tone: "green");
+            }
 
             phien.Commit();
             return phieuThu;

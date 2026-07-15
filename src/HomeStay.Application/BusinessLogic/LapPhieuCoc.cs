@@ -6,11 +6,13 @@ public sealed class LapPhieuCoc
 {
     private readonly Func<PhienDuLieu> _taoPhienDuLieu;
     private readonly TimeProvider _timeProvider;
+    private readonly DichVuThongBao _thongBao;
 
-    public LapPhieuCoc(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider)
+    public LapPhieuCoc(Func<PhienDuLieu> taoPhienDuLieu, TimeProvider timeProvider, DichVuThongBao thongBao)
     {
         _taoPhienDuLieu = taoPhienDuLieu;
         _timeProvider = timeProvider;
+        _thongBao = thongBao;
     }
 
     public async Task<IReadOnlyList<LichHen>> LayDanhSachKhachChoCoc(string? maNV)
@@ -73,11 +75,19 @@ public sealed class LapPhieuCoc
 
             var phieuCoc = PhieuCoc.TaoMoi(hinhThucThue, khachHang, phong, giuongs,
                 maNhanVien, _timeProvider.GetLocalNow().DateTime);
-            lichHen.GanPhieuCoc(phieuCoc.MaPhieuCoc);
-
             await phieuCoc.Them();
+            lichHen.GanPhieuCoc(phieuCoc.MaPhieuCoc);
             await phong.CapNhat();
             await lichHen.LuuPhieuCoc();
+            await _thongBao.PhatCanXuLyTheoVaiTro(
+                LoaiSuKienThongBao.PhieuCocChoTinhTien,
+                phieuCoc.MaCN,
+                "KeToan",
+                "Phiếu cọc mới cần tính tiền",
+                $"Phiếu cọc {phieuCoc.MaPhieuCoc} của {khachHang.HoTen} đang chờ xác định số tiền cọc.",
+                $"/accountant/deposit-calc?maPhieuCoc={Uri.EscapeDataString(phieuCoc.MaPhieuCoc)}",
+                phieuCoc.MaPhieuCoc,
+                maNhanVien);
             phien.Commit();
             return phieuCoc;
         }

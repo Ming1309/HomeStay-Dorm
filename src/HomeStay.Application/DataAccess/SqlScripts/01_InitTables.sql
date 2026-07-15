@@ -28,11 +28,25 @@ SET ARITHABORT ON;
 SET NUMERIC_ROUNDABORT OFF;
 GO
 
--- Sequence sinh mã khách hàng tuần tự (NEXT VALUE FOR dbo.Seq_KhachHang)
-CREATE SEQUENCE dbo.Seq_KhachHang
-    AS BIGINT
-    START WITH 1
-    INCREMENT BY 1;
+-- Sequence cấp mã kỹ thuật. Prefix/độ rộng được định dạng tại tầng DataAccess.
+CREATE SEQUENCE dbo.Seq_KhachHang AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_NhanVien AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_Phong AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_Giuong AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_DichVu AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_TaiSan AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_QuyDinh AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_ChinhSachHoanCoc AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_PhieuDangKy AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_LichHen AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_PhieuCoc AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_HopDong AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_BienBanBanGiao AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_BienBanThuHoi AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_HoaDon AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_PhieuDoiSoat AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_PhieuThu AS BIGINT START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE dbo.Seq_PhieuHoanCoc AS BIGINT START WITH 1 INCREMENT BY 1;
 GO
 
 -- ============================================================
@@ -362,20 +376,28 @@ CREATE TABLE PhieuHoanCoc (
 GO
 
 CREATE TABLE ThongBao (
-    MaTB         VARCHAR(20)    NOT NULL,
-    TieuDe       NVARCHAR(200)  NOT NULL,
-    NoiDung      NVARCHAR(500)  NOT NULL,
-    VaiTroNhan   NVARCHAR(20)   NOT NULL,
-    LienKet      NVARCHAR(200)  NULL,
-    Tone         NVARCHAR(20)   NOT NULL,
-    ThoiGianTao  DATETIME       NOT NULL,
-    MaNVGui      VARCHAR(20)    NULL,
-    MaThamChieu  VARCHAR(50)    NULL
+    MaTB            VARCHAR(36)    NOT NULL,
+    LoaiSuKien      NVARCHAR(80)   NOT NULL,
+    LoaiThongBao    NVARCHAR(20)   NOT NULL,
+    TieuDe          NVARCHAR(200)  NOT NULL,
+    NoiDung         NVARCHAR(500)  NOT NULL,
+    MaCN            VARCHAR(20)    NOT NULL,
+    VaiTroNhan      NVARCHAR(20)   NOT NULL,
+    MaNVNhan        VARCHAR(20)    NULL,
+    LienKet         NVARCHAR(300)  NULL,
+    Tone            NVARCHAR(20)   NOT NULL,
+    TrangThai       NVARCHAR(20)   NOT NULL,
+    KhoaChongTrung  NVARCHAR(180)  NOT NULL,
+    ThoiGianTao     DATETIME       NOT NULL,
+    MaNVGui         VARCHAR(20)    NULL,
+    MaThamChieu     VARCHAR(50)    NULL,
+    MaNVXuLy        VARCHAR(20)    NULL,
+    ThoiGianXuLy    DATETIME       NULL
 );
 GO
 
 CREATE TABLE ThongBao_NguoiDoc (
-    MaTB      VARCHAR(20)  NOT NULL,
+    MaTB      VARCHAR(36)  NOT NULL,
     MaNV      VARCHAR(20)  NOT NULL,
     ThoiGianDoc DATETIME   NOT NULL
 );
@@ -828,16 +850,40 @@ ALTER TABLE PhieuHoanCoc ADD CONSTRAINT FK_PhieuHoanCoc_NhanVien
 -- ThongBao
 ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_VaiTroNhan
     CHECK (VaiTroNhan IN (N'Sale', N'KeToan', N'QuanLy', N'QuanTri'));
+ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_LoaiThongBao
+    CHECK (LoaiThongBao IN (N'CanXuLy', N'ThongTin', N'CanhBao'));
 ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_Tone
-    CHECK (Tone IN (N'blue', N'green', N'orange'));
+    CHECK (Tone IN (N'blue', N'green', N'orange', N'red'));
+ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_TrangThai
+    CHECK (TrangThai IN (N'DangMo', N'DaXuLy', N'DaHuy', N'ThongTin'));
+ALTER TABLE ThongBao ADD CONSTRAINT CK_ThongBao_VongDoi
+    CHECK (
+        (LoaiThongBao = N'CanXuLy' AND TrangThai IN (N'DangMo', N'DaXuLy', N'DaHuy'))
+        OR (LoaiThongBao IN (N'ThongTin', N'CanhBao') AND TrangThai = N'ThongTin')
+    );
+ALTER TABLE ThongBao ADD CONSTRAINT FK_ThongBao_ChiNhanh
+    FOREIGN KEY (MaCN) REFERENCES ChiNhanh(MaCN);
 ALTER TABLE ThongBao ADD CONSTRAINT FK_ThongBao_NhanVienGui
     FOREIGN KEY (MaNVGui) REFERENCES NhanVien(MaNV);
+ALTER TABLE ThongBao ADD CONSTRAINT FK_ThongBao_NhanVienNhan
+    FOREIGN KEY (MaNVNhan) REFERENCES NhanVien(MaNV);
+ALTER TABLE ThongBao ADD CONSTRAINT FK_ThongBao_NhanVienXuLy
+    FOREIGN KEY (MaNVXuLy) REFERENCES NhanVien(MaNV);
 
 -- ThongBao_NguoiDoc
 ALTER TABLE ThongBao_NguoiDoc ADD CONSTRAINT FK_ThongBao_NguoiDoc_ThongBao
     FOREIGN KEY (MaTB) REFERENCES ThongBao(MaTB);
 ALTER TABLE ThongBao_NguoiDoc ADD CONSTRAINT FK_ThongBao_NguoiDoc_NhanVien
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
+GO
+
+CREATE UNIQUE INDEX UX_ThongBao_KhoaChongTrung
+    ON ThongBao(KhoaChongTrung);
+CREATE INDEX IX_ThongBao_VaiTroChiNhanh
+    ON ThongBao(MaCN, VaiTroNhan, TrangThai, ThoiGianTao DESC);
+CREATE INDEX IX_ThongBao_NguoiNhan
+    ON ThongBao(MaNVNhan, ThoiGianTao DESC)
+    WHERE MaNVNhan IS NOT NULL;
 GO
 
 -- Phạm vi chi nhánh được áp tại database để mọi query cũ/mới đều được cô lập.

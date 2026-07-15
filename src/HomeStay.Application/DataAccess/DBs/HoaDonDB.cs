@@ -56,6 +56,7 @@ public static class HoaDonDB
 
     public static async Task<string> InsertHoaDon(HoaDon hoaDon)
     {
+        hoaDon.MaHoaDon = await MaSoDB.LayMaMoi("HoaDon");
         const string sql = """
             INSERT INTO HoaDon
                 (MaHoaDon, NgayLap, HanThanhToan, LoaiHoaDon, TongTien, TrangThai, GhiChu, MaHD, MaNV)
@@ -83,6 +84,7 @@ public static class HoaDonDB
 
     public static async Task<string> Insert(HoaDon hoaDon)
     {
+        hoaDon.MaHoaDon = await MaSoDB.LayMaMoi("HoaDon");
         const string sql = """
             INSERT INTO HoaDon
                 (MaHoaDon, NgayLap, HanThanhToan, LoaiHoaDon, TongTien, TrangThai, GhiChu, MaHD, MaNV)

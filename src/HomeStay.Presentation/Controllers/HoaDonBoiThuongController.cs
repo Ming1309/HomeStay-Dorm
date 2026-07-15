@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 public sealed class HoaDonBoiThuongController(
     Func<PhienDuLieu> taoPhienDuLieu,
     TimeProvider timeProvider,
+    DichVuThongBao dichVuThongBao,
     ILogger<HoaDonBoiThuongController> logger) : ControllerBase
 {
     [HttpGet("bien-ban-chua-xu-ly")]
@@ -139,6 +140,10 @@ public sealed class HoaDonBoiThuongController(
             }).ToList();
 
             await ChiTietHoaDon.TaoChiTietHoaDon(hoaDon.MaHoaDon, dsChiTiet);
+            await dichVuThongBao.DongTacVu(
+                LoaiSuKienThongBao.BienBanThuHoiChoBoiThuong,
+                hoaDon.MaHD!,
+                maNV);
 
             var bienBan = await BienBanGiaoNhan.LayChiTietBienBan(maBienBan);
 

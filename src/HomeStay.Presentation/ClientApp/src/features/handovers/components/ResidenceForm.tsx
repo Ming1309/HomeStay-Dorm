@@ -15,10 +15,14 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
 import { MembersTable, type Member } from "@/features/contracts/components/MembersTable";
 import { nhapHoSo, type PhieuCocDetail } from "@/features/residence/services/residence-service";
+import { VietnamAddressSelect } from "@/features/residence/components/VietnamAddressSelect";
+import {
+  formatVietnamAddress,
+  isValidVietnamAddress,
+} from "@/features/residence/services/vietnam-address-service";
 
 type Props = { deposit: PhieuCocDetail | null; onSaved: () => void };
 
@@ -26,7 +30,6 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
   const [members, setMembers] = useState<Member[]>([]);
   const [addrStreet, setAddrStreet] = useState("");
   const [addrTinh, setAddrTinh] = useState("");
-  const [addrQuan, setAddrQuan] = useState("");
   const [addrPhuong, setAddrPhuong] = useState("");
   const [addrOverseas, setAddrOverseas] = useState("");
   const [saving, setSaving] = useState(false);
@@ -37,20 +40,23 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
     setMembers([]);
     setAddrStreet("");
     setAddrTinh("");
-    setAddrQuan("");
     setAddrPhuong("");
     setAddrOverseas("");
   }, [deposit]);
 
   const buildDiaChi = () => {
     if (!isVietnamese) return addrOverseas;
-    return [addrStreet, addrPhuong, addrQuan, addrTinh].filter(Boolean).join(", ");
+    return formatVietnamAddress(addrStreet, addrTinh, addrPhuong);
   };
 
   const handleSave = async () => {
     if (!deposit) return;
     const diaChi = buildDiaChi().trim();
-    if (!diaChi || (isVietnamese && (!addrStreet || !addrTinh || !addrQuan || !addrPhuong))) {
+    if (
+      !diaChi
+      || (isVietnamese
+        && (!addrStreet.trim() || !isValidVietnamAddress(addrTinh, addrPhuong)))
+    ) {
       toast.error("Vui lòng nhập đầy đủ địa chỉ thường trú.");
       return;
     }
@@ -193,70 +199,18 @@ export function ResidenceForm({ deposit, onSaved }: Props) {
                       <Input
                         value={addrStreet}
                         onChange={(e) => setAddrStreet(e.target.value)}
-                        placeholder="Nhập số nhà, tên đường, phường/xã"
+                        placeholder="Nhập số nhà, tên đường, thôn/ấp"
                         className={inputCls}
                       />
                     </div>
-
-                    <FormField label="Tỉnh / TP" required>
-                      <Select value={addrTinh} onValueChange={setAddrTinh}>
-                        <SelectTrigger className={inputCls}>
-                          <SelectValue placeholder="Chọn Tỉnh/TP" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</SelectItem>
-                          <SelectItem value="Hà Nội">Hà Nội</SelectItem>
-                          <SelectItem value="Đà Nẵng">Đà Nẵng</SelectItem>
-                          <SelectItem value="Cần Thơ">Cần Thơ</SelectItem>
-                          <SelectItem value="Hải Phòng">Hải Phòng</SelectItem>
-                          <SelectItem value="Bình Dương">Bình Dương</SelectItem>
-                          <SelectItem value="Đồng Nai">Đồng Nai</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormField>
-
-                    <FormField label="Quận / Huyện" required>
-                      <Select value={addrQuan} onValueChange={setAddrQuan}>
-                        <SelectTrigger className={inputCls}>
-                          <SelectValue placeholder="Chọn Quận/Huyện" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Quận 1">Quận 1</SelectItem>
-                          <SelectItem value="Quận 3">Quận 3</SelectItem>
-                          <SelectItem value="Quận 5">Quận 5</SelectItem>
-                          <SelectItem value="Quận 7">Quận 7</SelectItem>
-                          <SelectItem value="Quận 10">Quận 10</SelectItem>
-                          <SelectItem value="Quận Bình Thạnh">Quận Bình Thạnh</SelectItem>
-                          <SelectItem value="Quận Tân Bình">Quận Tân Bình</SelectItem>
-                          <SelectItem value="Quận Gò Vấp">Quận Gò Vấp</SelectItem>
-                          <SelectItem value="Quận Phú Nhuận">Quận Phú Nhuận</SelectItem>
-                          <SelectItem value="Huyện Hóc Môn">Huyện Hóc Môn</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormField>
-
-                    <FormField label="Phường / Xã" required>
-                      <Select value={addrPhuong} onValueChange={setAddrPhuong}>
-                        <SelectTrigger className={inputCls}>
-                          <SelectValue placeholder="Chọn Phường/Xã" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Phường Bến Nghé">Phường Bến Nghé</SelectItem>
-                          <SelectItem value="Phường Cô Giang">Phường Cô Giang</SelectItem>
-                          <SelectItem value="Phường Đa Kao">Phường Đa Kao</SelectItem>
-                          <SelectItem value="Phường 1">Phường 1</SelectItem>
-                          <SelectItem value="Phường 2">Phường 2</SelectItem>
-                          <SelectItem value="Phường 3">Phường 3</SelectItem>
-                          <SelectItem value="Phường 4">Phường 4</SelectItem>
-                          <SelectItem value="Phường 6">Phường 6</SelectItem>
-                          <SelectItem value="Phường 7">Phường 7</SelectItem>
-                          <SelectItem value="Phường 12">Phường 12</SelectItem>
-                          <SelectItem value="Phường 14">Phường 14</SelectItem>
-                          <SelectItem value="Phường 15">Phường 15</SelectItem>
-                          <SelectItem value="Xã Tân Xuân">Xã Tân Xuân</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormField>
+                    <VietnamAddressSelect
+                      provinceCode={addrTinh}
+                      wardCode={addrPhuong}
+                      onProvinceChange={setAddrTinh}
+                      onWardChange={setAddrPhuong}
+                      className="col-span-3"
+                      triggerClassName={inputCls}
+                    />
                   </div>
                 ) : (
                   <Input

@@ -56,7 +56,6 @@ public sealed class LichHen
     {
         var lh = new LichHen
         {
-            MaLH = $"LH{thoiDiemTao:yyyyMMddHHmmssfff}",
             NgayHen = ngay,
             GioHen = gio,
             LoaiLichHen = loai,

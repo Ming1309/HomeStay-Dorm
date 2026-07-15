@@ -41,7 +41,6 @@ public sealed class DichVu
 
     public static Task<IReadOnlyList<DichVu>> LayDanhSach() => DichVuDB.LayDanhSach();
     public static Task<DichVu?> Doc(string maDV) => DichVuDB.Doc(maDV);
-    public static Task<string> TaoMaMoi() => DichVuDB.TaoMaMoi();
     public static Task<bool> DangDuocThamChieu(string maDV) => DichVuDB.DangDuocThamChieu(maDV);
     public Task Them() => DichVuDB.Them(this);
     public Task CapNhat() => DichVuDB.CapNhat(this);

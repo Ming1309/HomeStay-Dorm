@@ -42,12 +42,19 @@ public sealed class HuyPhieuCoc(
 
             await phieu.CapNhatTuDongHuy(thoiDiemHienTai);
             await phong.CapNhatGiaiPhongDatCoc();
-            await dichVuThongBao.GuiThongBaoSale(
+            await DongCacTacVuCoc(phieu.MaPhieuCoc, null, "DaHuy");
+            await dichVuThongBao.PhatThongTin(
+                LoaiSuKienThongBao.PhieuCocTuDongHuy,
+                phieu.MaCN,
+                "Sale",
+                phieu.MaNV,
                 "Phiếu cọc quá hạn đã tự động hủy",
                 $"Phiếu cọc {phieu.MaPhieuCoc} của {phieu.KhachHang.HoTen} đã quá hạn thanh toán và được hệ thống giải phóng chỗ.",
-                "/sale/tra-cuu-phieu-coc",
+                $"/sale/tra-cuu-phieu-coc?maPhieuCoc={Uri.EscapeDataString(phieu.MaPhieuCoc)}",
+                phieu.MaPhieuCoc,
                 null,
-                phieu.MaPhieuCoc);
+                tone: "red",
+                loaiThongBao: "CanhBao");
 
             phien.Commit();
             return true;
@@ -79,14 +86,19 @@ public sealed class HuyPhieuCoc(
             phong.GiaiPhongDatCoc(maGiuongs);
             await phieu.CapNhatHuy();
             await phong.CapNhatGiaiPhongDatCoc();
+            await DongCacTacVuCoc(phieu.MaPhieuCoc, maNhanVien, "DaHuy");
             if (phieu.DaDongTien)
             {
-                await dichVuThongBao.GuiThongBaoKeToan(
+                await dichVuThongBao.PhatCanXuLyTheoVaiTro(
+                    LoaiSuKienThongBao.PhieuCocHuyChoDoiSoat,
+                    phieu.MaCN,
+                    "KeToan",
                     "Phiếu cọc đã thu tiền vừa bị hủy",
                     $"Phiếu cọc {phieu.MaPhieuCoc} đã bị hủy và cần được đối soát hoàn cọc.",
-                    "/accountant/doi-soat",
+                    $"/accountant/doi-soat?maPhieuCoc={Uri.EscapeDataString(phieu.MaPhieuCoc)}",
+                    phieu.MaPhieuCoc,
                     maNhanVien,
-                    phieu.MaPhieuCoc);
+                    tone: "orange");
             }
             phien.Commit();
             phieu.Phong = phong;
@@ -98,5 +110,20 @@ public sealed class HuyPhieuCoc(
             phien.Rollback();
             throw;
         }
+    }
+
+    private async Task DongCacTacVuCoc(string maPhieuCoc, string? maNV, string trangThai)
+    {
+        foreach (var loaiSuKien in new[]
+        {
+            LoaiSuKienThongBao.PhieuCocChoTinhTien,
+            LoaiSuKienThongBao.PhieuCocChoThanhToan,
+            LoaiSuKienThongBao.ChungTuCocChoDoiChieu,
+            LoaiSuKienThongBao.ChungTuCocCanBoSung,
+            LoaiSuKienThongBao.TienCocDaXacNhan,
+            LoaiSuKienThongBao.HoSoLuuTruChoDuyet,
+            LoaiSuKienThongBao.HoSoLuuTruDaDuyet,
+        })
+            await dichVuThongBao.DongTacVu(loaiSuKien, maPhieuCoc, maNV, trangThai);
     }
 }

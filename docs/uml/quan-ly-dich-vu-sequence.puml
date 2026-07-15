@@ -21,8 +21,6 @@ alt them moi
   MH -> QL : Them(dichVu)
   QL -> DV : ChuanHoa()
   QL -> DV : KiemTraDuLieuHopLe()
-  QL -> DV : TaoMaMoi()
-  DV -> DB : TaoMaMoi()
   QL -> DV : Them()
   DV -> DB : Them(dichVu)
 else cap nhat

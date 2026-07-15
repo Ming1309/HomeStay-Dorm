@@ -44,7 +44,6 @@ public sealed class QuanLyChinhSachHoanCoc(
                         chinhSachMoi.NgayApDung.AddDays(-1));
             }
 
-            chinhSachMoi.MaChinhSach = await ChinhSachHoanCoc.TaoMaMoi();
             await chinhSachMoi.Them();
             phien.Commit();
             return chinhSachMoi;

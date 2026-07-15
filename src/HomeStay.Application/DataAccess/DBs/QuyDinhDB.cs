@@ -27,18 +27,6 @@ public static class QuyDinhDB
         return row is null ? null : ChuyenSangQuyDinh(row);
     }
 
-    public static async Task<string> TaoMaMoi()
-    {
-        const string sql = """
-            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(MaQD, 3, 18))), 0) + 1
-            FROM QuyDinh WITH (UPDLOCK, HOLDLOCK)
-            WHERE MaQD LIKE 'QD%'
-            """;
-        var soThuTu = await PhienDuLieu.Session.Connection.QuerySingleAsync<int>(
-            sql, transaction: PhienDuLieu.Session.Transaction);
-        return $"QD{soThuTu:D2}";
-    }
-
     public static Task<bool> DangDuocThamChieu(string maQD) =>
         PhienDuLieu.Session.Connection.ExecuteScalarAsync<bool>(
             "SELECT CASE WHEN EXISTS (SELECT 1 FROM HopDong_QuyDinh WHERE MaQD=@MaQD) THEN 1 ELSE 0 END",
@@ -46,6 +34,7 @@ public static class QuyDinhDB
 
     public static async Task Them(QuyDinh quyDinh)
     {
+        quyDinh.MaQD = await MaSoDB.LayMaMoi("QuyDinh");
         const string sql = """
             INSERT INTO QuyDinh (MaQD, TenQD, LoaiQD, DuongDanFile, NgayApDung, NgayKetThuc)
             VALUES (@MaQD, @TenQD, @LoaiQD, @DuongDanFile, @NgayApDung, @NgayKetThuc)

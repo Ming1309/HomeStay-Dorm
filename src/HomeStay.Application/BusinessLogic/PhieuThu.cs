@@ -35,7 +35,6 @@ public sealed class PhieuThu
 
         return new PhieuThu
         {
-            MaPT = $"PT{thoiDiem:yyyyMMddHHmmssfff}",
             SoTienThu = soTien,
             ThoiGian = thoiDiem,
             PhuongThucThanhToan = phuongThuc,
@@ -62,7 +61,6 @@ public sealed class PhieuThu
 
         return new PhieuThu
         {
-            MaPT = $"PT{thoiDiem:yyyyMMddHHmmssfff}",
             SoTienThu = soTienThu,
             ThoiGian = thoiDiem,
             PhuongThucThanhToan = phuongThuc,
@@ -101,7 +99,6 @@ public sealed class PhieuThu
 
         return new PhieuThu
         {
-            MaPT = $"PT{thoiGian:yyyyMMddHHmmssfff}",
             SoTienThu = phieuCoc.TongTien,
             ThoiGian = thoiGian,
             PhuongThucThanhToan = phieuCoc.PhuongThucThanhToan,

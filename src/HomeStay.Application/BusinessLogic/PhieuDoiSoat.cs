@@ -27,7 +27,6 @@ public sealed class PhieuDoiSoat
     {
         return new PhieuDoiSoat
         {
-            MaPDS = $"PDS{thoiDiem:yyyyMMddHHmmssfff}",
             NgayDoiSoat = thoiDiem.Date,
             MaPhieuCoc = maPhieuCoc,
             MaHD = maHD,

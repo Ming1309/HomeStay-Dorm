@@ -50,20 +50,9 @@ public static class ChinhSachHoanCocDB
         return row is null ? null : ChuyenSangChinhSach(row);
     }
 
-    public static async Task<string> TaoMaMoi()
-    {
-        const string sql = """
-            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(MaChinhSach, 3, 18))), 0) + 1
-            FROM ChinhSachHoanCoc WITH (UPDLOCK, HOLDLOCK)
-            WHERE MaChinhSach LIKE 'CS%'
-            """;
-        var soThuTu = await PhienDuLieu.Session.Connection.QuerySingleAsync<int>(
-            sql, transaction: PhienDuLieu.Session.Transaction);
-        return $"CS{soThuTu:D2}";
-    }
-
     public static async Task Them(ChinhSachHoanCoc chinhSach)
     {
+        chinhSach.MaChinhSach = await MaSoDB.LayMaMoi("ChinhSachHoanCoc");
         const string sql = """
             INSERT INTO ChinhSachHoanCoc
                 (MaChinhSach, TenChinhSach, TiLe_ChuaKy, TiLe_TruocHan_NganHan,

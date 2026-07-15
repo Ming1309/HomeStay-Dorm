@@ -45,6 +45,8 @@ type ChiTietDoiSoatDto = {
 };
 
 export function AccountantReconciliationPage() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const linkedProfileId = searchParams.get("maPhieuCoc") ?? searchParams.get("maHD");
   const [query, setQuery] = useState("");
   const [profiles, setProfiles] = useState<HoSoChoDoiSoat[]>([]);
   const [selected, setSelected] = useState<HoSoChoDoiSoat | null>(null);
@@ -66,9 +68,12 @@ export function AccountantReconciliationPage() {
         setProfiles(data);
         if (data.length > 0) {
           // Keep current selection if still in list, else select first
+          const linked = linkedProfileId
+            ? data.find((p: HoSoChoDoiSoat) => p.maHoSo === linkedProfileId)
+            : undefined;
           const found = selected && data.some((p: HoSoChoDoiSoat) => p.maHoSo === selected.maHoSo);
           if (!found) {
-            setSelected(data[0]);
+            setSelected(linked ?? data[0]);
             setIssuedCode(null);
           }
         } else {

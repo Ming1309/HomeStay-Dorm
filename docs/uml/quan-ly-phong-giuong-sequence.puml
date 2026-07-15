@@ -81,12 +81,6 @@ alt Them phong
   activate PDB
   deactivate PDB
   deactivate P
-  QL -> P : TaoMaMoi()
-  activate P
-  P -> PDB : TaoMaMoi()
-  activate PDB
-  deactivate PDB
-  deactivate P
   QL -> P : Them()
   activate P
   P -> PDB : Them(phong)
@@ -184,12 +178,6 @@ else Them giuong
   deactivate GDB
   deactivate G
   QL -> P : KiemTraSoGiuongKhongVuotSucChua(soGiuongHienCo)
-  QL -> G : TaoMaMoi()
-  activate G
-  G -> GDB : TaoMaMoi()
-  activate GDB
-  deactivate GDB
-  deactivate G
   QL -> G : Them()
   activate G
   G -> GDB : Them(giuong)

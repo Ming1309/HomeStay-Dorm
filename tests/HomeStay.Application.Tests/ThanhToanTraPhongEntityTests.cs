@@ -13,7 +13,7 @@ public sealed class ThanhToanTraPhongEntityTests
         var phieuThu = PhieuThu.TaoPhieuThu("PDS0099", 500_000m, "TienMat", "/proof.png", "NV02", now);
 
         Assert.NotNull(phieuThu);
-        Assert.StartsWith("PT20260713120000", phieuThu.MaPT);
+        Assert.Empty(phieuThu.MaPT); // Database cấp mã khi lưu.
         Assert.Equal(500_000m, phieuThu.SoTienThu);
         Assert.Equal("PDS0099", phieuThu.MaPDS);
         Assert.Equal("TienMat", phieuThu.PhuongThucThanhToan);

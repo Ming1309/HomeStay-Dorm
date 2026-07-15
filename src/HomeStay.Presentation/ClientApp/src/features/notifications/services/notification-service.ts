@@ -1,29 +1,70 @@
-export type AppNotificationTone = "blue" | "green" | "orange";
+import { z } from "zod";
 
-export type AppNotificationDto = {
-  maTB: string;
-  tieuDe: string;
-  noiDung: string;
-  vaiTroNhan: string;
-  lienKet: string | null;
-  tone: AppNotificationTone;
-  thoiGianTao: string;
-  daDoc: boolean;
-  maThamChieu: string | null;
-};
+export type AppNotificationTone = "blue" | "green" | "orange" | "red";
+export type AppNotificationFilter = "open" | "unread" | "all";
 
-async function readResponse<T>(response: Response): Promise<T> {
+const notificationSchema = z.object({
+  maTB: z.string().min(1),
+  loaiSuKien: z.string().min(1),
+  loaiThongBao: z.enum(["CanXuLy", "ThongTin", "CanhBao"]),
+  tieuDe: z.string().min(1),
+  noiDung: z.string().min(1),
+  lienKet: z.string().nullable(),
+  tone: z.enum(["blue", "green", "orange", "red"]),
+  trangThai: z.enum(["DangMo", "DaXuLy", "DaHuy", "ThongTin"]),
+  thoiGianTao: z.string().min(1),
+  daDoc: z.boolean(),
+  maThamChieu: z.string().nullable(),
+  maNVXuLy: z.string().nullable(),
+  tenNguoiXuLy: z.string().nullable(),
+  thoiGianXuLy: z.string().nullable(),
+});
+
+const notificationPageSchema = z.object({
+  items: z.array(notificationSchema),
+  unreadCount: z.number().int().nonnegative(),
+  nextCursor: z.string().nullable(),
+});
+
+export type AppNotificationDto = z.infer<typeof notificationSchema>;
+export type AppNotificationPage = z.infer<typeof notificationPageSchema>;
+
+const errorSchema = z.object({
+  message: z.string().optional(),
+  Message: z.string().optional(),
+});
+
+async function readResponse<T>(response: Response, schema?: z.ZodType<T>): Promise<T> {
   if (response.ok) {
     if (response.status === 204) return undefined as T;
-    return response.json() as Promise<T>;
+    const payload = await response.json();
+    if (!schema) return payload as T;
+    const parsed = schema.safeParse(payload);
+    if (!parsed.success) throw new Error("Dữ liệu thông báo từ máy chủ không đúng định dạng.");
+    return parsed.data;
   }
-  const body = (await response.json().catch(() => null)) as { message?: string; Message?: string } | null;
-  throw new Error(body?.message ?? body?.Message ?? "Không thể xử lý yêu cầu thông báo.");
+  const parsed = errorSchema.safeParse(await response.json().catch(() => null));
+  throw new Error(
+    parsed.success
+      ? parsed.data.message ?? parsed.data.Message ?? "Không thể xử lý yêu cầu thông báo."
+      : "Không thể xử lý yêu cầu thông báo.",
+  );
 }
 
-export async function loadNotifications(signal?: AbortSignal) {
-  return readResponse<AppNotificationDto[]>(
-    await fetch("/api/notifications", { signal }),
+export async function loadNotifications(options: {
+  filter?: AppNotificationFilter;
+  limit?: number;
+  cursor?: string | null;
+  signal?: AbortSignal;
+} = {}): Promise<AppNotificationPage> {
+  const params = new URLSearchParams({
+    filter: options.filter ?? "unread",
+    limit: String(options.limit ?? 20),
+  });
+  if (options.cursor) params.set("cursor", options.cursor);
+  return readResponse(
+    await fetch(`/api/notifications?${params.toString()}`, { signal: options.signal }),
+    notificationPageSchema,
   );
 }
 

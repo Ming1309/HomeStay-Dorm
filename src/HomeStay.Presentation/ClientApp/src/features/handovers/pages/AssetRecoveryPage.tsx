@@ -96,7 +96,9 @@ function mapAssetsToForm(assets: AssetRecoveryAsset[]) {
 export function ManagerAssetRecoveryPage() {
   const [items, setItems] = useState<AssetRecoveryListItem[]>([]);
   const [loadingList, setLoadingList] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("maHD"),
+  );
   const [selectedDetail, setSelectedDetail] = useState<AssetRecoveryDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [query, setQuery] = useState("");

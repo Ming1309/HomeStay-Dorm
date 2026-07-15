@@ -31,6 +31,7 @@ public static class PhieuDangKyDB
 
     public static async Task Them(PhieuDangKy phieu)
     {
+        phieu.MaPDK = await MaSoDB.LayMaMoi("PhieuDangKy");
         const string sql = """
             INSERT INTO PhieuDangKy (MaPDK,KhuVuc,SoLuongNguoi,LoaiDichVu,MucGia,ThoiGianDuKienVao,ThoiHanThue,YeuCauKhac,TrangThai,MaKH,MaNV,MaCN)
             VALUES (@MaPDK,@KhuVuc,@SoLuongNguoi,@LoaiDichVu,@MucGia,@ThoiGianDuKienVao,@ThoiHanThue,@YeuCauKhac,@TrangThai,@MaKH,@MaNV,@MaCN)

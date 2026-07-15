@@ -65,20 +65,34 @@ public sealed class XacNhanPhieuDoiSoat(
             KiemTraCoKenhLienHe(phieuCoc.KhachHang);
 
             await pds.XacNhanKhachHangDongY(maNhanVien, timeProvider.GetLocalNow().DateTime);
+            await dichVuThongBao.DongTacVu(
+                LoaiSuKienThongBao.PhieuDoiSoatChoXacNhan, pds.MaPDS, maNhanVien);
 
             if (pds.TrangThai == "DaChot" && pds.TienThuThem > 0)
             {
-                await dichVuThongBao.GuiThongBaoKeToan(
+                await dichVuThongBao.PhatCanXuLyTheoVaiTro(
+                    LoaiSuKienThongBao.PhieuDoiSoatChoThuThem,
+                    phieuCoc.MaCN,
+                    "KeToan",
                     "Đối soát đã xác nhận - cần thu thêm",
                     $"Phiếu đối soát {pds.MaPDS} đã được Quản lý xác nhận, cần thu thêm {pds.TienThuThem:N0} VNĐ.",
-                    "/accountant/payments", maNhanVien, pds.MaPDS);
+                    $"/accountant/thanh-toan-tra-phong?maPDS={Uri.EscapeDataString(pds.MaPDS)}",
+                    pds.MaPDS,
+                    maNhanVien,
+                    tone: "orange");
             }
             else if (pds.TrangThai == "DaChot" && pds.TienHoan > 0 && pds.MaHD is null)
             {
-                await dichVuThongBao.GuiThongBaoKeToan(
+                await dichVuThongBao.PhatCanXuLyTheoVaiTro(
+                    LoaiSuKienThongBao.PhieuDoiSoatChoHoan,
+                    phieuCoc.MaCN,
+                    "KeToan",
                     "Đối soát đã xác nhận - cần hoàn cọc",
                     $"Phiếu đối soát {pds.MaPDS} đã được Quản lý xác nhận, cần hoàn {pds.TienHoan:N0} VNĐ.",
-                    "/accountant/refunds", maNhanVien, pds.MaPDS);
+                    $"/accountant/refunds?maPDS={Uri.EscapeDataString(pds.MaPDS)}",
+                    pds.MaPDS,
+                    maNhanVien,
+                    tone: "orange");
             }
 
             phien.Commit();

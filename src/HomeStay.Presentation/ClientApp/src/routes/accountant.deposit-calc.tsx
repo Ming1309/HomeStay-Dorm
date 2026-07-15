@@ -33,6 +33,11 @@ function MHTinhTienCoc() {
     return () => window.clearTimeout(timer);
   }, [query]);
 
+  useEffect(() => {
+    const target = new URLSearchParams(window.location.search).get("maPhieuCoc");
+    if (target) void layChiTietTinhTien(target).then(setSelected).catch(() => undefined);
+  }, []);
+
   const chonPhieuCoc = async (item: DepositInitialSummary) => {
     try { setSelected(await layChiTietTinhTien(item.maPhieuCoc)); }
     catch (error) { toast.error(error instanceof Error ? error.message : "Không thể tải chi tiết phiếu cọc."); }

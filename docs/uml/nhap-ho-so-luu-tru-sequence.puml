@@ -82,8 +82,6 @@ KhachHang -> KhachHangDB : CapNhatDiaChiThuongTru(maKH, diaChiThuongTru)
 UC -> ThanhVienDangKy : TaoDaiDien(maPhieuCoc, maKH)
 
 loop Tao moi moi nguoi o cung
-  UC -> KhachHang : TaoMaMoi()
-  KhachHang -> KhachHangDB : LaySoThuTuMoi()
   UC -> KhachHang : Them()
   KhachHang -> KhachHangDB : Them(khachHang)
   UC -> ThanhVienDangKy : TaoThanhVien(maPhieuCoc, maKH)

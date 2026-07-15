@@ -26,10 +26,6 @@ VALUES
 ('KH0015', N'Lý Anh Tú', '2001-03-26', N'Nam', N'Việt Nam', N'CCCD', '079201000015', N'Bình Dương', '0900000015', 'kh0015@example.com');
 GO
 
--- Đồng bộ sequence sau khi chèn mã khách hàng demo.
-ALTER SEQUENCE dbo.Seq_KhachHang RESTART WITH 16;
-GO
-
 -- ============================================================
 -- 2. Phòng và giường cho các trạng thái cần kiểm thử
 -- ============================================================
@@ -256,9 +252,9 @@ GO
 -- ============================================================
 INSERT INTO BienBanGiaoNhan (MaBienBan, NgayBanGiao, LoaiBienBan, MaHD, MaNV)
 VALUES
-('BBGN0001', '2026-08-01', N'BanGiao', 'HD0003', 'NV01'),
-('BBGN0002', '2026-08-01', N'BanGiao', 'HD0004', 'NV01'),
-('BBGN0003', '2026-07-31', N'ThuHoi', 'HD0005', 'NV01'),
+('BBBG0001', '2026-08-01', N'BanGiao', 'HD0003', 'NV01'),
+('BBBG0002', '2026-08-01', N'BanGiao', 'HD0004', 'NV01'),
+('BBTH0003', '2026-07-31', N'ThuHoi', 'HD0005', 'NV01'),
 -- UC 1.4.20: biên bản thu hồi chưa lập hóa đơn bồi thường (HD0004)
 ('BBTH0001', CAST(GETDATE() AS DATE), N'ThuHoi', 'HD0004', 'NV01'),
 -- UC 1.4.23: thu hồi tài sản (không hư hỏng) cho HD chờ thanh lý
@@ -267,12 +263,12 @@ GO
 
 INSERT INTO ChiTietGiaoNhan (MaBienBan, MaTS, TinhTrang, SoLuong, GhiChu, MinhChung)
 VALUES
-('BBGN0001', 'TS01', N'Tốt', 1, N'Bàn giao nguyên trạng', NULL),
-('BBGN0001', 'TS03', N'Tốt', 2, N'Đủ giường tầng', NULL),
-('BBGN0002', 'TS01', N'Tốt', 1, N'Bàn giao nguyên trạng', NULL),
-('BBGN0002', 'TS06', N'Tốt', 1, N'Máy giặt hoạt động', NULL),
-('BBGN0003', 'TS01', N'Trầy nhẹ', 1, N'Cần khấu trừ khi đối soát', N'/files/bbgn0003-ts01.png'),
-('BBGN0003', 'TS03', N'Đủ', 2, N'Đã thu hồi', NULL),
+('BBBG0001', 'TS01', N'Tốt', 1, N'Bàn giao nguyên trạng', NULL),
+('BBBG0001', 'TS03', N'Tốt', 2, N'Đủ giường tầng', NULL),
+('BBBG0002', 'TS01', N'Tốt', 1, N'Bàn giao nguyên trạng', NULL),
+('BBBG0002', 'TS06', N'Tốt', 1, N'Máy giặt hoạt động', NULL),
+('BBTH0003', 'TS01', N'Trầy nhẹ', 1, N'Cần khấu trừ khi đối soát', N'/files/bbgn0003-ts01.png'),
+('BBTH0003', 'TS03', N'Đủ', 2, N'Đã thu hồi', NULL),
 -- UC 1.4.20 demo: tài sản hư hỏng/mất chưa có HoaDon BoiThuong
 ('BBTH0001', 'TS01', N'Hư hỏng', 1, N'Máy lạnh không lạnh, cần bồi thường', NULL),
 ('BBTH0001', 'TS03', N'Mất mát', 1, N'Mất 1 giường tầng sắt', NULL),
@@ -330,6 +326,52 @@ INSERT INTO PhieuHoanCoc (MaPHC, SoTienHoan, PhuongThucHoan, ThongTinNhanTien, M
 VALUES
 ('PHC0001', 1060000, N'ChuyenKhoan', N'Tài khoản nhận của KH0008', N'GD-PHC0001', N'/files/phc0001.png', '2026-08-01T09:00:00', 'PDS0001', 'NV02'),
 ('PHC0002', 3040000, N'TienMat', N'Khách nhận tại quầy', NULL, N'/files/bien-nhan-phc0002.png', '2026-08-01T10:00:00', 'PDS0002', 'NV02');
+GO
+
+-- ============================================================
+-- 8. Thông báo theo chi nhánh và người nhận
+-- ============================================================
+INSERT INTO ThongBao
+    (MaTB, LoaiSuKien, LoaiThongBao, TieuDe, NoiDung, MaCN, VaiTroNhan, MaNVNhan,
+     LienKet, Tone, TrangThai, KhoaChongTrung, ThoiGianTao, MaNVGui, MaThamChieu,
+     MaNVXuLy, ThoiGianXuLy)
+VALUES
+('TBDEMO0001', N'PhieuCocHuyChoDoiSoat', N'CanXuLy', N'Phiếu cọc đã hủy cần đối soát',
+ N'Phiếu PC0007 đã thu tiền và đang chờ lập phiếu đối soát.', 'CN01', N'KeToan', NULL,
+ N'/accountant/doi-soat?maPhieuCoc=PC0007', N'orange', N'DangMo', N'DEMO:PC0007:DOISOAT', DATEADD(MINUTE,-20,GETDATE()), 'NV03', 'PC0007', NULL, NULL),
+('TBDEMO0002', N'PhieuDoiSoatChoXacNhan', N'CanXuLy', N'Phiếu đối soát cần xác nhận',
+ N'Phiếu PDS0004 đang chờ Quản lý trao đổi kết quả với khách.', 'CN01', N'QuanLy', NULL,
+ N'/manager/reconciliation-approval?maPDS=PDS0004', N'blue', N'DangMo', N'DEMO:PDS0004:XACNHAN', DATEADD(MINUTE,-15,GETDATE()), 'NV02', 'PDS0004', NULL, NULL),
+('TBDEMO0003', N'HoSoLuuTruChoDuyet', N'CanXuLy', N'Hồ sơ lưu trú cần xét duyệt',
+ N'Phiếu PC0005 của chi nhánh CN02 đang chờ xét duyệt.', 'CN02', N'QuanLy', NULL,
+ N'/manager/approval?maPhieuCoc=PC0005', N'blue', N'DangMo', N'DEMO:PC0005:DUYET', DATEADD(MINUTE,-10,GETDATE()), 'NV04', 'PC0005', NULL, NULL),
+('TBDEMO0004', N'TienCocDaXacNhan', N'CanXuLy', N'Khoản tiền cọc đã xác nhận',
+ N'Phiếu PC0008 đã có phiếu thu và cần tiếp tục hồ sơ lưu trú.', 'CN02', N'Sale', 'NV04',
+ N'/sale/ho-so-luu-tru?maPhieuCoc=PC0008', N'green', N'DangMo', N'DEMO:PC0008:HOSO', DATEADD(MINUTE,-5,GETDATE()), 'NV05', 'PC0008', NULL, NULL),
+('TBDEMO0005', N'PhieuDoiSoatChoXacNhan', N'CanXuLy', N'Phiếu đối soát đã được xử lý',
+ N'Phiếu PDS0001 đã được Quản lý xác nhận.', 'CN01', N'QuanLy', NULL,
+ N'/manager/reconciliation-approval?maPDS=PDS0001', N'green', N'DaXuLy', N'DEMO:PDS0001:DAXULY', DATEADD(DAY,-1,GETDATE()), 'NV02', 'PDS0001', 'NV01', DATEADD(HOUR,-20,GETDATE()));
+GO
+
+-- Bắt đầu cấp mã sau toàn bộ dữ liệu seed/demo.
+ALTER SEQUENCE dbo.Seq_KhachHang RESTART WITH 16;
+ALTER SEQUENCE dbo.Seq_NhanVien RESTART WITH 7;
+ALTER SEQUENCE dbo.Seq_Phong RESTART WITH 13;
+ALTER SEQUENCE dbo.Seq_Giuong RESTART WITH 47;
+ALTER SEQUENCE dbo.Seq_DichVu RESTART WITH 6;
+ALTER SEQUENCE dbo.Seq_TaiSan RESTART WITH 14;
+ALTER SEQUENCE dbo.Seq_QuyDinh RESTART WITH 4;
+ALTER SEQUENCE dbo.Seq_ChinhSachHoanCoc RESTART WITH 2;
+ALTER SEQUENCE dbo.Seq_PhieuDangKy RESTART WITH 11;
+ALTER SEQUENCE dbo.Seq_LichHen RESTART WITH 12;
+ALTER SEQUENCE dbo.Seq_PhieuCoc RESTART WITH 11;
+ALTER SEQUENCE dbo.Seq_HopDong RESTART WITH 8;
+ALTER SEQUENCE dbo.Seq_BienBanBanGiao RESTART WITH 3;
+ALTER SEQUENCE dbo.Seq_BienBanThuHoi RESTART WITH 4;
+ALTER SEQUENCE dbo.Seq_HoaDon RESTART WITH 5;
+ALTER SEQUENCE dbo.Seq_PhieuDoiSoat RESTART WITH 5;
+ALTER SEQUENCE dbo.Seq_PhieuThu RESTART WITH 8;
+ALTER SEQUENCE dbo.Seq_PhieuHoanCoc RESTART WITH 3;
 GO
 
 PRINT N'Đã chèn dữ liệu kịch bản nghiệp vụ thành công.';

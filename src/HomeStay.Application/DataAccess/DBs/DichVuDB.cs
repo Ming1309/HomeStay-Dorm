@@ -23,18 +23,6 @@ public static class DichVuDB
             $"{Select} WHERE MaDV = @MaDV", new { MaDV = maDV },
             PhienDuLieu.Session.Transaction);
 
-    public static async Task<string> TaoMaMoi()
-    {
-        const string sql = """
-            SELECT ISNULL(MAX(TRY_CONVERT(INT, SUBSTRING(MaDV, 3, 18))), 0) + 1
-            FROM DichVu WITH (UPDLOCK, HOLDLOCK)
-            WHERE MaDV LIKE 'DV%'
-            """;
-        var soThuTu = await PhienDuLieu.Session.Connection.QuerySingleAsync<int>(
-            sql, transaction: PhienDuLieu.Session.Transaction);
-        return $"DV{soThuTu:D2}";
-    }
-
     public static Task<bool> DangDuocThamChieu(string maDV) =>
         PhienDuLieu.Session.Connection.ExecuteScalarAsync<bool>(
             """
@@ -47,6 +35,7 @@ public static class DichVuDB
 
     public static async Task Them(DichVu dichVu)
     {
+        dichVu.MaDV = await MaSoDB.LayMaMoi("DichVu");
         const string sql = """
             INSERT INTO DichVu (MaDV, TenDV, DonGia, DonViTinh, TrangThai)
             VALUES (@MaDV, @TenDV, @DonGia, @DonViTinh, @TrangThai)

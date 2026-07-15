@@ -6,4 +6,4 @@
 - Tra cứu và chi tiết phiếu đăng ký lọc theo snapshot chi nhánh ngay tại SQL.
 - `LapPhieuDangKy` dùng một transaction cho khách hàng và phiếu đăng ký; mọi lỗi đều rollback.
 - Ngày dự kiến vào ở trước ngày hiện tại bị từ chối bằng thời gian lấy từ `TimeProvider`.
-- Mã phiếu được tạo theo timestamp millisecond. Đây là cơ chế hiện có; nếu triển khai nhiều instance với tải lớn nên thay bằng sequence/ULID do database bảo đảm duy nhất.
+- `PhieuDangKyDB.Them` cấp mã `PDK` bằng SQL sequence trước khi insert; factory không tự sinh mã.

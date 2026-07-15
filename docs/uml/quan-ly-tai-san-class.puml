@@ -40,7 +40,6 @@ package "TANG NGHIEP VU" #FCF3CF {
     + KiemTraDuLieuHopLe()
     + LayDanhSach(): List<TaiSan>
     + Doc(maTS: String): TaiSan
-    + TaoMaMoi(): String
     + TrungTen(tenTaiSan: String, maLoaiTru: String): Boolean
     + DangDuocThamChieu(maTS: String): Boolean
     + Them()
@@ -52,7 +51,6 @@ package "TANG TRUY CAP DU LIEU" #FDEDEC {
   class TaiSanDB {
     + LayDanhSach(): List<TaiSan>
     + Doc(maTS: String): TaiSan
-    + TaoMaMoi(): String
     + TrungTen(tenTaiSan: String, maLoaiTru: String): Boolean
     + DangDuocThamChieu(maTS: String): Boolean
     + Them(taiSan: TaiSan)

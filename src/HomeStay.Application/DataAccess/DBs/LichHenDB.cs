@@ -10,6 +10,7 @@ public static class LichHenDB
 
     public static async Task Them(LichHen lichHen)
     {
+        lichHen.MaLH = await MaSoDB.LayMaMoi("LichHen");
         const string sql = """
             INSERT INTO LichHen (MaLH, NgayHen, GioHen, LoaiLichHen, TrangThai, MaPDK, MaPhieuCoc, MaHD, MaNV, MaCN)
             VALUES (@MaLH, @NgayHen, @GioHen, @LoaiLichHen, @TrangThai, @MaPDK, @MaPhieuCoc, @MaHD, @MaNV, @MaCN)

@@ -53,7 +53,6 @@ public sealed class QuyDinh
 
     public static Task<IReadOnlyList<QuyDinh>> LayDanhSach() => QuyDinhDB.LayDanhSach();
     public static Task<QuyDinh?> Doc(string maQD) => QuyDinhDB.Doc(maQD);
-    public static Task<string> TaoMaMoi() => QuyDinhDB.TaoMaMoi();
     public static Task<bool> DangDuocThamChieu(string maQD) => QuyDinhDB.DangDuocThamChieu(maQD);
     public Task Them() => QuyDinhDB.Them(this);
     public Task CapNhat() => QuyDinhDB.CapNhat(this);

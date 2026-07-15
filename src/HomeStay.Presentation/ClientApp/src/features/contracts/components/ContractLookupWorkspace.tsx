@@ -63,6 +63,7 @@ type ApprovedMember = {
 };
 
 export function ContractLookupWorkspace() {
+  const linkedContractId = new URLSearchParams(window.location.search).get("maHD");
   // A2: mặc định lọc hợp đồng đang hiệu lực khi mở màn hình / không nhập tiêu chí
   const [queryInput, setQueryInput] = useState("");
   const [statusInput, setStatusInput] = useState<string>("active");
@@ -71,7 +72,7 @@ export function ContractLookupWorkspace() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(linkedContractId);
   const [selected, setSelected] = useState<ContractLookupDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [viewMemberDetails, setViewMemberDetails] = useState<ApprovedMember | null>(null);
@@ -97,6 +98,12 @@ export function ContractLookupWorkspace() {
   };
 
   useEffect(() => {
+    if (linkedContractId) {
+      setQueryInput(linkedContractId);
+      setStatusInput("all");
+      void fetchList({ tuKhoa: linkedContractId, trangThai: "all" });
+      return;
+    }
     // A2: mở form = danh sách HĐ đang hiệu lực
     void fetchList({});
   }, []);

@@ -20,7 +20,9 @@ function errorMessage(caught: unknown, fallback: string) {
 
 function ManagerReconciliationApprovalPage() {
   const [items, setItems] = useState<ReconciliationApprovalQueueItem[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    new URLSearchParams(window.location.search).get("maPDS"),
+  );
   const [detail, setDetail] = useState<ReconciliationApprovalDetail | null>(null);
   const [query, setQuery] = useState("");
   const [queueLoading, setQueueLoading] = useState(false);
