@@ -502,7 +502,7 @@ public static class PhieuCocDB
     {
         const string sql = """
             SELECT pc.MaPhieuCoc,pc.HanThanhToan,pc.HinhThucThue,pc.SoGiuongThue,pc.TongTien,
-                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,
+                   pc.ThoiDiemCoc,pc.AnhMinhChung,pc.TrangThai,pc.MaKH,pc.MaPhong,pc.MaNV,pc.MaCN,
                    kh.HoTen AS TenKhachHang, kh.SDT, kh.NgaySinh, kh.GioiTinh, kh.QuocTich,
                    kh.LoaiGiayTo, kh.SoGiayTo, kh.Email, kh.DiaChiThuongTru,
                    p.SoPhong, p.ToaNha, p.Tang, p.GioiTinhChoPhep, p.TrangThai AS TrangThaiPhong,
@@ -542,6 +542,7 @@ public static class PhieuCocDB
             MaKH = row.MaKH,
             MaPhong = row.MaPhong,
             MaNV = row.MaNV,
+            MaCN = row.MaCN,
             KhachHang = new KhachHang
             {
                 MaKH = row.MaKH, HoTen = row.TenKhachHang, SDT = row.SDT,

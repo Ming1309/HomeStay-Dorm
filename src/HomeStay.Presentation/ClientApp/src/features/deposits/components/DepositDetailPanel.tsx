@@ -100,7 +100,7 @@ function Info({ label, value, mono = false }: { label: string; value: string; mo
   return (
     <div>
       <p className="text-xs text-gray-500">{label}</p>
-      <p className={`mt-0.5 text-sm text-gray-800 ${mono ? "font-mono" : ""}`}>{value}</p>
+      <p className={`mt-0.5 break-all text-sm text-gray-800 ${mono ? "font-mono" : ""}`}>{value}</p>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-﻿export type PhieuCocChoDuyet = {
+export type PhieuCocChoDuyet = {
   maPhieuCoc: string;
   hoTenKhachHang: string;
   maPhong: string;
@@ -48,12 +48,10 @@ export type ChiTietXetDuyet = {
 };
 
 async function readResponse<T>(response: Response): Promise<T> {
-  const payload = (await response.json().catch(() => null)) as { message?: string } | T | null;
+  const payload = (await response.json().catch(() => null)) as any;
   if (!response.ok) {
     throw new Error(
-      payload && typeof payload === "object" && "message" in payload && payload.message
-        ? payload.message
-        : "KhÃ´ng thá»ƒ xá»­ lÃ½ yÃªu cáº§u. Vui lÃ²ng thá»­ láº¡i.",
+      payload?.message ?? payload?.Message ?? "Không thể xử lý yêu cầu. Vui lòng thử lại."
     );
   }
   return payload as T;

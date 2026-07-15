@@ -95,8 +95,8 @@ public static class LichHenDB
 
     public static async Task<LichHen?> DocTheoMaPhieuCoc(string maPhieuCoc)
     {
-        const string sql = "SELECT * FROM LichHen WHERE MaPhieuCoc=@MaPhieuCoc";
-        return await PhienDuLieu.Session.Connection.QuerySingleOrDefaultAsync<LichHen>(sql,
+        const string sql = "SELECT TOP 1 * FROM LichHen WHERE MaPhieuCoc=@MaPhieuCoc AND LoaiLichHen=N'NhanPhong' ORDER BY NgayHen DESC, GioHen DESC";
+        return await PhienDuLieu.Session.Connection.QueryFirstOrDefaultAsync<LichHen>(sql,
             new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction);
     }
 
