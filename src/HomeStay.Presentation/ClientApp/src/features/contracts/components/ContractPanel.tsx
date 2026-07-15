@@ -627,22 +627,7 @@ export function ContractPanel({ deposit, onCancelContract, onConfirmSigned }: Pr
 
       {/* ── STICKY FOOTER ──────────────────────────────────────────────── */}
       <footer className="absolute bottom-0 left-0 right-0 z-20 border-t border-gray-200 bg-white px-6 py-3 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <div className="text-xs text-gray-500">
-            {phase === 1 && (
-              <>
-                <kbd className="rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px]">
-                  Ctrl
-                </kbd>
-                <span className="mx-1">+</span>
-                <kbd className="rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px]">
-                  S
-                </kbd>
-                <span className="ml-1.5">: Lưu & Xem trước</span>
-              </>
-            )}
-          </div>
-
+        <div className="mx-auto flex max-w-5xl items-center justify-end">
           <div className="flex items-center gap-2.5">
             {phase === 1 ? (
                 <Button

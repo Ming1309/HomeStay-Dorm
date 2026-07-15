@@ -346,14 +346,6 @@ export function SaleAppointmentPage() {
 
                     </div>
 
-                    <div className="rounded-lg border border-dashed border-gray-200 bg-slate-50 p-3 text-sm text-gray-600">
-                      <p className="font-semibold text-gray-900">Ghi chú luồng</p>
-                      <p className="mt-2 leading-6">
-                        Sau khi lưu, hệ thống ghi nhận lịch hẹn mới và hiển thị trạng thái "Đã xác
-                        nhận". Một thông báo Email/SMS sẽ được kích hoạt đến khách hàng.
-                      </p>
-                    </div>
-
                     <Button type="button" className="w-full" onClick={handleSave}>
                       Lưu lịch hẹn
                     </Button>

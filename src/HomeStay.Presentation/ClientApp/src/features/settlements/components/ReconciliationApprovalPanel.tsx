@@ -367,10 +367,7 @@ function ApprovalForm({
         </section>
       </main>
 
-      <footer className="flex min-h-14 shrink-0 items-center justify-between border-t border-gray-200 bg-white px-5 py-2 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
-        <span className="text-xs text-gray-400">
-          <kbd>Ctrl</kbd> + <kbd>Enter</kbd> : Xác nhận
-        </span>
+      <footer className="flex min-h-14 shrink-0 items-center justify-end border-t border-gray-200 bg-white px-5 py-2 shadow-[0_-1px_4px_rgba(0,0,0,0.06)]">
         <Button
           type="button"
           className="h-8 bg-emerald-600 text-xs hover:bg-emerald-700"

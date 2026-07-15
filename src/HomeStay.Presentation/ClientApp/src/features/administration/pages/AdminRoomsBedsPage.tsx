@@ -769,17 +769,7 @@ function RoomsBedsView(props: RoomsBedsViewProps) {
           </Tabs>
         </div>
 
-        <footer className="flex h-12 items-center justify-between border-t border-gray-200 bg-white px-6 text-xs text-gray-500">
-          <span>
-            <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
-              Ctrl
-            </kbd>{" "}
-            +{" "}
-            <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px]">
-              N
-            </kbd>{" "}
-            : Thêm mới
-          </span>
+        <footer className="flex h-12 items-center justify-end border-t border-gray-200 bg-white px-6 text-xs text-gray-500">
           <span>{recordCount} bản ghi</span>
         </footer>
       </section>

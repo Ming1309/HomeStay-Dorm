@@ -797,14 +797,7 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
           </Card>
 
           {/* Action Buttons - Moved inside the scrollable form */}
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between border-t border-gray-200 pt-6">
-            <div className="text-xs text-gray-500">
-              <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded">Ctrl</kbd>
-              <span className="mx-1">+</span>
-              <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded">Enter</kbd>
-              <span className="ml-2">: Tạo phiếu đăng ký</span>
-            </div>
-
+          <div className="flex flex-col gap-3 border-t border-gray-200 pt-6 md:flex-row md:items-center md:justify-end">
             <div className="flex flex-wrap gap-3">
               <Button
                 type="button"
@@ -824,7 +817,6 @@ export function RegistrationForm({ onSuccess, onCancel }: RegistrationFormProps)
                 disabled={isSubmitting}
                 size="sm"
                 className="bg-blue-600 hover:bg-blue-700"
-                title="Tạo phiếu (Ctrl+Enter)"
               >
                 {isSubmitting ? "Đang tạo..." : "Tạo phiếu đăng ký"}
               </Button>

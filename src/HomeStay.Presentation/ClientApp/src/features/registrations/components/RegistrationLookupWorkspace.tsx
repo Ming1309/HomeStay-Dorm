@@ -357,13 +357,7 @@ export function RegistrationLookupWorkspace() {
           )}
         </div>
 
-        <div className="border-t border-gray-200 bg-white px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-xs text-gray-500">
-            <span className="rounded border bg-slate-100 px-1.5 py-0.5 font-semibold">Ctrl</span>
-            <span className="mx-1">+</span>
-            <span className="rounded border bg-slate-100 px-1.5 py-0.5 font-semibold">F</span>: Tìm
-            kiếm nhanh
-          </div>
+        <div className="flex justify-end border-t border-gray-200 bg-white px-6 py-4">
           <div className="flex flex-wrap gap-2 text-xs text-gray-600">
             <Button variant="outline" size="sm">
               In phiếu

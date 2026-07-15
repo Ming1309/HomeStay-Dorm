@@ -15,7 +15,7 @@ Always strictly follow these layout principles unless instructed otherwise:
     - **Empty State:** Muted placeholder text (e.g., "👈 Select an item from the list to begin").
     - **Sticky Header:** Contextual info (ID, Status Badge, Name, Room).
     - **Scrollable Body:** The main working area (Forms, Tables, Tabs). Use `overflow-y-auto`.
-    - **Sticky Footer:** Action buttons (Right) and Keyboard Shortcuts (Left).
+    - **Sticky Footer:** Display status, record counts, or action buttons as appropriate. Align actions and record counts to the right.
 
 ## 3. Data Entry & Form Rules
 - **Tech Stack:** ALWAYS use `react-hook-form` combined with `zod` for validation.
@@ -48,7 +48,7 @@ Always strictly follow these layout principles unless instructed otherwise:
 - **Information Density:** Use compact paddings (`p-2`, `p-3`), small text sizes (`text-sm`), and inline tables instead of bulky cards when listing multiple items (e.g., members, bill items, assets).
 
 ## 6. Pro-User Features (Mandatory)
-- **Keyboard Shortcuts:** Display shortcut hints in the footer. Use the `<kbd>` HTML tag with light gray styling. (e.g., `<kbd>Ctrl</kbd> + <kbd>S</kbd> : Lưu`).
+- **Keyboard Shortcuts:** Keyboard shortcuts may remain available for power users, but do not display persistent shortcut hints in the UI or include shortcut combinations in tooltips.
 - **Feedback:** Use `sonner` for Toast notifications after every successful CRUD action.
 - **Recoverability & Safety:** ALWAYS implement a Confirmation Dialog (Modal/Alert) before executing any destructive actions (Deleting, Canceling, Rejecting). Provide a "Lưu nháp" (Save Draft) button where applicable.
 
