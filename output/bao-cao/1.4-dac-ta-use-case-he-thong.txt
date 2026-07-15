@@ -1,0 +1,1573 @@
+1.4 ĐẶC TẢ USE CASE HỆ THỐNG
+
+1.4.1 Lập phiếu đăng ký
+
+Tên Use-Case
+    Lập phiếu đăng ký
+
+Mô tả
+    Use Case cho phép Nhân viên sale ghi nhận nhu cầu thuê phòng của khách hàng và tạo Phiếu đăng ký trên hệ thống.
+
+Sự kiện kích hoạt
+    Nhân viên sale chọn chức năng “Lập phiếu đăng ký”.
+
+Tác nhân
+    Nhân viên sale
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Nhân viên sale đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Phiếu đăng ký được lưu với trạng thái “Đang xử lý”, liên kết với khách hàng, Nhân viên sale và chi nhánh hiện tại.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị biểu mẫu lập Phiếu đăng ký.
+    2. Nhân viên sale nhập thông tin nhận diện và liên hệ của khách hàng.
+    3. Nhân viên sale nhập nhu cầu lưu trú gồm khu vực mong muốn, số người ở, loại hình thuê, mức giá, thời gian dự kiến vào, thời hạn thuê và yêu cầu khác.
+    4. Nhân viên sale nhấn “Lưu phiếu đăng ký”.
+    5. Hệ thống kiểm tra các trường bắt buộc, định dạng dữ liệu và giấy tờ khách hàng.
+    6. Hệ thống tạo hoặc sử dụng lại khách hàng phù hợp, sinh mã Phiếu đăng ký và lưu dữ liệu.
+    7. Hệ thống hiển thị thông báo “Lập phiếu đăng ký thành công”.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A5. Dữ liệu không hợp lệ:
+    * Hệ thống hiển thị lỗi tại các trường tương ứng.
+    * Quay lại bước 2.
+
+    B5. Số giấy tờ đã thuộc về khách hàng khác:
+    * Hệ thống hiển thị thông báo dữ liệu khách hàng bị trùng.
+    * Phiếu đăng ký không được tạo.
+    * Quay lại bước 2.
+
+
+1.4.2 Tra cứu phiếu đăng ký
+
+Tên Use-Case
+    Tra cứu phiếu đăng ký
+
+Mô tả
+    Use Case cho phép Nhân viên sale tìm kiếm và xem chi tiết Phiếu đăng ký thuộc chi nhánh hiện tại.
+
+Sự kiện kích hoạt
+    Nhân viên sale chọn chức năng “Tra cứu phiếu đăng ký”.
+
+Tác nhân
+    Nhân viên sale
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Nhân viên sale đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Danh sách hoặc thông tin chi tiết Phiếu đăng ký phù hợp được hiển thị; dữ liệu không bị thay đổi.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị màn hình tra cứu Phiếu đăng ký.
+    2. Nhân viên sale nhập một hoặc nhiều tiêu chí như mã phiếu, họ tên, số điện thoại, số giấy tờ hoặc email.
+    3. Nhân viên sale nhấn “Tìm kiếm”.
+    4. Hệ thống kiểm tra tiêu chí và tìm các Phiếu đăng ký thuộc chi nhánh hiện tại.
+    5. Hệ thống hiển thị danh sách kết quả.
+    6. Nhân viên sale chọn một Phiếu đăng ký.
+    7. Hệ thống hiển thị thông tin chi tiết Phiếu đăng ký.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A3. Không nhập tiêu chí:
+    * Hệ thống hiển thị “Vui lòng nhập ít nhất một tiêu chí tìm kiếm”.
+    * Quay lại bước 2.
+
+    A5. Không tìm thấy dữ liệu:
+    * Hệ thống hiển thị danh sách rỗng và thông báo “Không tìm thấy Phiếu đăng ký phù hợp”.
+    * Quay lại bước 2.
+
+
+1.4.3 Tạo lịch hẹn
+
+Tên Use-Case
+    Tạo lịch hẹn
+
+Mô tả
+    Use Case cho phép Nhân viên sale tạo lịch xem phòng, nhận phòng hoặc trả phòng và liên kết lịch với hồ sơ tương ứng.
+
+Sự kiện kích hoạt
+    Nhân viên sale chọn chức năng “Tạo lịch hẹn”.
+
+Tác nhân
+    Nhân viên sale
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Nhân viên sale đã đăng nhập vào hệ thống.
+    Hồ sơ được chọn thuộc chi nhánh hiện tại và phù hợp với loại lịch hẹn.
+
+Hậu điều kiện
+    Lịch hẹn được lưu với trạng thái “Đã xác nhận”, liên kết đúng hồ sơ, Nhân viên sale và chi nhánh hiện tại.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị biểu mẫu tạo lịch hẹn và chi nhánh hiện tại ở chế độ chỉ đọc.
+    2. Nhân viên sale chọn loại lịch hẹn: Xem phòng, Nhận phòng hoặc Trả phòng.
+    3. Hệ thống hiển thị bộ tìm kiếm hồ sơ tương ứng:
+       * Xem phòng: Phiếu đăng ký phù hợp.
+       * Nhận phòng: Phiếu cọc đã duyệt.
+       * Trả phòng: Hợp đồng đang hiệu lực.
+    4. Nhân viên sale chọn hồ sơ, nhập ngày và giờ hẹn.
+    5. Nhân viên sale nhấn “Lưu lịch hẹn”.
+    6. Hệ thống kiểm tra dữ liệu, phạm vi chi nhánh và lịch đang hoạt động của Nhân viên sale tại cùng thời điểm.
+    7. Hệ thống sinh mã và lưu Lịch hẹn với trạng thái “Đã xác nhận”.
+    8. Hệ thống hiển thị thông báo “Tạo lịch hẹn thành công”.
+    9. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A3. Không có hồ sơ phù hợp:
+    * Hệ thống hiển thị thông báo không có hồ sơ đủ điều kiện cho loại lịch hẹn đã chọn.
+    * Quay lại bước 2.
+
+    A6. Trùng lịch đang hoạt động:
+    * Hệ thống hiển thị “Nhân viên đã có lịch hẹn tại thời điểm này”.
+    * Quay lại bước 4.
+
+    B6. Hồ sơ không còn hợp lệ hoặc khác chi nhánh:
+    * Hệ thống từ chối tạo lịch hẹn và yêu cầu tải lại dữ liệu.
+    * Kết thúc Use Case.
+
+
+1.4.4 Tra cứu thông tin phòng/giường
+
+Tên Use-Case
+    Tra cứu thông tin phòng/giường
+
+Mô tả
+    Use Case cho phép người dùng tìm kiếm và xem tình trạng phòng, giường và tài sản thuộc chi nhánh hiện tại.
+
+Sự kiện kích hoạt
+    Người dùng chọn chức năng “Tra cứu phòng/giường”.
+
+Tác nhân
+    Nhân viên sale, Kế toán, Quản lý
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Người dùng đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Thông tin phòng/giường phù hợp được hiển thị; dữ liệu không bị thay đổi.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị màn hình tra cứu cùng các bộ lọc như tòa nhà, tầng, loại phòng, trạng thái và mức giá.
+    2. Người dùng nhập hoặc chọn tiêu chí tìm kiếm.
+    3. Người dùng nhấn “Tìm kiếm”.
+    4. Hệ thống tìm các phòng/giường thuộc chi nhánh hiện tại.
+    5. Hệ thống hiển thị danh sách cùng trạng thái hiện tại của phòng và giường.
+    6. Người dùng chọn một phòng hoặc giường.
+    7. Hệ thống hiển thị thông tin chi tiết và danh sách tài sản của phòng.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A2. Không nhập tiêu chí:
+    * Hệ thống sử dụng bộ lọc mặc định và hiển thị danh sách thuộc chi nhánh hiện tại.
+    * Tiếp tục bước 5.
+
+    A5. Không tìm thấy dữ liệu:
+    * Hệ thống hiển thị “Không tìm thấy phòng/giường phù hợp”.
+    * Quay lại bước 2.
+
+
+1.4.5 Lập phiếu cọc
+
+Tên Use-Case
+    Lập phiếu cọc
+
+Mô tả
+    Use Case cho phép Nhân viên sale lập Phiếu cọc từ lịch xem phòng đã hoàn thành và giữ chỗ các giường được chọn.
+
+Sự kiện kích hoạt
+    Nhân viên sale chọn chức năng “Lập phiếu cọc”.
+
+Tác nhân
+    Nhân viên sale
+
+Use-Case liên quan
+    <<include>> UC Tra cứu thông tin phòng/giường.
+
+Tiền điều kiện
+    Nhân viên sale đã đăng nhập vào hệ thống.
+    Tồn tại Lịch hẹn xem phòng đã hoàn thành, liên kết với Phiếu đăng ký hợp lệ trong cùng chi nhánh.
+
+Hậu điều kiện
+    Phiếu cọc được tạo với trạng thái “Khởi tạo”; các giường được chọn chuyển sang “Giữ chỗ”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Lịch hẹn xem phòng đã hoàn thành và chưa được dùng để lập Phiếu cọc.
+    2. Nhân viên sale chọn một Lịch hẹn.
+    3. Hệ thống hiển thị thông tin khách hàng và nhu cầu thuê từ Phiếu đăng ký.
+    4. Nhân viên sale chọn hình thức thuê: Ở ghép hoặc Thuê nguyên phòng.
+    5. Hệ thống thực hiện UC Tra cứu thông tin phòng/giường trong phạm vi chi nhánh hiện tại.
+    6. Nhân viên sale chọn phòng và các giường phù hợp.
+    7. Hệ thống kiểm tra sức chứa, giới tính, trạng thái phòng/giường và tính nhất quán chi nhánh.
+    8. Nhân viên sale tích chọn xác nhận khách hàng đã đồng ý điều khoản và nội quy.
+    9. Nhân viên sale nhấn “Lưu”.
+    10. Hệ thống khóa và kiểm tra lại Lịch hẹn, phòng và giường.
+    11. Hệ thống sinh mã, lưu Phiếu cọc ở trạng thái “Khởi tạo” và chuyển các giường sang “Giữ chỗ” trong cùng giao dịch.
+    12. Hệ thống hiển thị thông báo “Lập phiếu cọc thành công”.
+    13. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A7. Phòng/giường không đủ điều kiện hoặc vừa được người khác giữ chỗ:
+    * Hệ thống hiển thị lý do không hợp lệ.
+    * Quay lại bước 5.
+
+    A8. Chưa xác nhận điều khoản:
+    * Hệ thống khóa thao tác lưu.
+    * Quay lại bước 8.
+
+    B10. Lịch hẹn đã được sử dụng hoặc dữ liệu vừa bị thay đổi:
+    * Hệ thống hủy thao tác, không tạo Phiếu cọc và yêu cầu tải lại dữ liệu.
+    * Kết thúc Use Case.
+
+
+1.4.6 Tính toán tiền cọc
+
+Tên Use-Case
+    Tính toán tiền cọc
+
+Mô tả
+    Use Case cho phép Kế toán kiểm tra số tiền cọc do hệ thống tính và chuyển Phiếu cọc sang trạng thái chờ thanh toán.
+
+Sự kiện kích hoạt
+    Kế toán chọn chức năng “Tính tiền cọc”.
+
+Tác nhân
+    Kế toán
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Kế toán đã đăng nhập vào hệ thống.
+    Tồn tại Phiếu cọc ở trạng thái “Khởi tạo” thuộc chi nhánh hiện tại.
+
+Hậu điều kiện
+    Tổng tiền và hạn thanh toán được lưu; Phiếu cọc chuyển từ “Khởi tạo” sang “Chờ thanh toán”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Phiếu cọc ở trạng thái “Khởi tạo”.
+    2. Kế toán chọn một Phiếu cọc.
+    3. Hệ thống tải thông tin hình thức thuê, số giường, sức chứa và đơn giá phòng.
+    4. Hệ thống xác định số giường tính cọc:
+       * Ở ghép: số giường đã chọn.
+       * Thuê nguyên phòng: toàn bộ sức chứa của phòng.
+    5. Hệ thống tính tiền cọc theo công thức: Đơn giá x 2 tháng x Số giường tính cọc.
+    6. Hệ thống hiển thị chi tiết phép tính và số tiền cọc.
+    7. Kế toán nhấn “Xác nhận tiền cọc”.
+    8. Hệ thống kiểm tra lại Phiếu cọc vẫn ở trạng thái “Khởi tạo”.
+    9. Hệ thống lưu tổng tiền, đặt hạn thanh toán sau 24 giờ và chuyển Phiếu cọc sang “Chờ thanh toán”.
+    10. Hệ thống hiển thị thông báo “Xác nhận tiền cọc thành công”.
+    11. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A5. Dữ liệu phòng, giường hoặc đơn giá không hợp lệ:
+    * Hệ thống hiển thị lỗi dữ liệu và không cho phép xác nhận.
+    * Kết thúc Use Case.
+
+    A8. Phiếu cọc đã được xử lý:
+    * Hệ thống hiển thị thông báo yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.7 Ghi nhận thanh toán cọc
+
+Tên Use-Case
+    Ghi nhận thanh toán cọc
+
+Mô tả
+    Use Case cho phép Nhân viên sale ghi nhận phương thức thanh toán và tải chứng từ cọc để chuyển Quản lý đối chiếu.
+
+Sự kiện kích hoạt
+    Nhân viên sale chọn chức năng “Ghi nhận thanh toán cọc”.
+
+Tác nhân
+    Nhân viên sale
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Nhân viên sale đã đăng nhập vào hệ thống.
+    Tồn tại Phiếu cọc “Chờ thanh toán” và chưa hết hạn thanh toán.
+
+Hậu điều kiện
+    Phương thức và chứng từ thanh toán được lưu; Phiếu cọc chuyển sang “Chờ đối chiếu”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Phiếu cọc “Chờ thanh toán” còn hạn và đồng hồ thời gian còn lại.
+    2. Nhân viên sale chọn một Phiếu cọc.
+    3. Hệ thống hiển thị số tiền cần thanh toán và hạn thanh toán.
+    4. Nhân viên sale chọn phương thức Tiền mặt hoặc Chuyển khoản và tải chứng từ thanh toán.
+    5. Hệ thống kiểm tra loại tệp, dung lượng tối đa 5 MB và tính hợp lệ của chứng từ.
+    6. Nhân viên sale nhấn “Gửi đối chiếu”.
+    7. Hệ thống kiểm tra lại trạng thái và hạn thanh toán theo thời gian máy chủ.
+    8. Hệ thống lưu chứng từ, phương thức thanh toán và chuyển Phiếu cọc sang “Chờ đối chiếu”.
+    9. Hệ thống hiển thị thông báo “Đã gửi chứng từ cho Quản lý đối chiếu”.
+    10. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A5. Thiếu hoặc sai định dạng chứng từ:
+    * Hệ thống hiển thị lỗi tại vùng tải tệp.
+    * Quay lại bước 4.
+
+    A7. Phiếu cọc đã hết hạn hoặc đã được xử lý:
+    * Hệ thống từ chối ghi nhận và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.8 Xác nhận khoản tiền cọc
+
+Tên Use-Case
+    Xác nhận khoản tiền cọc
+
+Mô tả
+    Use Case cho phép Quản lý xem chứng từ cọc, xác nhận khoản tiền hợp lệ hoặc yêu cầu Nhân viên sale bổ sung.
+
+Sự kiện kích hoạt
+    Quản lý chọn chức năng “Xác nhận tiền cọc”.
+
+Tác nhân
+    Quản lý
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản lý đã đăng nhập vào hệ thống.
+    Tồn tại Phiếu cọc ở trạng thái “Chờ đối chiếu” thuộc chi nhánh hiện tại.
+
+Hậu điều kiện
+    
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Phiếu cọc đang “Chờ đối chiếu”.
+    2. Quản lý chọn một Phiếu cọc.
+    3. Hệ thống hiển thị số tiền, phương thức, chứng từ và các giường liên quan.
+    4. Quản lý nhấn “Xác nhận hợp lệ”.
+    5. Hệ thống khóa và kiểm tra lại Phiếu cọc, chứng từ, tổng tiền và danh sách giường.
+    6. Hệ thống chuyển Phiếu cọc sang “Đã thanh toán”, tạo duy nhất một Phiếu thu với số tiền bằng tổng tiền cọc và chuyển các giường từ “Giữ chỗ” sang “Đã cọc” trong cùng giao dịch.
+    7. Hệ thống cập nhật trạng thái phòng và ghi nhận hoàn tất tác vụ xác nhận.
+    8. Hệ thống hiển thị thông báo “Xác nhận khoản tiền cọc thành công”.
+    9. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A4. Quản lý yêu cầu bổ sung:
+    * Quản lý chọn “Yêu cầu bổ sung” và nhập lý do từ 1 đến 500 ký tự.
+    * Hệ thống lưu lý do, đặt lại hạn thanh toán và chuyển Phiếu cọc về “Chờ thanh toán”.
+    * Hệ thống hiển thị thông báo xử lý thành công.
+    * Kết thúc Use Case.
+
+    A5. Hồ sơ thiếu chứng từ, sai số tiền hoặc giường không còn hợp lệ:
+    * Hệ thống từ chối xác nhận và hiển thị lý do.
+    * Kết thúc Use Case.
+
+    B5. Phiếu cọc vừa được xử lý bởi người khác:
+    * Hệ thống yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.9 Tra cứu thông tin đặt cọc
+
+Tên Use-Case
+    Tra cứu thông tin đặt cọc
+
+Mô tả
+    Use Case cho phép người dùng tìm kiếm và xem chi tiết Phiếu cọc thuộc chi nhánh hiện tại.
+
+Sự kiện kích hoạt
+    Người dùng chọn chức năng “Tra cứu phiếu cọc”.
+
+Tác nhân
+    Nhân viên sale, Quản lý, Kế toán
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Người dùng đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Danh sách hoặc thông tin chi tiết Phiếu cọc phù hợp được hiển thị; dữ liệu không bị thay đổi.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị màn hình tra cứu Phiếu cọc.
+    2. Người dùng nhập ít nhất một tiêu chí như mã phiếu, họ tên, số điện thoại, email, số giấy tờ, phòng hoặc trạng thái.
+    3. Người dùng nhấn “Tìm kiếm”.
+    4. Hệ thống tìm các Phiếu cọc thuộc chi nhánh hiện tại.
+    5. Hệ thống hiển thị danh sách kết quả.
+    6. Người dùng chọn một Phiếu cọc.
+    7. Hệ thống hiển thị chi tiết Phiếu cọc, khách hàng, phòng và giường liên quan.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A3. Không nhập tiêu chí:
+    * Hệ thống hiển thị “Vui lòng nhập ít nhất một tiêu chí tìm kiếm”.
+    * Quay lại bước 2.
+
+    A5. Không tìm thấy dữ liệu:
+    * Hệ thống hiển thị “Không tìm thấy Phiếu cọc phù hợp”.
+    * Quay lại bước 2.
+
+
+1.4.10 Hủy phiếu cọc
+
+Tên Use-Case
+    Hủy phiếu cọc
+
+Mô tả
+    Use Case cho phép Nhân viên sale hủy Phiếu cọc chưa có Hợp đồng, giải phóng chỗ và chuyển hồ sơ đã thu tiền sang hàng đợi đối soát.
+
+Sự kiện kích hoạt
+    Nhân viên sale chọn chức năng “Hủy phiếu cọc”.
+
+Tác nhân
+    Nhân viên sale
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Nhân viên sale đã đăng nhập vào hệ thống.
+    Phiếu cọc thuộc chi nhánh hiện tại, chưa bị hủy và chưa liên kết Hợp đồng.
+
+Hậu điều kiện
+    Phiếu cọc chuyển sang “Đã hủy”; người và thời điểm hủy được lưu; các giường được giải phóng.
+    Nếu Phiếu cọc đã có Phiếu thu hợp lệ, hồ sơ xuất hiện trong hàng đợi chờ Kế toán lập Phiếu đối soát.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Phiếu cọc đủ điều kiện hủy.
+    2. Nhân viên sale tìm kiếm và chọn một Phiếu cọc.
+    3. Hệ thống hiển thị chi tiết Phiếu cọc và danh sách giường liên quan.
+    4. Nhân viên sale nhấn “Hủy đặt cọc”.
+    5. Hệ thống hiển thị hộp thoại xác nhận.
+    6. Nhân viên sale nhấn “Xác nhận hủy”.
+    7. Hệ thống khóa và kiểm tra lại Phiếu cọc chưa có Hợp đồng và chưa bị xử lý.
+    8. Hệ thống chuyển Phiếu cọc sang “Đã hủy”, lưu Nhân viên và thời điểm hủy.
+    9. Hệ thống chuyển các giường hợp lệ về “Trống” và tính lại trạng thái phòng.
+    10. Hệ thống kiểm tra Phiếu thu:
+        * Nếu đã có Phiếu thu hợp lệ: đưa hồ sơ vào hàng đợi chờ đối soát.
+        * Nếu chưa có Phiếu thu: không phát sinh đối soát.
+    11. Hệ thống hiển thị “Hủy hồ sơ đặt cọc thành công”.
+    12. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A1. Không có Phiếu cọc đủ điều kiện:
+    * Hệ thống hiển thị “Không có Phiếu cọc có thể hủy”.
+    * Kết thúc Use Case.
+
+    A6. Nhân viên sale đóng hộp thoại hoặc chọn “Bỏ qua”:
+    * Hệ thống giữ nguyên Phiếu cọc và giường.
+    * Kết thúc Use Case.
+
+    A7. Phiếu cọc đã có Hợp đồng hoặc vừa được xử lý:
+    * Hệ thống từ chối hủy và yêu cầu tải lại dữ liệu.
+    * Kết thúc Use Case.
+
+
+1.4.11 Nhập hồ sơ lưu trú
+
+Tên Use-Case
+    Nhập hồ sơ lưu trú
+
+Mô tả
+    Use Case cho phép Nhân viên sale bổ sung thông tin cư trú của người đại diện và các thành viên ở cùng trước khi gửi Quản lý xét duyệt.
+
+Sự kiện kích hoạt
+    Nhân viên sale chọn chức năng “Nhập hồ sơ lưu trú”.
+
+Tác nhân
+    Nhân viên sale
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Nhân viên sale đã đăng nhập vào hệ thống.
+    Tồn tại Phiếu cọc “Đã thanh toán” có Lịch hẹn nhận phòng hợp lệ trong ngày.
+
+Hậu điều kiện
+    Thông tin cư trú và danh sách thành viên được lưu; Phiếu cọc chuyển sang “Chờ duyệt”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Phiếu cọc “Đã thanh toán” có Lịch hẹn nhận phòng trong ngày.
+    2. Nhân viên sale chọn một Phiếu cọc.
+    3. Hệ thống hiển thị thông tin người đại diện, hình thức thuê, số giường và sức chứa phòng.
+    4. Nhân viên sale bổ sung thông tin bắt buộc của người đại diện, gồm địa chỉ thường trú, quốc tịch, ngày sinh, email, loại giấy tờ và số giấy tờ.
+    5. Nếu khách thuê theo nhóm, Nhân viên sale nhập danh sách thành viên ở cùng.
+    6. Nhân viên sale nhấn “Lưu hồ sơ”.
+    7. Hệ thống kiểm tra định dạng email, giấy tờ, ngày sinh, trùng giấy tờ, số thành viên và sức chứa.
+    8. Hệ thống lưu thông tin người đại diện, tạo các khách hàng và thành viên đăng ký cần thiết.
+    9. Hệ thống chuyển Phiếu cọc sang “Chờ duyệt”.
+    10. Hệ thống hiển thị thông báo “Lưu hồ sơ lưu trú thành công”.
+    11. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A5. Khách thuê cá nhân:
+    * Hệ thống không yêu cầu nhập thành viên ở cùng.
+    * Tiếp tục bước 6.
+
+    A7. Dữ liệu không hợp lệ hoặc vượt quá sức chứa:
+    * Hệ thống hiển thị lỗi tại thông tin tương ứng.
+    * Quay lại bước 4 hoặc bước 5.
+
+    B7. Phiếu cọc hoặc Lịch hẹn không còn hợp lệ:
+    * Hệ thống từ chối lưu hồ sơ và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.12 Xét duyệt hồ sơ nhận phòng
+
+Tên Use-Case
+    Xét duyệt hồ sơ nhận phòng
+
+Mô tả
+    Use Case cho phép Quản lý kiểm tra hồ sơ cư trú, duyệt toàn bộ, loại thành viên không đủ điều kiện hoặc từ chối hồ sơ.
+
+Sự kiện kích hoạt
+    Quản lý chọn chức năng “Xét duyệt hồ sơ”.
+
+Tác nhân
+    Quản lý
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản lý đã đăng nhập vào hệ thống.
+    Tồn tại Phiếu cọc ở trạng thái “Chờ duyệt” thuộc chi nhánh hiện tại.
+
+Hậu điều kiện
+    Nếu được duyệt, Phiếu cọc chuyển sang “Đã duyệt” và các thành viên được ghi nhận trạng thái xét duyệt.
+    Nếu bị từ chối, Phiếu cọc chuyển sang “Đã hủy” và các giường được giải phóng.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các hồ sơ đang “Chờ duyệt”.
+    2. Quản lý chọn một hồ sơ.
+    3. Hệ thống hiển thị thông tin người đại diện, các thành viên, phòng và số giường đã cọc.
+    4. Quản lý nhấn “Duyệt toàn bộ hồ sơ”.
+    5. Hệ thống kiểm tra người đại diện, số lượng thành viên, sức chứa và giới tính cho phép của phòng.
+    6. Hệ thống chuyển các thành viên sang “Hợp lệ” và Phiếu cọc sang “Đã duyệt”.
+    7. Hệ thống bảo toàn trạng thái “Đã cọc” của các giường và ghi nhận hoàn tất tác vụ xét duyệt.
+    8. Hệ thống hiển thị thông báo “Duyệt hồ sơ thành công”.
+    9. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A4. Có thành viên ở cùng không đủ điều kiện:
+    * Quản lý chọn “Đánh dấu không đủ điều kiện” tại thành viên đó.
+    * Hệ thống chuyển thành viên sang “Từ chối”.
+    * Quản lý có thể hoàn tác hoặc nhấn “Duyệt các thành viên còn lại”.
+    * Hệ thống kiểm tra lại người đại diện, sức chứa và giới tính của danh sách còn lại.
+    * Tiếp tục bước 6.
+
+    B4. Từ chối toàn bộ hồ sơ:
+    * Quản lý chọn “Từ chối hồ sơ” và xác nhận thao tác.
+    * Hệ thống chuyển toàn bộ thành viên sang “Từ chối”, Phiếu cọc sang “Đã hủy” và các giường về “Trống”.
+    * Nếu Phiếu cọc đã có Phiếu thu hợp lệ, hệ thống đưa hồ sơ vào hàng đợi chờ đối soát hoàn cọc.
+    * Hệ thống hiển thị thông báo “Đã từ chối hồ sơ”.
+    * Kết thúc Use Case.
+
+    A5. Hồ sơ không đáp ứng sức chứa hoặc giới tính phòng:
+    * Hệ thống hiển thị lý do và không cập nhật hồ sơ.
+    * Quay lại bước 3.
+
+    B5. Hồ sơ vừa được xử lý bởi người khác:
+    * Hệ thống yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.13 Lập hợp đồng thuê
+
+Tên Use-Case
+    Lập hợp đồng thuê
+
+Mô tả
+    Use Case cho phép Nhân viên sale lập Hợp đồng từ Phiếu cọc đã duyệt, chọn dịch vụ và ghi nhận việc khách đã ký hợp đồng.
+
+Sự kiện kích hoạt
+    Nhân viên sale chọn chức năng “Lập hợp đồng thuê”.
+
+Tác nhân
+    Nhân viên sale
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Nhân viên sale đã đăng nhập vào hệ thống.
+    Tồn tại Phiếu cọc “Đã duyệt” thuộc chi nhánh hiện tại và chưa có Hợp đồng hợp lệ.
+
+Hậu điều kiện
+    Hợp đồng được tạo và chuyển sang “Chờ thanh toán” sau khi Nhân viên sale ghi nhận khách đã ký.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Phiếu cọc ở trạng thái “Đã duyệt” chưa có Hợp đồng hợp lệ.
+    2. Nhân viên sale chọn một Phiếu cọc.
+    3. Hệ thống hiển thị khách hàng, thành viên được duyệt, phòng, dịch vụ, quy định và chính sách hoàn cọc đang áp dụng.
+    4. Nhân viên sale nhập ngày bắt đầu, ngày kết thúc, kỳ thanh toán, giá thuê, quy định và các dịch vụ đi kèm.
+    5. Nhân viên sale nhấn “Lưu hợp đồng”.
+    6. Hệ thống kiểm tra dữ liệu, khóa Phiếu cọc và bảo đảm chưa có Hợp đồng hợp lệ.
+    7. Hệ thống sinh mã và lưu Hợp đồng ở trạng thái “Chờ ký”, đồng thời lưu các dịch vụ đã chọn.
+    8. Hệ thống hiển thị nội dung Hợp đồng để Nhân viên sale kiểm tra.
+    9. Nhân viên sale nhấn “Xác nhận khách đã ký”.
+    10. Hệ thống chuyển Hợp đồng sang “Chờ thanh toán”.
+    11. Hệ thống hiển thị thông báo “Lập hợp đồng thành công”.
+    12. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A6. Dữ liệu không hợp lệ:
+    * Hệ thống hiển thị lỗi tại trường tương ứng.
+    * Quay lại bước 4.
+
+    B6. Phiếu cọc đã có Hợp đồng hoặc không còn “Đã duyệt”:
+    * Hệ thống từ chối tạo và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+    A9. Không tiếp tục ký Hợp đồng:
+    * Nhân viên sale chọn “Hủy hợp đồng” và xác nhận thao tác.
+    * Hệ thống chuyển bản Hợp đồng “Chờ ký” sang “Đã hủy”.
+    * Phiếu cọc và các giường không bị thay đổi bởi thao tác hủy bản Hợp đồng.
+    * Kết thúc Use Case.
+
+
+1.4.14 Xử lý thanh toán hợp đồng
+
+Tên Use-Case
+    Xử lý thanh toán hợp đồng
+
+Mô tả
+    Use Case cho phép Kế toán tính khoản thu kỳ đầu, ghi nhận thanh toán, tạo Hóa đơn và Phiếu thu, sau đó chuyển Hợp đồng sang chờ bàn giao.
+
+Sự kiện kích hoạt
+    Kế toán chọn chức năng “Thanh toán hợp đồng”.
+
+Tác nhân
+    Kế toán
+
+Use-Case liên quan
+    <<include>> UC Lập phiếu thu.
+
+Tiền điều kiện
+    Kế toán đã đăng nhập vào hệ thống.
+    Tồn tại Hợp đồng ở trạng thái “Chờ thanh toán” thuộc chi nhánh hiện tại.
+
+Hậu điều kiện
+    Hóa đơn kỳ đầu và Phiếu thu được lưu; Hợp đồng chuyển sang “Chờ bàn giao”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Hợp đồng đang “Chờ thanh toán”.
+    2. Kế toán chọn một Hợp đồng.
+    3. Hệ thống tính và hiển thị tiền thuê theo kỳ, tiền dịch vụ và tổng số tiền cần thu.
+    4. Kế toán kiểm tra số tiền, chọn phương thức thanh toán và tải chứng từ.
+    5. Kế toán nhấn “Tiến hành thu tiền”.
+    6. Hệ thống khóa và kiểm tra lại Hợp đồng, bảo đảm chưa có Hóa đơn kỳ đầu.
+    7. Hệ thống tạo Hóa đơn kỳ đầu cùng các dòng chi tiết và đánh dấu Hóa đơn “Đã thanh toán”.
+    8. Hệ thống thực hiện UC Lập phiếu thu với số tiền bằng tổng Hóa đơn.
+    9. Hệ thống chuyển Hợp đồng sang “Chờ bàn giao” trong cùng giao dịch.
+    10. Hệ thống hiển thị thông báo “Thanh toán hợp đồng thành công”.
+    11. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A4. Thiếu phương thức hoặc chứng từ không hợp lệ:
+    * Hệ thống hiển thị lỗi và không cho phép xác nhận.
+    * Quay lại bước 4.
+
+    A6. Hợp đồng đã được thanh toán hoặc Hóa đơn kỳ đầu đã tồn tại:
+    * Hệ thống từ chối xử lý và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.15 Lập biên bản bàn giao
+
+Tên Use-Case
+    Lập biên bản bàn giao
+
+Mô tả
+    Use Case cho phép Quản lý ghi nhận tài sản bàn giao, kích hoạt Hợp đồng và cập nhật trạng thái lưu trú.
+
+Sự kiện kích hoạt
+    Quản lý chọn chức năng “Bàn giao phòng”.
+
+Tác nhân
+    Quản lý
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản lý đã đăng nhập vào hệ thống.
+    Tồn tại Hợp đồng “Chờ bàn giao” thuộc chi nhánh hiện tại và chưa có Biên bản bàn giao tương ứng.
+
+Hậu điều kiện
+    Biên bản bàn giao được lưu; Hợp đồng chuyển sang “Đang hiệu lực”; thành viên chuyển sang “Đang thuê” và các giường chuyển sang “Đang sử dụng”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Hợp đồng đang “Chờ bàn giao”.
+    2. Quản lý chọn một Hợp đồng.
+    3. Hệ thống hiển thị khách hàng, phòng, giường và danh sách tài sản được trang bị.
+    4. Quản lý nhập số lượng bàn giao và tình trạng của từng tài sản.
+    5. Quản lý tích xác nhận Biên bản bàn giao đã được các bên xác nhận và nhấn “Chốt bàn giao”.
+    6. Hệ thống kiểm tra dữ liệu tài sản và khóa Hợp đồng để xử lý.
+    7. Hệ thống tạo Biên bản giao nhận loại “Bàn giao” cùng các chi tiết tài sản.
+    8. Hệ thống chuyển Hợp đồng sang “Đang hiệu lực”, thành viên sang “Đang thuê” và các giường sang “Đang sử dụng”.
+    9. Hệ thống hiển thị thông báo “Bàn giao phòng thành công”.
+    10. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A6. Thiếu tình trạng hoặc số lượng tài sản không hợp lệ:
+    * Hệ thống hiển thị lỗi tại dòng tài sản tương ứng.
+    * Quay lại bước 4.
+
+    A5. Quản lý không tiếp tục bàn giao:
+    * Quản lý đóng biểu mẫu hoặc chọn “Hủy thao tác”.
+    * Hệ thống không tạo Biên bản; Hợp đồng và giường giữ nguyên trạng thái trước đó.
+    * Kết thúc Use Case.
+
+    B6. Hợp đồng vừa được xử lý hoặc đã có Biên bản bàn giao:
+    * Hệ thống từ chối thao tác và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.16 Tra cứu hợp đồng
+
+Tên Use-Case
+    Tra cứu hợp đồng
+
+Mô tả
+    Use Case cho phép người dùng tìm kiếm và xem chi tiết Hợp đồng thuộc chi nhánh hiện tại.
+
+Sự kiện kích hoạt
+    Người dùng chọn chức năng “Tra cứu hợp đồng”.
+
+Tác nhân
+    Nhân viên sale, Kế toán, Quản lý
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Người dùng đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Danh sách hoặc thông tin chi tiết Hợp đồng phù hợp được hiển thị; dữ liệu không bị thay đổi.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị màn hình tra cứu Hợp đồng.
+    2. Người dùng nhập các tiêu chí như mã Hợp đồng, khách hàng, số điện thoại, số giấy tờ, phòng/giường hoặc trạng thái.
+    3. Người dùng nhấn “Tìm kiếm”.
+    4. Hệ thống tìm các Hợp đồng thuộc chi nhánh hiện tại.
+    5. Hệ thống hiển thị danh sách kết quả.
+    6. Người dùng chọn một Hợp đồng.
+    7. Hệ thống hiển thị chi tiết Hợp đồng, khách hàng, phòng, giường, dịch vụ và trạng thái liên quan.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A2. Không nhập tiêu chí:
+    * Hệ thống hiển thị các Hợp đồng đang hiệu lực thuộc chi nhánh hiện tại.
+    * Tiếp tục bước 5.
+
+    A5. Không tìm thấy dữ liệu:
+    * Hệ thống hiển thị “Không tìm thấy Hợp đồng phù hợp”.
+    * Quay lại bước 2.
+
+
+1.4.17 Lập biên bản thu hồi tài sản
+
+Tên Use-Case
+    Lập biên bản thu hồi tài sản
+
+Mô tả
+    Use Case cho phép Quản lý ghi nhận số lượng và tình trạng tài sản khi thu hồi phòng/giường từ khách trả phòng.
+
+Sự kiện kích hoạt
+    Quản lý chọn chức năng “Thu hồi tài sản”.
+
+Tác nhân
+    Quản lý
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản lý đã đăng nhập vào hệ thống.
+    Hợp đồng đang “Đang hiệu lực”, có Lịch hẹn trả phòng trong ngày và chưa có Biên bản thu hồi.
+
+Hậu điều kiện
+    Biên bản giao nhận loại “Thu hồi” và chi tiết tài sản được lưu; hồ sơ đủ điều kiện để Kế toán xử lý bồi thường và đối soát.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Hợp đồng đang hiệu lực có Lịch hẹn trả phòng trong ngày và chưa có Biên bản thu hồi.
+    2. Quản lý chọn một Hợp đồng.
+    3. Hệ thống hiển thị thông tin Hợp đồng và danh sách tài sản đã bàn giao cho phòng.
+    4. Quản lý nhập số lượng thu hồi, tình trạng và ghi chú cho từng tài sản.
+    5. Quản lý nhấn “Lưu biên bản thu hồi”.
+    6. Hệ thống kiểm tra số lượng, tình trạng tài sản và trạng thái Hợp đồng.
+    7. Hệ thống tạo Biên bản giao nhận loại “Thu hồi” cùng các chi tiết tài sản.
+    8. Hệ thống đưa hồ sơ có tài sản hư hỏng hoặc mất mát vào hàng đợi lập Hóa đơn bồi thường và đưa Hợp đồng vào hàng đợi đối soát khi đủ điều kiện.
+    9. Hệ thống hiển thị thông báo “Lập biên bản thu hồi thành công”.
+    10. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A6. Thiếu tình trạng hoặc số lượng không hợp lệ:
+    * Hệ thống hiển thị lỗi tại dòng tài sản tương ứng.
+    * Quay lại bước 4.
+
+    B6. Hợp đồng không còn hiệu lực, Lịch hẹn không hợp lệ hoặc Biên bản đã tồn tại:
+    * Hệ thống từ chối lưu và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.18 Lập phiếu đối soát
+
+Tên Use-Case
+    Lập phiếu đối soát
+
+Mô tả
+    Use Case cho phép Kế toán lập Phiếu đối soát cho Hợp đồng trả phòng hoặc Phiếu cọc đã thu tiền bị hủy.
+
+Sự kiện kích hoạt
+    Kế toán chọn chức năng “Lập phiếu đối soát”.
+
+Tác nhân
+    Kế toán
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Kế toán đã đăng nhập vào hệ thống.
+    Tồn tại một trong các hồ sơ thuộc chi nhánh hiện tại:
+    * Hợp đồng đang hiệu lực đã có Biên bản thu hồi và chưa có Phiếu đối soát.
+    * Phiếu cọc “Đã hủy”, có Phiếu thu hợp lệ, chưa có Hợp đồng và chưa có Phiếu đối soát.
+
+Hậu điều kiện
+    Phiếu đối soát được lưu ở trạng thái “Chờ xác nhận”, chứa tỷ lệ hoàn, tổng khấu trừ, tiền hoàn hoặc tiền thu thêm đã tính.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các hồ sơ đủ điều kiện đối soát.
+    2. Kế toán chọn một hồ sơ.
+    3. Hệ thống tải lại hồ sơ và xác định chính sách hoàn cọc:
+       * Hồ sơ Hợp đồng: sử dụng phiên bản chính sách đã gắn với Hợp đồng.
+       * Phiếu cọc hủy trước Hợp đồng: sử dụng chính sách có hiệu lực tại thời điểm đối soát.
+    4. Đối với Hợp đồng trả phòng, hệ thống:
+       * Xác định thời gian lưu trú và tỷ lệ hoàn cọc.
+       * Tính số tiền hoàn cơ bản.
+       * Lấy các Hóa đơn chưa thanh toán liên quan để tính tổng khấu trừ.
+    5. Hệ thống tính kết quả:
+       * Tiền hoàn = Tiền cọc x Tỷ lệ hoàn - Tổng khấu trừ, nếu kết quả dương.
+       * Tiền thu thêm = Tổng khấu trừ - Tiền cọc x Tỷ lệ hoàn, nếu kết quả dương.
+       * Hòa vốn nếu cả hai giá trị bằng 0.
+    6. Hệ thống hiển thị chi tiết phép tính và các Hóa đơn khấu trừ.
+    7. Kế toán kiểm tra dữ liệu, nhập ghi chú nếu cần và nhấn “Tạo Phiếu đối soát”.
+    8. Hệ thống khóa và kiểm tra lại hồ sơ chưa có Phiếu đối soát.
+    9. Hệ thống sinh mã và lưu Phiếu đối soát ở trạng thái “Chờ xác nhận”.
+    10. Hệ thống hiển thị thông báo “Lập phiếu đối soát thành công”.
+    11. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A2. Hồ sơ là Phiếu cọc đã hủy trước khi ký Hợp đồng:
+    * Hệ thống kiểm tra Phiếu cọc có Phiếu thu với số tiền thực thu dương và bằng tổng tiền cọc.
+    * Hệ thống dùng số tiền thực thu và tỷ lệ hoàn “Chưa ký hợp đồng” của chính sách hiện hành.
+    * Hệ thống đặt tổng khấu trừ bằng 0.
+    * Tiếp tục bước 5.
+
+    A3. Không tìm thấy chính sách hoàn cọc có hiệu lực:
+    * Hệ thống hiển thị lỗi cấu hình và không cho phép lập Phiếu đối soát.
+    * Kết thúc Use Case.
+
+    B8. Hồ sơ không còn hợp lệ hoặc Phiếu đối soát đã được tạo:
+    * Hệ thống từ chối thao tác và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.19 Xác nhận kết quả đối soát
+
+Tên Use-Case
+    Xác nhận kết quả đối soát
+
+Mô tả
+    Use Case cho phép Quản lý xem kết quả đối soát và ghi nhận trên hệ thống rằng khách hàng đã đồng ý với kết quả đó.
+
+Sự kiện kích hoạt
+    Quản lý chọn chức năng “Xác nhận đối soát”.
+
+Tác nhân
+    Quản lý
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản lý đã đăng nhập vào hệ thống.
+    Tồn tại Phiếu đối soát ở trạng thái “Chờ xác nhận” thuộc chi nhánh hiện tại.
+
+Hậu điều kiện
+    Hệ thống lưu người và thời điểm xác nhận.
+    Phiếu đối soát chuyển sang “Đã chốt”; trường hợp hòa vốn chuyển thẳng sang “Đã tất toán”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Phiếu đối soát đang “Chờ xác nhận”.
+    2. Quản lý chọn một Phiếu đối soát.
+    3. Hệ thống hiển thị thông tin khách hàng, phòng, Phiếu cọc hoặc Hợp đồng, tiền cọc, tỷ lệ hoàn, Hóa đơn khấu trừ và kết quả tài chính.
+    4. Quản lý kiểm tra thông tin trên màn hình.
+    5. Quản lý tích chọn “Khách hàng đã đồng ý với kết quả đối soát”.
+    6. Quản lý nhấn “Xác nhận”.
+    7. Hệ thống khóa và kiểm tra Phiếu đối soát vẫn ở trạng thái “Chờ xác nhận” và dữ liệu liên kết còn hợp lệ.
+    8. Hệ thống lưu trạng thái khách hàng đồng ý, Nhân viên quản lý và thời điểm xác nhận.
+    9. Hệ thống cập nhật trạng thái:
+       * Có tiền hoàn hoặc tiền thu thêm: “Đã chốt”.
+       * Hòa vốn: “Đã tất toán”.
+    10. Hệ thống đưa hồ sơ vào hàng đợi xử lý tiếp theo phù hợp với kết quả tài chính.
+    11. Hệ thống hiển thị thông báo “Xác nhận kết quả đối soát thành công”.
+    12. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A1. Không có Phiếu đối soát chờ xác nhận:
+    * Hệ thống hiển thị “Không có Phiếu đối soát cần xác nhận”.
+    * Kết thúc Use Case.
+
+    A5. Quản lý chưa tích chọn xác nhận:
+    * Hệ thống khóa nút “Xác nhận”.
+    * Quay lại bước 5.
+
+    B7. Phiếu đối soát đã được xử lý hoặc dữ liệu liên kết không còn hợp lệ:
+    * Hệ thống không cập nhật dữ liệu và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.20 Xử lý thanh toán trả phòng
+
+Tên Use-Case
+    Xử lý thanh toán trả phòng
+
+Mô tả
+    Use Case cho phép Kế toán ghi nhận khoản tiền thu thêm theo Phiếu đối soát đã chốt và tất toán Phiếu đối soát.
+
+Sự kiện kích hoạt
+    Kế toán chọn chức năng “Thanh toán trả phòng”.
+
+Tác nhân
+    Kế toán
+
+Use-Case liên quan
+    <<include>> UC Lập phiếu thu.
+
+Tiền điều kiện
+    Kế toán đã đăng nhập vào hệ thống.
+    Tồn tại Phiếu đối soát “Đã chốt”, có tiền thu thêm lớn hơn 0 và chưa có Phiếu thu tương ứng.
+
+Hậu điều kiện
+    Phiếu thu được lưu với số tiền bằng tiền thu thêm; Phiếu đối soát chuyển sang “Đã tất toán”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Phiếu đối soát “Đã chốt” có tiền thu thêm.
+    2. Kế toán chọn một Phiếu đối soát.
+    3. Hệ thống hiển thị kết quả đối soát và số tiền phải thu thêm.
+    4. Kế toán chọn phương thức thanh toán, nhập thông tin cần thiết và tải chứng từ.
+    5. Kế toán nhấn “Xác nhận thu tiền”.
+    6. Hệ thống khóa và kiểm tra lại Phiếu đối soát vẫn “Đã chốt”, số tiền thu thêm dương và chưa có Phiếu thu.
+    7. Hệ thống thực hiện UC Lập phiếu thu với số tiền bằng tiền thu thêm của Phiếu đối soát.
+    8. Hệ thống chuyển Phiếu đối soát từ “Đã chốt” sang “Đã tất toán” trong cùng giao dịch.
+    9. Hệ thống hiển thị thông báo “Thanh toán trả phòng thành công”.
+    10. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A4. Thiếu phương thức hoặc chứng từ không hợp lệ:
+    * Hệ thống hiển thị lỗi và yêu cầu nhập lại.
+    * Quay lại bước 4.
+
+    B6. Phiếu đối soát đã được xử lý hoặc Phiếu thu đã tồn tại:
+    * Hệ thống từ chối thao tác và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.21 Lập hóa đơn bồi thường
+
+Tên Use-Case
+    Lập hóa đơn bồi thường
+
+Mô tả
+    Use Case cho phép Kế toán lập Hóa đơn bồi thường từ Biên bản thu hồi có tài sản hư hỏng hoặc mất mát.
+
+Sự kiện kích hoạt
+    Kế toán chọn chức năng “Lập hóa đơn bồi thường”.
+
+Tác nhân
+    Kế toán
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Kế toán đã đăng nhập vào hệ thống.
+    Tồn tại Biên bản thu hồi có tài sản hư hỏng hoặc mất mát và chưa được lập Hóa đơn bồi thường.
+
+Hậu điều kiện
+    Hóa đơn bồi thường và các dòng chi tiết được lưu ở trạng thái chưa thanh toán để đưa vào đối soát.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Biên bản thu hồi có tài sản hư hỏng hoặc mất mát chưa được xử lý.
+    2. Kế toán chọn một Biên bản.
+    3. Hệ thống hiển thị Hợp đồng, phòng và danh sách tài sản cần bồi thường.
+    4. Kế toán nhập số tiền bồi thường và ghi chú cho từng tài sản.
+    5. Kế toán nhấn “Lập hóa đơn bồi thường”.
+    6. Hệ thống kiểm tra số tiền và khóa hồ sơ để bảo đảm chưa có Hóa đơn bồi thường tương ứng.
+    7. Hệ thống sinh mã, tạo Hóa đơn bồi thường và các dòng chi tiết.
+    8. Hệ thống hiển thị thông báo “Lập hóa đơn bồi thường thành công”.
+    9. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A6. Số tiền bỏ trống, bằng 0 hoặc âm:
+    * Hệ thống hiển thị lỗi tại tài sản tương ứng.
+    * Quay lại bước 4.
+
+    B6. Hóa đơn bồi thường đã được lập:
+    * Hệ thống từ chối tạo trùng và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.22 Lập phiếu thu
+
+Tên Use-Case
+    Lập phiếu thu
+
+Mô tả
+    Use Case cho phép Kế toán ghi nhận khoản tiền đã thu cho một Hóa đơn hoặc Phiếu đối soát và lưu chứng từ thanh toán.
+
+Sự kiện kích hoạt
+    UC Xử lý thanh toán hợp đồng hoặc UC Xử lý thanh toán trả phòng yêu cầu lập Phiếu thu.
+
+Tác nhân
+    Kế toán
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Kế toán đã đăng nhập vào hệ thống.
+    Chứng từ nguồn hợp lệ, chưa có Phiếu thu tương ứng và đã xác định số tiền phải thu.
+
+Hậu điều kiện
+    Phiếu thu được lưu, liên kết đúng chứng từ nguồn và có số tiền bằng số tiền hệ thống yêu cầu.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị số tiền cần thu và chứng từ nguồn.
+    2. Kế toán chọn phương thức thanh toán và tải chứng từ.
+    3. Kế toán nhấn “Xác nhận thu tiền”.
+    4. Hệ thống kiểm tra phương thức, chứng từ và số tiền phải thu từ dữ liệu phía máy chủ.
+    5. Hệ thống sinh mã và lưu Phiếu thu liên kết với Hóa đơn hoặc Phiếu đối soát tương ứng.
+    6. Hệ thống cập nhật trạng thái chứng từ nguồn theo UC đã gọi.
+    7. Hệ thống hiển thị thông báo “Lập phiếu thu thành công”.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A4. Thiếu phương thức hoặc chứng từ không hợp lệ:
+    * Hệ thống hiển thị lỗi và yêu cầu nhập lại.
+    * Quay lại bước 2.
+
+    B4. Chứng từ nguồn đã được xử lý hoặc Phiếu thu đã tồn tại:
+    * Hệ thống không tạo thêm Phiếu thu và trả thông báo xung đột.
+    * Kết thúc Use Case.
+
+
+1.4.23 Lập phiếu hoàn cọc
+
+Tên Use-Case
+    Lập phiếu hoàn cọc
+
+Mô tả
+    Use Case cho phép Kế toán ghi nhận giao dịch hoàn cọc đã thực hiện và tất toán Phiếu đối soát.
+
+Sự kiện kích hoạt
+    Kế toán chọn chức năng “Hoàn cọc”.
+
+Tác nhân
+    Kế toán
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Kế toán đã đăng nhập vào hệ thống.
+    Phiếu đối soát “Đã chốt”, có tiền hoàn lớn hơn 0 và chưa có Phiếu hoàn cọc.
+    Nếu Phiếu đối soát thuộc Hợp đồng, Hợp đồng phải ở trạng thái “Đã thanh lý”.
+    Nếu Phiếu đối soát thuộc Phiếu cọc hủy trước Hợp đồng, Phiếu cọc phải ở trạng thái “Đã hủy”.
+
+Hậu điều kiện
+    Phiếu hoàn cọc được lưu cùng chứng từ; Phiếu đối soát chuyển từ “Đã chốt” sang “Đã tất toán”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Phiếu đối soát đủ điều kiện hoàn cọc.
+    2. Kế toán chọn một Phiếu đối soát.
+    3. Hệ thống hiển thị số tiền hoàn từ Phiếu đối soát và thông tin khách hàng.
+    4. Kế toán chọn phương thức hoàn: Tiền mặt hoặc Chuyển khoản.
+    5. Kế toán nhập thông tin nhận tiền và tải chứng từ hoàn tiền.
+    6. Nếu chuyển khoản, Kế toán nhập mã giao dịch.
+    7. Kế toán tích xác nhận đã thực hiện hoàn tiền và nhấn “Xác nhận đã hoàn tiền”.
+    8. Hệ thống khóa và kiểm tra lại Phiếu đối soát, điều kiện Hợp đồng hoặc Phiếu cọc và sự tồn tại của Phiếu hoàn cọc.
+    9. Hệ thống dùng số tiền hoàn từ Phiếu đối soát để tạo Phiếu hoàn cọc.
+    10. Hệ thống chuyển Phiếu đối soát sang “Đã tất toán” trong cùng giao dịch.
+    11. Hệ thống hiển thị thông báo “Ghi nhận hoàn cọc thành công”.
+    12. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A5. Thiếu thông tin nhận tiền hoặc chứng từ không hợp lệ:
+    * Hệ thống hiển thị lỗi và yêu cầu nhập lại.
+    * Quay lại bước 5.
+
+    A6. Chuyển khoản nhưng thiếu mã giao dịch:
+    * Hệ thống hiển thị lỗi tại trường mã giao dịch.
+    * Quay lại bước 6.
+
+    B8. Phiếu đối soát không còn “Đã chốt”, Hợp đồng chưa thanh lý hoặc Phiếu hoàn cọc đã tồn tại:
+    * Hệ thống không tạo Phiếu hoàn cọc và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.24 Thanh lý hợp đồng
+
+Tên Use-Case
+    Thanh lý hợp đồng
+
+Mô tả
+    Use Case cho phép Quản lý ghi nhận hoàn tất thủ tục thanh lý, đóng Hợp đồng và giải phóng các giường liên quan.
+
+Sự kiện kích hoạt
+    Quản lý chọn chức năng “Thanh lý hợp đồng”.
+
+Tác nhân
+    Quản lý
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản lý đã đăng nhập vào hệ thống.
+    Hợp đồng đang “Đang hiệu lực” và đã có Phiếu đối soát được xác nhận.
+    Nếu có tiền thu thêm, Phiếu đối soát phải ở trạng thái “Đã tất toán”.
+
+Hậu điều kiện
+    Hợp đồng chuyển sang “Đã thanh lý”; các thành viên chuyển sang “Đã trả”; các giường chuyển sang “Trống”.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị các Hợp đồng đang hiệu lực đã có Phiếu đối soát “Đã chốt” hoặc “Đã tất toán”.
+    2. Quản lý chọn một Hợp đồng.
+    3. Hệ thống hiển thị thông tin Hợp đồng, khách hàng, phòng, giường và kết quả đối soát ở chế độ chỉ đọc.
+    4. Hệ thống kiểm tra công nợ:
+       * Không có tiền thu thêm: đủ điều kiện thanh lý.
+       * Có tiền thu thêm: Phiếu đối soát phải “Đã tất toán”.
+    5. Quản lý tích xác nhận khách đã ký Biên bản thanh lý.
+    6. Quản lý tích xác nhận đã thu hồi chìa khóa/thẻ từ.
+    7. Quản lý nhấn “Thanh lý hợp đồng”.
+    8. Hệ thống khóa và kiểm tra lại Hợp đồng cùng Phiếu đối soát.
+    9. Hệ thống chuyển Hợp đồng sang “Đã thanh lý”, các thành viên sang “Đã trả” và các giường sang “Trống” trong cùng giao dịch.
+    10. Nếu Phiếu đối soát có tiền hoàn, hệ thống đưa hồ sơ vào hàng đợi hoàn cọc.
+    11. Hệ thống hiển thị thông báo “Thanh lý hợp đồng thành công”.
+    12. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A4. Khách còn khoản phải thu thêm chưa tất toán:
+    * Hệ thống khóa nút “Thanh lý hợp đồng”.
+    * Hệ thống hiển thị “Vui lòng thanh toán dứt điểm công nợ trước khi thanh lý”.
+    * Kết thúc Use Case.
+
+    A5. Chưa xác nhận đủ hai điều kiện thanh lý:
+    * Hệ thống khóa nút “Thanh lý hợp đồng”.
+    * Quay lại bước 5.
+
+    B8. Hợp đồng hoặc Phiếu đối soát vừa được xử lý:
+    * Hệ thống không cập nhật dữ liệu và yêu cầu tải lại danh sách.
+    * Kết thúc Use Case.
+
+
+1.4.25 Đăng nhập
+
+Tên Use-Case
+    Đăng nhập
+
+Mô tả
+    Use Case cho phép người dùng xác thực tài khoản và truy cập các chức năng phù hợp với vai trò.
+
+Sự kiện kích hoạt
+    Người dùng truy cập hệ thống hoặc chọn chức năng “Đăng nhập”.
+
+Tác nhân
+    Nhân viên sale, Kế toán, Quản lý, Quản trị
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Người dùng đã có tài khoản trên hệ thống.
+
+Hậu điều kiện
+    Nếu thành công, hệ thống tạo phiên đăng nhập, cập nhật lần đăng nhập cuối và chuyển người dùng đến trang phù hợp với vai trò.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị biểu mẫu đăng nhập.
+    2. Người dùng nhập tên đăng nhập và mật khẩu.
+    3. Người dùng nhấn “Đăng nhập”.
+    4. Hệ thống kiểm tra dữ liệu đầu vào và xác thực tài khoản.
+    5. Hệ thống kiểm tra trạng thái tài khoản và xác định Nhân viên, vai trò, chi nhánh tương ứng.
+    6. Hệ thống tạo phiên đăng nhập, cập nhật lần đăng nhập cuối và chuyển đến trang chính của vai trò.
+    7. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A4. Thiếu tên đăng nhập hoặc mật khẩu:
+    * Hệ thống hiển thị yêu cầu nhập đầy đủ thông tin.
+    * Quay lại bước 2.
+
+    B4. Thông tin xác thực không đúng hoặc tài khoản không hoạt động:
+    * Hệ thống hiển thị “Tên đăng nhập hoặc mật khẩu không chính xác”.
+    * Quay lại bước 2.
+
+
+1.4.26 Quản lý phòng/giường
+
+Tên Use-Case
+    Quản lý phòng/giường
+
+Mô tả
+    Use Case cho phép Quản trị xem, thêm, cập nhật và xóa phòng hoặc giường trong hệ thống.
+
+Sự kiện kích hoạt
+    Quản trị chọn chức năng “Quản lý phòng/giường”.
+
+Tác nhân
+    Quản trị
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản trị đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Dữ liệu phòng hoặc giường được cập nhật theo thao tác hợp lệ; dữ liệu đang được sử dụng hoặc tham chiếu được bảo toàn.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị danh sách phòng, giường, loại phòng và chi nhánh.
+    2. Quản trị chọn tab Phòng hoặc Giường.
+    3. Quản trị chọn thao tác Thêm, Sửa hoặc Xóa tại đối tượng cần xử lý.
+    4. Hệ thống hiển thị biểu mẫu hoặc hộp thoại tương ứng.
+    5. Quản trị nhập hoặc điều chỉnh thông tin và xác nhận thao tác.
+    6. Hệ thống kiểm tra trường bắt buộc, trạng thái, loại phòng, chi nhánh, sức chứa và các tham chiếu liên quan.
+    7. Hệ thống lưu thay đổi và tải lại danh sách.
+    8. Hệ thống hiển thị thông báo thao tác thành công.
+    9. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A3. Thêm phòng:
+    * Hệ thống yêu cầu chi nhánh, tòa nhà, tầng, số phòng, loại phòng và giới tính cho phép.
+    * Phòng mới được tạo với trạng thái “Trống”.
+    * Tiếp tục bước 6.
+
+    B3. Thêm giường:
+    * Hệ thống yêu cầu phòng và số giường.
+    * Giường mới được tạo với trạng thái “Trống”.
+    * Tiếp tục bước 6.
+
+    C3. Sửa phòng hoặc giường:
+    * Hệ thống hiển thị dữ liệu hiện tại.
+    * Quản trị thay đổi các thông tin được phép.
+    * Tiếp tục bước 6.
+
+    D3. Xóa phòng hoặc giường:
+    * Hệ thống hiển thị hộp thoại xác nhận.
+    * Nếu Quản trị xác nhận, tiếp tục bước 6; nếu hủy, quay lại bước 1.
+
+    A6. Dữ liệu không hợp lệ, trùng số hoặc vượt sức chứa:
+    * Hệ thống hiển thị lỗi tương ứng.
+    * Quay lại bước 4.
+
+    B6. Phòng/giường đang sử dụng hoặc đã được tham chiếu:
+    * Hệ thống từ chối sửa/xóa và hiển thị lý do.
+    * Kết thúc Use Case.
+
+
+1.4.27 Quản lý dịch vụ
+
+Tên Use-Case
+    Quản lý dịch vụ
+
+Mô tả
+    Use Case cho phép Quản trị xem, thêm, cập nhật và xóa dịch vụ đi kèm.
+
+Sự kiện kích hoạt
+    Quản trị chọn chức năng “Quản lý dịch vụ”.
+
+Tác nhân
+    Quản trị
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản trị đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Danh mục dịch vụ được cập nhật; đơn giá đã chốt trong Hợp đồng và Hóa đơn cũ không bị thay đổi.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị danh sách dịch vụ.
+    2. Quản trị chọn Thêm, Sửa hoặc Xóa.
+    3. Hệ thống hiển thị biểu mẫu hoặc hộp thoại tương ứng.
+    4. Quản trị nhập tên dịch vụ, đơn vị tính, đơn giá, trạng thái và xác nhận.
+    5. Hệ thống chuẩn hóa và kiểm tra dữ liệu.
+    6. Hệ thống lưu thay đổi và tải lại danh sách.
+    7. Hệ thống hiển thị thông báo thao tác thành công.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A2. Thêm dịch vụ:
+    * Hệ thống hiển thị biểu mẫu trống.
+    * Tiếp tục bước 4.
+
+    B2. Sửa dịch vụ:
+    * Hệ thống hiển thị dữ liệu hiện tại.
+    * Tiếp tục bước 4.
+
+    C2. Xóa dịch vụ:
+    * Hệ thống hiển thị hộp thoại xác nhận.
+    * Nếu Quản trị xác nhận, tiếp tục bước 5; nếu hủy, quay lại bước 1.
+
+    A5. Dữ liệu không hợp lệ hoặc trùng tên:
+    * Hệ thống hiển thị lỗi tương ứng.
+    * Quay lại bước 3.
+
+    B5. Dịch vụ đã được Hợp đồng hoặc Hóa đơn tham chiếu:
+    * Hệ thống không cho phép xóa và đề nghị chuyển dịch vụ sang “Ngừng áp dụng”.
+    * Kết thúc Use Case.
+
+
+1.4.28 Quản trị người dùng
+
+Tên Use-Case
+    Quản trị người dùng
+
+Mô tả
+    Use Case cho phép Quản trị xem, tạo, cập nhật, khóa/mở khóa, vô hiệu hóa và đặt lại mật khẩu tài khoản nhân viên.
+
+Sự kiện kích hoạt
+    Quản trị chọn chức năng “Quản trị người dùng”.
+
+Tác nhân
+    Quản trị
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản trị đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Thông tin Nhân viên và Tài khoản được cập nhật theo thao tác hợp lệ.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị danh sách tài khoản cùng Nhân viên, vai trò, chi nhánh và trạng thái.
+    2. Quản trị chọn thao tác Tạo mới, Cập nhật, Đổi trạng thái hoặc Đặt lại mật khẩu.
+    3. Hệ thống hiển thị biểu mẫu hoặc hộp thoại tương ứng.
+    4. Quản trị nhập thông tin và xác nhận.
+    5. Hệ thống kiểm tra tên đăng nhập, email, vai trò, chi nhánh, trạng thái và mật khẩu tạm.
+    6. Hệ thống lưu thay đổi và tải lại danh sách.
+    7. Hệ thống hiển thị thông báo thao tác thành công.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A2. Tạo người dùng:
+    * Hệ thống yêu cầu họ tên, số điện thoại, email, tên đăng nhập, vai trò, chi nhánh và mật khẩu tạm từ 8 ký tự.
+    * Hệ thống tạo Nhân viên và Tài khoản hoạt động trong cùng giao dịch.
+    * Tiếp tục bước 6.
+
+    B2. Cập nhật người dùng:
+    * Hệ thống hiển thị dữ liệu hiện tại để Quản trị chỉnh sửa.
+    * Tiếp tục bước 5.
+
+    C2. Khóa, mở khóa hoặc vô hiệu hóa:
+    * Hệ thống hiển thị hộp thoại xác nhận trạng thái mới.
+    * Tiếp tục bước 5.
+
+    D2. Đặt lại mật khẩu:
+    * Quản trị nhập mật khẩu tạm mới từ 8 ký tự.
+    * Tiếp tục bước 5.
+
+    A5. Tên đăng nhập, email hoặc dữ liệu khác không hợp lệ:
+    * Hệ thống hiển thị lỗi tương ứng.
+    * Quay lại bước 3.
+
+    B5. Quản trị tự khóa tài khoản hoặc vô hiệu hóa Quản trị hoạt động cuối cùng:
+    * Hệ thống từ chối thao tác và hiển thị lý do.
+    * Kết thúc Use Case.
+
+
+1.4.29 Quản lý chính sách hoàn cọc
+
+Tên Use-Case
+    Quản lý chính sách hoàn cọc
+
+Mô tả
+    Use Case cho phép Quản trị xem lịch sử và tạo phiên bản mới của Chính sách hoàn cọc mà không sửa đè dữ liệu cũ.
+
+Sự kiện kích hoạt
+    Quản trị chọn chức năng “Chính sách hoàn cọc”.
+
+Tác nhân
+    Quản trị
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản trị đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Phiên bản chính sách mới được tạo; ngày kết thúc của phiên bản trước được đóng phù hợp; lịch sử chính sách được bảo toàn.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị lịch sử các phiên bản Chính sách hoàn cọc và trạng thái hiệu lực.
+    2. Quản trị chọn “Tạo phiên bản mới”.
+    3. Hệ thống hiển thị biểu mẫu gồm tên chính sách, ngày áp dụng, mốc lưu trú và các tỷ lệ hoàn.
+    4. Quản trị nhập dữ liệu và nhấn “Tạo phiên bản”.
+    5. Hệ thống kiểm tra ngày áp dụng, mốc lưu trú và các tỷ lệ từ 0% đến 100%.
+    6. Hệ thống kiểm tra ngày áp dụng mới phải sau phiên bản mới nhất.
+    7. Hệ thống đóng ngày kết thúc của phiên bản trước tại ngày liền trước ngày áp dụng mới.
+    8. Hệ thống sinh mã và lưu phiên bản chính sách mới trong cùng giao dịch.
+    9. Hệ thống hiển thị thông báo “Tạo phiên bản chính sách thành công”.
+    10. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A5. Tỷ lệ, mốc lưu trú hoặc khoảng ngày không hợp lệ:
+    * Hệ thống hiển thị lỗi tại trường tương ứng.
+    * Quay lại bước 3.
+
+    A6. Ngày áp dụng không sau phiên bản mới nhất:
+    * Hệ thống từ chối tạo phiên bản và hiển thị lý do.
+    * Quay lại bước 3.
+
+
+1.4.30 Quản lý quy định
+
+Tên Use-Case
+    Quản lý quy định
+
+Mô tả
+    Use Case cho phép Quản trị xem, thêm, cập nhật, xóa và xem văn bản PDF của quy định lưu trú.
+
+Sự kiện kích hoạt
+    Quản trị chọn chức năng “Quản lý quy định”.
+
+Tác nhân
+    Quản trị
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản trị đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Danh mục quy định và tệp PDF được cập nhật theo thao tác hợp lệ; quy định đã được Hợp đồng tham chiếu không bị xóa.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị danh sách quy định cùng loại, ngày áp dụng, ngày kết thúc và trạng thái hiệu lực.
+    2. Quản trị chọn Thêm, Sửa, Xóa hoặc Xem PDF.
+    3. Hệ thống hiển thị biểu mẫu, hộp thoại hoặc tệp tương ứng.
+    4. Đối với Thêm/Sửa, Quản trị nhập tên, loại, ngày áp dụng, ngày kết thúc, chọn tệp PDF và xác nhận.
+    5. Hệ thống kiểm tra dữ liệu và tệp PDF tối đa 10 MB.
+    6. Hệ thống lưu thay đổi, xử lý tệp và tải lại danh sách.
+    7. Hệ thống hiển thị thông báo thao tác thành công.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A2. Thêm quy định:
+    * Hệ thống yêu cầu đầy đủ thông tin và tệp PDF.
+    * Tiếp tục bước 4.
+
+    B2. Sửa quy định:
+    * Hệ thống hiển thị dữ liệu hiện tại; tệp PDF mới là tùy chọn.
+    * Tiếp tục bước 4.
+
+    C2. Xóa quy định:
+    * Hệ thống hiển thị hộp thoại “Bạn có chắc chắn muốn xóa quy định này không?”.
+    * Nếu xác nhận, tiếp tục bước 5; nếu hủy, quay lại bước 1.
+
+    D2. Xem PDF:
+    * Hệ thống kiểm tra và hiển thị tệp PDF của quy định.
+    * Kết thúc Use Case.
+
+    A5. Dữ liệu, khoảng ngày hoặc tệp PDF không hợp lệ:
+    * Hệ thống hiển thị lỗi tương ứng.
+    * Quay lại bước 3.
+
+    B5. Quy định đang được Hợp đồng tham chiếu:
+    * Hệ thống không cho phép xóa và hiển thị lý do.
+    * Kết thúc Use Case.
+
+
+1.4.31 Quản lý danh mục tài sản
+
+Tên Use-Case
+    Quản lý danh mục tài sản
+
+Mô tả
+    Use Case cho phép Quản trị xem, thêm, cập nhật và xóa các loại tài sản trang bị cho phòng/giường.
+
+Sự kiện kích hoạt
+    Quản trị chọn chức năng “Quản lý tài sản”.
+
+Tác nhân
+    Quản trị
+
+Use-Case liên quan
+    Không có.
+
+Tiền điều kiện
+    Quản trị đã đăng nhập vào hệ thống.
+
+Hậu điều kiện
+    Danh mục tài sản được cập nhật; tài sản đã được phòng, biên bản hoặc Hóa đơn tham chiếu không bị xóa.
+
+Dòng sự kiện chính
+    1. Hệ thống hiển thị danh sách tài sản cùng phân loại, giá trị bồi thường và trạng thái.
+    2. Quản trị chọn Thêm, Sửa hoặc Xóa.
+    3. Hệ thống hiển thị biểu mẫu hoặc hộp thoại tương ứng.
+    4. Quản trị nhập tên tài sản, phân loại, giá trị bồi thường, mô tả, trạng thái và xác nhận.
+    5. Hệ thống chuẩn hóa và kiểm tra dữ liệu.
+    6. Hệ thống lưu thay đổi và tải lại danh sách.
+    7. Hệ thống hiển thị thông báo thao tác thành công.
+    8. Kết thúc Use Case.
+
+Dòng sự kiện phụ
+    A2. Thêm tài sản:
+    * Hệ thống hiển thị biểu mẫu trống.
+    * Tiếp tục bước 4.
+
+    B2. Sửa tài sản:
+    * Hệ thống hiển thị dữ liệu hiện tại.
+    * Tiếp tục bước 4.
+
+    C2. Xóa tài sản:
+    * Hệ thống hiển thị hộp thoại xác nhận xóa tài sản.
+    * Nếu xác nhận, tiếp tục bước 5; nếu hủy, quay lại bước 1.
+
+    A5. Dữ liệu không hợp lệ hoặc tên tài sản đã tồn tại:
+    * Hệ thống hiển thị lỗi tương ứng.
+    * Quay lại bước 3.
+
+    B5. Tài sản đang được phòng, Biên bản giao nhận hoặc Hóa đơn tham chiếu:
+    * Hệ thống không cho phép xóa và đề nghị chuyển tài sản sang “Ngừng áp dụng”.
+    * Kết thúc Use Case.

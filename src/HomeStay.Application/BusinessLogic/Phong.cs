@@ -31,18 +31,19 @@ public sealed class Phong
     public IReadOnlyList<Giuong> GiuongsVuaGiaiPhong => _giuongsVuaGiaiPhong;
 
     public static Task<IReadOnlyList<Phong>> LayPhongOGhep(int soLuong, string? toaNha,
-        string? loaiPhong, decimal giaMin, decimal giaMax) =>
-        PhongDB.LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax);
+        string? loaiPhong, decimal giaMin, decimal giaMax, string maCN, string? gioiTinh) =>
+        PhongDB.LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh);
 
     public static Task<IReadOnlyList<Phong>> LayPhongNguyenCan(string? toaNha, string? loaiPhong,
-        decimal giaMin, decimal giaMax) =>
-        PhongDB.LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax);
+        decimal giaMin, decimal giaMax, string maCN, string? gioiTinh) =>
+        PhongDB.LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh);
 
     public static Task<IReadOnlyList<Phong>> LocPhongTheoTieuChi(string? toaNha, string? tang,
         string? maLP, string? maCN, string? trangThai, decimal giaMin, decimal giaMax) =>
         PhongDB.LayPhongTheoBoLoc(toaNha, tang, maLP, maCN, trangThai, giaMin, giaMax);
 
     public static Task<Phong?> DocChiTiet(string maPhong) => PhongDB.DocChiTiet(maPhong);
+    public static Task<Phong?> DocChiTiet(string maPhong, string maCN) => PhongDB.DocChiTiet(maPhong, maCN);
 
     public static Task<IReadOnlyList<PhongTaiSan>> LayTaiSan(string maPhong) =>
         PhongTaiSan.LayTaiSanTheoPhong(maPhong);
@@ -229,13 +230,16 @@ public sealed class Phong
         TrangThai = Giuongs.All(g => g.TrangThai == "Trong") ? "Trong" : "ConGiuongTrong";
     }
 
-    public bool PhuHopYeuCau(string? toaNha, string? loaiPhong, decimal giaMin, decimal giaMax) =>
+    public bool PhuHopYeuCau(string? toaNha, string? loaiPhong, decimal giaMin, decimal giaMax,
+        string? gioiTinh = null) =>
         (string.IsNullOrWhiteSpace(toaNha) || ToaNha == toaNha) &&
         (string.IsNullOrWhiteSpace(loaiPhong) || MaLP == loaiPhong
             || LoaiPhong.TenLoaiPhong == loaiPhong
             || (int.TryParse(loaiPhong, out var sucChua) && LoaiPhong.SucChua == sucChua)) &&
         (giaMin <= 0 || LoaiPhong.GiaThue >= giaMin) &&
-        (giaMax <= 0 || LoaiPhong.GiaThue <= giaMax);
+        (giaMax <= 0 || LoaiPhong.GiaThue <= giaMax) &&
+        (string.IsNullOrWhiteSpace(gioiTinh) ||
+            KiemTraGioiTinhChoPhep([new KhachHang { GioiTinh = gioiTinh }]));
 
     private void CapNhatTrangThaiTheoGiuong() =>
         TrangThai = Giuongs.Any(g => g.TrangThai == "Trong") ? "ConGiuongTrong" : "GiuCho";

@@ -1,965 +1,989 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, Search, Send, X } from "lucide-react";
+import { AlertCircle, Loader2, Lock, RefreshCw, Search, Send, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
+import { z } from "zod";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Checkbox } from "@/shared/ui/checkbox";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
-import type { Appointment, Bed, Room } from "@/app/providers/workflow-store";
+import {
+  CreateDepositApiError,
+  createDeposit,
+  formatAppointmentDateTime,
+  loadAvailableDepositRooms,
+  loadDepositAppointment,
+  loadDepositAppointments,
+  type DepositAppointment,
+  type DepositRentalType,
+  type DepositRoom,
+} from "@/features/deposits/services/create-deposit-service";
 
-const khachHangSchema = z.object({
-  hoTen: z.string().min(1, "Vui lòng nhập họ tên"),
-  soDienThoai: z.string().min(1, "Vui lòng nhập số điện thoại"),
-  ngaySinh: z.string().min(1, "Vui lòng chọn ngày sinh"),
-  email: z.string().optional(),
-  gioiTinh: z.enum(["male", "female"]),
-  quocTich: z.string().min(1, "Vui lòng nhập quốc tịch"),
-  loaiGiayTo: z.enum(["CCCD", "Hộ chiếu"]),
-  soGiayTo: z.string().min(1, "Vui lòng nhập số giấy tờ"),
-});
+const customerSchema = z
+  .object({
+    hoTen: z.string().trim().min(1, "Vui lòng nhập họ tên").max(100),
+    soDienThoai: z
+      .string()
+      .trim()
+      .regex(/^[0-9+][0-9 ]{7,14}$/, "Số điện thoại không hợp lệ"),
+    ngaySinh: z.string().min(1, "Vui lòng chọn ngày sinh"),
+    email: z.union([z.literal(""), z.string().trim().email("Email không hợp lệ")]),
+    gioiTinh: z.enum(["Nam", "Nữ"]),
+    quocTich: z.string().trim().min(1, "Vui lòng nhập quốc tịch").max(100),
+    loaiGiayTo: z.enum(["CCCD", "Hộ chiếu"]),
+    soGiayTo: z.string().trim().min(1, "Vui lòng nhập số giấy tờ").max(50),
+  })
+  .superRefine((values, context) => {
+    const birthday = new Date(`${values.ngaySinh}T00:00:00`);
+    const today = new Date();
+    const age = today.getFullYear() - birthday.getFullYear();
+    if (!Number.isFinite(birthday.getTime()) || birthday >= today || age < 6 || age > 120) {
+      context.addIssue({ code: "custom", path: ["ngaySinh"], message: "Ngày sinh không hợp lệ" });
+    }
+    if (
+      values.loaiGiayTo === "Hộ chiếu" &&
+      (values.soGiayTo.length < 7 || values.soGiayTo.length > 15)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["soGiayTo"],
+        message: "Số hộ chiếu phải có từ 7 đến 15 ký tự",
+      });
+    }
+    if (values.loaiGiayTo === "CCCD" && !/^\d{12}$/.test(values.soGiayTo)) {
+      context.addIssue({
+        code: "custom",
+        path: ["soGiayTo"],
+        message: "CCCD phải gồm đúng 12 chữ số",
+      });
+    }
+  });
 
-const dinhDangTien = (amount: number) =>
+type CustomerFormValues = z.infer<typeof customerSchema>;
+
+const formatCurrency = (amount: number) =>
   `${new Intl.NumberFormat("vi-VN").format(Math.max(amount, 0))} VNĐ`;
-const dinhDangGiaNhap = (value: string) =>
+const formatMoneyInput = (value: string) =>
   value ? new Intl.NumberFormat("vi-VN").format(Number(value)) : "";
-const chuanHoaGiaNhap = (value: string) => value.replace(/\D/g, "");
+const normalizeMoneyInput = (value: string) => value.replace(/\D/g, "");
 
-function layNhanTrangThaiGiuong(status: Bed["status"]) {
-  if (status === "available")
-    return { text: "Trống", className: "bg-emerald-100 text-emerald-700" };
-  if (status === "deposited") return { text: "Đã cọc", className: "bg-amber-100 text-amber-700" };
-  if (status === "occupied")
-    return { text: "Đang sử dụng", className: "bg-blue-100 text-blue-700" };
-  return { text: "Đang bảo trì", className: "bg-gray-200 text-gray-700" };
+function roomGenderLabel(value?: string | null) {
+  return value ? `Khu ${value}` : "Không giới hạn giới tính";
 }
 
-type GiuongApiResponse = {
-  maGiuong: string;
-  soGiuong: string;
-  trangThai: string;
-};
-
-type PhongApiResponse = {
-  maPhong: string;
-  soPhong: string;
-  toaNha: string;
-  loaiPhong: {
-    tenLoaiPhong: string;
-    giaThue: number;
-    sucChua: number;
-  };
-  giuongs?: GiuongApiResponse[];
-};
-
-type LichHenApiResponse = {
-  maLH: string;
-  ngayHen?: string;
-  khachHang?: {
-    maKH?: string;
-    hoTen?: string;
-    sdt?: string;
-    email?: string;
-    gioiTinh?: string;
-    ngaySinh?: string;
-    quocTich?: string;
-    loaiGiayTo?: string;
-    soGiayTo?: string;
-  };
-};
-
-function chuyenLichHen(api: LichHenApiResponse): Appointment {
-  return {
-    id: api.maLH,
-    code: api.maLH,
-    customerId: api.khachHang?.maKH,
-    customerName: api.khachHang?.hoTen || "Khách hàng",
-    phone: api.khachHang?.sdt || "",
-    email: api.khachHang?.email || "",
-    gender: api.khachHang?.gioiTinh === "Nam" ? "male" : "female",
-    dob: api.khachHang?.ngaySinh ? api.khachHang.ngaySinh.split("T")[0] : "",
-    nationality: api.khachHang?.quocTich,
-    docType:
-      api.khachHang?.loaiGiayTo === "Hộ chiếu"
-        ? "Hộ chiếu"
-        : api.khachHang?.loaiGiayTo === "CCCD"
-          ? "CCCD"
-          : undefined,
-    docNumber: api.khachHang?.soGiayTo,
-    type: "viewing",
-    status: "success",
-    createdAt: api.ngayHen || new Date().toISOString(),
-  };
+function bedStatus(status: string) {
+  if (status === "Trong") return { text: "Trống", className: "bg-emerald-100 text-emerald-700" };
+  if (status === "GiuCho") return { text: "Giữ chỗ", className: "bg-amber-100 text-amber-700" };
+  if (status === "DaCoc") return { text: "Đã cọc", className: "bg-orange-100 text-orange-700" };
+  if (status === "DangSuDung") return { text: "Đang ở", className: "bg-blue-100 text-blue-700" };
+  return { text: "Không khả dụng", className: "bg-gray-200 text-gray-600" };
 }
 
 export function MHLapPhieuCoc() {
-  const [tuKhoa, setTuKhoa] = useState("");
-  const [danhSachLichHen, setDanhSachLichHen] = useState<Appointment[]>([]);
-  const [lichHenDaChon, setLichHenDaChon] = useState<Appointment | null>(null);
-  const [maLichHenDaXuLy, setMaLichHenDaXuLy] = useState<string[]>([]);
+  const [searchText, setSearchText] = useState("");
+  const [appointments, setAppointments] = useState<DepositAppointment[]>([]);
+  const [selectedAppointment, setSelectedAppointment] = useState<DepositAppointment | null>(null);
+  const [queueLoading, setQueueLoading] = useState(true);
+  const [queueError, setQueueError] = useState<string | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [reloadVersion, setReloadVersion] = useState(0);
 
   useEffect(() => {
-    const taiDanhSachLichHen = async () => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setQueueLoading(true);
+      setQueueError(null);
       try {
-        const endpoint = tuKhoa.trim()
-          ? `/api/appointments/search?text=${encodeURIComponent(tuKhoa)}`
-          : "/api/appointments/pending";
-        const phanHoi = await fetch(endpoint);
-        if (!phanHoi.ok) return;
-        const duLieu = (await phanHoi.json()) as LichHenApiResponse[];
-        setDanhSachLichHen(duLieu.map(chuyenLichHen));
+        setAppointments(await loadDepositAppointments(searchText, controller.signal));
       } catch (error) {
-        console.error("Lỗi khi tải lịch hẹn", error);
+        if (controller.signal.aborted) return;
+        setAppointments([]);
+        setQueueError(error instanceof Error ? error.message : "Không thể tải lịch hẹn chờ cọc.");
+      } finally {
+        if (!controller.signal.aborted) setQueueLoading(false);
       }
+    }, 300);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
     };
+  }, [reloadVersion, searchText]);
 
-    const boDem = setTimeout(() => void taiDanhSachLichHen(), 300);
-    return () => clearTimeout(boDem);
-  }, [tuKhoa]);
-
-  const danhSachHienThi = useMemo(
-    () => danhSachLichHen.filter((lichHen) => !maLichHenDaXuLy.includes(lichHen.id)),
-    [danhSachLichHen, maLichHenDaXuLy],
-  );
-
-  const grvKhachChoCoc_CellClick = async (lichHen: Appointment) => {
+  const selectAppointment = async (appointment: DepositAppointment) => {
+    setSelectedAppointment(null);
+    setDetailError(null);
+    setDetailLoading(true);
     try {
-      const phanHoi = await fetch(`/api/appointments/${encodeURIComponent(lichHen.id)}`);
-      if (!phanHoi.ok) {
-        setLichHenDaChon(lichHen);
-        return;
-      }
-      const duLieu = (await phanHoi.json()) as LichHenApiResponse;
-      setLichHenDaChon(chuyenLichHen(duLieu));
-    } catch {
-      setLichHenDaChon(lichHen);
+      setSelectedAppointment(await loadDepositAppointment(appointment.maLH));
+    } catch (error) {
+      setDetailError(error instanceof Error ? error.message : "Không thể tải chi tiết lịch hẹn.");
+    } finally {
+      setDetailLoading(false);
     }
+  };
+
+  const reloadAfterConflict = () => {
+    setSelectedAppointment(null);
+    setDetailError(null);
+    setReloadVersion((value) => value + 1);
+  };
+
+  const completeAppointment = (appointmentId: string) => {
+    setAppointments((current) => current.filter((item) => item.maLH !== appointmentId));
+    setSelectedAppointment(null);
   };
 
   return (
     <main className="flex h-full min-h-0 bg-gray-50">
       <aside className="flex h-full w-[350px] shrink-0 flex-col border-r border-gray-200 bg-white">
-        <div className="border-b border-gray-200 px-4 py-3">
+        <header className="border-b border-gray-200 px-4 py-3">
           <h2 className="text-sm font-bold text-gray-800">Khách hàng chờ cọc</h2>
-          <p className="mt-0.5 text-xs text-gray-400">
-            {danhSachHienThi.length} lịch hẹn xem phòng thành công
+          <p className="mt-0.5 text-xs text-gray-500">
+            {queueLoading ? "Đang tải..." : `${appointments.length} lịch xem phòng hoàn thành`}
           </p>
-        </div>
-        <div className="sticky top-0 z-10 border-b border-gray-100 bg-white px-3 py-2">
+        </header>
+        <div className="border-b border-gray-100 px-3 py-2">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
             <Input
-              value={tuKhoa}
-              onChange={(event) => setTuKhoa(event.target.value)}
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
               placeholder="Tìm lịch hẹn, khách hàng..."
               className="h-8 pl-8 text-xs"
             />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {danhSachHienThi.length === 0 ? (
-            <div className="flex items-center justify-center p-6 text-center text-sm text-gray-400">
-              Không có lịch hẹn phù hợp.
-            </div>
+          {queueLoading ? (
+            <QueueMessage
+              icon={<Loader2 className="size-4 animate-spin" />}
+              text="Đang tải lịch hẹn..."
+            />
+          ) : queueError ? (
+            <QueueMessage
+              icon={<AlertCircle className="size-4 text-red-500" />}
+              text={queueError}
+              action={() => setReloadVersion((value) => value + 1)}
+            />
+          ) : appointments.length === 0 ? (
+            <QueueMessage text="Không có lịch hẹn phù hợp." />
           ) : (
             <ul className="divide-y divide-gray-100">
-              {danhSachHienThi.map((item) => {
-                const appointmentDate = new Date(item.createdAt);
-                return (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      onClick={() => void grvKhachChoCoc_CellClick(item)}
-                      className={cn(
-                        "flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left hover:bg-emerald-50/60",
-                        lichHenDaChon?.id === item.id && "border-l-emerald-500 bg-emerald-50",
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-blue-600">
-                          {item.code}
-                        </span>
-                        <Badge className="h-5 bg-emerald-100 text-[10px] text-emerald-700">
-                          Xem phòng thành công
-                        </Badge>
-                      </div>
-                      <p className="text-sm font-semibold text-gray-800">{item.customerName}</p>
-                      <p className="text-xs text-gray-500">SĐT: {item.phone}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Intl.DateTimeFormat("vi-VN", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }).format(appointmentDate)}
-                      </p>
-                    </button>
-                  </li>
-                );
-              })}
+              {appointments.map((appointment) => (
+                <li key={appointment.maLH}>
+                  <button
+                    type="button"
+                    onClick={() => void selectAppointment(appointment)}
+                    className={cn(
+                      "flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left hover:bg-emerald-50/60",
+                      selectedAppointment?.maLH === appointment.maLH &&
+                        "border-l-emerald-500 bg-emerald-50",
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-xs font-bold text-blue-600">
+                        {appointment.maLH}
+                      </span>
+                      <Badge className="h-5 bg-emerald-100 text-[10px] text-emerald-700">
+                        Đã xem phòng
+                      </Badge>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800">
+                      {appointment.khachHang.hoTen}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      SĐT: {appointment.khachHang.sdt || "Chưa cung cấp"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formatAppointmentDateTime(appointment)}
+                    </p>
+                  </button>
+                </li>
+              ))}
             </ul>
           )}
         </div>
       </aside>
-      {lichHenDaChon ? (
-        <FormLapPhieuCoc
-          lichHen={lichHenDaChon}
-          khiHoanTat={(maLichHen) => {
-            setMaLichHenDaXuLy((hienTai) => [...hienTai, maLichHen]);
-            setLichHenDaChon(null);
-          }}
+
+      {detailLoading ? (
+        <WorkspaceMessage
+          icon={<Loader2 className="size-5 animate-spin" />}
+          text="Đang tải hồ sơ khách hàng..."
+        />
+      ) : detailError ? (
+        <WorkspaceMessage
+          icon={<AlertCircle className="size-5 text-red-500" />}
+          text={detailError}
+          action={reloadAfterConflict}
+        />
+      ) : selectedAppointment ? (
+        <DepositForm
+          key={selectedAppointment.maLH}
+          appointment={selectedAppointment}
+          onComplete={completeAppointment}
+          onConflict={reloadAfterConflict}
         />
       ) : (
-        <section className="flex flex-1 items-center justify-center text-sm text-gray-500">
-          Chọn một lịch hẹn để lập phiếu cọc.
-        </section>
+        <WorkspaceMessage text="Chọn một lịch hẹn để lập phiếu cọc." />
       )}
     </main>
   );
 }
 
-function FormLapPhieuCoc({
-  lichHen,
-  khiHoanTat,
+function QueueMessage({
+  icon,
+  text,
+  action,
 }: {
-  lichHen: Appointment;
-  khiHoanTat: (lichHenId: string) => void;
+  icon?: React.ReactNode;
+  text: string;
+  action?: () => void;
 }) {
-  const [dangChinhSuaKhachHang, setDangChinhSuaKhachHang] = useState(false);
-  const [hinhThucThue, setHinhThucThue] = useState<"shared" | "whole">("shared");
-  const [soLuongGiuong, setSoLuongGiuong] = useState(1);
-  const [toaNha, setToaNha] = useState<"all" | "Tòa A" | "Tòa B">("all");
-  const [loaiPhong, setLoaiPhong] = useState<"all" | "4" | "6">("all");
-  const [giaMin, setGiaMin] = useState("");
-  const [giaMax, setGiaMax] = useState("");
-  const [daTimKiem, setDaTimKiem] = useState(false);
-  const [danhSachPhong, setDanhSachPhong] = useState<Room[]>([]);
-  const [maPhongDaChon, setMaPhongDaChon] = useState<string | null>(null);
-  const [danhSachGiuongDaChon, setDanhSachGiuongDaChon] = useState<string[]>([]);
-  const [danhSachGiuongDaGiu, setDanhSachGiuongDaGiu] = useState<Set<string>>(new Set());
-  const giaMinDangSo = giaMin ? Number(giaMin) : null;
-  const giaMaxDangSo = giaMax ? Number(giaMax) : null;
-  const khoangGiaKhongHopLe =
-    giaMinDangSo != null && giaMaxDangSo != null && giaMinDangSo > giaMaxDangSo;
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 p-6 text-center text-sm text-gray-500">
+      {icon}
+      <span>{text}</span>
+      {action && (
+        <Button type="button" variant="outline" size="sm" onClick={action}>
+          <RefreshCw className="size-3.5" /> Tải lại
+        </Button>
+      )}
+    </div>
+  );
+}
 
-  const form = useForm<z.infer<typeof khachHangSchema>>({
-    resolver: zodResolver(khachHangSchema),
+function WorkspaceMessage({
+  icon,
+  text,
+  action,
+}: {
+  icon?: React.ReactNode;
+  text: string;
+  action?: () => void;
+}) {
+  return (
+    <section className="flex flex-1 flex-col items-center justify-center gap-3 text-sm text-gray-500">
+      {icon}
+      <span>{text}</span>
+      {action && (
+        <Button type="button" variant="outline" size="sm" onClick={action}>
+          <RefreshCw className="size-3.5" /> Tải lại danh sách
+        </Button>
+      )}
+    </section>
+  );
+}
+
+function DepositForm({
+  appointment,
+  onComplete,
+  onConflict,
+}: {
+  appointment: DepositAppointment;
+  onComplete: (appointmentId: string) => void;
+  onConflict: () => void;
+}) {
+  const customer = appointment.khachHang;
+  const [editingCustomer, setEditingCustomer] = useState(false);
+  const [rentalType, setRentalType] = useState<DepositRentalType>("OGhep");
+  const [bedCount, setBedCount] = useState(1);
+  const [building, setBuilding] = useState("all");
+  const [roomType, setRoomType] = useState("all");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [rooms, setRooms] = useState<DepositRoom[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [selectedBedIds, setSelectedBedIds] = useState<string[]>([]);
+  const [searched, setSearched] = useState(false);
+  const [roomLoading, setRoomLoading] = useState(false);
+  const [roomError, setRoomError] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const form = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerSchema),
     defaultValues: {
-      hoTen: lichHen.customerName,
-      soDienThoai: lichHen.phone,
-      ngaySinh: lichHen.dob || "",
-      email: lichHen.email,
-      gioiTinh: lichHen.gender,
-      quocTich: lichHen.nationality || "Việt Nam",
-      loaiGiayTo: lichHen.docType || "CCCD",
-      soGiayTo: lichHen.docNumber || "",
+      hoTen: customer.hoTen,
+      soDienThoai: customer.sdt || "",
+      ngaySinh: customer.ngaySinh?.slice(0, 10) || "",
+      email: customer.email || "",
+      gioiTinh: customer.gioiTinh === "Nữ" || customer.gioiTinh === "Nu" ? "Nữ" : "Nam",
+      quocTich: customer.quocTich || "Việt Nam",
+      loaiGiayTo: customer.loaiGiayTo === "Hộ chiếu" ? "Hộ chiếu" : "CCCD",
+      soGiayTo: customer.soGiayTo || "",
     },
   });
 
-  useEffect(() => {
-    form.reset({
-      hoTen: lichHen.customerName,
-      soDienThoai: lichHen.phone,
-      ngaySinh: lichHen.dob || "",
-      email: lichHen.email,
-      gioiTinh: lichHen.gender,
-      quocTich: lichHen.nationality || "Việt Nam",
-      loaiGiayTo: lichHen.docType || "CCCD",
-      soGiayTo: lichHen.docNumber || "",
-    });
-    setDangChinhSuaKhachHang(false);
-    setHinhThucThue("shared");
-    setSoLuongGiuong(1);
-    setDaTimKiem(false);
-    setDanhSachPhong([]);
-    setMaPhongDaChon(null);
-    setDanhSachGiuongDaChon([]);
-    setGiaMin("");
-    setGiaMax("");
-  }, [lichHen.id, lichHen.customerName, lichHen.phone, lichHen.email, lichHen.gender, form]);
+  const gender = form.watch("gioiTinh");
+  const documentType = form.watch("loaiGiayTo");
+  const previousGender = useRef(gender);
+  const minPriceNumber = minPrice ? Number(minPrice) : null;
+  const maxPriceNumber = maxPrice ? Number(maxPrice) : null;
+  const invalidPriceRange =
+    minPriceNumber != null && maxPriceNumber != null && minPriceNumber > maxPriceNumber;
 
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
-        event.preventDefault();
-        void btnTaoYeuCauCoc_Click();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  });
-
-  const phongDaChon = useMemo(
-    () => danhSachPhong.find((phong) => phong.id === maPhongDaChon) ?? null,
-    [danhSachPhong, maPhongDaChon],
+  const selectedRoom = useMemo(
+    () => rooms.find((room) => room.maPhong === selectedRoomId) ?? null,
+    [rooms, selectedRoomId],
   );
+  const selectedBedCodes = useMemo(() => {
+    if (!selectedRoom) return [];
+    const lookup = new Map(selectedRoom.giuongs.map((bed) => [bed.maGiuong, bed.soGiuong]));
+    return selectedBedIds.map((id) => lookup.get(id) ?? id);
+  }, [selectedBedIds, selectedRoom]);
+  const chargedBedCount =
+    rentalType === "NguyenCan" ? (selectedRoom?.loaiPhong.sucChua ?? 0) : selectedBedIds.length;
+  const estimatedDeposit = (selectedRoom?.loaiPhong.giaThue ?? 0) * 2 * chargedBedCount;
 
-  const maGiuongDaChon = useMemo(() => {
-    if (!phongDaChon) return [];
-    const bangTraCuuMaGiuong = new Map(phongDaChon.beds.map((giuong) => [giuong.id, giuong.code]));
-    return danhSachGiuongDaChon.map((maGiuong) => bangTraCuuMaGiuong.get(maGiuong) ?? maGiuong);
-  }, [danhSachGiuongDaChon, phongDaChon]);
+  const clearRoomSelection = useCallback((clearResults = false) => {
+    setSelectedRoomId(null);
+    setSelectedBedIds([]);
+    setRoomError(null);
+    if (clearResults) {
+      setRooms([]);
+      setSearched(false);
+    }
+  }, []);
 
-  const soGiuongTinhCoc =
-    hinhThucThue === "whole" ? (phongDaChon?.beds.length ?? 0) : danhSachGiuongDaChon.length;
-  const tienCocTamTinh = (phongDaChon?.basePrice ?? 0) * soGiuongTinhCoc;
+  useEffect(() => {
+    if (previousGender.current === gender) return;
+    previousGender.current = gender;
+    clearRoomSelection(true);
+  }, [clearRoomSelection, gender]);
 
-  const btnTimKiem_Click = async () => {
-    if (khoangGiaKhongHopLe) {
+  const searchRooms = async () => {
+    if (invalidPriceRange) {
       toast.error("Khoảng giá không hợp lệ.");
       return;
     }
-
+    setRoomLoading(true);
+    setRoomError(null);
+    clearRoomSelection();
     try {
-      const loaiEndpoint = hinhThucThue === "shared" ? "available-with-beds" : "available";
-      const thamSoTimKiem = new URLSearchParams();
-      if (hinhThucThue === "shared") thamSoTimKiem.append("soLuong", soLuongGiuong.toString());
-      if (toaNha !== "all") thamSoTimKiem.append("toaNha", toaNha);
-      if (loaiPhong !== "all") thamSoTimKiem.append("loaiPhong", loaiPhong);
-      if (giaMin) thamSoTimKiem.append("giaMin", giaMin);
-      if (giaMax) thamSoTimKiem.append("giaMax", giaMax);
-
-      const phanHoi = await fetch(`/api/rooms/${loaiEndpoint}?${thamSoTimKiem.toString()}`);
-      if (!phanHoi.ok) throw new Error("Lỗi khi tìm kiếm phòng");
-
-      const duLieuPhong = (await phanHoi.json()) as PhongApiResponse[];
-
-      const ketQuaTimKiem: Room[] = duLieuPhong.map((phong) => {
-        const beds: Bed[] =
-          phong.giuongs?.map((giuong) => ({
-            id: giuong.maGiuong,
-            code: giuong.soGiuong,
-            status: giuong.trangThai === "Trong" ? "available" : "occupied",
-          })) || [];
-        const soGiuongTrong = beds.filter((giuong) => giuong.status === "available").length;
-        const status =
-          beds.length === 0
-            ? "maintenance"
-            : soGiuongTrong === beds.length
-              ? "available"
-              : soGiuongTrong > 0
-                ? "partially_available"
-                : "full";
-        return {
-          id: phong.maPhong,
-          code: phong.soPhong,
-          area: phong.toaNha,
-          type: phong.loaiPhong.tenLoaiPhong,
-          basePrice: phong.loaiPhong.giaThue,
-          maxCapacity: phong.loaiPhong.sucChua,
-          beds,
-          assets: [],
-          status,
-        };
+      const result = await loadAvailableDepositRooms({
+        rentalType,
+        bedCount,
+        building: building === "all" ? undefined : building,
+        roomType: roomType === "all" ? undefined : roomType,
+        minPrice,
+        maxPrice,
+        gender,
       });
-
-      setDanhSachPhong(ketQuaTimKiem);
-      setDaTimKiem(true);
-      setMaPhongDaChon(null);
-      setDanhSachGiuongDaChon([]);
-    } catch {
-      toast.error("Không thể tải danh sách phòng.");
+      setRooms(result);
+      setSearched(true);
+    } catch (error) {
+      setRooms([]);
+      setSearched(true);
+      setRoomError(error instanceof Error ? error.message : "Không thể tải danh sách phòng.");
+    } finally {
+      setRoomLoading(false);
     }
   };
 
-  const grvDanhSachPhong_CellClick = (phong: Room) => {
-    setMaPhongDaChon(phong.id);
-    const danhSachGiuongTrong = phong.beds
-      .filter((giuong) => giuong.status === "available")
-      .map((giuong) => giuong.id);
-    setDanhSachGiuongDaChon(danhSachGiuongTrong);
+  const changeRentalType = (value: DepositRentalType) => {
+    setRentalType(value);
+    clearRoomSelection(true);
   };
 
-  const grvDanhSachGiuong_CellClick = (phong: Room, giuong: Bed) => {
-    if (giuong.status !== "available") return;
-    if (maPhongDaChon && maPhongDaChon !== phong.id) {
-      setDanhSachGiuongDaChon([giuong.id]);
-      setMaPhongDaChon(phong.id);
+  const changeBedCount = (value: number) => {
+    setBedCount(Math.min(20, Math.max(1, value || 1)));
+    clearRoomSelection(true);
+  };
+
+  const selectWholeRoom = (room: DepositRoom) => {
+    setSelectedRoomId(room.maPhong);
+    setSelectedBedIds(room.giuongs.map((bed) => bed.maGiuong));
+  };
+
+  const toggleBed = (room: DepositRoom, bedId: string) => {
+    if (selectedRoomId && selectedRoomId !== room.maPhong) {
+      setSelectedRoomId(room.maPhong);
+      setSelectedBedIds([bedId]);
       return;
     }
-
-    setMaPhongDaChon(phong.id);
-    setDanhSachGiuongDaChon((hienTai) => {
-      let danhSachMoi;
-      if (hienTai.includes(giuong.id))
-        danhSachMoi = hienTai.filter((maGiuong) => maGiuong !== giuong.id);
-      else if (hienTai.length >= soLuongGiuong) danhSachMoi = hienTai;
-      else danhSachMoi = [...hienTai, giuong.id];
-
-      return danhSachMoi;
+    setSelectedRoomId(room.maPhong);
+    setSelectedBedIds((current) => {
+      if (current.includes(bedId)) return current.filter((id) => id !== bedId);
+      if (current.length >= bedCount) return current;
+      return [...current, bedId];
     });
   };
 
-  const btnChinhSua_Click = () => {
-    setDangChinhSuaKhachHang((dangChinhSua) => !dangChinhSua);
-  };
-
-  const rdoHinhThucThue_CheckedChanged = (giaTri: "shared" | "whole") => {
-    setHinhThucThue(giaTri);
-    setMaPhongDaChon(null);
-    setDanhSachGiuongDaChon([]);
-    setDaTimKiem(false);
-  };
-
-  const btnTaoYeuCauCoc_Click = async () => {
-    const hopLe = await form.trigger();
-    if (!hopLe) return;
-
-    if (!phongDaChon || soGiuongTinhCoc === 0) {
+  const openConfirmation = form.handleSubmit(() => {
+    if (!selectedRoom || chargedBedCount === 0) {
       toast.error("Vui lòng chọn phòng/giường trước khi tạo yêu cầu cọc.");
       return;
     }
-
-    if (hinhThucThue === "shared" && danhSachGiuongDaChon.length !== soLuongGiuong) {
+    if (rentalType === "OGhep" && selectedBedIds.length !== bedCount) {
       toast.error("Vui lòng chọn đủ số lượng giường cần cọc.");
       return;
     }
+    setConfirmOpen(true);
+  });
 
-    const duLieuKhachHang = form.getValues();
-
+  const submitDeposit = async () => {
+    if (!selectedRoom || submitting) return;
+    const values = form.getValues();
+    setSubmitting(true);
     try {
-      const phanHoi = await fetch("/api/deposits", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          MaLichHen: lichHen.id,
-          KhachHang: {
-            HoTen: duLieuKhachHang.hoTen,
-            SDT: duLieuKhachHang.soDienThoai,
-            NgaySinh: duLieuKhachHang.ngaySinh
-              ? new Date(duLieuKhachHang.ngaySinh).toISOString()
-              : null,
-            Email: duLieuKhachHang.email,
-            GioiTinh: duLieuKhachHang.gioiTinh === "male" ? "Nam" : "Nữ",
-            QuocTich: duLieuKhachHang.quocTich,
-            LoaiGiayTo: duLieuKhachHang.loaiGiayTo,
-            SoGiayTo: duLieuKhachHang.soGiayTo,
-          },
-          MaPhong: phongDaChon.id,
-          DanhSachGiuong: danhSachGiuongDaChon,
-          HinhThucThue: hinhThucThue === "shared" ? "OGhep" : "NguyenCan",
-        }),
+      const result = await createDeposit({
+        appointmentId: appointment.maLH,
+        customer: {
+          hoTen: values.hoTen,
+          sdt: values.soDienThoai,
+          ngaySinh: values.ngaySinh,
+          email: values.email,
+          gioiTinh: values.gioiTinh,
+          quocTich: values.quocTich,
+          loaiGiayTo: values.loaiGiayTo,
+          soGiayTo: values.soGiayTo,
+        },
+        roomId: selectedRoom.maPhong,
+        bedIds: selectedBedIds,
+        rentalType,
       });
-
-      if (!phanHoi.ok) {
-        throw new Error("Tạo phiếu cọc thất bại");
+      setConfirmOpen(false);
+      toast.success(`Đã tạo ${result.maPhieuCoc} và chuyển sang Kế toán tính tiền.`);
+      onComplete(appointment.maLH);
+    } catch (error) {
+      setConfirmOpen(false);
+      const message = error instanceof Error ? error.message : "Không thể tạo phiếu cọc.";
+      toast.error(message);
+      if (
+        error instanceof CreateDepositApiError &&
+        (error.status === 404 || error.status === 409)
+      ) {
+        onConflict();
       }
-
-      setDanhSachGiuongDaGiu((hienTai) => {
-        const danhSachMoi = new Set(hienTai);
-        danhSachGiuongDaChon.forEach((maGiuong) => danhSachMoi.add(maGiuong));
-        return danhSachMoi;
-      });
-
-      toast.success("Yêu cầu đặt cọc đã được khởi tạo và chuyển sang bộ phận Kế toán.");
-      khiHoanTat(lichHen.id);
-    } catch {
-      toast.error("Lỗi: Không thể khởi tạo phiếu cọc.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <section className="flex h-full flex-1 flex-col overflow-hidden bg-gray-50/60">
-      <div className="sticky top-0 z-20 border-b border-gray-200 bg-white px-5 py-3">
-        <h1 className="font-mono text-sm font-bold text-gray-900">
-          Lập phiếu cọc — {lichHen.code}
-        </h1>
-        <p className="mt-0.5 text-xs text-gray-500">{lichHen.customerName}</p>
-      </div>
+      <header className="border-b border-gray-200 bg-white px-5 py-3">
+        <div className="flex items-center gap-2">
+          <h1 className="font-mono text-sm font-bold text-gray-900">
+            Lập phiếu cọc — {appointment.maLH}
+          </h1>
+          <Badge className="bg-emerald-100 text-emerald-700">Đã xem phòng</Badge>
+        </div>
+        <p className="mt-0.5 text-xs text-gray-500">
+          {customer.hoTen} • {formatAppointmentDateTime(appointment)}
+        </p>
+      </header>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 pb-24">
-        <div className="space-y-4">
-          <Card className="border-gray-200">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">Thông tin khách hàng</CardTitle>
-                <Button type="button" variant="outline" size="sm" onClick={btnChinhSua_Click}>
-                  {dangChinhSuaKhachHang ? "Khóa chỉnh sửa" : "Chỉnh sửa"}
-                </Button>
+      <div className="flex-1 overflow-y-auto p-4 pb-24">
+        <div className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">
+          <section className="p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-gray-900">
+                  1. Rà soát thông tin khách hàng
+                </h2>
+                <p className="text-xs text-gray-500">
+                  Cập nhật nếu thông tin đã thay đổi sau khi xem phòng.
+                </p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="hoTen"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Họ và tên *</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              {...field}
-                              value={String(field.value ?? "")}
-                              readOnly={!dangChinhSuaKhachHang}
-                              className={cn(!dangChinhSuaKhachHang && "bg-gray-50 pr-8")}
-                            />
-                            {!dangChinhSuaKhachHang && (
-                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="soDienThoai"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Số điện thoại *</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              {...field}
-                              value={String(field.value ?? "")}
-                              readOnly={!dangChinhSuaKhachHang}
-                              className={cn(!dangChinhSuaKhachHang && "bg-gray-50 pr-8")}
-                            />
-                            {!dangChinhSuaKhachHang && (
-                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="ngaySinh"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ngày sinh *</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type="date"
-                              {...field}
-                              value={String(field.value ?? "")}
-                              readOnly={!dangChinhSuaKhachHang}
-                              className={cn(!dangChinhSuaKhachHang && "bg-gray-50 pr-8")}
-                            />
-                            {!dangChinhSuaKhachHang && (
-                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="gioiTinh"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Giới tính *</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={!dangChinhSuaKhachHang}
-                        >
-                          <FormControl>
-                            <SelectTrigger className={cn(!dangChinhSuaKhachHang && "bg-gray-50")}>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="male">Nam</SelectItem>
-                            <SelectItem value="female">Nữ</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="quocTich"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Quốc tịch *</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              {...field}
-                              value={String(field.value ?? "")}
-                              readOnly={!dangChinhSuaKhachHang}
-                              className={cn(!dangChinhSuaKhachHang && "bg-gray-50 pr-8")}
-                            />
-                            {!dangChinhSuaKhachHang && (
-                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              {...field}
-                              value={String(field.value ?? "")}
-                              readOnly={!dangChinhSuaKhachHang}
-                              className={cn(!dangChinhSuaKhachHang && "bg-gray-50 pr-8")}
-                            />
-                            {!dangChinhSuaKhachHang && (
-                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="loaiGiayTo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Loại giấy tờ *</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={!dangChinhSuaKhachHang}
-                        >
-                          <FormControl>
-                            <SelectTrigger className={cn(!dangChinhSuaKhachHang && "bg-gray-50")}>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="CCCD">CCCD</SelectItem>
-                            <SelectItem value="Hộ chiếu">Hộ chiếu</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="soGiayTo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Số giấy tờ *</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              {...field}
-                              value={String(field.value ?? "")}
-                              readOnly={!dangChinhSuaKhachHang}
-                              className={cn(!dangChinhSuaKhachHang && "bg-gray-50 pr-8")}
-                            />
-                            {!dangChinhSuaKhachHang && (
-                              <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </Form>
-            </CardContent>
-          </Card>
-
-          <Card className="border-gray-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Nhu cầu thuê</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <RadioGroup
-                value={hinhThucThue}
-                onValueChange={(value) =>
-                  rdoHinhThucThue_CheckedChanged(value as "shared" | "whole")
-                }
-                className="grid grid-cols-1 gap-3 md:grid-cols-2"
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setEditingCustomer((v) => !v)}
               >
-                <label
-                  className={cn(
-                    "cursor-pointer rounded-lg border p-3",
-                    hinhThucThue === "shared" && "border-blue-500 bg-blue-50",
-                  )}
+                {editingCustomer ? "Khóa chỉnh sửa" : "Chỉnh sửa"}
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <TextField label="Họ và tên" required error={form.formState.errors.hoTen?.message}>
+                <ReadonlyInput readOnly={!editingCustomer} {...form.register("hoTen")} />
+              </TextField>
+              <TextField
+                label="Số điện thoại"
+                required
+                error={form.formState.errors.soDienThoai?.message}
+              >
+                <ReadonlyInput readOnly={!editingCustomer} {...form.register("soDienThoai")} />
+              </TextField>
+              <TextField label="Ngày sinh" required error={form.formState.errors.ngaySinh?.message}>
+                <ReadonlyInput
+                  type="date"
+                  readOnly={!editingCustomer}
+                  {...form.register("ngaySinh")}
+                />
+              </TextField>
+              <TextField label="Giới tính" required error={form.formState.errors.gioiTinh?.message}>
+                <Select
+                  value={gender}
+                  disabled={!editingCustomer}
+                  onValueChange={(value) =>
+                    form.setValue("gioiTinh", value as "Nam" | "Nữ", { shouldValidate: true })
+                  }
                 >
-                  <RadioGroupItem value="shared" className="sr-only" />
-                  <p className="text-sm font-semibold">Thuê ở ghép</p>
-                  <p className="text-xs text-gray-500">Chọn giường cụ thể còn trống</p>
-                </label>
-                <label
-                  className={cn(
-                    "cursor-pointer rounded-lg border p-3",
-                    hinhThucThue === "whole" && "border-blue-500 bg-blue-50",
-                  )}
+                  <SelectTrigger className={cn(!editingCustomer && "bg-gray-50")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Nam">Nam</SelectItem>
+                    <SelectItem value="Nữ">Nữ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </TextField>
+              <TextField label="Quốc tịch" required error={form.formState.errors.quocTich?.message}>
+                <ReadonlyInput readOnly={!editingCustomer} {...form.register("quocTich")} />
+              </TextField>
+              <TextField label="Email" error={form.formState.errors.email?.message}>
+                <ReadonlyInput readOnly={!editingCustomer} {...form.register("email")} />
+              </TextField>
+              <TextField
+                label="Loại giấy tờ"
+                required
+                error={form.formState.errors.loaiGiayTo?.message}
+              >
+                <Select
+                  value={documentType}
+                  disabled={!editingCustomer}
+                  onValueChange={(value) =>
+                    form.setValue("loaiGiayTo", value as "CCCD" | "Hộ chiếu", {
+                      shouldValidate: true,
+                    })
+                  }
                 >
-                  <RadioGroupItem value="whole" className="sr-only" />
-                  <p className="text-sm font-semibold">Thuê nguyên phòng</p>
-                  <p className="text-xs text-gray-500">Khóa toàn bộ phòng khi chọn</p>
-                </label>
-              </RadioGroup>
+                  <SelectTrigger className={cn(!editingCustomer && "bg-gray-50")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CCCD">CCCD</SelectItem>
+                    <SelectItem value="Hộ chiếu">Hộ chiếu</SelectItem>
+                  </SelectContent>
+                </Select>
+              </TextField>
+              <TextField
+                label="Số giấy tờ"
+                required
+                error={form.formState.errors.soGiayTo?.message}
+              >
+                <ReadonlyInput readOnly={!editingCustomer} {...form.register("soGiayTo")} />
+              </TextField>
+            </div>
+          </section>
 
-              <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
+          <section className="p-4">
+            <div className="mb-3">
+              <h2 className="text-sm font-semibold text-gray-900">2. Chọn nhu cầu thuê</h2>
+              <p className="text-xs text-gray-500">
+                Kết quả phòng được giới hạn theo chi nhánh và giới tính khách.
+              </p>
+            </div>
+            <RadioGroup
+              value={rentalType}
+              onValueChange={(value) => changeRentalType(value as DepositRentalType)}
+              className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-2"
+            >
+              <RentalChoice
+                value="OGhep"
+                selected={rentalType === "OGhep"}
+                title="Thuê ở ghép"
+                description="Chọn giường cụ thể còn trống"
+              />
+              <RentalChoice
+                value="NguyenCan"
+                selected={rentalType === "NguyenCan"}
+                title="Thuê nguyên phòng"
+                description="Giữ toàn bộ phòng, tính cọc theo sức chứa"
+              />
+            </RadioGroup>
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-12">
+              {rentalType === "OGhep" && (
                 <div className="xl:col-span-2">
-                  <Label className="text-xs text-gray-500">
-                    {hinhThucThue === "shared"
-                      ? "Số lượng giường cần cọc *"
-                      : "Số lượng người ở dự kiến *"}
-                  </Label>
+                  <RequiredLabel>Số giường cần cọc</RequiredLabel>
                   <Input
                     type="number"
                     min={1}
-                    value={soLuongGiuong}
-                    onChange={(event) =>
-                      setSoLuongGiuong(Math.max(1, Number(event.target.value) || 1))
-                    }
+                    max={20}
+                    value={bedCount}
+                    onChange={(e) => changeBedCount(Number(e.target.value))}
                     className="mt-1 h-8 text-xs"
                   />
                 </div>
-                <div className="xl:col-span-2">
-                  <Label className="text-xs text-gray-500">Tòa nhà</Label>
-                  <Select value={toaNha} onValueChange={(v) => setToaNha(v as typeof toaNha)}>
-                    <SelectTrigger className="mt-1 h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tất cả</SelectItem>
-                      <SelectItem value="Tòa A">Tòa A</SelectItem>
-                      <SelectItem value="Tòa B">Tòa B</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="xl:col-span-2">
-                  <Label className="text-xs text-gray-500">Loại phòng</Label>
-                  <Select
-                    value={loaiPhong}
-                    onValueChange={(v) => setLoaiPhong(v as typeof loaiPhong)}
-                  >
-                    <SelectTrigger className="mt-1 h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tất cả</SelectItem>
-                      <SelectItem value="4">Phòng 4</SelectItem>
-                      <SelectItem value="6">Phòng 6</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="xl:col-span-4">
-                  <Label className="text-xs text-gray-500">Khoảng giá</Label>
-                  <div className="mt-1 flex items-center gap-2">
-                    <Input
-                      inputMode="numeric"
-                      value={dinhDangGiaNhap(giaMin)}
-                      onChange={(event) => setGiaMin(chuanHoaGiaNhap(event.target.value))}
-                      className="h-8 min-w-0 text-xs"
-                    />
-                    <Label className="shrink-0 text-xs text-gray-500">-</Label>
-                    <Input
-                      inputMode="numeric"
-                      value={dinhDangGiaNhap(giaMax)}
-                      onChange={(event) => setGiaMax(chuanHoaGiaNhap(event.target.value))}
-                      className="h-8 min-w-0 text-xs"
-                    />
-                    <span className="shrink-0 text-[11px] text-gray-400">VNĐ</span>
-                    {(giaMin || giaMax) && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 shrink-0 text-gray-400 hover:text-gray-700"
-                        onClick={() => {
-                          setGiaMin("");
-                          setGiaMax("");
-                        }}
-                      >
-                        <X className="size-3.5" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-end xl:col-span-2">
-                  <Button
-                    type="button"
-                    className="h-8 w-full xl:ml-auto xl:w-[140px] bg-blue-600 text-xs hover:bg-blue-700"
-                    onClick={btnTimKiem_Click}
-                  >
-                    <Search className="size-3.5" />
-                    Tìm kiếm
-                  </Button>
-                </div>
-              </div>
-              {khoangGiaKhongHopLe && (
-                <p className="text-xs font-medium text-red-600">Khoảng giá không hợp lệ.</p>
               )}
-            </CardContent>
-          </Card>
-
-          {daTimKiem && (
-            <Card className="border-gray-200">
-              <CardContent className="pt-6">
-                {danhSachPhong.length === 0 ? (
-                  <p className="text-sm text-amber-600">
-                    Không tìm thấy phòng phù hợp với nhu cầu hiện tại.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {danhSachPhong.map((phong) => (
-                      <div
-                        key={phong.id}
-                        className={cn(
-                          "rounded-lg border p-3",
-                          maPhongDaChon === phong.id && "border-blue-300 bg-blue-50/40",
-                        )}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900">
-                              {phong.code} • Phòng {phong.type}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Sức chứa {phong.maxCapacity} • {dinhDangTien(phong.basePrice)}
-                              /giường/tháng
-                            </p>
-                          </div>
-                          {hinhThucThue === "whole" && (
-                            <Button
-                              type="button"
-                              size="sm"
-                              className="h-7 text-xs"
-                              onClick={() => grvDanhSachPhong_CellClick(phong)}
-                            >
-                              Chọn phòng
-                            </Button>
-                          )}
-                        </div>
-
-                        {hinhThucThue === "shared" && (
-                          <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
-                            {phong.beds.map((giuong) => {
-                              const duocChon = danhSachGiuongDaChon.includes(giuong.id);
-                              const nhanTrangThai = layNhanTrangThaiGiuong(
-                                danhSachGiuongDaGiu.has(giuong.id) ? "deposited" : giuong.status,
-                              );
-                              const biKhoa =
-                                giuong.status !== "available" || danhSachGiuongDaGiu.has(giuong.id);
-
-                              return (
-                                <label
-                                  key={giuong.id}
-                                  className={cn(
-                                    "flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs",
-                                    biKhoa
-                                      ? "cursor-not-allowed bg-gray-50 text-gray-400"
-                                      : "cursor-pointer hover:border-blue-300",
-                                    duocChon && "border-blue-400 bg-blue-50",
-                                  )}
-                                >
-                                  <Checkbox
-                                    checked={duocChon}
-                                    disabled={biKhoa}
-                                    onCheckedChange={() =>
-                                      grvDanhSachGiuong_CellClick(phong, giuong)
-                                    }
-                                  />
-                                  <span className="font-mono">{giuong.code}</span>
-                                  <Badge
-                                    className={cn(
-                                      "ml-auto h-5 text-[10px]",
-                                      nhanTrangThai.className,
-                                    )}
-                                  >
-                                    {nhanTrangThai.text}
-                                  </Badge>
-                                </label>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+              <div className="xl:col-span-2">
+                <Label className="text-xs text-gray-600">Tòa nhà</Label>
+                <Select value={building} onValueChange={setBuilding}>
+                  <SelectTrigger className="mt-1 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả</SelectItem>
+                    <SelectItem value="Tòa A">Tòa A</SelectItem>
+                    <SelectItem value="Tòa B">Tòa B</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="xl:col-span-2">
+                <Label className="text-xs text-gray-600">Loại phòng</Label>
+                <Select value={roomType} onValueChange={setRoomType}>
+                  <SelectTrigger className="mt-1 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả</SelectItem>
+                    <SelectItem value="4">Phòng 4</SelectItem>
+                    <SelectItem value="6">Phòng 6</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className={cn("xl:col-span-4", rentalType === "NguyenCan" && "xl:col-span-6")}>
+                <Label className="text-xs text-gray-600">Khoảng giá tháng</Label>
+                <div className="mt-1 flex items-center gap-2">
+                  <Input
+                    inputMode="numeric"
+                    value={formatMoneyInput(minPrice)}
+                    onChange={(e) => setMinPrice(normalizeMoneyInput(e.target.value))}
+                    className="h-8 min-w-0 text-xs"
+                    placeholder="Từ"
+                  />
+                  <span className="text-xs text-gray-400">–</span>
+                  <Input
+                    inputMode="numeric"
+                    value={formatMoneyInput(maxPrice)}
+                    onChange={(e) => setMaxPrice(normalizeMoneyInput(e.target.value))}
+                    className="h-8 min-w-0 text-xs"
+                    placeholder="Đến"
+                  />
+                  <span className="shrink-0 text-[11px] text-gray-400">VNĐ</span>
+                  {(minPrice || maxPrice) && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                      onClick={() => {
+                        setMinPrice("");
+                        setMaxPrice("");
+                      }}
+                    >
+                      <X className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+                {invalidPriceRange && (
+                  <p className="mt-1 text-xs text-red-600">Khoảng giá không hợp lệ.</p>
                 )}
-              </CardContent>
-            </Card>
-          )}
+              </div>
+              <div className="flex items-end xl:col-span-2">
+                <Button
+                  type="button"
+                  className="h-8 w-full bg-blue-600 text-xs hover:bg-blue-700"
+                  disabled={roomLoading}
+                  onClick={() => void searchRooms()}
+                >
+                  {roomLoading ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Search className="size-3.5" />
+                  )}{" "}
+                  Tìm phòng
+                </Button>
+              </div>
+            </div>
+          </section>
 
-          <Card className="border-gray-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Bảng tính tiền cọc</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1 text-sm text-gray-600">
-                <p>
-                  Phòng đã chọn:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {phongDaChon?.code ?? "Chưa chọn"}
-                  </span>
-                </p>
-                <p>
-                  Giường đã chọn:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {maGiuongDaChon.length ? maGiuongDaChon.join(", ") : "Chưa chọn"}
-                  </span>
-                </p>
-                <p>
-                  Số giường tính cọc:{" "}
-                  <span className="font-semibold text-gray-900">{soGiuongTinhCoc}</span>
+          <section className="p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-gray-900">3. Chọn phòng và giường</h2>
+                <p className="text-xs text-gray-500">
+                  Trạng thái sẽ được server kiểm tra lại khi tạo phiếu.
                 </p>
               </div>
-              <p className="mt-3 text-lg font-bold text-emerald-600">
-                Tạm tính tiền cọc: {dinhDangTien(tienCocTamTinh)}
-              </p>
-              {phongDaChon && soGiuongTinhCoc > 0 && (
-                <p className="mt-1 text-xs text-gray-500">
-                  {dinhDangTien(phongDaChon.basePrice)} × {soGiuongTinhCoc} giường
-                </p>
+              {searched && !roomLoading && (
+                <span className="text-xs text-gray-500">{rooms.length} phòng phù hợp</span>
               )}
-              <p className="mt-1 text-xs text-gray-500">
-                Khoản cọc chính thức sẽ được kế toán phê duyệt trước khi thu tiền.
+            </div>
+            {roomLoading ? (
+              <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-500">
+                <Loader2 className="size-4 animate-spin" /> Đang kiểm tra phòng trống...
+              </div>
+            ) : roomError ? (
+              <div className="flex flex-col items-center gap-2 py-8 text-sm text-red-600">
+                <AlertCircle className="size-5" />
+                <span>{roomError}</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void searchRooms()}
+                >
+                  <RefreshCw className="size-3.5" /> Thử lại
+                </Button>
+              </div>
+            ) : !searched ? (
+              <p className="py-8 text-center text-sm text-gray-400">
+                Chọn nhu cầu và tìm phòng để xem giường còn trống.
               </p>
-            </CardContent>
-          </Card>
+            ) : rooms.length === 0 ? (
+              <p className="py-8 text-center text-sm text-amber-600">
+                Không tìm thấy phòng phù hợp. Vui lòng đổi tiêu chí.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {rooms.map((room) => (
+                  <RoomOption
+                    key={room.maPhong}
+                    room={room}
+                    rentalType={rentalType}
+                    selected={selectedRoomId === room.maPhong}
+                    selectedBedIds={selectedBedIds}
+                    onSelectWhole={() => selectWholeRoom(room)}
+                    onToggleBed={(bedId) => toggleBed(room, bedId)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
         </div>
       </div>
 
-      <footer className="sticky bottom-0 flex h-14 items-center justify-end border-t border-gray-200 bg-white px-5">
+      <footer className="sticky bottom-0 flex min-h-16 items-center justify-between gap-4 border-t border-gray-200 bg-white px-5 py-2">
+        <div className="min-w-0 text-xs text-gray-600">
+          {selectedRoom ? (
+            <>
+              <p className="truncate">
+                <strong className="text-gray-900">P. {selectedRoom.soPhong}</strong> •{" "}
+                {rentalType === "NguyenCan"
+                  ? `Toàn bộ ${chargedBedCount} giường`
+                  : selectedBedCodes.join(", ")}
+              </p>
+              <p>
+                {formatCurrency(selectedRoom.loaiPhong.giaThue)} × 2 tháng × {chargedBedCount}{" "}
+                giường ={" "}
+                <strong className="text-emerald-700">{formatCurrency(estimatedDeposit)}</strong>
+              </p>
+            </>
+          ) : (
+            <p>Chưa chọn phòng/giường.</p>
+          )}
+        </div>
         <Button
           type="button"
-          className="bg-emerald-600 hover:bg-emerald-700"
-          onClick={() => void btnTaoYeuCauCoc_Click()}
+          className="shrink-0 bg-emerald-600 hover:bg-emerald-700"
+          disabled={submitting}
+          onClick={() => void openConfirmation()}
         >
-          <Send className="size-4" />
-          Tạo yêu cầu cọc & Gửi kế toán
+          <Send className="size-4" /> Tạo phiếu & gửi Kế toán
         </Button>
       </footer>
+
+      <AlertDialog open={confirmOpen} onOpenChange={(open) => !submitting && setConfirmOpen(open)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận tạo phiếu cọc?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p>
+                  Khách hàng: <strong className="text-gray-900">{form.getValues("hoTen")}</strong>
+                </p>
+                <p>
+                  Phòng: <strong className="text-gray-900">{selectedRoom?.soPhong}</strong> •{" "}
+                  {rentalType === "NguyenCan"
+                    ? `Toàn bộ ${chargedBedCount} giường`
+                    : selectedBedCodes.join(", ")}
+                </p>
+                <p>
+                  Tạm tính:{" "}
+                  <strong className="text-emerald-700">{formatCurrency(estimatedDeposit)}</strong>
+                </p>
+                <p className="rounded-md bg-amber-50 p-2 text-amber-800">
+                  Bằng việc xác nhận, Sale xác nhận khách đã đồng ý điều kiện thuê và nội quy ký túc
+                  xá.
+                </p>
+                <p>Số tiền chính thức vẫn do Kế toán tính và xác nhận trước khi thu.</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={submitting}>Kiểm tra lại</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={submitting}
+              onClick={(event) => {
+                event.preventDefault();
+                void submitDeposit();
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {submitting && <Loader2 className="size-4 animate-spin" />} Xác nhận tạo phiếu
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
+  );
+}
+
+function TextField({
+  label,
+  required,
+  error,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <Label className="text-xs text-gray-600">
+        {label}
+        {required && <span className="ml-0.5 text-red-500">*</span>}
+      </Label>
+      <div className="mt-1">{children}</div>
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+function RequiredLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <Label className="text-xs text-gray-600">
+      {children}
+      <span className="ml-0.5 text-red-500">*</span>
+    </Label>
+  );
+}
+
+function ReadonlyInput({ readOnly, className, ...props }: React.ComponentProps<typeof Input>) {
+  return (
+    <div className="relative">
+      <Input
+        readOnly={readOnly}
+        className={cn(readOnly && "bg-gray-50 pr-8", className)}
+        {...props}
+      />
+      {readOnly && (
+        <Lock className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+      )}
+    </div>
+  );
+}
+
+function RentalChoice({
+  value,
+  selected,
+  title,
+  description,
+}: {
+  value: DepositRentalType;
+  selected: boolean;
+  title: string;
+  description: string;
+}) {
+  return (
+    <label
+      className={cn(
+        "cursor-pointer rounded-md border px-3 py-2",
+        selected && "border-blue-500 bg-blue-50",
+      )}
+    >
+      <RadioGroupItem value={value} className="sr-only" />
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="text-xs text-gray-500">{description}</p>
+    </label>
+  );
+}
+
+function RoomOption({
+  room,
+  rentalType,
+  selected,
+  selectedBedIds,
+  onSelectWhole,
+  onToggleBed,
+}: {
+  room: DepositRoom;
+  rentalType: DepositRentalType;
+  selected: boolean;
+  selectedBedIds: string[];
+  onSelectWhole: () => void;
+  onToggleBed: (bedId: string) => void;
+}) {
+  return (
+    <div className={cn("rounded-md border p-3", selected && "border-blue-400 bg-blue-50/40")}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">
+            P. {room.soPhong} • {room.loaiPhong.tenLoaiPhong}
+          </p>
+          <p className="text-xs text-gray-500">
+            {room.toaNha || "Chưa xác định tòa"} • {roomGenderLabel(room.gioiTinhChoPhep)} • Sức
+            chứa {room.loaiPhong.sucChua}
+          </p>
+          <p className="text-xs font-medium text-gray-700">
+            {formatCurrency(room.loaiPhong.giaThue)}/giường/tháng
+          </p>
+        </div>
+        {rentalType === "NguyenCan" && (
+          <Button
+            type="button"
+            size="sm"
+            variant={selected ? "default" : "outline"}
+            className="h-7 text-xs"
+            onClick={onSelectWhole}
+          >
+            {selected ? "Đã chọn" : "Chọn phòng"}
+          </Button>
+        )}
+      </div>
+      {rentalType === "OGhep" && (
+        <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-6">
+          {room.giuongs.map((bed) => {
+            const available = bed.trangThai === "Trong";
+            const checked = selectedBedIds.includes(bed.maGiuong);
+            const status = bedStatus(bed.trangThai);
+            return (
+              <label
+                key={bed.maGiuong}
+                className={cn(
+                  "flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs",
+                  available
+                    ? "cursor-pointer hover:border-blue-300"
+                    : "cursor-not-allowed bg-gray-50 text-gray-400",
+                  checked && "border-blue-400 bg-blue-50",
+                )}
+              >
+                <Checkbox
+                  checked={checked}
+                  disabled={!available}
+                  onCheckedChange={() => onToggleBed(bed.maGiuong)}
+                />
+                <span className="font-mono">{bed.soGiuong}</span>
+                <Badge className={cn("ml-auto h-5 text-[10px]", status.className)}>
+                  {status.text}
+                </Badge>
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

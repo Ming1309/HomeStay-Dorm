@@ -41,12 +41,16 @@ public sealed class BranchScopeSqlIntegrationTests
         await DatPhamVi(scoped, "NV03");
         Assert.Equal(0, await Dem(scoped, "SELECT COUNT(*) FROM PhieuCoc WHERE MaCN='CN02'"));
         Assert.True(await Dem(scoped, "SELECT COUNT(*) FROM PhieuCoc WHERE MaCN='CN01'") > 0);
+        Assert.Equal(0, await Dem(scoped, "SELECT COUNT(*) FROM Phong WHERE MaCN='CN02'"));
+        Assert.True(await Dem(scoped, "SELECT COUNT(*) FROM Phong WHERE MaCN='CN01'") > 0);
         Assert.Equal(0, await ThucThi(scoped,
             "UPDATE PhieuCoc SET TrangThai=TrangThai WHERE MaPhieuCoc='PC0008'"));
 
         await DatPhamVi(scoped, "NV04");
         Assert.Equal(0, await Dem(scoped, "SELECT COUNT(*) FROM PhieuCoc WHERE MaCN='CN01'"));
         Assert.True(await Dem(scoped, "SELECT COUNT(*) FROM PhieuCoc WHERE MaCN='CN02'") > 0);
+        Assert.Equal(0, await Dem(scoped, "SELECT COUNT(*) FROM Phong WHERE MaCN='CN01'"));
+        Assert.True(await Dem(scoped, "SELECT COUNT(*) FROM Phong WHERE MaCN='CN02'") > 0);
     }
 
     private static async Task DatPhamVi(SqlConnection connection, string maNV)

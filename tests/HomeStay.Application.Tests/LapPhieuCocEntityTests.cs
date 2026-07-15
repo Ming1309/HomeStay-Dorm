@@ -60,6 +60,16 @@ public sealed class LapPhieuCocEntityTests
     }
 
     [Fact]
+    public void Phong_LocTheoGioiTinhKhachHang()
+    {
+        var phong = TaoPhong();
+        phong.GioiTinhChoPhep = "Nữ";
+
+        Assert.True(phong.PhuHopYeuCau(null, null, 0, 0, "Nữ"));
+        Assert.False(phong.PhuHopYeuCau(null, null, 0, 0, "Nam"));
+    }
+
+    [Fact]
     public void PhieuCoc_MoiChiKhoiTaoChuaTinhTien()
     {
         var phong = TaoPhong();

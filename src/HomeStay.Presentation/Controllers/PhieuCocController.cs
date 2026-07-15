@@ -277,6 +277,8 @@ public sealed class PhieuCocController(
                 maNhanVien);
             return Ok(phieuCoc);
         }
+        catch (KeyNotFoundException ex) { return NotFound(new { Message = ex.Message }); }
+        catch (ArgumentException ex) { return BadRequest(new { Message = ex.Message }); }
         catch (InvalidOperationException ex) { return Conflict(new { Message = ex.Message }); }
     }
 

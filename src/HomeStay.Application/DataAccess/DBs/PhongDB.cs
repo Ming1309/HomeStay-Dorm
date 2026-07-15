@@ -7,20 +7,20 @@ using HomeStay.Application.DataAccess.DbConnections;
 public static class PhongDB
 {
     public static async Task<IReadOnlyList<Phong>> LayPhongOGhep(int soLuong, string? toaNha,
-        string? loaiPhong, decimal giaMin, decimal giaMax)
+        string? loaiPhong, decimal giaMin, decimal giaMax, string maCN, string? gioiTinh)
     {
-        var phongs = await DocPhongVaGiuong(null);
-        return LocTheoYeuCauChung(phongs, toaNha, loaiPhong, giaMin, giaMax)
+        var phongs = await DocPhongVaGiuong(null, maCN);
+        return LocTheoYeuCauChung(phongs, toaNha, loaiPhong, giaMin, giaMax, gioiTinh)
             .Where(p => (p.TrangThai == "Trong" || p.TrangThai == "ConGiuongTrong")
                 && p.SoGiuongTrong >= Math.Max(soLuong, 1))
             .ToList();
     }
 
     public static async Task<IReadOnlyList<Phong>> LayPhongNguyenCan(string? toaNha, string? loaiPhong,
-        decimal giaMin, decimal giaMax)
+        decimal giaMin, decimal giaMax, string maCN, string? gioiTinh)
     {
-        var phongs = await DocPhongVaGiuong(null);
-        return LocTheoYeuCauChung(phongs, toaNha, loaiPhong, giaMin, giaMax)
+        var phongs = await DocPhongVaGiuong(null, maCN);
+        return LocTheoYeuCauChung(phongs, toaNha, loaiPhong, giaMin, giaMax, gioiTinh)
             .Where(p => p.TrangThai == "Trong" && p.Giuongs.Count > 0
                 && p.Giuongs.All(g => g.TrangThai == "Trong"))
             .ToList();
@@ -29,7 +29,7 @@ public static class PhongDB
     public static async Task<IReadOnlyList<Phong>> LayPhongTheoBoLoc(string? toaNha, string? tang,
         string? maLP, string? maCN, string? trangThai, decimal giaMin, decimal giaMax)
     {
-        var phongs = await DocPhongVaGiuong(null);
+        var phongs = await DocPhongVaGiuong(null, maCN);
         return phongs.Where(p => 
             (string.IsNullOrWhiteSpace(toaNha) || p.ToaNha == toaNha) &&
             (string.IsNullOrWhiteSpace(tang) || p.Tang == tang) &&
@@ -41,8 +41,10 @@ public static class PhongDB
         ).ToList();
     }
 
-    public static async Task<Phong?> DocChiTiet(string maPhong) =>
-        (await DocPhongVaGiuong(maPhong)).SingleOrDefault();
+    public static Task<Phong?> DocChiTiet(string maPhong) => DocChiTiet(maPhong, null);
+
+    public static async Task<Phong?> DocChiTiet(string maPhong, string? maCN) =>
+        (await DocPhongVaGiuong(maPhong, maCN)).SingleOrDefault();
 
     public static async Task CapNhat(Phong phong)
     {
@@ -212,10 +214,10 @@ public static class PhongDB
     }
 
     private static IEnumerable<Phong> LocTheoYeuCauChung(IEnumerable<Phong> phongs, string? toaNha,
-        string? loaiPhong, decimal giaMin, decimal giaMax) =>
-        phongs.Where(p => p.PhuHopYeuCau(toaNha, loaiPhong, giaMin, giaMax));
+        string? loaiPhong, decimal giaMin, decimal giaMax, string? gioiTinh) =>
+        phongs.Where(p => p.PhuHopYeuCau(toaNha, loaiPhong, giaMin, giaMax, gioiTinh));
 
-    private static async Task<IReadOnlyList<Phong>> DocPhongVaGiuong(string? maPhong)
+    private static async Task<IReadOnlyList<Phong>> DocPhongVaGiuong(string? maPhong, string? maCN = null)
     {
         const string sql = """
             SELECT p.MaPhong,p.SoPhong,p.ToaNha,p.Tang,p.GioiTinhChoPhep,p.TrangThai,p.MaCN,
@@ -227,6 +229,7 @@ public static class PhongDB
             LEFT JOIN ChiNhanh cn ON p.MaCN=cn.MaCN
             LEFT JOIN Giuong g ON p.MaPhong=g.MaPhong
             WHERE (@MaPhong IS NULL OR p.MaPhong=@MaPhong)
+              AND (@MaCN IS NULL OR p.MaCN=@MaCN)
             ORDER BY p.MaPhong, g.SoGiuong
             """;
         var dict = new Dictionary<string, Phong>();
@@ -242,7 +245,7 @@ public static class PhongDB
             }
             if (!string.IsNullOrWhiteSpace(giuong?.MaGiuong)) current.Giuongs.Add(giuong);
             return current;
-        }, new { MaPhong = maPhong }, PhienDuLieu.Session.Transaction, splitOn: "MaLP,MaGiuong");
+        }, new { MaPhong = maPhong, MaCN = maCN }, PhienDuLieu.Session.Transaction, splitOn: "MaLP,MaGiuong");
         return dict.Values.ToList();
     }
 }
