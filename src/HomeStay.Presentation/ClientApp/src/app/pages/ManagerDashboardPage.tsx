@@ -155,7 +155,7 @@ export function ManagerDashboardScreen({ currentPath }: { currentPath: string })
         },
       ],
       handoverQueue: pendingHandoverContracts.slice(0, 5),
-    };
+    } as const;
   }, [assetRecoveries, contracts, depositRequests, pendingHandoverCount, terminationRecords]);
 
   return (
@@ -270,7 +270,7 @@ function KpiCard({
 function TaskPanel({
   tasks,
 }: {
-  tasks: Array<{ text: string; meta: string; to: (typeof quickActions)[number]["to"]; tone: keyof typeof toneClass }>;
+  tasks: ReadonlyArray<{ text: string; meta: string; to: (typeof quickActions)[number]["to"]; tone: keyof typeof toneClass }>;
 }) {
   return (
     <section className="rounded-lg border border-gray-200 bg-white p-4">

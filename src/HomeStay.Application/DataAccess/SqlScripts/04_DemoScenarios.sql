@@ -113,36 +113,36 @@ GO
 -- ============================================================
 -- 3. Phiếu đăng ký
 -- ============================================================
-INSERT INTO PhieuDangKy (MaPDK, KhuVuc, SoLuongNguoi, LoaiDichVu, MucGia, ThoiGianDuKienVao, ThoiHanThue, YeuCauKhac, TrangThai, MaKH, MaNV)
+INSERT INTO PhieuDangKy (MaPDK, KhuVuc, SoLuongNguoi, LoaiDichVu, MucGia, ThoiGianDuKienVao, ThoiHanThue, YeuCauKhac, TrangThai, MaKH, MaNV, MaCN)
 VALUES
-('PDK0001', N'Quận 1', 1, N'Phòng dịch vụ', 950000, '2026-07-20', 6, N'Cần tư vấn phòng', N'DangXuLy', 'KH0001', 'NV03'),
-('PDK0002', N'Thủ Đức', 1, N'Phòng dịch vụ', 950000, '2026-07-21', 6, N'Ưu tiên gần cổng', N'DaHenXemPhong', 'KH0002', 'NV03'),
-('PDK0003', N'Quận 7', 1, N'Phòng dịch vụ', 950000, '2026-07-22', 6, N'Khách hủy yêu cầu', N'DaHuy', 'KH0003', 'NV03'),
-('PDK0004', N'Quận 1', 1, N'Phòng dịch vụ', 950000, '2026-07-23', 6, N'Xem phòng trước khi cọc', N'DaHenXemPhong', 'KH0004', 'NV03'),
-('PDK0005', N'Thủ Đức', 2, N'Phòng dịch vụ', 1900000, '2026-07-24', 6, N'Ở ghép hai người', N'DaHenXemPhong', 'KH0005', 'NV04'),
-('PDK0006', N'Quận 1', 2, N'Phòng dịch vụ', 1900000, '2026-07-25', 6, N'Đăng ký cùng nhóm', N'DaHenXemPhong', 'KH0006', 'NV03'),
-('PDK0007', N'Thủ Đức', 2, N'Phòng dịch vụ', 1900000, '2026-07-26', 6, N'Đã xác nhận phòng', N'DaHenXemPhong', 'KH0007', 'NV04'),
-('PDK0008', N'Quận 1', 6, N'Phòng dịch vụ', 1860000, '2026-07-27', 6, N'Thuê nguyên căn', N'DaHenXemPhong', 'KH0008', 'NV03'),
-('PDK0009', N'Thủ Đức', 2, N'Phòng dịch vụ', 1900000, '2026-07-28', 6, N'Đã nhận phòng', N'DaHenXemPhong', 'KH0009', 'NV04'),
-('PDK0010', N'Quận 1', 2, N'Phòng dịch vụ', 1900000, '2026-07-29', 6, N'Đã hoàn tất đặt phòng', N'DaHenXemPhong', 'KH0010', 'NV03');
+('PDK0001', N'Quận 1', 1, N'Phòng dịch vụ', 950000, '2026-07-20', 6, N'Cần tư vấn phòng', N'DangXuLy', 'KH0001', 'NV03', 'CN01'),
+('PDK0002', N'Thủ Đức', 1, N'Phòng dịch vụ', 950000, '2026-07-21', 6, N'Ưu tiên gần cổng', N'DaHenXemPhong', 'KH0002', 'NV03', 'CN01'),
+('PDK0003', N'Quận 7', 1, N'Phòng dịch vụ', 950000, '2026-07-22', 6, N'Khách hủy yêu cầu', N'DaHuy', 'KH0003', 'NV03', 'CN01'),
+('PDK0004', N'Quận 1', 1, N'Phòng dịch vụ', 950000, '2026-07-23', 6, N'Xem phòng trước khi cọc', N'DaHenXemPhong', 'KH0004', 'NV03', 'CN01'),
+('PDK0005', N'Thủ Đức', 2, N'Phòng dịch vụ', 1900000, '2026-07-24', 6, N'Ở ghép hai người', N'DaHenXemPhong', 'KH0005', 'NV03', 'CN01'),
+('PDK0006', N'Quận 1', 2, N'Phòng dịch vụ', 1900000, '2026-07-25', 6, N'Đăng ký cùng nhóm', N'DaHenXemPhong', 'KH0006', 'NV03', 'CN01'),
+('PDK0007', N'Thủ Đức', 2, N'Phòng dịch vụ', 1900000, '2026-07-26', 6, N'Đã xác nhận phòng', N'DaHenXemPhong', 'KH0007', 'NV03', 'CN01'),
+('PDK0008', N'Thủ Đức', 6, N'Phòng dịch vụ', 1860000, '2026-07-27', 6, N'Thuê nguyên căn', N'DaHenXemPhong', 'KH0008', 'NV04', 'CN02'),
+('PDK0009', N'Thủ Đức', 2, N'Phòng dịch vụ', 1900000, '2026-07-28', 6, N'Đã nhận phòng', N'DaHenXemPhong', 'KH0009', 'NV04', 'CN02'),
+('PDK0010', N'Quận 1', 2, N'Phòng dịch vụ', 1900000, '2026-07-29', 6, N'Đã hoàn tất đặt phòng', N'DaHenXemPhong', 'KH0010', 'NV03', 'CN01');
 GO
 
 -- ============================================================
 -- 4. Phiếu cọc và thành viên đăng ký
 -- ============================================================
-INSERT INTO PhieuCoc (MaPhieuCoc, HanThanhToan, HinhThucThue, SoGiuongThue, TongTien, ThoiDiemCoc, AnhMinhChung, PhuongThucThanhToan, LyDoYeuCauBoSung, ThoiDiemHuy, MaNVHuy, TrangThai, MaKH, MaPhong, MaNV)
+INSERT INTO PhieuCoc (MaPhieuCoc, HanThanhToan, HinhThucThue, SoGiuongThue, TongTien, ThoiDiemCoc, AnhMinhChung, PhuongThucThanhToan, LyDoYeuCauBoSung, ThoiDiemHuy, MaNVHuy, TrangThai, MaKH, MaPhong, MaNV, MaCN)
 VALUES
-('PC0001', NULL, N'OGhep', 1, 0, '2026-07-23T10:00:00', NULL, NULL, NULL, NULL, NULL, N'KhoiTao', 'KH0004', 'P004', 'NV03'),
-('PC0002', '2026-07-25T10:00:00', N'OGhep', 2, 3800000, '2026-07-24T10:00:00', NULL, NULL, NULL, NULL, NULL, N'ChoThanhToan', 'KH0005', 'P005', 'NV04'),
-('PC0003', '2026-07-26T10:00:00', N'OGhep', 2, 3800000, '2026-07-25T10:00:00', N'/files/pc0003.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0006', 'P006', 'NV03'),
-('PC0004', '2026-07-27T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-26T10:00:00', N'/files/pc0004.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0007', 'P007', 'NV03'),
-('PC0005', '2026-07-28T10:00:00', N'NguyenCan', 6, 3720000, '2026-07-27T10:00:00', N'/files/pc0005.png', N'ChuyenKhoan', NULL, NULL, NULL, N'ChoDuyet', 'KH0008', 'P010', 'NV03'),
-('PC0006', '2026-07-29T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-28T10:00:00', N'/files/pc0006.png', N'TienMat', NULL, NULL, NULL, N'DaDuyet', 'KH0009', 'P011', 'NV04'),
-('PC0007', '2026-07-21T10:00:00', N'OGhep', 1, 1900000, '2026-07-20T10:00:00', N'/files/pc0007.png', N'ChuyenKhoan', NULL, '2026-07-21T09:00:00', 'NV03', N'DaHuy', 'KH0010', 'P002', 'NV03'),
-('PC0008', '2026-07-30T10:00:00', N'OGhep', 2, 1240000, '2026-07-29T10:00:00', N'/files/pc0008.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0011', 'P003', 'NV04'),
-('PC0009', '2026-07-31T10:00:00', N'OGhep', 1, 1900000, '2026-07-30T10:00:00', N'/files/pc0009.png', N'ChuyenKhoan', NULL, NULL, NULL, N'ChoDoiChieu', 'KH0001', 'P004', 'NV03'),
+('PC0001', NULL, N'OGhep', 1, 0, '2026-07-23T10:00:00', NULL, NULL, NULL, NULL, NULL, N'KhoiTao', 'KH0004', 'P004', 'NV03', 'CN01'),
+('PC0002', '2026-07-25T10:00:00', N'OGhep', 2, 3800000, '2026-07-24T10:00:00', NULL, NULL, NULL, NULL, NULL, N'ChoThanhToan', 'KH0005', 'P005', 'NV03', 'CN01'),
+('PC0003', '2026-07-26T10:00:00', N'OGhep', 2, 3800000, '2026-07-25T10:00:00', N'/files/pc0003.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0006', 'P006', 'NV03', 'CN01'),
+('PC0004', '2026-07-27T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-26T10:00:00', N'/files/pc0004.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0007', 'P007', 'NV03', 'CN01'),
+('PC0005', '2026-07-28T10:00:00', N'NguyenCan', 6, 3720000, '2026-07-27T10:00:00', N'/files/pc0005.png', N'ChuyenKhoan', NULL, NULL, NULL, N'ChoDuyet', 'KH0008', 'P010', 'NV04', 'CN02'),
+('PC0006', '2026-07-29T10:00:00', N'NguyenCan', 2, 7600000, '2026-07-28T10:00:00', N'/files/pc0006.png', N'TienMat', NULL, NULL, NULL, N'DaDuyet', 'KH0009', 'P011', 'NV04', 'CN02'),
+('PC0007', '2026-07-21T10:00:00', N'OGhep', 1, 1900000, '2026-07-20T10:00:00', N'/files/pc0007.png', N'ChuyenKhoan', NULL, '2026-07-21T09:00:00', 'NV03', N'DaHuy', 'KH0010', 'P002', 'NV03', 'CN01'),
+('PC0008', '2026-07-30T10:00:00', N'OGhep', 2, 1240000, '2026-07-29T10:00:00', N'/files/pc0008.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0011', 'P003', 'NV04', 'CN02'),
+('PC0009', '2026-07-31T10:00:00', N'OGhep', 1, 1900000, '2026-07-30T10:00:00', N'/files/pc0009.png', N'ChuyenKhoan', NULL, NULL, NULL, N'ChoDoiChieu', 'KH0001', 'P004', 'NV03', 'CN01'),
 -- UC 1.4.23: phiếu cọc gắn HD chờ thanh lý
-('PC0010', '2026-07-20T10:00:00', N'OGhep', 2, 3800000, '2026-07-19T10:00:00', N'/files/pc0010.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0010', 'P012', 'NV03');
+('PC0010', '2026-07-20T10:00:00', N'OGhep', 2, 3800000, '2026-07-19T10:00:00', N'/files/pc0010.png', N'ChuyenKhoan', NULL, NULL, NULL, N'DaThanhToan', 'KH0010', 'P012', 'NV03', 'CN01');
 GO
 
 INSERT INTO ThanhVienDangKy (MaPhieuCoc, MaKH, VaiTro, TrangThaiDuyet)
@@ -193,8 +193,8 @@ VALUES
 ('HD0002', '2026-07-26', '2026-08-01', '2027-01-31', 1, 1900000, N'Chờ thanh toán kỳ đầu', N'ChoThanhToan', 'NV03', 'PC0002', 'CS01', 'NV01'),
 ('HD0003', '2026-07-27', '2026-08-01', '2027-01-31', 1, 1900000, N'Đã thanh toán, chờ bàn giao', N'ChoBanGiao', 'NV03', 'PC0003', 'CS01', 'NV01'),
 ('HD0004', '2026-07-28', '2026-08-01', '2027-01-31', 1, 1900000, N'Đang lưu trú', N'DangHieuLuc', 'NV04', 'PC0004', 'CS01', 'NV01'),
-('HD0005', '2026-07-29', '2026-02-01', '2026-07-31', 1, 1860000, N'Đã thanh lý, chờ hoàn tất đối soát', N'DaThanhLy', 'NV03', 'PC0005', 'CS01', 'NV01'),
-('HD0006', '2026-07-29', '2026-08-01', '2027-01-31', 1, 3800000, N'Hợp đồng bị hủy', N'DaHuy', 'NV04', 'PC0006', 'CS01', 'NV01'),
+('HD0005', '2026-07-29', '2026-02-01', '2026-07-31', 1, 1860000, N'Đã thanh lý, chờ hoàn tất đối soát', N'DaThanhLy', 'NV04', 'PC0005', 'CS01', 'NV05'),
+('HD0006', '2026-07-29', '2026-08-01', '2027-01-31', 1, 3800000, N'Hợp đồng bị hủy', N'DaHuy', 'NV04', 'PC0006', 'CS01', 'NV05'),
 -- UC 1.4.23: đang hiệu lực, đã có phiếu đối soát (hoàn cọc, không nợ) — chờ thanh lý
 ('HD0007', '2026-02-01', '2026-02-01', '2026-07-31', 1, 1900000, N'Đã đối soát, chờ thanh lý', N'DangHieuLuc', 'NV03', 'PC0010', 'CS01', 'NV01');
 GO
@@ -211,10 +211,10 @@ VALUES
 ('LH0002', '2026-07-21', '09:30:00', N'XemPhong', N'DaHuy', 'PDK0002', NULL, NULL, 'NV03', 'CN01'),
 ('LH0003', '2026-07-22', '10:00:00', N'XemPhong', N'VangMat', 'PDK0003', NULL, NULL, 'NV03', 'CN01'),
 ('LH0004', '2026-07-23', '10:30:00', N'XemPhong', N'DaHoanThanh', 'PDK0004', 'PC0001', 'HD0001', 'NV03', 'CN01'),
-('LH0005', '2026-07-24', '11:00:00', N'NhanPhong', N'DaCheckin', 'PDK0005', 'PC0002', 'HD0002', 'NV04', 'CN02'),
+('LH0005', '2026-07-24', '11:00:00', N'NhanPhong', N'DaCheckin', 'PDK0005', 'PC0002', 'HD0002', 'NV03', 'CN01'),
 ('LH0006', '2026-07-25', '11:30:00', N'XemPhong', N'DaHoanThanh', 'PDK0006', 'PC0003', 'HD0003', 'NV03', 'CN01'),
 ('LH0007', '2026-07-26', '13:00:00', N'NhanPhong', N'DaCheckin', 'PDK0007', 'PC0004', 'HD0004', 'NV03', 'CN01'),
-('LH0008', '2026-07-27', '14:00:00', N'TraPhong', N'DaHoanThanh', 'PDK0008', 'PC0005', 'HD0005', 'NV03', 'CN01'),
+('LH0008', '2026-07-27', '14:00:00', N'TraPhong', N'DaHoanThanh', 'PDK0008', 'PC0005', 'HD0005', 'NV04', 'CN02'),
 ('LH0009', '2026-07-28', '14:30:00', N'TraPhong', N'DaHoanThanh', 'PDK0009', 'PC0006', 'HD0006', 'NV04', 'CN02'),
 -- Lịch trả phòng trong ngày (phục vụ UC 1.4.17 Lập biên bản thu hồi tài sản)
 ('LH0010', CAST(GETDATE() AS DATE), '09:00:00', N'TraPhong', N'DaXacNhan', NULL, 'PC0004', 'HD0004', 'NV03', 'CN01'),

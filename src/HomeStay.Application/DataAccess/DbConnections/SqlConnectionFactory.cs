@@ -18,6 +18,14 @@ namespace HomeStay.Application.DataAccess.DbConnections
             var connectionString = _configuration.GetConnectionString("DefaultConnection");
             var connection = new SqlConnection(connectionString);
             connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = """
+                EXEC sys.sp_set_session_context @key=N'MaNV', @value=@MaNV;
+                EXEC sys.sp_set_session_context @key=N'BoQuaPhamVi', @value=@BoQuaPhamVi;
+                """;
+            command.Parameters.AddWithValue("@MaNV", (object?)PhamViThucThi.MaNV ?? DBNull.Value);
+            command.Parameters.AddWithValue("@BoQuaPhamVi", PhamViThucThi.BoQuaPhamVi ? 1 : 0);
+            command.ExecuteNonQuery();
             return connection;
         }
     }

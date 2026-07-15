@@ -6,6 +6,7 @@ namespace HomeStay.Application.BusinessLogic;
 
 public sealed class PhieuHoanCoc
 {
+    public static Task<bool> ThamChieuChungTu(string tenTep) => PhieuHoanCocDB.ThamChieuChungTu(tenTep);
     public string MaPHC { get; set; } = string.Empty;
     public decimal SoTienHoan { get; set; }
     public string? PhuongThucHoan { get; set; }

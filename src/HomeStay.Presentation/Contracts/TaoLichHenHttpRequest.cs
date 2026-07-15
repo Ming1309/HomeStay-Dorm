@@ -10,8 +10,6 @@ public sealed class TaoLichHenHttpRequest
     [Required]
     public string MaChungTu { get; set; } = string.Empty;
 
-    public string MaCN { get; set; } = string.Empty;
-
     [Required]
     public DateTime NgayHen { get; set; }
 

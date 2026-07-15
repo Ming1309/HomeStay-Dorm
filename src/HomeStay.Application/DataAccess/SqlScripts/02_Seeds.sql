@@ -20,7 +20,9 @@ VALUES
 ('NV01', N'Nguyễn Văn Quản Lý', '0911111111', N'QuanLy', 'CN01'),
 ('NV02', N'Trần Thị Kế Toán', '0922222222', N'KeToan', 'CN01'),
 ('NV03', N'Lê Văn Sale', '0933333333', N'Sale', 'CN01'),
-('NV04', N'Phạm Sale Hai', '0944444444', N'Sale', 'CN02');
+('NV04', N'Phạm Sale Hai', '0944444444', N'Sale', 'CN02'),
+('NV05', N'Võ Minh Quản Lý', '0955555555', N'QuanLy', 'CN02'),
+('NV06', N'Đặng Thu Kế Toán', '0966666666', N'KeToan', 'CN02');
 GO
 
 -- 3. Loại Phòng

@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 [Route("api/asset-recovery")]
 public sealed class BienBanGiaoNhanController(
     LapBienBanThuHoiTaiSan lapBienBanThuHoi,
-    IMinhChungThuHoiStorage minhChungStorage) : ControllerBase
+    IMinhChungThuHoiStorage minhChungStorage,
+    KiemTraQuyenChungTu kiemTraQuyen) : ControllerBase
 {
     [Authorize(Roles = "QuanLy")]
     [HttpGet("contracts")]
@@ -107,6 +108,8 @@ public sealed class BienBanGiaoNhanController(
     [HttpGet("proofs/{tenTep}")]
     public async Task<IActionResult> DownloadProof(string tenTep, CancellationToken cancellationToken)
     {
+        if (!await kiemTraQuyen.DuocDocThuHoi(tenTep, User.FindFirstValue("MaNV")))
+            return NotFound(new { Message = "Không tìm thấy ảnh minh chứng." });
         var noiDung = await minhChungStorage.Doc(tenTep, cancellationToken);
         return noiDung is null
             ? NotFound(new { Message = "Không tìm thấy ảnh minh chứng." })

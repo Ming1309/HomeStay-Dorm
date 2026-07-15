@@ -43,7 +43,8 @@ public sealed class PhieuDangKyController(LapPhieuDangKy lapPhieuDangKy) : Contr
     {
         try
         {
-            var phieus = await lapPhieuDangKy.TimKiemPhieuDangKy(sdt, soGiayTo, email, hoTen, maPDK);
+            var phieus = await lapPhieuDangKy.TimKiemPhieuDangKy(
+                sdt, soGiayTo, email, hoTen, maPDK, User.FindFirstValue("MaNV"));
             return Ok(phieus);
         }
         catch (InvalidOperationException ex) { return BadRequest(new { Message = ex.Message }); }
@@ -53,7 +54,7 @@ public sealed class PhieuDangKyController(LapPhieuDangKy lapPhieuDangKy) : Contr
     [HttpGet("{id}")]
     public async Task<IActionResult> LayChiTietPhieuDangKy(string id)
     {
-        var phieu = await lapPhieuDangKy.LayChiTietPhieuDangKy(id);
+        var phieu = await lapPhieuDangKy.LayChiTietPhieuDangKy(id, User.FindFirstValue("MaNV"));
         return phieu is null
             ? NotFound(new { Message = "Không tìm thấy phiếu đăng ký." })
             : Ok(phieu);

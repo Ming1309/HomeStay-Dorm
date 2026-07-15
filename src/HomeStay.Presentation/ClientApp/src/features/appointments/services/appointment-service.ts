@@ -20,8 +20,6 @@ export type AppointmentDocument = {
   status: string;
 };
 
-export type BranchOption = { value: string; label: string };
-
 export const APPOINTMENT_TYPES = [
   { value: "view-room", label: "Xem phòng", helper: "Cho phép tìm kiếm Phiếu đăng ký." },
   { value: "checkin", label: "Nhận phòng", helper: "Cho phép tìm kiếm Phiếu cọc đã duyệt." },
@@ -53,11 +51,6 @@ const documentSchema = z.object({
   hoTen: z.string().nullish(),
   sdt: z.string().nullish(),
   trangThai: z.string().min(1),
-});
-
-const branchSchema = z.object({
-  maCN: z.string().min(1),
-  tenChiNhanh: z.string().min(1),
 });
 
 const errorSchema = z.object({
@@ -114,7 +107,6 @@ export const appointmentService = {
   async create(data: {
     loaiLichHen: "XemPhong" | "NhanPhong" | "TraPhong";
     maChungTu: string;
-    maCN: string;
     ngayHen: string;
     gioHen: string;
   }): Promise<AppointmentRecord> {
@@ -150,15 +142,6 @@ export const appointmentService = {
         status: value.trangThai,
       };
     });
-  },
-
-  async getBranches(): Promise<BranchOption[]> {
-    const values = await readJson(
-      await fetch("/api/branches"),
-      z.array(branchSchema),
-      "Không thể tải danh sách chi nhánh.",
-    );
-    return values.map((value) => ({ value: value.maCN, label: value.tenChiNhanh }));
   },
 
   async update(id: string, data: {

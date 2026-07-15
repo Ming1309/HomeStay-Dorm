@@ -15,15 +15,17 @@ public sealed class PhieuDangKy
     public string TrangThai { get; set; } = "DangXuLy";
     public string MaKH { get; set; } = string.Empty;
     public string? MaNV { get; set; }
+    public string MaCN { get; set; } = string.Empty;
     public KhachHang? KhachHang { get; set; }
 
-    public static PhieuDangKy TaoMoi(string maKH, string? maNV, string? khuVuc, int? soLuongNguoi,
+    public static PhieuDangKy TaoMoi(string maKH, string? maNV, string maCN, string? khuVuc, int? soLuongNguoi,
         string? loaiDichVu, decimal? mucGia, DateTime? thoiGianDuKienVao, int? thoiHanThue,
         string? yeuCauKhac, DateTime thoiDiem) => new()
     {
         MaPDK = $"PDK{thoiDiem:yyyyMMddHHmmssfff}",
         MaKH = maKH,
         MaNV = maNV,
+        MaCN = maCN,
         KhuVuc = khuVuc,
         SoLuongNguoi = soLuongNguoi,
         LoaiDichVu = loaiDichVu,
@@ -38,15 +40,17 @@ public sealed class PhieuDangKy
     {
         if (string.IsNullOrWhiteSpace(MaKH))
             throw new InvalidOperationException("Thông tin khách hàng không hợp lệ.");
+        if (string.IsNullOrWhiteSpace(MaCN))
+            throw new InvalidOperationException("Phiếu đăng ký chưa có chi nhánh.");
         if (ThoiGianDuKienVao.HasValue && ThoiGianDuKienVao.Value.Date < thoiDiemHienTai.Date)
             throw new InvalidOperationException("Thời gian dự kiến vào ở không được trong quá khứ.");
     }
 
-    public static Task<PhieuDangKy?> DocChiTiet(string maPDK) => PhieuDangKyDB.LayTheoMa(maPDK);
+    public static Task<PhieuDangKy?> DocChiTiet(string maPDK, string maCN) => PhieuDangKyDB.LayTheoMa(maPDK, maCN);
 
     public static Task<IReadOnlyList<PhieuDangKy>> TimKiem(
-        string? sdt, string? soGiayTo, string? email, string? hoTen = null, string? maPDK = null) =>
-        PhieuDangKyDB.TimKiem(sdt, soGiayTo, email, hoTen, maPDK);
+        string maCN, string? sdt, string? soGiayTo, string? email, string? hoTen = null, string? maPDK = null) =>
+        PhieuDangKyDB.TimKiem(maCN, sdt, soGiayTo, email, hoTen, maPDK);
 
     public Task Them() => PhieuDangKyDB.Them(this);
 }

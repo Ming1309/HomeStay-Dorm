@@ -12,9 +12,10 @@ public sealed class TraCuuLichHen
         _taoPhienDuLieu = taoPhienDuLieu;
     }
 
-    public async Task<IReadOnlyList<LichHen>> ThucHien(string? keyword, DateTime? date, TimeSpan? time)
+    public async Task<IReadOnlyList<LichHen>> ThucHien(string? keyword, DateTime? date, TimeSpan? time, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
-        return await LichHenDB.TraCuuLichHenTongQuat(keyword, date, time);
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        return await LichHenDB.TraCuuLichHenTongQuat(nhanVien.MaCN, keyword, date, time);
     }
 }

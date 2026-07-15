@@ -18,28 +18,31 @@ public sealed class TinhTienCoc
         _cauHinhHetHan = cauHinhHetHan;
     }
 
-    public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null)
+    public async Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
-        return await PhieuCoc.LayDanhSachKhoiTao(text);
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        return await PhieuCoc.LayDanhSachKhoiTao(nhanVien.MaCN, text);
     }
 
-    public async Task<PhieuCoc> LayChiTietVaTinhTien(string maPhieuCoc)
+    public async Task<PhieuCoc> LayChiTietVaTinhTien(string maPhieuCoc, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
-        var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
+        var nhanVien = await NhanVien.DocPhamVi(maNV);
+        var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc, nhanVien.MaCN)
             ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
         phieu.TinhTienDuKien();
         return phieu;
     }
 
-    public async Task<PhieuCoc> XacNhanTinhTien(string maPhieuCoc)
+    public async Task<PhieuCoc> XacNhanTinhTien(string maPhieuCoc, string? maNV)
     {
         using var phien = _taoPhienDuLieu();
         phien.BatDauGiaoDich();
         try
         {
-            var phieu = await PhieuCoc.DocChiTiet(maPhieuCoc)
+            var nhanVien = await NhanVien.DocPhamVi(maNV);
+            var phieu = await PhieuCoc.DocChiTietChoCapNhat(maPhieuCoc, nhanVien.MaCN)
                 ?? throw new KeyNotFoundException("Không tìm thấy phiếu cọc.");
             phieu.XacNhanTinhTien(
                 _timeProvider.GetLocalNow().DateTime,

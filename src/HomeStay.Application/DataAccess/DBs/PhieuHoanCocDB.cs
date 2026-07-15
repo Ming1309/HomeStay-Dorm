@@ -8,6 +8,12 @@ namespace HomeStay.Application.DataAccess.DBs;
 
 public static class PhieuHoanCocDB
 {
+    public static async Task<bool> ThamChieuChungTu(string tenTep)
+    {
+        const string sql = "SELECT COUNT(1) FROM PhieuHoanCoc WHERE MinhChung=@TenTep OR MinhChung LIKE '%/' + @TenTep";
+        return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(sql,
+            new { TenTep = tenTep }, PhienDuLieu.Session.Transaction) > 0;
+    }
     public static async Task InsertPhieuHoanCoc(PhieuHoanCoc phc)
     {
         const string sql = """

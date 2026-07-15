@@ -16,10 +16,11 @@ public sealed class LichHen
     public string? MaCN { get; set; }
     public KhachHang? KhachHang { get; set; }
 
-    public static Task<IReadOnlyList<LichHen>> LayDanhSachKhachChoCoc(string? text = null) =>
-        LichHenDB.LayDanhSachKhachChoCoc(text);
+    public static Task<IReadOnlyList<LichHen>> LayDanhSachKhachChoCoc(string maCN, string? text = null) =>
+        LichHenDB.LayDanhSachKhachChoCoc(maCN, text);
 
-    public static Task<LichHen?> DocChiTiet(string maLichHen) => LichHenDB.DocChiTiet(maLichHen);
+    public static Task<LichHen?> DocChiTiet(string maLichHen, string maCN, bool khoaCapNhat = false) =>
+        LichHenDB.DocChiTiet(maLichHen, maCN, khoaCapNhat);
 
     public static Task<LichHen?> DocTheoMaPhieuCoc(string maPhieuCoc) => LichHenDB.DocTheoMaPhieuCoc(maPhieuCoc);
 
@@ -76,9 +77,9 @@ public sealed class LichHen
     {
         bool hopLe = LoaiLichHen switch
         {
-            "XemPhong" => await PhieuDangKyDB.KiemTraConHopLe(MaPDK!),
-            "NhanPhong" => await PhieuCocDB.KiemTraConHopLe(MaPhieuCoc!),
-            "TraPhong" => await HopDongDB.KiemTraConHopLe(MaHD!),
+            "XemPhong" => await PhieuDangKyDB.KiemTraConHopLe(MaPDK!, MaCN!),
+            "NhanPhong" => await PhieuCocDB.KiemTraConHopLe(MaPhieuCoc!, MaCN!),
+            "TraPhong" => await HopDongDB.KiemTraConHopLe(MaHD!, MaCN!),
             _ => false
         };
 

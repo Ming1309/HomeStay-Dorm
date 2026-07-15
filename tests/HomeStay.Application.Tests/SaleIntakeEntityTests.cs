@@ -11,7 +11,7 @@ public sealed class SaleIntakeEntityTests
     public void PhieuDangKy_TuChoiNgayDuKienTrongQuaKhu()
     {
         var phieu = PhieuDangKy.TaoMoi(
-            "KH001", "NV001", null, 1, null, null, Now.AddDays(-1), null, null, Now);
+            "KH001", "NV001", "CN001", null, 1, null, null, Now.AddDays(-1), null, null, Now);
 
         var error = Assert.Throws<InvalidOperationException>(() => phieu.KiemTraDieuKien(Now));
 
@@ -24,7 +24,7 @@ public sealed class SaleIntakeEntityTests
     public void PhieuDangKy_ChapNhanNgayDuKienHomNayHoacTuongLai(int soNgay)
     {
         var phieu = PhieuDangKy.TaoMoi(
-            "KH001", "NV001", null, 1, null, null, Now.AddDays(soNgay), null, null, Now);
+            "KH001", "NV001", "CN001", null, 1, null, null, Now.AddDays(soNgay), null, null, Now);
 
         phieu.KiemTraDieuKien(Now);
     }

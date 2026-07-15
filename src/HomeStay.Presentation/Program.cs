@@ -4,6 +4,8 @@ using HomeStay.Application.DataAccess.FileStorage;
 using HomeStay.Presentation.HostedServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +46,8 @@ builder.Services.AddSingleton<IQuyDinhFileStorage>(
 // Register Business Logic dependencies
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton(cauHinhHetHanPhieuCoc);
-builder.Services.AddHostedService<TuDongHuyPhieuCocQuaHanWorker>();
+if (!builder.Environment.IsEnvironment("Testing"))
+    builder.Services.AddHostedService<TuDongHuyPhieuCocQuaHanWorker>();
 builder.Services.AddScoped<LapPhieuCoc>();
 builder.Services.AddScoped<TinhTienCoc>();
 
@@ -57,6 +60,7 @@ builder.Services.AddScoped<XacNhanPhieuDoiSoat>();
 builder.Services.AddScoped<ThanhToanTraPhong>();
 builder.Services.AddScoped<LapPhieuHoanCoc>();
 builder.Services.AddScoped<XuLyThanhToanHopDong>();
+builder.Services.AddScoped<KiemTraQuyenChungTu>();
 
 // Cọc / hồ sơ / lịch hẹn
 builder.Services.AddScoped<NhapHoSoLuuTru>();
@@ -87,16 +91,45 @@ builder.Services.AddScoped<LapBienBanBanGiao>();
 
 var app = builder.Build();
 
-app.Lifetime.ApplicationStarted.Register(() =>
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    _ = Task.Run(() => app.Services.GetRequiredService<AuthDatabaseInitializer>().TryInitializeAsync());
-});
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        _ = Task.Run(() => app.Services.GetRequiredService<AuthDatabaseInitializer>().TryInitializeAsync());
+    });
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseAuthentication();
+app.Use(async (context, next) =>
+{
+    using var phamVi = PhamViThucThi.BatDau(
+        context.User.FindFirstValue("MaNV"),
+        context.User.FindFirstValue(ClaimTypes.Role));
+    await next();
+});
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (SqlException ex) when (!context.Response.HasStarted && ex.Number == 33504)
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        await context.Response.WriteAsJsonAsync(new { Message = "Không tìm thấy hồ sơ." });
+    }
+    catch (SqlException ex) when (!context.Response.HasStarted && ex.Number is 2601 or 2627 or 1205)
+    {
+        context.Response.StatusCode = StatusCodes.Status409Conflict;
+        await context.Response.WriteAsJsonAsync(new { Message = "Dữ liệu vừa được xử lý bởi yêu cầu khác. Vui lòng tải lại." });
+    }
+});
 app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

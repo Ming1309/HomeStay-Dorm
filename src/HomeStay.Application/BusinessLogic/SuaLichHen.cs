@@ -19,8 +19,9 @@ public sealed class SuaLichHen
         phien.BatDauGiaoDich();
         try
         {
-            var lichHen = await LichHen.DocChiTiet(maLH)
-                ?? throw new InvalidOperationException("Không tìm thấy lịch hẹn để cập nhật.");
+            var nhanVien = await NhanVien.DocPhamVi(maNV);
+            var lichHen = await LichHen.DocChiTiet(maLH, nhanVien.MaCN, khoaCapNhat: true)
+                ?? throw new KeyNotFoundException("Không tìm thấy lịch hẹn.");
 
             lichHen.CapNhatThongTin(ngay, gio, maNV, trangThai);
 

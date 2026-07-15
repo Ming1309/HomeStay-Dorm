@@ -1,5 +1,12 @@
 # Bộ dữ liệu mẫu
 
+## Phạm vi chi nhánh
+
+- `CN01`: `sale`, `quanly`, `ketoan`.
+- `CN02`: `sale.cn02`, `quanly.cn02`, `ketoan.cn02` (dùng cùng mật khẩu demo với vai trò tương ứng ở CN01).
+- `PhieuDangKy`, `LichHen` và `PhieuCoc` giữ snapshot `MaCN`; chứng từ downstream suy ra chi nhánh qua `PhieuCoc`.
+- `PC0001`–`PC0004`, `PC0007`, `PC0009`, `PC0010` thuộc CN01; `PC0005`, `PC0006`, `PC0008` thuộc CN02 để kiểm tra queue không rò chéo.
+
 ## Thứ tự chạy (database mới / reset)
 
 Trên database mới, chạy lần lượt:

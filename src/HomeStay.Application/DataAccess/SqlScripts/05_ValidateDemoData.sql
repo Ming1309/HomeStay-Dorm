@@ -159,6 +159,40 @@ IF EXISTS (
     THROW 51010, 'Phieu coc cho doi chieu khong duoc co PhieuThu.', 1;
 GO
 
+IF EXISTS (
+    SELECT 1 FROM PhieuDangKy pdk LEFT JOIN ChiNhanh cn ON cn.MaCN=pdk.MaCN
+    WHERE pdk.MaCN IS NULL OR cn.MaCN IS NULL
+    UNION ALL
+    SELECT 1 FROM PhieuCoc pc LEFT JOIN ChiNhanh cn ON cn.MaCN=pc.MaCN
+    WHERE pc.MaCN IS NULL OR cn.MaCN IS NULL
+    UNION ALL
+    SELECT 1 FROM LichHen lh LEFT JOIN ChiNhanh cn ON cn.MaCN=lh.MaCN
+    WHERE lh.MaCN IS NULL OR cn.MaCN IS NULL
+)
+    THROW 51023, 'Snapshot chi nhanh null hoac tham chieu khong ton tai.', 1;
+GO
+
+IF EXISTS (
+    SELECT 1 FROM PhieuCoc pc INNER JOIN Phong p ON p.MaPhong=pc.MaPhong WHERE pc.MaCN<>p.MaCN
+    UNION ALL
+    SELECT 1 FROM LichHen lh INNER JOIN PhieuDangKy pdk ON pdk.MaPDK=lh.MaPDK WHERE lh.MaCN<>pdk.MaCN
+    UNION ALL
+    SELECT 1 FROM LichHen lh INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc=lh.MaPhieuCoc WHERE lh.MaCN<>pc.MaCN
+    UNION ALL
+    SELECT 1 FROM LichHen lh INNER JOIN HopDong hd ON hd.MaHD=lh.MaHD
+        INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc=hd.MaPhieuCoc WHERE lh.MaCN<>pc.MaCN
+)
+    THROW 51024, 'Chung tu, lich hen va phong khong cung snapshot chi nhanh.', 1;
+GO
+
+IF EXISTS (
+    SELECT MaNV,NgayHen,GioHen FROM LichHen
+    WHERE MaNV IS NOT NULL AND TrangThai NOT IN (N'DaHuy',N'DaHoanThanh')
+    GROUP BY MaNV,NgayHen,GioHen HAVING COUNT(*)>1
+)
+    THROW 51025, 'Nhan vien co trung lich hen dang hoat dong.', 1;
+GO
+
 -- Phiếu đã thanh toán phải có đúng một phiếu thu dương và khớp toàn bộ tiền cọc.
 IF EXISTS (
     SELECT 1

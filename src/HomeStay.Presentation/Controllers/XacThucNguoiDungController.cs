@@ -58,5 +58,7 @@ public sealed class XacThucNguoiDungController(XacThucNguoiDung xacThuc) : Contr
         hoTen = taiKhoan.NhanVien.HoTen,
         maNV = taiKhoan.MaNV,
         vaiTro = taiKhoan.NhanVien.VaiTro,
+        maCN = taiKhoan.NhanVien.MaCN,
+        tenChiNhanh = taiKhoan.NhanVien.TenChiNhanh,
     };
 }

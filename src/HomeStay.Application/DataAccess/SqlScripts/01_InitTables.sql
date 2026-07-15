@@ -143,7 +143,8 @@ CREATE TABLE PhieuDangKy (
     YeuCauKhac        NVARCHAR(500)  NULL,
     TrangThai         NVARCHAR(30)   NOT NULL,
     MaKH              VARCHAR(20)    NOT NULL,
-    MaNV              VARCHAR(20)    NULL
+    MaNV              VARCHAR(20)    NULL,
+    MaCN              VARCHAR(20)    NOT NULL
 );
 GO
 
@@ -165,7 +166,8 @@ CREATE TABLE PhieuCoc (
     TrangThai    NVARCHAR(20)   NOT NULL,
     MaKH         VARCHAR(20)    NOT NULL,
     MaPhong      VARCHAR(20)    NOT NULL,
-    MaNV         VARCHAR(20)    NULL
+    MaNV         VARCHAR(20)    NULL,
+    MaCN         VARCHAR(20)    NOT NULL
 );
 GO
 
@@ -215,7 +217,7 @@ CREATE TABLE LichHen (
     MaPhieuCoc  VARCHAR(20)  NULL,
     MaHD        VARCHAR(20)  NULL,
     MaNV        VARCHAR(20)  NULL,
-    MaCN        VARCHAR(20)  NULL
+    MaCN        VARCHAR(20)  NOT NULL
 );
 GO
 
@@ -447,6 +449,12 @@ CREATE INDEX IX_HopDong_QuyDinh_MaQD
 CREATE INDEX IX_PhieuCoc_ChoThanhToan_HanThanhToan
     ON PhieuCoc (HanThanhToan, MaPhieuCoc)
     WHERE TrangThai = N'ChoThanhToan';
+CREATE INDEX IX_PhieuDangKy_MaCN_TrangThai ON PhieuDangKy(MaCN, TrangThai);
+CREATE INDEX IX_PhieuCoc_MaCN_TrangThai ON PhieuCoc(MaCN, TrangThai);
+CREATE INDEX IX_LichHen_MaCN_TrangThai ON LichHen(MaCN, TrangThai);
+CREATE UNIQUE INDEX UX_LichHen_NhanVien_ThoiGian_DangHoatDong
+    ON LichHen(MaNV, NgayHen, GioHen)
+    WHERE MaNV IS NOT NULL AND TrangThai <> N'DaHuy' AND TrangThai <> N'DaHoanThanh';
 GO
 
 
@@ -675,6 +683,8 @@ ALTER TABLE PhieuDangKy ADD CONSTRAINT FK_PhieuDangKy_KhachHang
     FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH);
 ALTER TABLE PhieuDangKy ADD CONSTRAINT FK_PhieuDangKy_NhanVien
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
+ALTER TABLE PhieuDangKy ADD CONSTRAINT FK_PhieuDangKy_ChiNhanh
+    FOREIGN KEY (MaCN) REFERENCES ChiNhanh(MaCN);
 
 
 
@@ -688,6 +698,8 @@ ALTER TABLE PhieuCoc ADD CONSTRAINT FK_PhieuCoc_NhanVien
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
 ALTER TABLE PhieuCoc ADD CONSTRAINT FK_PhieuCoc_NhanVienHuy
     FOREIGN KEY (MaNVHuy) REFERENCES NhanVien(MaNV);
+ALTER TABLE PhieuCoc ADD CONSTRAINT FK_PhieuCoc_ChiNhanh
+    FOREIGN KEY (MaCN) REFERENCES ChiNhanh(MaCN);
 
 -- ThanhVienDangKy
 ALTER TABLE ThanhVienDangKy ADD CONSTRAINT FK_ThanhVienDangKy_PhieuCoc
@@ -826,6 +838,183 @@ ALTER TABLE ThongBao_NguoiDoc ADD CONSTRAINT FK_ThongBao_NguoiDoc_ThongBao
     FOREIGN KEY (MaTB) REFERENCES ThongBao(MaTB);
 ALTER TABLE ThongBao_NguoiDoc ADD CONSTRAINT FK_ThongBao_NguoiDoc_NhanVien
     FOREIGN KEY (MaNV) REFERENCES NhanVien(MaNV);
+GO
+
+-- Phạm vi chi nhánh được áp tại database để mọi query cũ/mới đều được cô lập.
+CREATE FUNCTION dbo.fn_DuocPhepChiNhanh(@MaCN VARCHAR(20))
+RETURNS TABLE WITH SCHEMABINDING
+AS RETURN
+    SELECT 1 AS DuocPhep
+    WHERE ISNULL(CONVERT(INT, SESSION_CONTEXT(N'BoQuaPhamVi')), 1) = 1
+       OR EXISTS (
+            SELECT 1 FROM dbo.NhanVien nv
+            WHERE nv.MaNV = CONVERT(VARCHAR(20), SESSION_CONTEXT(N'MaNV'))
+              AND nv.MaCN = @MaCN
+       );
+GO
+
+CREATE FUNCTION dbo.fn_DuocPhepPhieuCoc(@MaPhieuCoc VARCHAR(20))
+RETURNS TABLE WITH SCHEMABINDING
+AS RETURN
+    SELECT 1 AS DuocPhep
+    WHERE ISNULL(CONVERT(INT, SESSION_CONTEXT(N'BoQuaPhamVi')), 1) = 1
+       OR EXISTS (
+            SELECT 1 FROM dbo.PhieuCoc pc
+            INNER JOIN dbo.NhanVien nv ON nv.MaCN=pc.MaCN
+            WHERE pc.MaPhieuCoc=@MaPhieuCoc
+              AND nv.MaNV=CONVERT(VARCHAR(20), SESSION_CONTEXT(N'MaNV'))
+       );
+GO
+
+CREATE FUNCTION dbo.fn_DuocPhepHopDong(@MaHD VARCHAR(20))
+RETURNS TABLE WITH SCHEMABINDING
+AS RETURN
+    SELECT 1 AS DuocPhep
+    WHERE ISNULL(CONVERT(INT, SESSION_CONTEXT(N'BoQuaPhamVi')), 1) = 1
+       OR EXISTS (
+            SELECT 1 FROM dbo.HopDong hd
+            INNER JOIN dbo.PhieuCoc pc ON pc.MaPhieuCoc=hd.MaPhieuCoc
+            INNER JOIN dbo.NhanVien nv ON nv.MaCN=pc.MaCN
+            WHERE hd.MaHD=@MaHD
+              AND nv.MaNV=CONVERT(VARCHAR(20), SESSION_CONTEXT(N'MaNV'))
+       );
+GO
+
+CREATE FUNCTION dbo.fn_DuocPhepPDS(@MaPDS VARCHAR(20))
+RETURNS TABLE WITH SCHEMABINDING
+AS RETURN
+    SELECT 1 AS DuocPhep
+    WHERE ISNULL(CONVERT(INT, SESSION_CONTEXT(N'BoQuaPhamVi')), 1) = 1
+       OR EXISTS (
+            SELECT 1 FROM dbo.PhieuDoiSoat pds
+            INNER JOIN dbo.PhieuCoc pc ON pc.MaPhieuCoc=pds.MaPhieuCoc
+            INNER JOIN dbo.NhanVien nv ON nv.MaCN=pc.MaCN
+            WHERE pds.MaPDS=@MaPDS
+              AND nv.MaNV=CONVERT(VARCHAR(20), SESSION_CONTEXT(N'MaNV'))
+       );
+GO
+
+CREATE FUNCTION dbo.fn_DuocPhepPhong(@MaPhong VARCHAR(20))
+RETURNS TABLE WITH SCHEMABINDING
+AS RETURN
+    SELECT 1 AS DuocPhep
+    WHERE ISNULL(CONVERT(INT, SESSION_CONTEXT(N'BoQuaPhamVi')), 1) = 1
+       OR EXISTS (
+            SELECT 1 FROM dbo.Phong p INNER JOIN dbo.NhanVien nv ON nv.MaCN=p.MaCN
+            WHERE p.MaPhong=@MaPhong
+              AND nv.MaNV=CONVERT(VARCHAR(20), SESSION_CONTEXT(N'MaNV'))
+       );
+GO
+
+CREATE FUNCTION dbo.fn_DuocPhepBienBan(@MaBienBan VARCHAR(20))
+RETURNS TABLE WITH SCHEMABINDING
+AS RETURN
+    SELECT 1 AS DuocPhep
+    WHERE ISNULL(CONVERT(INT, SESSION_CONTEXT(N'BoQuaPhamVi')), 1) = 1
+       OR EXISTS (
+            SELECT 1 FROM dbo.BienBanGiaoNhan bb
+            INNER JOIN dbo.HopDong hd ON hd.MaHD=bb.MaHD
+            INNER JOIN dbo.PhieuCoc pc ON pc.MaPhieuCoc=hd.MaPhieuCoc
+            INNER JOIN dbo.NhanVien nv ON nv.MaCN=pc.MaCN
+            WHERE bb.MaBienBan=@MaBienBan
+              AND nv.MaNV=CONVERT(VARCHAR(20), SESSION_CONTEXT(N'MaNV'))
+       );
+GO
+
+CREATE FUNCTION dbo.fn_DuocPhepHoaDon(@MaHoaDon VARCHAR(20))
+RETURNS TABLE WITH SCHEMABINDING
+AS RETURN
+    SELECT 1 AS DuocPhep
+    WHERE ISNULL(CONVERT(INT, SESSION_CONTEXT(N'BoQuaPhamVi')), 1) = 1
+       OR EXISTS (
+            SELECT 1 FROM dbo.HoaDon h
+            INNER JOIN dbo.HopDong hd ON hd.MaHD=h.MaHD
+            INNER JOIN dbo.PhieuCoc pc ON pc.MaPhieuCoc=hd.MaPhieuCoc
+            INNER JOIN dbo.NhanVien nv ON nv.MaCN=pc.MaCN
+            WHERE h.MaHoaDon=@MaHoaDon
+              AND nv.MaNV=CONVERT(VARCHAR(20), SESSION_CONTEXT(N'MaNV'))
+       );
+GO
+
+CREATE FUNCTION dbo.fn_DuocPhepPhieuThu(
+    @MaPhieuCoc VARCHAR(20), @MaPDS VARCHAR(20), @MaHoaDon VARCHAR(20))
+RETURNS TABLE WITH SCHEMABINDING
+AS RETURN
+    SELECT 1 AS DuocPhep
+    WHERE ISNULL(CONVERT(INT, SESSION_CONTEXT(N'BoQuaPhamVi')), 1) = 1
+       OR EXISTS (
+            SELECT 1 FROM dbo.PhieuCoc pc
+            INNER JOIN dbo.NhanVien nv ON nv.MaCN=pc.MaCN
+            WHERE nv.MaNV=CONVERT(VARCHAR(20), SESSION_CONTEXT(N'MaNV'))
+              AND (
+                  pc.MaPhieuCoc=@MaPhieuCoc
+                  OR EXISTS (SELECT 1 FROM dbo.PhieuDoiSoat pds WHERE pds.MaPDS=@MaPDS AND pds.MaPhieuCoc=pc.MaPhieuCoc)
+                  OR EXISTS (SELECT 1 FROM dbo.HoaDon h INNER JOIN dbo.HopDong hd ON hd.MaHD=h.MaHD
+                             WHERE h.MaHoaDon=@MaHoaDon AND hd.MaPhieuCoc=pc.MaPhieuCoc)
+              )
+       );
+GO
+
+CREATE SECURITY POLICY dbo.ChiNhanhRootPolicy
+ADD FILTER PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.PhieuDangKy,
+ADD FILTER PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.PhieuCoc,
+ADD FILTER PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.LichHen,
+ADD FILTER PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.Phong,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.PhieuDangKy AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.PhieuCoc AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.LichHen AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.Phong AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.PhieuDangKy AFTER UPDATE,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.PhieuCoc AFTER UPDATE,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.LichHen AFTER UPDATE,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepChiNhanh(MaCN) ON dbo.Phong AFTER UPDATE
+WITH (STATE=ON);
+GO
+
+CREATE SECURITY POLICY dbo.ChiNhanhChungTuPolicy
+ADD FILTER PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.HopDong,
+ADD FILTER PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.PhieuDoiSoat,
+ADD FILTER PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.BienBanGiaoNhan,
+ADD FILTER PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.HoaDon,
+ADD FILTER PREDICATE dbo.fn_DuocPhepPDS(MaPDS) ON dbo.PhieuHoanCoc,
+ADD FILTER PREDICATE dbo.fn_DuocPhepPhieuThu(MaPhieuCoc,MaPDS,MaHoaDon) ON dbo.PhieuThu,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.HopDong AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.PhieuDoiSoat AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.BienBanGiaoNhan AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.HoaDon AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPDS(MaPDS) ON dbo.PhieuHoanCoc AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhieuThu(MaPhieuCoc,MaPDS,MaHoaDon) ON dbo.PhieuThu AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.HopDong AFTER UPDATE,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.PhieuDoiSoat AFTER UPDATE,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.BienBanGiaoNhan AFTER UPDATE,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.HoaDon AFTER UPDATE,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPDS(MaPDS) ON dbo.PhieuHoanCoc AFTER UPDATE,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhieuThu(MaPhieuCoc,MaPDS,MaHoaDon) ON dbo.PhieuThu AFTER UPDATE
+WITH (STATE=ON);
+GO
+
+CREATE SECURITY POLICY dbo.ChiNhanhChiTietPolicy
+ADD FILTER PREDICATE dbo.fn_DuocPhepPhong(MaPhong) ON dbo.Giuong,
+ADD FILTER PREDICATE dbo.fn_DuocPhepPhong(MaPhong) ON dbo.Phong_TaiSan,
+ADD FILTER PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.ThanhVienDangKy,
+ADD FILTER PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.ChiTietPhieuCoc,
+ADD FILTER PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.ChiTietHopDong,
+ADD FILTER PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.HopDong_DichVu,
+ADD FILTER PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.HopDong_QuyDinh,
+ADD FILTER PREDICATE dbo.fn_DuocPhepBienBan(MaBienBan) ON dbo.ChiTietGiaoNhan,
+ADD FILTER PREDICATE dbo.fn_DuocPhepHoaDon(MaHoaDon) ON dbo.ChiTietHoaDon,
+ADD FILTER PREDICATE dbo.fn_DuocPhepPDS(MaPDS) ON dbo.ChiTietDoiSoat,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhong(MaPhong) ON dbo.Giuong AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhong(MaPhong) ON dbo.Phong_TaiSan AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.ThanhVienDangKy AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPhieuCoc(MaPhieuCoc) ON dbo.ChiTietPhieuCoc AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.ChiTietHopDong AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.HopDong_DichVu AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepHopDong(MaHD) ON dbo.HopDong_QuyDinh AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepBienBan(MaBienBan) ON dbo.ChiTietGiaoNhan AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepHoaDon(MaHoaDon) ON dbo.ChiTietHoaDon AFTER INSERT,
+ADD BLOCK PREDICATE dbo.fn_DuocPhepPDS(MaPDS) ON dbo.ChiTietDoiSoat AFTER INSERT
+WITH (STATE=ON);
 GO
 
 PRINT N'✅ Tạo cơ sở dữ liệu HomeStay thành công!';

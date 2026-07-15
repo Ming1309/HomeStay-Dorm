@@ -20,27 +20,27 @@ public static class HopDongDB
             sql, new { MaPhieuCoc = maPhieuCoc }, PhienDuLieu.Session.Transaction) > 0;
     }
 
-    public static async Task<IReadOnlyList<dynamic>> TimKiemHopDongHieuLuc(string? tuKhoa)
+    public static async Task<IReadOnlyList<dynamic>> TimKiemHopDongHieuLuc(string maCN, string? tuKhoa)
     {
         const string sql = """
             SELECT hd.MaHD, hd.TrangThai, kh.MaKH, kh.HoTen, kh.SDT
             FROM HopDong hd
             JOIN PhieuCoc pc ON hd.MaPhieuCoc = pc.MaPhieuCoc
             JOIN KhachHang kh ON pc.MaKH = kh.MaKH
-            WHERE hd.TrangThai = N'DangHieuLuc'
+            WHERE pc.MaCN=@MaCN AND hd.TrangThai = N'DangHieuLuc'
               AND (@TuKhoa IS NULL OR hd.MaHD LIKE '%' + @TuKhoa + '%' OR kh.HoTen LIKE '%' + @TuKhoa + '%' OR kh.SDT LIKE '%' + @TuKhoa + '%')
             ORDER BY hd.NgayBatDau DESC
             """;
         var rows = await PhienDuLieu.Session.Connection.QueryAsync(
-            sql, new { TuKhoa = string.IsNullOrWhiteSpace(tuKhoa) ? null : tuKhoa.Trim() }, PhienDuLieu.Session.Transaction);
+            sql, new { MaCN = maCN, TuKhoa = string.IsNullOrWhiteSpace(tuKhoa) ? null : tuKhoa.Trim() }, PhienDuLieu.Session.Transaction);
         return rows.ToList();
     }
 
-    public static async Task<bool> KiemTraConHopLe(string maHD)
+    public static async Task<bool> KiemTraConHopLe(string maHD, string maCN)
     {
-        const string sql = "SELECT COUNT(1) FROM HopDong WHERE MaHD = @MaHD AND TrangThai = N'DangHieuLuc'";
+        const string sql = "SELECT COUNT(1) FROM HopDong hd INNER JOIN PhieuCoc pc ON pc.MaPhieuCoc=hd.MaPhieuCoc WHERE hd.MaHD=@MaHD AND pc.MaCN=@MaCN AND hd.TrangThai=N'DangHieuLuc'";
         return await PhienDuLieu.Session.Connection.ExecuteScalarAsync<int>(
-            sql, new { MaHD = maHD }, PhienDuLieu.Session.Transaction) > 0;
+            sql, new { MaHD = maHD, MaCN = maCN }, PhienDuLieu.Session.Transaction) > 0;
     }
 
     public static async Task<IReadOnlyList<HopDong>> TraCuu(string? tuKhoa, string? trangThai)

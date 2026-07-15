@@ -4,6 +4,7 @@ using HomeStay.Application.DataAccess.DBs;
 
 public sealed class ChiTietGiaoNhan
 {
+    public static Task<bool> ThamChieuMinhChung(string tenTep) => ChiTietGiaoNhanDB.ThamChieuMinhChung(tenTep);
     public static readonly HashSet<string> TinhTrangHopLe = new(StringComparer.OrdinalIgnoreCase)
     {
         "Mới",

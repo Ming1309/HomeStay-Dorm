@@ -1,37 +1,40 @@
 @startuml
-title TAO LICH HEN - SO DO TUAN TU
+title SO DO TUAN TU - TAO LICH HEN
 hide footbox
 autonumber
-actor "Nhan vien Sale" as Sale
-boundary SaleAppointmentPage as UI
-control LichHenController as API
-control TaoLichHen as UC
-entity LichHen as LH
-database PhienDuLieu as DB
+skinparam shadowing false
 
-Sale -> UI : Chon loai va tim chung tu
-UI -> API : GET /api/appointments/documents
-API -> UC : TaiDanhSachChungTu(loai, tuKhoa)
-UC --> UI : Chung tu dung trang thai
-Sale -> UI : Chon chi nhanh, ngay, gio va luu
-UI -> API : POST /api/appointments
-API -> API : Lay MaNV tu JWT claim
-alt Khong co MaNV claim
-  API --> UI : 401 Unauthorized
-else Co MaNV claim
-  API -> UC : LuuLichHen(..., maNV)
-  UC -> DB : BatDauGiaoDich()
-  UC -> LH : TaoMoi(..., thoiDiemTao)
-  UC -> LH : KiemTraThoiGianHopLe(thoiDiem)
-  UC -> LH : KiemTraHopLe()
-  UC -> LH : KiemTraTrungLich()
-  alt Hop le
-    UC -> LH : Them()
-    UC -> DB : Commit()
-    API --> UI : 200 OK
-  else Khong hop le / trung lich / loi ghi
-    UC -> DB : Rollback()
-    API --> UI : 400 / 500
-  end
+actor "Nhan vien Sale" as Sale
+boundary ": MHTaoLichHen" as MH
+control ": TaoLichHen" as TLH
+control ": NhanVien" as NV
+entity ": NhanVienDB" as NVDB
+control ": LichHen" as LH
+entity ": LichHenDB" as LHDB
+
+Sale -> MH : HienThi()
+Sale -> MH : TimChungTu(loai, tuKhoa)
+MH -> TLH : TaiDanhSachChungTu(loai, tuKhoa, maNV)
+TLH -> NV : DocPhamVi(maNV)
+NV -> NVDB : DocChiTiet(maNV)
+note right of TLH
+  Danh sach chung tu duoc loc theo MaCN
+  cua nhan vien doc lai tu database.
+end note
+
+Sale -> MH : LuuLichHen()
+MH -> TLH : LuuLichHen(loai, maChungTu, ngayHen, gioHen, maNV)
+TLH -> NV : DocPhamVi(maNV)
+NV -> NVDB : DocChiTiet(maNV)
+TLH -> LH : TaoMoi(loai, maChungTu, maCN, ngayHen, gioHen, maNV, thoiDiem)
+TLH -> LH : KiemTraThoiGianHopLe(thoiDiem)
+TLH -> LH : KiemTraHopLe()
+TLH -> LH : KiemTraTrungLich()
+LH -> LHDB : KiemTraLichTrungCaNhanVien(maNV, ngayHen, gioHen)
+alt Hop le va khong trung lich
+  TLH -> LH : Them()
+  LH -> LHDB : Them(lichHen)
+else Sai chi nhanh, trang thai hoac trung lich
+  TLH -> MH : HienThiLoi()
 end
 @enduml

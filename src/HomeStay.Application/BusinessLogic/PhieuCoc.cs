@@ -4,6 +4,8 @@ using HomeStay.Application.DataAccess.DBs;
 
 public sealed class PhieuCoc
 {
+    public static Task<bool> ThamChieuChungTu(string maCN, string tenTep) =>
+        PhieuCocDB.ThamChieuChungTu(maCN, tenTep);
     public string MaPhieuCoc { get; set; } = string.Empty;
     public DateTime? HanThanhToan { get; set; }
     public string HinhThucThue { get; set; } = string.Empty;
@@ -17,6 +19,7 @@ public sealed class PhieuCoc
     public string MaKH { get; set; } = string.Empty;
     public string MaPhong { get; set; } = string.Empty;
     public string? MaNV { get; set; }
+    public string MaCN { get; set; } = string.Empty;
     public DateTime? ThoiDiemHuy { get; set; }
     public string? MaNVHuy { get; set; }
     public bool DaDongTien { get; set; }
@@ -42,6 +45,7 @@ public sealed class PhieuCoc
             MaKH = khachHang.MaKH,
             MaPhong = phong.MaPhong,
             MaNV = maNhanVien,
+            MaCN = phong.MaCN,
             KhachHang = khachHang,
             Phong = phong,
             Giuongs = giuongs.ToList(),
@@ -49,8 +53,8 @@ public sealed class PhieuCoc
         };
     }
 
-    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string? text = null) =>
-        PhieuCocDB.LayDanhSachKhoiTao(text);
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachKhoiTao(string maCN, string? text = null) =>
+        PhieuCocDB.LayDanhSachKhoiTao(maCN, text);
 
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaDuyet(string? text = null) =>
         PhieuCocDB.LayDanhSachDaDuyet(text);
@@ -59,16 +63,24 @@ public sealed class PhieuCoc
         PhieuCocDB.LayPhieuCocDaThanhToanNhanPhongHomNay(text);
 
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoThanhToan(
-        DateTime thoiDiemHienTai, string? text = null) =>
-        PhieuCocDB.LayDanhSachChoThanhToan(thoiDiemHienTai, text);
+        string maCN, DateTime thoiDiemHienTai, string? text = null) =>
+        PhieuCocDB.LayDanhSachChoThanhToan(maCN, thoiDiemHienTai, text);
 
-    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string? text = null) =>
-        PhieuCocDB.LayDanhSachChoDoiChieu(text);
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDoiChieu(string maCN, string? text = null) =>
+        PhieuCocDB.LayDanhSachChoDoiChieu(maCN, text);
 
-    public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => PhieuCocDB.DocChiTiet(maPhieuCoc);
+    public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc, string maCN) => PhieuCocDB.DocChiTiet(maPhieuCoc, maCN);
 
+    public static Task<PhieuCoc?> DocChiTietChoCapNhat(string maPhieuCoc, string maCN) =>
+        PhieuCocDB.DocChiTietChoCapNhat(maPhieuCoc, maCN);
+
+    public static Task<PhieuCoc?> DocChiTietHeThong(string maPhieuCoc, bool khoaCapNhat = false) =>
+        PhieuCocDB.DocChiTietHeThong(maPhieuCoc, khoaCapNhat);
+
+    // Chỉ dành cho worker/use case nền chưa đại diện một nhân viên.
+    public static Task<PhieuCoc?> DocChiTiet(string maPhieuCoc) => DocChiTietHeThong(maPhieuCoc);
     public static Task<PhieuCoc?> DocChiTietChoCapNhat(string maPhieuCoc) =>
-        PhieuCocDB.DocChiTietChoCapNhat(maPhieuCoc);
+        DocChiTietHeThong(maPhieuCoc, khoaCapNhat: true);
 
     public static Task<IReadOnlyList<string>> LayDanhSachMaQuaHan(
         DateTime thoiDiemHienTai, int batchSize) =>
@@ -77,7 +89,8 @@ public sealed class PhieuCoc
     // ==========================================================
     // Methods from feat/lap-phieu-hoan-coc branch
     // ==========================================================
-    public static Task<PhieuCoc?> LayChiTietPhieuCoc(string maPhieuCoc) => DocChiTiet(maPhieuCoc);
+    public static Task<PhieuCoc?> LayChiTietPhieuCoc(string maPhieuCoc, string maCN) => DocChiTiet(maPhieuCoc, maCN);
+    public static Task<PhieuCoc?> LayChiTietPhieuCoc(string maPhieuCoc) => DocChiTietHeThong(maPhieuCoc);
 
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachChoDuyet(string? text = null) =>
         PhieuCocDB.LayDanhSachChoDuyet(text);
@@ -115,14 +128,16 @@ public sealed class PhieuCoc
     }
 
     public static Task<IReadOnlyList<PhieuCoc>> TraCuu(
-        string? maPhieuCoc, string? sdt, string? email, string? soGiayTo) =>
-        PhieuCocDB.TraCuu(maPhieuCoc, sdt, email, soGiayTo);
+        string maCN, string? maPhieuCoc, string? sdt, string? email, string? soGiayTo) =>
+        PhieuCocDB.TraCuu(maCN, maPhieuCoc, sdt, email, soGiayTo);
 
-    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachCoTheHuy(string? text = null) =>
-        PhieuCocDB.LayDanhSachCoTheHuy(text);
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachCoTheHuy(string maCN, string? text = null) =>
+        PhieuCocDB.LayDanhSachCoTheHuy(maCN, text);
 
+    public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoat(string maCN) =>
+        PhieuCocDB.LayDanhSachDaHuyChoDoiSoat(maCN);
     public static Task<IReadOnlyList<PhieuCoc>> LayDanhSachDaHuyChoDoiSoat() =>
-        PhieuCocDB.LayDanhSachDaHuyChoDoiSoat();
+        PhieuCocDB.LayDanhSachDaHuyChoDoiSoatHeThong();
 
     public void KiemTraCoTheDoiSoatHoanCoc()
     {

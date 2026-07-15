@@ -16,7 +16,7 @@ public sealed class LichHenController(LapPhieuCoc lapPhieuCoc, TaoLichHen taoLic
     {
         try
         {
-            return Ok(await taoLichHen.TaiDanhSachChungTu(type, keyword));
+            return Ok(await taoLichHen.TaiDanhSachChungTu(type, keyword, User.FindFirstValue("MaNV")));
         }
         catch (ArgumentException ex)
         {
@@ -36,7 +36,6 @@ public sealed class LichHenController(LapPhieuCoc lapPhieuCoc, TaoLichHen taoLic
             var lichHen = await taoLichHen.LuuLichHen(
                 request.LoaiLichHen,
                 request.MaChungTu,
-                request.MaCN,
                 request.NgayHen,
                 request.GioHen,
                 maNV);
@@ -49,23 +48,24 @@ public sealed class LichHenController(LapPhieuCoc lapPhieuCoc, TaoLichHen taoLic
     }
 
     [HttpGet("pending")]
-    public async Task<IActionResult> LayDanhSachKhachChoCoc() => Ok(await lapPhieuCoc.LayDanhSachKhachChoCoc());
+    public async Task<IActionResult> LayDanhSachKhachChoCoc() =>
+        Ok(await lapPhieuCoc.LayDanhSachKhachChoCoc(User.FindFirstValue("MaNV")));
 
     [HttpGet("search")]
     public async Task<IActionResult> TimKiemKhachChoCoc([FromQuery] string text) =>
-        Ok(await lapPhieuCoc.TimKiemKhachChoCoc(text));
+        Ok(await lapPhieuCoc.TimKiemKhachChoCoc(text, User.FindFirstValue("MaNV")));
 
     [HttpGet("{id}")]
     public async Task<IActionResult> LayChiTietLichHen(string id)
     {
-        var lichHen = await lapPhieuCoc.LayChiTietLichHen(id);
+        var lichHen = await lapPhieuCoc.LayChiTietLichHen(id, User.FindFirstValue("MaNV"));
         return lichHen is null ? NotFound(new { Message = "Không tìm thấy lịch hẹn" }) : Ok(lichHen);
     }
 
     [HttpGet("all")]
     public async Task<IActionResult> TraCuuLichHenTongQuat([FromQuery] string? keyword, [FromQuery] DateTime? date, [FromQuery] TimeSpan? time)
     {
-        return Ok(await traCuuLichHen.ThucHien(keyword, date, time));
+        return Ok(await traCuuLichHen.ThucHien(keyword, date, time, User.FindFirstValue("MaNV")));
     }
 
     [HttpPut("{id}")]
