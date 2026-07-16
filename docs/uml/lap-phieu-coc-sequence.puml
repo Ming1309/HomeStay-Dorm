@@ -52,6 +52,12 @@ Sale -> MH : Chon mot lich hen da xem phong
 MH -> MH : chonLichHen(lichHen)
 MH -> LPC : LayChiTietLichHen(maLichHen, maNV)
 activate LPC
+LPC -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
 LPC -> LH : DocChiTiet(maLichHen, maCN, false)
 activate LH
 LH -> LHDB : DocChiTiet(maLichHen, maCN, false)
@@ -76,6 +82,12 @@ MH -> MH : timPhong()
 alt HinhThucThue = NguyenCan
   MH -> LPC : LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax, gioiTinh, maNV)
   activate LPC
+  LPC -> NV : DocPhamVi(maNV)
+  activate NV
+  NV -> NVDB : DocChiTiet(maNV)
+  activate NVDB
+  deactivate NVDB
+  deactivate NV
   LPC -> P : LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh)
   activate P
   P -> PDB : LayPhongNguyenCan(toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh)
@@ -86,6 +98,12 @@ alt HinhThucThue = NguyenCan
 else HinhThucThue = OGhep
   MH -> LPC : LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax, gioiTinh, maNV)
   activate LPC
+  LPC -> NV : DocPhamVi(maNV)
+  activate NV
+  NV -> NVDB : DocChiTiet(maNV)
+  activate NVDB
+  deactivate NVDB
+  deactivate NV
   LPC -> P : LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh)
   activate P
   P -> PDB : LayPhongOGhep(soLuong, toaNha, loaiPhong, giaMin, giaMax, maCN, gioiTinh)
@@ -110,6 +128,12 @@ MH -> MH : taoPhieuCoc()
 MH -> LPC : TaoPhieuCoc(maLichHen, thongTinKhachHang, maPhong, danhSachGiuong, hinhThucThue, maNV)
 activate LPC
 
+LPC -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
 LPC -> LH : DocChiTiet(maLichHen, maCN, true)
 activate LH
 LH -> LHDB : DocChiTiet(maLichHen, maCN, true)
