@@ -4,8 +4,8 @@ title SO DO LOP 3 TANG - TRA CUU PHIEU DANG KY
 top to bottom direction
 skinparam shadowing false
 skinparam linetype ortho
-skinparam nodesep 35
-skinparam ranksep 45
+skinparam nodesep 55
+skinparam ranksep 75
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 skinparam classBorderColor #7F8C8D

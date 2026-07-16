@@ -4,6 +4,8 @@ title SO DO LOP 3 TANG - QUAN LY CHINH SACH HOAN COC (UC 1.4.28)
 top to bottom direction
 skinparam shadowing false
 skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 75
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 skinparam class {
