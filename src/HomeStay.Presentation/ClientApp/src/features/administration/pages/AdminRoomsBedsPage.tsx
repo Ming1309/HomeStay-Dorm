@@ -1049,18 +1049,18 @@ function RoomDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Chỉnh sửa phòng" : "Thêm phòng mới"}</DialogTitle>
           <DialogDescription>Nhập thông tin phòng để lưu vào hệ thống.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="min-w-0 space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="maCN"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormLabel>Chi nhánh *</FormLabel>
                   <Select
                     value={field.value}
@@ -1071,7 +1071,7 @@ function RoomDialog({
                     }}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="min-w-0">
                         <SelectValue placeholder="Chọn chi nhánh" />
                       </SelectTrigger>
                     </FormControl>
@@ -1087,12 +1087,12 @@ function RoomDialog({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="toaNha"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="min-w-0">
                     <FormLabel>Tòa nhà</FormLabel>
                     <CreatableCombobox
                       value={field.value}
@@ -1113,7 +1113,7 @@ function RoomDialog({
                 control={form.control}
                 name="tang"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="min-w-0">
                     <FormLabel>Tầng</FormLabel>
                     <CreatableCombobox
                       value={field.value}
@@ -1132,7 +1132,7 @@ function RoomDialog({
               control={form.control}
               name="soPhong"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormLabel>Số phòng *</FormLabel>
                   <FormControl>
                     <Input {...field} />
@@ -1145,11 +1145,11 @@ function RoomDialog({
               control={form.control}
               name="maLP"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormLabel>Loại phòng *</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="min-w-0">
                         <SelectValue placeholder="Chọn loại phòng" />
                       </SelectTrigger>
                     </FormControl>
@@ -1165,16 +1165,16 @@ function RoomDialog({
                 </FormItem>
               )}
             />
-            <div className={isEdit ? "grid grid-cols-2 gap-3" : undefined}>
+            <div className={isEdit ? "grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2" : undefined}>
               <FormField
                 control={form.control}
                 name="gioiTinhChoPhep"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="min-w-0">
                     <FormLabel>Giới tính cho phép *</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="min-w-0">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
@@ -1193,11 +1193,11 @@ function RoomDialog({
                   control={form.control}
                   name="trangThai"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="min-w-0">
                       <FormLabel>Trạng thái *</FormLabel>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="min-w-0">
                             <SelectValue />
                           </SelectTrigger>
                         </FormControl>
@@ -1219,7 +1219,7 @@ function RoomDialog({
                 />
               ) : null}
             </div>
-            <DialogFooter>
+            <DialogFooter className="border-t pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -1282,18 +1282,18 @@ function BedDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Chỉnh sửa giường" : "Thêm giường mới"}</DialogTitle>
           <DialogDescription>Nhập thông tin giường để lưu vào hệ thống.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="min-w-0 space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="soGiuong"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormLabel>Số giường *</FormLabel>
                   <FormControl>
                     <Input {...field} />
@@ -1306,7 +1306,7 @@ function BedDialog({
               control={form.control}
               name="maCN"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormLabel>Chi nhánh *</FormLabel>
                   <Select
                     value={field.value}
@@ -1324,7 +1324,7 @@ function BedDialog({
                     }}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="min-w-0">
                         <SelectValue placeholder="Chọn chi nhánh" />
                       </SelectTrigger>
                     </FormControl>
@@ -1344,7 +1344,7 @@ function BedDialog({
               control={form.control}
               name="toaNha"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormLabel>Tòa *</FormLabel>
                   <Select
                     value={field.value}
@@ -1360,7 +1360,7 @@ function BedDialog({
                     }}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="min-w-0">
                         <SelectValue placeholder="Chọn tòa" />
                       </SelectTrigger>
                     </FormControl>
@@ -1380,11 +1380,11 @@ function BedDialog({
               control={form.control}
               name="maPhong"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="min-w-0">
                   <FormLabel>Phòng *</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="min-w-0">
                         <SelectValue placeholder="Chọn phòng" />
                       </SelectTrigger>
                     </FormControl>
@@ -1406,11 +1406,11 @@ function BedDialog({
                 control={form.control}
                 name="trangThai"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="min-w-0">
                     <FormLabel>Trạng thái *</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="min-w-0">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
@@ -1431,7 +1431,7 @@ function BedDialog({
                 )}
               />
             ) : null}
-            <DialogFooter>
+            <DialogFooter className="border-t pt-4">
               <Button
                 type="button"
                 variant="outline"
