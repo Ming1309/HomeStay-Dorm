@@ -44,10 +44,18 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
 
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   class XacNhanKhoanTienCoc #F4E3A2 {
-    + LayDanhSachChoDoiChieu(text: String): IReadOnlyList<PhieuCoc>
-    + LayChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachChoDoiChieu(text: String, maNV: String): IReadOnlyList<PhieuCoc>
+    + LayChiTiet(maPhieuCoc: String, maNV: String): PhieuCoc
     + XacNhanHopLe(maPhieuCoc: String, maNhanVienQuanLy: String): KetQuaXacNhanKhoanTienCoc
-    + YeuCauBoSung(maPhieuCoc: String, lyDo: String): PhieuCoc
+    + YeuCauBoSung(maPhieuCoc: String, lyDo: String, maNV: String): PhieuCoc
+  }
+
+  class NhanVien #F4E3A2 {
+    - MaNV: String
+    - MaCN: String
+    --
+    + DocPhamVi(maNV: String): NhanVien
+    + DocChiTiet(maNV: String): NhanVien
   }
 
   class PhieuCoc #F4E3A2 {
@@ -60,8 +68,9 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - TrangThai: String
     - Giuongs: List<Giuong>
     --
-    + LayDanhSachChoDoiChieu(text: String): IReadOnlyList<PhieuCoc>
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachChoDoiChieu(maCN: String, text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
+    + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
     + KiemTraCoTheXacNhanThanhToan()
     + XacNhanThanhToan()
     + YeuCauBoSung(lyDo: String, thoiDiemYeuCau: DateTime, thoiHanThanhToan: TimeSpan)
@@ -100,9 +109,13 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
 }
 
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class NhanVienDB #BFDCF0 {
+    + DocChiTiet(maNV: String): NhanVien
+  }
   class PhieuCocDB #BFDCF0 {
-    + LayDanhSachChoDoiChieu(text: String): IReadOnlyList<PhieuCoc>
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachChoDoiChieu(maCN: String, text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
+    + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
     + CapNhatXacNhanThanhToan(phieu: PhieuCoc)
     + CapNhatYeuCauBoSung(phieu: PhieuCoc)
   }
@@ -119,6 +132,8 @@ MHXacNhanKhoanTienCoc o-- XacNhanKhoanTienCoc
 XacNhanKhoanTienCoc o-- PhieuCoc
 XacNhanKhoanTienCoc o-- PhieuThu
 XacNhanKhoanTienCoc o-- Phong
+XacNhanKhoanTienCoc o-- NhanVien
+NhanVien o-- NhanVienDB
 PhieuCoc o-- PhieuCocDB
 PhieuThu o-- PhieuThuDB
 Phong o-- PhongDB
@@ -129,5 +144,6 @@ PhieuCoc "1" -- "1..*" Giuong : dat coc
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
 XacNhanKhoanTienCoc -[hidden]down- PhieuCocDB
+NhanVienDB -[hidden]right- PhieuCocDB
 Giuong -[hidden]down- PhieuCocDB
 @enduml

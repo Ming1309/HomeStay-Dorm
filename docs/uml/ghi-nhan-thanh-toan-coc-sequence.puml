@@ -5,7 +5,7 @@ hide footbox
 autonumber 1 1
 skinparam shadowing false
 
-actor "Nhan vien Sale" as NV
+actor "Nhan vien Sale" as Sale
 
 box "GUI" #D5F5D3
 boundary ": MHGhiNhanThanhToanCoc" as MH
@@ -13,33 +13,48 @@ end box
 
 box "BUS" #FCF3CF
 control ": GhiNhanThanhToanCoc" as GNTT
+control ": NhanVien" as NV
 control ": PhieuCoc" as PC
 end box
 
 box "DB" #D6EAF8
+entity ": NhanVienDB" as NVDB
 entity ": PhieuCocDB" as PCDB
+entity ": ChungTuCocFileStorage" as Storage
 end box
 
-NV -> MH : Mo man hinh chuc nang
+Sale -> MH : Mo man hinh chuc nang
 activate MH
 MH -> MH : taiDanhSachChoGhiNhan(text)
-MH -> GNTT : LayDanhSachChoThanhToan(text)
+MH -> GNTT : LayDanhSachChoThanhToan(text, maNV)
 activate GNTT
-GNTT -> PC : LayDanhSachChoThanhToan(thoiDiemHienTai, text)
+GNTT -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+GNTT -> PC : LayDanhSachChoThanhToan(maCN, thoiDiemHienTai, text)
 activate PC
-PC -> PCDB : LayDanhSachChoThanhToan(thoiDiemHienTai, text)
+PC -> PCDB : LayDanhSachChoThanhToan(maCN, thoiDiemHienTai, text)
 activate PCDB
 
 deactivate PCDB
 deactivate PC
 deactivate GNTT
-NV -> MH : Chon phieu coc
-MH -> MH : chonPhieuCoc(item)
-MH -> GNTT : LayChiTiet(maPhieuCoc)
+Sale -> MH : Chon phieu coc
+MH -> MH : chonPhieuCoc(maPhieuCoc)
+MH -> GNTT : LayChiTiet(maPhieuCoc, maNV)
 activate GNTT
-GNTT -> PC : DocChiTiet(maPhieuCoc)
+GNTT -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+GNTT -> PC : DocChiTiet(maPhieuCoc, maCN)
 activate PC
-PC -> PCDB : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTiet(maPhieuCoc, maCN)
 activate PCDB
 deactivate PCDB
 deactivate PC
@@ -52,29 +67,43 @@ activate PC
 alt Khach thanh toan tien mat
 deactivate PC
 deactivate GNTT
-  NV -> MH : Chon tep minh chung
+  Sale -> MH : Chon tep minh chung
   MH -> MH : chonTepChungTu(anhBienNhanDaKy)
 else Khach chuyen khoan
-  NV -> MH : Chon tep minh chung
+  Sale -> MH : Chon tep minh chung
   MH -> MH : chonTepChungTu(anhGiaoDich)
 end
 
-NV -> MH : Nhan "Gui chung tu"
+opt Sale xem truoc chung tu
+  Sale -> MH : Nhan "Xem chung tu"
+  MH -> MH : xemChungTu()
+end
+
+Sale -> MH : Nhan "Gui chung tu"
 MH -> MH : guiChungTu()
 alt Chua chon tep
 else Tep sai dinh dang hoac vuot qua 5 MB
 else Du lieu hop le
-  MH -> GNTT : GuiChungTuThanhToan(maPhieuCoc, phuongThucThanhToan, tepChungTu)
+  MH -> GNTT : GuiChungTuThanhToan(maPhieuCoc, phuongThucThanhToan, tepChungTu, maNV)
   activate GNTT
-  GNTT -> PC : DocChiTiet(maPhieuCoc)
+  GNTT -> NV : DocPhamVi(maNV)
+  activate NV
+  NV -> NVDB : DocChiTiet(maNV)
+  activate NVDB
+  deactivate NVDB
+  deactivate NV
+  GNTT -> PC : DocChiTietChoCapNhat(maPhieuCoc, maCN)
   activate PC
-  PC -> PCDB : DocChiTiet(maPhieuCoc)
+  PC -> PCDB : DocChiTietChoCapNhat(maPhieuCoc, maCN)
   activate PCDB
 deactivate PCDB
 deactivate PC
   GNTT -> PC : KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan, thoiDiemHienTai)
   activate PC
 deactivate PC
+  GNTT -> Storage : Luu(tepChungTu)
+  activate Storage
+  deactivate Storage
   GNTT -> PC : GhiNhanThanhToan(phuongThucThanhToan, anhMinhChung, thoiDiemHienTai)
   activate PC
 deactivate PC
@@ -84,9 +113,17 @@ deactivate PC
   activate PCDB
   alt Phieu het han hoac khong con ChoThanhToan
 deactivate PCDB
+    GNTT -> Storage : Xoa(anhMinhChungMoi)
+    activate Storage
+    deactivate Storage
 deactivate PC
 deactivate GNTT
   else Cap nhat thanh cong
+    opt Co chung tu cu bi thay the
+      GNTT -> Storage : Xoa(anhMinhChungCu)
+      activate Storage
+      deactivate Storage
+    end
   end
 end
 

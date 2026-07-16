@@ -19,9 +19,18 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHLapHoaDonBoiThuong #BFE8BA {
     - txtTimKiem: TextBox
     - grvBienBanChuaXuLy: GridView
+    - lblMaBienBan: Label
+    - lblMaHopDong: Label
+    - lblHoTenKhachHang: Label
+    - lblPhong: Label
+    - lblNgayThuHoi: Label
     - grvTaiSanHuHong: GridView
+    - txtSoLuongBoiThuong: TextBox
+    - txtDonGiaBoiThuong: TextBox
+    - lblTongTienBoiThuong: Label
     - txtGhiChu: TextArea
     - btnLapHoaDon: Button
+    - dlgXacNhanLapHoaDon: AlertDialog
     --
     + taiDanhSach(tuKhoa: String)
     + chonBienBan(maBienBan: String)

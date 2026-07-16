@@ -17,22 +17,49 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHGhiNhanThanhToanCoc #BFE8BA {
     - txtTimKiemPhieu: TextBox
     - grvPhieuChoThanhToan: GridView
+    - lblMaPhieuCoc: Label
+    - lblTrangThai: Label
+    - lblHoTenKhachHang: Label
+    - lblSoDienThoai: Label
+    - lblPhong: Label
+    - lblHinhThucThue: Label
+    - lblSoGiuongThue: Label
+    - lblTongTien: Label
+    - lblHanThanhToan: Label
+    - lblThoiGianConLai: Label
+    - lblLyDoYeuCauBoSung: Label
     - lstPhuongThucThanhToan: ListBox
+    - pnlTaiChungTu: Panel
     - uplChungTu: FileUpload
-    - btnGui: Button
+    - imgXemTruocChungTu: Image
+    - btnXemChungTu: Button
+    - btnThayDoiChungTu: Button
+    - btnXoaChungTu: Button
+    - btnGuiChungTu: Button
+    - dlgXemChungTu: Dialog
     --
     + taiDanhSachChoGhiNhan(text: String)
-    + chonPhieuCoc(item: PendingDeposit)
+    + chonPhieuCoc(maPhieuCoc: String)
     + chonTepChungTu(file: File)
+    + xemChungTu()
     + guiChungTu()
   }
 }
 
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   class GhiNhanThanhToanCoc #F4E3A2 {
-    + LayDanhSachChoThanhToan(thoiDiemHienTai: DateTime, text: String): IReadOnlyList<PhieuCoc>
-    + LayChiTiet(maPhieuCoc: String): PhieuCoc
-    + GuiChungTuThanhToan(maPhieuCoc: String, phuongThucThanhToan: String, tepChungTu: TepChungTuCoc): PhieuCoc
+    + LayDanhSachChoThanhToan(text: String, maNV: String): IReadOnlyList<PhieuCoc>
+    + LayChiTiet(maPhieuCoc: String, maNV: String): PhieuCoc
+    + GuiChungTuThanhToan(maPhieuCoc: String, phuongThucThanhToan: String, tepChungTu: TepChungTuCoc, maNV: String): PhieuCoc
+  }
+
+  class NhanVien #F4E3A2 {
+    - MaNV: String
+    - MaCN: String
+    - VaiTro: String
+    --
+    + DocPhamVi(maNV: String): NhanVien
+    + DocChiTiet(maNV: String): NhanVien
   }
 
   class PhieuCoc #F4E3A2 {
@@ -47,8 +74,9 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - KhachHang: KhachHang
     - Phong: Phong
     --
-    + LayDanhSachChoThanhToan(text: String): IReadOnlyList<PhieuCoc>
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachChoThanhToan(maCN: String, thoiDiemHienTai: DateTime, text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
+    + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
     + KiemTraTrangThaiChoGhiNhan()
     + KiemTraConHanThanhToan(thoiDiemHienTai: DateTime)
     + KiemTraCoTheGhiNhanThanhToan(phuongThucThanhToan: String, thoiDiemHienTai: DateTime)
@@ -70,15 +98,28 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
 }
 
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class NhanVienDB #BFDCF0 {
+    + DocChiTiet(maNV: String): NhanVien
+  }
+
   class PhieuCocDB #BFDCF0 {
-    + LayDanhSachChoThanhToan(thoiDiemHienTai: DateTime, text: String): IReadOnlyList<PhieuCoc>
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachChoThanhToan(maCN: String, thoiDiemHienTai: DateTime, text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
+    + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
     + CapNhatThanhToan(phieu: PhieuCoc, thoiDiemHienTai: DateTime)
+  }
+
+  class ChungTuCocFileStorage #BFDCF0 {
+    + Luu(tepChungTu: TepChungTuCoc): String
+    + Xoa(duongDan: String)
   }
 }
 
 MHGhiNhanThanhToanCoc o-- GhiNhanThanhToanCoc
 GhiNhanThanhToanCoc o-- PhieuCoc
+GhiNhanThanhToanCoc o-- NhanVien
+GhiNhanThanhToanCoc o-- ChungTuCocFileStorage
+NhanVien o-- NhanVienDB
 PhieuCoc o-- PhieuCocDB
 PhieuCoc "0..*" -- "1" KhachHang : dai dien
 PhieuCoc "0..*" -- "1" Phong : dat
@@ -87,5 +128,7 @@ PhieuCoc "0..*" -- "1" Phong : dat
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
 GhiNhanThanhToanCoc -[hidden]down- PhieuCocDB
+NhanVienDB -[hidden]right- PhieuCocDB
+PhieuCocDB -[hidden]right- ChungTuCocFileStorage
 Phong -[hidden]down- PhieuCocDB
 @enduml

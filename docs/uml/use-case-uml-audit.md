@@ -43,11 +43,25 @@
 - Notification, transaction, HTTP controller/DTO và worker nền không thuộc sơ đồ Use Case lõi.
 - Những dòng “không có use-case control riêng” phản ánh đúng code hiện tại, không phải đề xuất tạo thêm lớp giả trong UML.
 
+## Nguồn giao diện dùng để đối chiếu
+
+Boundary `MH...` không được suy ra từ đặc tả hoặc DTO. Thuộc tính màn hình được đối chiếu trực tiếp với React theo các nhóm:
+
+- UC 1.4.1–1.4.4: `features/registrations`, `features/appointments`, `features/rooms`.
+- UC 1.4.5–1.4.10: `features/deposits` và các route Sale/Kế toán/Quản lý tương ứng.
+- UC 1.4.11–1.4.17: `features/residence`, `features/contracts`, `features/handovers`.
+- UC 1.4.18–1.4.24: `features/settlements`, `features/payments` và route hoàn cọc.
+- UC 1.4.25–1.4.31: `features/auth`, `features/administration`.
+
+Chỉ đưa vào boundary các control nhập liệu, dữ liệu nghiệp vụ đang hiển thị, bảng/queue, nút và dialog có hành vi. Không đưa icon, layout container thuần trang trí, toast, loading state, hook hoặc HTTP DTO vào UML.
+
 ## Kết quả kiểm tra ngày 16/07/2026
 
 - Đủ 31 cặp class/sequence cho UC 1.4.1–1.4.31; cặp `thong-bao-*` là sơ đồ kỹ thuật riêng và không tính vào bộ Use Case.
-- Không còn phương thức chỉ xuất hiện ở class hoặc chỉ xuất hiện ở sequence.
+- Đã bổ sung thuộc tính GUI còn thiếu cho toàn bộ 31 boundary; bốn màn hình từng không có thuộc tính là Lập PĐS, Lập PHC, Tạo lịch hẹn và Xác nhận PĐS đã được đối chiếu lại từ React.
+- `MHGhiNhanThanhToanCoc` đã được bổ sung toàn bộ phần chi tiết phiếu, hạn thanh toán, file preview và action; đồng thời sửa phạm vi chi nhánh, đọc khóa cập nhật và file storage trong class/sequence.
+- Không còn phương thức chỉ xuất hiện ở class hoặc chỉ xuất hiện ở sequence theo `scripts/validate-uml-consistency.sh`.
 - Tất cả phương thức BUS/DB trong 31 class diagram đều tồn tại trong source C# đúng lớp sở hữu.
 - Các message từ GUI xuống BUS/DB đều là lời gọi phương thức; câu mô tả bằng lời chỉ còn ở tương tác tác nhân với giao diện.
 - Không còn return arrow, `note`, controller, `PhienDuLieu` hoặc chi tiết transaction trong 31 sequence diagram.
-- Cả 64 file PlantUML hiện có (31 cặp Use Case, trong đó Lập phiếu cọc là cặp mẫu, và 1 cặp kỹ thuật thông báo) đã qua `plantuml -checkonly` và render SVG cục bộ thành công.
+- Bộ 65 file PlantUML gồm 31 cặp Use Case, một cặp kỹ thuật thông báo và sơ đồ tổng quan Use Case; toàn bộ phải qua `plantuml -checkonly` và render PNG/SVG cục bộ trước khi bàn giao.

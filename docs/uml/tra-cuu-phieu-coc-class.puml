@@ -39,8 +39,16 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
 }
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   class TraCuuPhieuCoc #F4E3A2 {
-    + TimKiem(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
-    + LayChiTiet(maPhieuCoc: String): PhieuCoc
+    + TimKiem(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String, maNV: String): IReadOnlyList<PhieuCoc>
+    + LayChiTiet(maPhieuCoc: String, maNV: String): PhieuCoc
+  }
+
+  class NhanVien #F4E3A2 {
+    - MaNV: String
+    - MaCN: String
+    --
+    + DocPhamVi(maNV: String): NhanVien
+    + DocChiTiet(maNV: String): NhanVien
   }
 
   class PhieuCoc #F4E3A2 {
@@ -53,8 +61,8 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - TrangThai: String
     - DaDongTien: Boolean
     --
-    + TraCuu(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + TraCuu(maCN: String, maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
   }
 
   class KhachHang #F4E3A2 {
@@ -79,14 +87,19 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   }
 }
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class NhanVienDB #BFDCF0 {
+    + DocChiTiet(maNV: String): NhanVien
+  }
   class PhieuCocDB #BFDCF0 {
-    + TraCuu(maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + TraCuu(maCN: String, maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
   }
 }
 
 MHTraCuuPhieuCoc o-- TraCuuPhieuCoc
 TraCuuPhieuCoc o-- PhieuCoc
+TraCuuPhieuCoc o-- NhanVien
+NhanVien o-- NhanVienDB
 PhieuCoc o-- PhieuCocDB
 
 PhieuCoc "0..*" -- "1" KhachHang : cua
@@ -96,5 +109,6 @@ PhieuCoc "1" -- "1..*" Giuong : gom
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
 TraCuuPhieuCoc -[hidden]down- PhieuCocDB
+NhanVienDB -[hidden]right- PhieuCocDB
 Giuong -[hidden]down- PhieuCocDB
 @enduml

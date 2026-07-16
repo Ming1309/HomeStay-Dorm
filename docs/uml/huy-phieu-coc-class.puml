@@ -13,7 +13,20 @@ skinparam class {
 
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHHuyPhieuCoc #BFE8BA {
+    - txtTimKiemPhieu: TextBox
     - grvPhieuCocCoTheHuy: GridView
+    - lblMaPhieuCoc: Label
+    - lblTrangThai: Label
+    - lblHoTenKhachHang: Label
+    - lblSoDienThoai: Label
+    - lblEmail: Label
+    - lblSoGiayTo: Label
+    - lblPhong: Label
+    - lblHinhThucThue: Label
+    - lblThoiDiemCoc: Label
+    - lblTongTien: Label
+    - lblTrangThaiThanhToan: Label
+    - grvGiuongLienQuan: GridView
     - dlgXacNhanHuy: AlertDialog
     - btnHuyPhieuCoc: Button
     --

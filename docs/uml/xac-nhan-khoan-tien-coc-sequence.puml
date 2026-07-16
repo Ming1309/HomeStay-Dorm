@@ -13,6 +13,7 @@ end box
 
 box "BUS" #FCF3CF
 control ": XacNhanKhoanTienCoc" as XN
+control ": NhanVien" as NV
 control ": PhieuCoc" as PC
 control ": PhieuThu" as PT
 control ": Phong" as P
@@ -20,6 +21,7 @@ control ": Giuong" as G
 end box
 
 box "DB" #D6EAF8
+entity ": NhanVienDB" as NVDB
 entity ": PhieuCocDB" as PCDB
 entity ": PhieuThuDB" as PTDB
 entity ": PhongDB" as PDB
@@ -28,11 +30,17 @@ end box
 QL -> MH : Mo man hinh chuc nang
 activate MH
 MH -> MH : hienThiDanhSachPhieuChoDoiChieu(tuKhoa)
-MH -> XN : LayDanhSachChoDoiChieu(tuKhoa)
+MH -> XN : LayDanhSachChoDoiChieu(tuKhoa, maNV)
 activate XN
-XN -> PC : LayDanhSachChoDoiChieu(tuKhoa)
+XN -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+XN -> PC : LayDanhSachChoDoiChieu(maCN, tuKhoa)
 activate PC
-PC -> PCDB : LayDanhSachChoDoiChieu(tuKhoa)
+PC -> PCDB : LayDanhSachChoDoiChieu(maCN, tuKhoa)
 activate PCDB
 
 deactivate PCDB
@@ -40,11 +48,17 @@ deactivate PC
 deactivate XN
 QL -> MH : Chon phieu coc
 MH -> MH : chonPhieuCoc(maPhieuCoc)
-MH -> XN : LayChiTiet(maPhieuCoc)
+MH -> XN : LayChiTiet(maPhieuCoc, maNV)
 activate XN
-XN -> PC : DocChiTiet(maPhieuCoc)
+XN -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+XN -> PC : DocChiTiet(maPhieuCoc, maCN)
 activate PC
-PC -> PCDB : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTiet(maPhieuCoc, maCN)
 activate PCDB
 deactivate PCDB
 deactivate PC
@@ -58,9 +72,15 @@ alt Khoan coc hop le
   MH -> MH : xacNhanHopLe()
   MH -> XN : XacNhanHopLe(maPhieuCoc, maNhanVienQuanLy)
   activate XN
-  XN -> PC : DocChiTiet(maPhieuCoc)
+  XN -> NV : DocPhamVi(maNhanVienQuanLy)
+  activate NV
+  NV -> NVDB : DocChiTiet(maNhanVienQuanLy)
+  activate NVDB
+  deactivate NVDB
+  deactivate NV
+  XN -> PC : DocChiTietChoCapNhat(maPhieuCoc, maCN)
   activate PC
-  PC -> PCDB : DocChiTiet(maPhieuCoc)
+  PC -> PCDB : DocChiTietChoCapNhat(maPhieuCoc, maCN)
   activate PCDB
 deactivate PCDB
 deactivate PC
@@ -109,11 +129,17 @@ deactivate XN
 else Chung tu can bo sung
   QL -> MH : Nhap ly do va nhan "Yeu cau bo sung"
   MH -> MH : yeuCauBoSung(lyDo)
-  MH -> XN : YeuCauBoSung(maPhieuCoc, lyDo)
+  MH -> XN : YeuCauBoSung(maPhieuCoc, lyDo, maNV)
   activate XN
-  XN -> PC : DocChiTiet(maPhieuCoc)
+  XN -> NV : DocPhamVi(maNV)
+  activate NV
+  NV -> NVDB : DocChiTiet(maNV)
+  activate NVDB
+  deactivate NVDB
+  deactivate NV
+  XN -> PC : DocChiTietChoCapNhat(maPhieuCoc, maCN)
   activate PC
-  PC -> PCDB : DocChiTiet(maPhieuCoc)
+  PC -> PCDB : DocChiTietChoCapNhat(maPhieuCoc, maCN)
   activate PCDB
 deactivate PCDB
 deactivate PC

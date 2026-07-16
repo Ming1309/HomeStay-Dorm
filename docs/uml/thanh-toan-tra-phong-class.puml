@@ -11,9 +11,21 @@ skinparam classBorderColor #7F8C8D
 
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHThanhToanTraPhong #BFE8BA {
+    - txtTimKiemPhieu: TextBox
     - grvPhieuDoiSoatDaChot: GridView
     - pnlChiTietDoiSoat: Panel
+    - lblMaPDS: Label
+    - lblHoTenKhachHang: Label
+    - lblPhong: Label
+    - lblTienCoc: Label
+    - lblTongKhauTru: Label
+    - lblTienThuThem: Label
+    - lblTienHoan: Label
+    - lstPhuongThucThanhToan: ListBox
+    - uplMinhChung: FileUpload
+    - btnThuTien: Button
     - dlgThuTien: AlertDialog
+    --
     + taiDanhSach()
     + chonPhieuDoiSoat(maPDS: String)
     + xacNhanThuTien()

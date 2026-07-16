@@ -15,6 +15,18 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - txtTimKiem: TextBox
     - grvDSPhieuDangKy: GridView
     - pnlChiTiet: Panel
+    - lblMaPhieuDangKy: Label
+    - lblTrangThai: Label
+    - lblHoTenKhachHang: Label
+    - lblSoDienThoai: Label
+    - lblEmail: Label
+    - lblLoaiGiayTo: Label
+    - lblSoGiayTo: Label
+    - lblKhuVuc: Label
+    - lblSoLuongNguoi: Label
+    - lblNgayDuKien: Label
+    - lblGhiChu: Label
+    - lblNgayLap: Label
     --
     + HienThi()
     + timKiem(sdt: String, soGiayTo: String, email: String, hoTen: String, maPDK: String)

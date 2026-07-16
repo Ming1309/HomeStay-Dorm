@@ -18,6 +18,15 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - cboTrangThai: ComboBox
     - tblDichVu: Table
     - dlgDichVu: Dialog
+    - txtTenDichVu: TextBox
+    - txtDonViTinh: TextBox
+    - txtDonGia: TextBox
+    - lstTrangThaiDichVu: ListBox
+    - btnThemDichVu: Button
+    - btnSuaDichVu: Button
+    - btnXoaDichVu: Button
+    - dlgXacNhanXoa: AlertDialog
+    --
     + taiDanhSachDichVu()
     + luuDichVu(dichVu: DichVu)
     + xacNhanXoa()

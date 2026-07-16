@@ -11,10 +11,12 @@ end box
 
 box "BUS" #FCF3CF
 control ": TraCuuPhieuCoc" as TC
+control ": NhanVien" as NV
 control ": PhieuCoc" as PC
 end box
 
 box "DB" #D6EAF8
+entity ": NhanVienDB" as NVDB
 entity ": PhieuCocDB" as PCDB
 end box
 
@@ -24,13 +26,19 @@ MH -> MH : HienThi()
 
 ND -> MH : Nhan "Tim Kiem"
 MH -> MH : btnTimKiem_Click()
-MH -> TC : TimKiem(maPhieuCoc, sdt, email, soGiayTo)
+MH -> TC : TimKiem(maPhieuCoc, sdt, email, soGiayTo, maNV)
 activate TC
 alt Khong co tieu chi tim kiem
 else Co it nhat mot tieu chi
-  TC -> PC : TraCuu(maPhieuCoc, sdt, email, soGiayTo)
+  TC -> NV : DocPhamVi(maNV)
+  activate NV
+  NV -> NVDB : DocChiTiet(maNV)
+  activate NVDB
+  deactivate NVDB
+  deactivate NV
+  TC -> PC : TraCuu(maCN, maPhieuCoc, sdt, email, soGiayTo)
   activate PC
-  PC -> PCDB : TraCuu(maPhieuCoc, sdt, email, soGiayTo)
+  PC -> PCDB : TraCuu(maCN, maPhieuCoc, sdt, email, soGiayTo)
   activate PCDB
   opt Co phieu coc trong ket qua
 deactivate PCDB
@@ -38,11 +46,17 @@ deactivate PC
 deactivate TC
     ND -> MH : Chon phieu coc trong ket qua
     MH -> MH : grvKetQua_CellClick(maPhieuCoc)
-    MH -> TC : LayChiTiet(maPhieuCoc)
+    MH -> TC : LayChiTiet(maPhieuCoc, maNV)
     activate TC
-    TC -> PC : DocChiTiet(maPhieuCoc)
+    TC -> NV : DocPhamVi(maNV)
+    activate NV
+    NV -> NVDB : DocChiTiet(maNV)
+    activate NVDB
+    deactivate NVDB
+    deactivate NV
+    TC -> PC : DocChiTiet(maPhieuCoc, maCN)
     activate PC
-    PC -> PCDB : DocChiTiet(maPhieuCoc)
+    PC -> PCDB : DocChiTiet(maPhieuCoc, maCN)
     activate PCDB
   end
 deactivate PCDB

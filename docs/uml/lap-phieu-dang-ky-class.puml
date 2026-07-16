@@ -15,9 +15,20 @@ skinparam class {
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHLapPhieuDangKy #BFE8BA {
     - txtHoTen: TextBox
+    - dtpNgaySinh: DatePicker
+    - lstGioiTinh: ListBox
+    - txtSoDienThoai: TextBox
+    - txtEmail: TextBox
+    - lstLoaiGiayTo: ListBox
     - txtSoGiayTo: TextBox
+    - txtQuocTich: TextBox
     - txtKhuVuc: TextBox
+    - txtSoLuongNguoi: TextBox
+    - dtpNgayDuKien: DatePicker
+    - txtGhiChu: TextArea
+    - chkDongYChinhSach: CheckBox
     - btnLuu: Button
+    - btnHuy: Button
     --
     + HienThi()
     + lapPhieuDangKy()

@@ -14,6 +14,24 @@ skinparam class {
 
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHLapPhieuDoiSoat #BFE8BA {
+    - txtTimKiemHoSo: TextBox
+    - grvHoSoChoDoiSoat: GridView
+    - lblMaHoSo: Label
+    - lblLoaiHoSo: Label
+    - lblHoTenKhachHang: Label
+    - lblPhong: Label
+    - lblTienCocThucThu: Label
+    - lblNgayYeuCau: Label
+    - lblTyLeHoanCoc: Label
+    - lblTienHoanCoBan: Label
+    - grvHoaDonKhauTru: GridView
+    - lblTongKhauTru: Label
+    - lblTienHoan: Label
+    - lblTienThuThem: Label
+    - txtGhiChu: TextArea
+    - btnTaoPhieuDoiSoat: Button
+    - dlgXacNhanTao: AlertDialog
+    --
     + taiDanhSachHoSo(tuKhoa: String)
     + taiChiTiet()
     + taoPhieuDoiSoat()

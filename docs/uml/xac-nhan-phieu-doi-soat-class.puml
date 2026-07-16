@@ -12,6 +12,28 @@ skinparam class {
 }
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHXacNhanPhieuDoiSoat #BFE8BA {
+    - txtTimKiemPhieu: TextBox
+    - grvPhieuDoiSoatChoXacNhan: GridView
+    - lblMaPDS: Label
+    - lblTrangThai: Label
+    - lblHoTenKhachHang: Label
+    - lblSoDienThoai: Label
+    - lblEmail: Label
+    - lblPhong: Label
+    - lblMaPhieuCoc: Label
+    - lblMaHopDong: Label
+    - lblSoGiayTo: Label
+    - lblNgayDoiSoat: Label
+    - lblTienCoc: Label
+    - lblTyLeHoanCoc: Label
+    - lblTienHoanCoBan: Label
+    - lblTongKhauTru: Label
+    - grvHoaDonKhauTru: GridView
+    - lblKetQuaTaiChinh: Label
+    - chkDaThongBaoKhachHang: CheckBox
+    - btnXacNhan: Button
+    - dlgXacNhan: AlertDialog
+    --
     + HienThi()
     + grvChoXacNhan_CellClick(maPDS: String)
     + btnXacNhan_Click()

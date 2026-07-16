@@ -17,10 +17,25 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHQuanLyPhongGiuong #BFE8BA {
     - grvDanhSachPhong: GridView
     - grvDanhSachGiuong: GridView
-    - lstLoaiPhong: ListBox
+    - txtTimKiem: TextBox
     - lstChiNhanh: ListBox
+    - lstToaNha: ListBox
+    - lstTrangThaiLoc: ListBox
+    - lstLoaiPhong: ListBox
     - frmPhong: Form
     - frmGiuong: Form
+    - lstChiNhanhPhong: ListBox
+    - lstToaNhaPhong: ListBox
+    - lstTang: ListBox
+    - txtSoPhong: TextBox
+    - lstGioiTinhChoPhep: ListBox
+    - lstTrangThaiPhong: ListBox
+    - lstPhongCuaGiuong: ListBox
+    - txtSoGiuong: TextBox
+    - lstTrangThaiGiuong: ListBox
+    - btnThemPhong: Button
+    - btnThemGiuong: Button
+    - dlgXacNhanXoa: AlertDialog
     --
     + HienThi()
     + moFormThemPhong()
