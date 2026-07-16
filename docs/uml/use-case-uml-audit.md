@@ -55,13 +55,23 @@ Boundary `MH...` không được suy ra từ đặc tả hoặc DTO. Thuộc tí
 
 Chỉ đưa vào boundary các control nhập liệu, dữ liệu nghiệp vụ đang hiển thị, bảng/queue, nút và dialog có hành vi. Không đưa icon, layout container thuần trang trí, toast, loading state, hook hoặc HTTP DTO vào UML.
 
+## Quy ước self-call và mức trừu tượng
+
+- Sequence diagram mô tả sự phối hợp trách nhiệm, không chép lại toàn bộ chuỗi wrapper trong source.
+- Giữ self-call của boundary để thể hiện handler được kích hoạt bởi thao tác người dùng.
+- Chỉ giữ self-call nghiệp vụ cho kiểm tra điều kiện, tính toán, chuyển trạng thái, giữ/giải phóng tài nguyên hoặc một bước điều phối đáng kể.
+- Wrapper chỉ đổi tên hoặc chuyển tiếp xuống DB được rút gọn thành lời gọi từ method nghiệp vụ hiện tại xuống entity DB; wrapper đó không xuất hiện trong class diagram của UC.
+- `NhanVien.DocPhamVi(maNV)` được biểu diễn thống nhất bằng `UseCase -> NhanVien -> NhanVienDB.DocChiTiet`; không vẽ self-call `NhanVien.DocChiTiet`.
+- Validator ánh xạ alias sequence về đúng class nhận message. Method trùng tên trên DB không thể thay thế method còn thiếu trên BUS/entity.
+
 ## Kết quả kiểm tra ngày 16/07/2026
 
 - Đủ 31 cặp class/sequence cho UC 1.4.1–1.4.31; cặp `thong-bao-*` là sơ đồ kỹ thuật riêng và không tính vào bộ Use Case.
 - Đã bổ sung thuộc tính GUI còn thiếu cho toàn bộ 31 boundary; bốn màn hình từng không có thuộc tính là Lập PĐS, Lập PHC, Tạo lịch hẹn và Xác nhận PĐS đã được đối chiếu lại từ React.
 - `MHGhiNhanThanhToanCoc` đã được bổ sung toàn bộ phần chi tiết phiếu, hạn thanh toán, file preview và action; đồng thời sửa phạm vi chi nhánh, đọc khóa cập nhật và file storage trong class/sequence.
-- Không còn phương thức chỉ xuất hiện ở class hoặc chỉ xuất hiện ở sequence theo `scripts/validate-uml-consistency.sh`.
+- Không còn phương thức chỉ xuất hiện ở class hoặc chỉ xuất hiện ở sequence trên đúng receiver theo `scripts/validate-uml-consistency.sh`.
+- Các self-call wrapper của `NhanVien`, `HopDong`, `PhieuCoc` và `ThanhVienHopDong` đã được loại bỏ; các self-call validation, tính toán và chuyển trạng thái được giữ có chủ đích.
 - Tất cả phương thức BUS/DB trong 31 class diagram đều tồn tại trong source C# đúng lớp sở hữu.
 - Các message từ GUI xuống BUS/DB đều là lời gọi phương thức; câu mô tả bằng lời chỉ còn ở tương tác tác nhân với giao diện.
 - Không còn return arrow, `note`, controller, `PhienDuLieu` hoặc chi tiết transaction trong 31 sequence diagram.
-- Bộ 65 file PlantUML gồm 31 cặp Use Case, một cặp kỹ thuật thông báo và sơ đồ tổng quan Use Case; toàn bộ phải qua `plantuml -checkonly` và render PNG/SVG cục bộ trước khi bàn giao.
+- Bộ hiện tại có 67 file PlantUML: 31 cặp Use Case, một cặp kỹ thuật thông báo, một cặp dashboard và sơ đồ tổng quan Use Case; toàn bộ phải qua `plantuml -checkonly` và render PNG/SVG cục bộ trước khi bàn giao.

@@ -30,7 +30,6 @@ MH -> TTC : LayDanhSachKhoiTao(text, maNV)
 activate TTC
 TTC -> NV : DocPhamVi(maNV)
 activate NV
-NV -> NV : DocChiTiet(maNV)
 NV -> NVDB : DocChiTiet(maNV)
 activate NVDB
 deactivate NVDB
@@ -49,7 +48,6 @@ MH -> TTC : LayChiTietVaTinhTien(maPhieuCoc, maNV)
 activate TTC
 TTC -> NV : DocPhamVi(maNV)
 activate NV
-NV -> NV : DocChiTiet(maNV)
 NV -> NVDB : DocChiTiet(maNV)
 activate NVDB
 deactivate NVDB
@@ -75,7 +73,6 @@ MH -> TTC : XacNhanTinhTien(maPhieuCoc, maNV)
 activate TTC
 TTC -> NV : DocPhamVi(maNV)
 activate NV
-NV -> NV : DocChiTiet(maNV)
 NV -> NVDB : DocChiTiet(maNV)
 activate NVDB
 deactivate NVDB
@@ -107,7 +104,6 @@ MH -> TTC : LayDanhSachKhoiTao(text, maNV)
 activate TTC
 TTC -> NV : DocPhamVi(maNV)
 activate NV
-NV -> NV : DocChiTiet(maNV)
 NV -> NVDB : DocChiTiet(maNV)
 activate NVDB
 deactivate NVDB

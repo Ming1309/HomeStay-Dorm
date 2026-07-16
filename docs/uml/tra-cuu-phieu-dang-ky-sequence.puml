@@ -31,7 +31,6 @@ MH -> UC : TimKiemPhieuDangKy(sdt, soGiayTo, email, hoTen, maPDK, maNV)
 activate UC
 UC -> NV : DocPhamVi(maNV)
 activate NV
-NV -> NV : DocChiTiet(maNV)
 NV -> NVDB : DocChiTiet(maNV)
 activate NVDB
 deactivate NVDB
@@ -50,7 +49,6 @@ MH -> UC : LayChiTietPhieuDangKy(maPDK, maNV)
 activate UC
 UC -> NV : DocPhamVi(maNV)
 activate NV
-NV -> NV : DocChiTiet(maNV)
 NV -> NVDB : DocChiTiet(maNV)
 activate NVDB
 deactivate NVDB

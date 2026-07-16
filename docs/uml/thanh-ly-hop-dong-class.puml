@@ -38,7 +38,6 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     --
     + LayDanhSachChoThanhLy(tuKhoa: String): IReadOnlyList<HopDongChoThanhLy>
     + LayThongTinHopDong(maHD: String): HopDong
-    + DocChiTiet(maHD: String): HopDong
     + KiemTraDangHieuLuc()
     + ThanhLyHopDong(maHD: String, ngayThanhLy: DateTime, nguoiThucHien: String, ghiChu: String)
   }
@@ -58,7 +57,6 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - MaCN: String
     --
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
-    + DocChiTietHeThong(maPhieuCoc: String, khoaCapNhat: Boolean): PhieuCoc
   }
 
   class ThanhVienHopDong #F4E3A2 {

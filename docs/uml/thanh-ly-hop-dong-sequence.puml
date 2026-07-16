@@ -43,7 +43,6 @@ QL -> MH : Chon hop dong
 MH -> MH : chonHopDong(maHD)
 MH -> HD : LayThongTinHopDong(maHD)
 activate HD
-HD -> HD : DocChiTiet(maHD)
 HD -> HDDB : DocChiTiet(maHD)
 activate HDDB
 deactivate HDDB
@@ -75,7 +74,6 @@ QL -> MH : Nhan "Thanh ly"
 MH -> MH : xacNhanThanhLy()
 MH -> HD : LayThongTinHopDong(maHD)
 activate HD
-HD -> HD : DocChiTiet(maHD)
 HD -> HDDB : DocChiTiet(maHD)
 activate HDDB
 deactivate HDDB
@@ -95,7 +93,6 @@ HD -> HD : KiemTraDangHieuLuc()
 deactivate HD
 MH -> PC : DocChiTiet(maPhieuCoc)
 activate PC
-PC -> PC : DocChiTietHeThong(maPhieuCoc, false)
 PC -> PCDB : DocChiTietHeThong(maPhieuCoc, false)
 activate PCDB
 deactivate PCDB
@@ -118,7 +115,6 @@ alt Da hoan tat nghia vu tai chinh
   opt Chua co danh sach thanh vien trong chi tiet hop dong
     MH -> TV : LayDanhSachGiuong(maHD)
     activate TV
-    TV -> TV : LayDanhSachTheoHopDong(maHD)
     TV -> TVDB : LayDanhSachTheoHopDong(maHD)
     activate TVDB
     deactivate TVDB

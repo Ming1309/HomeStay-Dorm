@@ -43,7 +43,6 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - MaNV: String
     - MaCN: String
     + DocPhamVi(maNV: String): NhanVien
-    + DocChiTiet(maNV: String): NhanVien
   }
   class PhieuDangKy #F4E3A2 {
     - MaPDK: String

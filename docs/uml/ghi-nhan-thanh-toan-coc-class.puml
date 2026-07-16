@@ -59,7 +59,6 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - VaiTro: String
     --
     + DocPhamVi(maNV: String): NhanVien
-    + DocChiTiet(maNV: String): NhanVien
   }
 
   class PhieuCoc #F4E3A2 {
