@@ -13,67 +13,112 @@ end box
 
 box "BUS" #FCF3CF
 control ": TinhTienCoc" as TTC
+control ": NhanVien" as NV
 control ": PhieuCoc" as PC
 control ": Phong" as P
 end box
 
 box "DB" #D6EAF8
+entity ": NhanVienDB" as NVDB
 entity ": PhieuCocDB" as PCDB
 end box
 
-KT -> MH : Nhan nut thao tac tren giao dien
+KT -> MH : Chon chuc nang "Tinh tien coc"
 activate MH
 MH -> MH : taiDanhSach(text)
-MH -> TTC : LayDanhSachKhoiTao(text)
+MH -> TTC : LayDanhSachKhoiTao(text, maNV)
 activate TTC
-TTC -> PC : LayDanhSachKhoiTao(text)
+TTC -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NV : DocChiTiet(maNV)
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+TTC -> PC : LayDanhSachKhoiTao(maCN, text)
 activate PC
-PC -> PCDB : LayDanhSachKhoiTao(text)
+PC -> PCDB : LayDanhSachKhoiTao(maCN, text)
 activate PCDB
-
 deactivate PCDB
 deactivate PC
 deactivate TTC
-KT -> MH : Chon phieu coc
+
+KT -> MH : Chon mot phieu coc
 MH -> MH : chonPhieuCoc(maPhieuCoc)
-MH -> TTC : LayChiTietVaTinhTien(maPhieuCoc)
+MH -> TTC : LayChiTietVaTinhTien(maPhieuCoc, maNV)
 activate TTC
-TTC -> PC : DocChiTiet(maPhieuCoc)
+TTC -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NV : DocChiTiet(maNV)
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+TTC -> PC : DocChiTiet(maPhieuCoc, maCN)
 activate PC
-PC -> PCDB : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTiet(maPhieuCoc, maCN)
 activate PCDB
-alt HinhThucThue = OGhep
 deactivate PCDB
-  PC -> PC : dem Giuongs
-else HinhThucThue = NguyenCan
-  PC -> PC : lay Phong.LoaiPhong.SucChua
-end
-PC -> P : TinhTienCoc(soGiuong)
+deactivate PC
+TTC -> PC : TinhTienDuKien()
+activate PC
+PC -> PC : KiemTraCoTheTinhTien()
+PC -> P : TinhTienCoc(soGiuongThue)
 activate P
-MH -> MH : hien thi cong thuc va TongTien
-
 deactivate P
 deactivate PC
 deactivate TTC
-KT -> MH : Nhan nut thao tac tren giao dien
+
+KT -> MH : Nhan "Xac nhan"
 MH -> MH : xacNhan()
-MH -> TTC : XacNhanTinhTien(maPhieuCoc)
+MH -> TTC : XacNhanTinhTien(maPhieuCoc, maNV)
 activate TTC
-TTC -> PC : DocChiTiet(maPhieuCoc)
+TTC -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NV : DocChiTiet(maNV)
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+TTC -> PC : DocChiTietChoCapNhat(maPhieuCoc, maCN)
 activate PC
-PC -> PCDB : DocChiTiet(maPhieuCoc)
+PC -> PCDB : DocChiTietChoCapNhat(maPhieuCoc, maCN)
 activate PCDB
 deactivate PCDB
-PC -> PC : XacNhanTinhTien(thoiDiemXacNhan, thoiHanThanhToan)
-PC -> P : TinhTienCoc(soGiuong)
+deactivate PC
+TTC -> PC : XacNhanTinhTien(thoiDiemXacNhan, thoiHanThanhToan)
+activate PC
+PC -> PC : TinhTienDuKien()
+PC -> PC : KiemTraCoTheTinhTien()
+PC -> P : TinhTienCoc(soGiuongThue)
 activate P
 deactivate P
+deactivate PC
+TTC -> PC : CapNhatTinhTien()
+activate PC
 PC -> PCDB : CapNhatTinhTien(phieu)
 activate PCDB
-MH -> MH : thong bao Tao phieu coc thanh cong
-
 deactivate PCDB
 deactivate PC
 deactivate TTC
+
+MH -> MH : taiDanhSach(text)
+MH -> TTC : LayDanhSachKhoiTao(text, maNV)
+activate TTC
+TTC -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NV : DocChiTiet(maNV)
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+TTC -> PC : LayDanhSachKhoiTao(maCN, text)
+activate PC
+PC -> PCDB : LayDanhSachKhoiTao(maCN, text)
+activate PCDB
+deactivate PCDB
+deactivate PC
+deactivate TTC
+
 deactivate MH
 @enduml

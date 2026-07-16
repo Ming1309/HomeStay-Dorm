@@ -33,7 +33,6 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   class QuanLyChinhSachHoanCoc #F4E3A2 {
     + LayDanhSach(): List<ChinhSachHoanCoc>
-    + LayChinhSachHienHanh(): ChinhSachHoanCoc
     + TaoPhienBan(chinhSachMoi: ChinhSachHoanCoc): ChinhSachHoanCoc
   }
 
@@ -49,20 +48,16 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - NgayKetThuc: Date
     --
     + LayDanhSach(): List<ChinhSachHoanCoc>
-    + LayChinhSachDangApDung(ngay: Date): ChinhSachHoanCoc
     + LayPhienBanMoiNhat(): ChinhSachHoanCoc
     + KiemTraDuLieuHopLe()
     + Them()
     + CapNhatNgayKetThuc(ngayKetThuc: Date)
-    + TinhTrangThai(homNay: Date): String
-    + XacDinhTyLeHoan(soThangThucTe: Integer, soThangHopDong: Integer): Decimal
   }
 }
 
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
   class ChinhSachHoanCocDB #BFDCF0 {
     + LayDanhSach(): List<ChinhSachHoanCoc>
-    + LayChinhSachDangApDung(ngay: Date): ChinhSachHoanCoc
     + LayPhienBanMoiNhat(): ChinhSachHoanCoc
     + Them(chinhSach: ChinhSachHoanCoc)
     + CapNhatNgayKetThuc(maChinhSach: String, ngayKetThuc: Date)

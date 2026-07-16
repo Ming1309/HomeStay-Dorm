@@ -52,7 +52,6 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     --
     + ChuanHoa()
     + KiemTraDuLieuHopLe(yeuCauDuongDan: Boolean)
-    + TinhTrangThai(homNay: DateOnly): String
     + LayDanhSach(): IReadOnlyList<QuyDinh>
     + Doc(maQD: String): QuyDinh
     + DangDuocThamChieu(maQD: String): Boolean

@@ -1,154 +1,145 @@
 @startuml
+title SO DO TUAN TU - THANH LY HOP DONG
 
-skinparam sequenceArrowThickness 1.2
+hide footbox
+autonumber 1 1
 skinparam shadowing false
-skinparam sequenceMessageAlign left
 
-title Thanh lý hợp đồng
-
-actor "Quản lý" as QL
+actor "Quan ly" as QL
 
 box "GUI" #D5F5D3
-boundary "MHThanhLyHopDong" as MH
+boundary ": MHThanhLyHopDong" as MH
 end box
 
 box "BUS" #FCF3CF
-control "HopDong" as HD
-control "PhieuDoiSoat" as PDS
-control "ThanhVienHopDong" as TV
-control "Giuong" as GI
+control ": HopDong" as HD
+control ": PhieuDoiSoat" as PDS
+control ": PhieuCoc" as PC
+control ": ThanhVienHopDong" as TV
+control ": DichVuHopDong" as DV
+control ": Giuong" as G
 end box
 
 box "DB" #D6EAF8
-entity "HopDongDB" as HDDB
-entity "PhieuDoiSoatDB" as PDSDB
-entity "ThanhVienHopDongDB" as TVDB
-entity "GiuongDB" as GIDB
+entity ": HopDongDB" as HDDB
+entity ": PhieuDoiSoatDB" as PDSDB
+entity ": PhieuCocDB" as PCDB
+entity ": ThanhVienHopDongDB" as TVDB
+entity ": DichVuHopDongDB" as DVDB
+entity ": GiuongDB" as GDB
 end box
 
-'=========================
-' TẢI DANH SÁCH HỢP ĐỒNG
-'=========================
-
-QL -> MH : 1.0 Truy cập chức năng Thanh lý hợp đồng
-
+QL -> MH : Mo man hinh thanh ly hop dong
 activate MH
-
-MH -> HD : 1.1 layDanhSachChoThanhLy(tuKhoa)
-
+MH -> MH : taiDanhSach(tuKhoa)
+MH -> HD : LayDanhSachChoThanhLy(tuKhoa)
 activate HD
-
-HD -> HDDB : 1.2 getDanhSachChoThanhLy(tuKhoa)
-
+HD -> HDDB : LayDanhSachChoThanhLy(tuKhoa)
 activate HDDB
 deactivate HDDB
-
 deactivate HD
 
-'=========================
-' XEM CHI TIẾT HỢP ĐỒNG
-'=========================
-
-QL -> MH : 2.0 Chọn hợp đồng cần thanh lý
-
-
-MH -> HD : 2.1 layThongTinHopDong(maHD)
-
+QL -> MH : Chon hop dong
+MH -> MH : chonHopDong(maHD)
+MH -> HD : LayThongTinHopDong(maHD)
 activate HD
-
+HD -> HD : DocChiTiet(maHD)
 HD -> HDDB : DocChiTiet(maHD)
-
 activate HDDB
 deactivate HDDB
-
-HD -> TV : 2.3 layDanhSachGiuong(maHD)
-
+HD -> TV : LayDanhSachTheoHopDong(maHD)
 activate TV
-
-TV -> TVDB : 2.4 layDanhSachTheoHopDong(maHD)
-
+TV -> TVDB : LayDanhSachTheoHopDong(maHD)
 activate TVDB
 deactivate TVDB
-
 deactivate TV
-
+HD -> DV : LayDanhSachTheoHopDong(maHD)
+activate DV
+DV -> DVDB : LayDanhSachTheoHopDong(maHD)
+activate DVDB
+deactivate DVDB
+deactivate DV
 deactivate HD
-
-MH -> PDS : 2.5 layThongTinDoiSoat(maHD)
-
+MH -> PDS : LayThongTinDoiSoat(maHD)
 activate PDS
-
-PDS -> PDSDB : 2.6 getPhieuDoiSoatTheoMaHD(maHD)
-
+PDS -> PDSDB : GetPhieuDoiSoatTheoMaHD(maHD)
 activate PDSDB
 deactivate PDSDB
-
 deactivate PDS
-
-MH -> MH : 2.7 hienThiThongTinHopDong(maHD)
-
-
-'=========================
-' KIỂM TRA ĐIỀU KIỆN + THANH LÝ
-'=========================
-
-QL -> MH : 3.0 Xác nhận đã ký biên bản và thu hồi chìa khóa/thẻ
-
-
-MH -> MH : 3.1 kiemTraDieuKienThanhLy(maHD)
-
-MH -> PDS : 3.2 kiemTraCongNo(pds)
-
+MH -> PDS : KiemTraCongNo(pds)
 activate PDS
-
-alt Khách đã hoàn tất nghĩa vụ tài chính
-
 deactivate PDS
 
-QL -> MH : Nhan "Thanh Ly"
-MH -> MH : 3.3 btnThanhLy_Click()
-
-MH -> HD : 3.4 thanhLyHopDong(maHD, ngayThanhLy, nguoiThucHien, ghiChu)
-
+QL -> MH : Xac nhan da ky bien ban va thu hoi chia khoa
+QL -> MH : Nhan "Thanh ly"
+MH -> MH : xacNhanThanhLy()
+MH -> HD : LayThongTinHopDong(maHD)
 activate HD
-
-HD -> HDDB : 3.5 updateTrangThaiThanhLy(maHD)
-
+HD -> HD : DocChiTiet(maHD)
+HD -> HDDB : DocChiTiet(maHD)
 activate HDDB
 deactivate HDDB
-
-deactivate HD
-
-MH -> TV : 3.6 capNhatTrangThaiDaTra(maHD, ngayTra)
-
+HD -> TV : LayDanhSachTheoHopDong(maHD)
 activate TV
-
-TV -> TVDB : 3.7 updateTrangThaiDaTra(maHD, ngayTra)
-
+TV -> TVDB : LayDanhSachTheoHopDong(maHD)
 activate TVDB
 deactivate TVDB
-
 deactivate TV
+HD -> DV : LayDanhSachTheoHopDong(maHD)
+activate DV
+DV -> DVDB : LayDanhSachTheoHopDong(maHD)
+activate DVDB
+deactivate DVDB
+deactivate DV
+HD -> HD : KiemTraDangHieuLuc()
+deactivate HD
+MH -> PC : DocChiTiet(maPhieuCoc)
+activate PC
+PC -> PC : DocChiTietHeThong(maPhieuCoc, false)
+PC -> PCDB : DocChiTietHeThong(maPhieuCoc, false)
+activate PCDB
+deactivate PCDB
+deactivate PC
+MH -> PDS : LayThongTinDoiSoat(maHD)
+activate PDS
+PDS -> PDSDB : GetPhieuDoiSoatTheoMaHD(maHD)
+activate PDSDB
+deactivate PDSDB
+PDS -> PDS : KiemTraCongNo(pds)
+deactivate PDS
 
-MH -> GI : 3.8 capNhatDanhSachTrong(dsMaGiuong)
-
-activate GI
-
-GI -> GIDB : 3.9 updateTrangThaiBatch(dsMaGiuong, "Trong")
-
-activate GIDB
-deactivate GIDB
-
-deactivate GI
-
-MH -> MH : 3.10 hienThiThongBaoThanhCong()
-
-else Khách còn nợ tiền
-
-MH -> MH : A5.1 hienThiThongBaoLoi()
-
+alt Da hoan tat nghia vu tai chinh
+  MH -> HD : ThanhLyHopDong(maHD, ngayThanhLy, maNV, ghiChu)
+  activate HD
+  HD -> HDDB : UpdateTrangThaiThanhLy(maHD)
+  activate HDDB
+  deactivate HDDB
+  deactivate HD
+  opt Chua co danh sach thanh vien trong chi tiet hop dong
+    MH -> TV : LayDanhSachGiuong(maHD)
+    activate TV
+    TV -> TV : LayDanhSachTheoHopDong(maHD)
+    TV -> TVDB : LayDanhSachTheoHopDong(maHD)
+    activate TVDB
+    deactivate TVDB
+    deactivate TV
+  end
+  opt Hop dong co giuong dang thue
+    MH -> TV : CapNhatTrangThaiDaTra(maHD, ngayTra)
+    activate TV
+    TV -> TVDB : UpdateTrangThaiDaTra(maHD, ngayTra)
+    activate TVDB
+    deactivate TVDB
+    deactivate TV
+    MH -> G : CapNhatDanhSachTrong(dsMaGiuong)
+    activate G
+    G -> GDB : UpdateTrangThaiBatch(dsMaGiuong, "Trong")
+    activate GDB
+    deactivate GDB
+    deactivate G
+  end
+else Con cong no hoac ho so khong hop le
 end
 
 deactivate MH
-
 @enduml

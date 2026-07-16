@@ -54,6 +54,22 @@ QuanLyNguoiDung -> TaiKhoan: Them()
 activate TaiKhoan
 TaiKhoan -> TaiKhoanDB: Them()
 activate TaiKhoanDB
+QTV -> MHQuanLyNguoiDung : Chon tai khoan va sua thong tin
+QTV -> MHQuanLyNguoiDung : Nhan "Luu thay doi"
+MHQuanLyNguoiDung -> MHQuanLyNguoiDung : btnSua_Click()
+MHQuanLyNguoiDung -> QuanLyNguoiDung: CapNhat(taiKhoan, nhanVien)
+deactivate TaiKhoanDB
+deactivate TaiKhoan
+QuanLyNguoiDung -> NhanVien: CapNhat()
+activate NhanVien
+NhanVien -> NhanVienDB: CapNhat(nhanVien)
+activate NhanVienDB
+deactivate NhanVienDB
+deactivate NhanVien
+QuanLyNguoiDung -> TaiKhoan: CapNhat()
+activate TaiKhoan
+TaiKhoan -> TaiKhoanDB: CapNhat(taiKhoan)
+activate TaiKhoanDB
 QTV -> MHQuanLyNguoiDung : Chon tai khoan va trang thai moi
 QTV -> MHQuanLyNguoiDung : Xac nhan doi trang thai
 MHQuanLyNguoiDung -> MHQuanLyNguoiDung : btnKhoa_Click()
@@ -66,7 +82,7 @@ TaiKhoan -> TaiKhoanDB: Doc()
 activate TaiKhoanDB
 deactivate TaiKhoanDB
 deactivate TaiKhoan
-QuanLyNguoiDung -> TaiKhoan: Khoa() / MoKhoa() / VoHieuHoa()
+QuanLyNguoiDung -> TaiKhoan: CapNhatTrangThai()
 activate TaiKhoan
 TaiKhoan -> TaiKhoanDB: CapNhatTrangThai()
 activate TaiKhoanDB
@@ -83,6 +99,9 @@ activate TaiKhoanDB
 deactivate TaiKhoanDB
 deactivate TaiKhoan
 QuanLyNguoiDung -> TaiKhoan: DoiMatKhau()
+activate TaiKhoan
+deactivate TaiKhoan
+QuanLyNguoiDung -> TaiKhoan: DatMatKhau()
 activate TaiKhoan
 TaiKhoan -> TaiKhoanDB: DatMatKhau()
 activate TaiKhoanDB

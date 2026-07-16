@@ -86,7 +86,7 @@ package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
     + GetChinhSachTheoMa(maChinhSach: String): ChinhSachHoanCoc
   }
   class HoaDonDB #BFDCF0 {
-    + GetDanhSachChuaThanhToanTheoHD(maHD: String): IReadOnlyList<HoaDon>
+    + LayDanhSachChuaThanhToanTheoHD(maHD: String): IReadOnlyList<HoaDon>
   }
   class PhieuDoiSoatDB #BFDCF0 {
     + TonTaiChoPhieuCocChuaKy(maPhieuCoc: String): Boolean

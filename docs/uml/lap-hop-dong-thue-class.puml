@@ -30,15 +30,11 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     --
     + hienThiForm()
     + nhapTuKhoaTimKiem(tuKhoa: String)
-    + hienThiDanhSachPhieuCoc()
     + chonPhieuCoc(maPhieuCoc: String)
-    + hienThiChiTietPhieuCoc()
     + nhapThongTinHopDong()
     + clickLuuXemTruocHopDong()
     + clickXacNhanKhachDaKy()
     + clickHuyHopDong()
-    + hienThiThongBao()
-    + hienThiLoi()
   }
 }
 

@@ -1,5 +1,7 @@
 @startuml
+title SO DO LOP - LAP HOA DON BOI THUONG
 
+top to bottom direction
 skinparam classAttributeIconSize 0
 skinparam classFontSize 12
 skinparam classHeaderBackgroundColor #AED6F1
@@ -11,178 +13,123 @@ skinparam shadowing false
 skinparam roundcorner 6
 skinparam linetype ortho
 
-' =====================
-' LỚP GIAO DIỆN
-' =====================
-
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
-
-    class MHLapHoaDonBoiThuong #BFE8BA {
-        ' --- Danh sách biên bản ---
-        +dgvDSBienBan : DataGridView
-        +txtTimKiem : TextBox
-        ' --- Thông tin biên bản ---
-        +lblMaBienBan : Label
-        +lblTrangThai : Label
-        +lblKhachHang : Label
-        +lblPhong : Label
-        +lblHopDong : Label
-        +lblNgayLap : Label
-        +lblNguoiLap : Label
-        ' --- Danh sách tài sản hư hỏng ---
-        +dgvDSTaiSan : DataGridView
-        +txtSoTienPhat : TextBox
-        ' --- Nút hành động ---
-        +btnLapHoaDonBoiThuong : Button
-        ' --- Dialog thành công ---
-        +dlgThanhCong : Dialog
-        +lblMaHoaDon : Label
-        +lblBienBanThuHoi : Label
-        +lblKhachHangHD : Label
-        +lblTongBoiThuong : Label
-        +lblTrangThaiHD : Label
-        +btnHoanTat : Button
-        ' --- Phương thức ---
-        +hienThiForm()
-        +loadDSBienBanChuaXuLy()
-        +hienThiChiTietBienBan()
-        +hienThiDSTaiSanHuHong()
-        +kiemTraTinhHopLe() : Boolean
-        +btnLapHoaDonBoiThuong_Click()
-        +hienThiDialogThanhCong()
-        +boiDoTruongBiLoi()
-        +btnHoanTat_Click()
-    }
+  class MHLapHoaDonBoiThuong #BFE8BA {
+    - txtTimKiem: TextBox
+    - grvBienBanChuaXuLy: GridView
+    - grvTaiSanHuHong: GridView
+    - txtGhiChu: TextArea
+    - btnLapHoaDon: Button
+    --
+    + taiDanhSach(tuKhoa: String)
+    + chonBienBan(maBienBan: String)
+    + lapHoaDon()
+  }
 }
-
-' =====================
-' LỚP NGHIỆP VỤ
-' =====================
 
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class BienBanGiaoNhan #F4E3A2 {
+    - MaBienBan: String
+    - LoaiBienBan: String
+    - MaHD: String
+    --
+    + LayDSBienBanThuHoiChuaXuLy(tuKhoa: String): IReadOnlyList<BienBanGiaoNhan>
+    + LayChiTietBienBan(maBienBan: String): BienBanGiaoNhan
+    + DaCoHoaDonBoiThuongTheoHD(maHD: String): Boolean
+  }
 
-    class BienBanGiaoNhan #F4E3A2 {
-        +maBienBan : String
-        +ngayBanGiao : DateTime
-        +loaiBienBan : String
-        +maHD : String
-        +maNV : String
-        ' ---
-        +layDSBienBanThuHoiChuaXuLy() : List<BienBanGiaoNhan>
-        +layChiTietBienBan(maBienBan : String) : BienBanGiaoNhan
-    }
+  class ChiTietGiaoNhan #F4E3A2 {
+    - MaBienBan: String
+    - MaTS: String
+    - TinhTrang: String
+    - SoLuong: Integer
+    --
+    + LayDSTaiSanHuHongTheoBienBan(maBienBan: String): IReadOnlyList<ChiTietGiaoNhan>
+  }
 
-    class ChiTietGiaoNhan #F4E3A2 {
-        +maBienBan : String
-        +maTS : String
-        +tinhTrang : String
-        +soLuong : Integer
-        +ghiChu : String
-        +minhChung : String
-        ' ---
-        +layDSTaiSanHuHongTheoBienBan(maBienBan : String) : List<ChiTietGiaoNhan>
-    }
+  class TaiSan #F4E3A2 {
+    - MaTS: String
+    - TenTaiSan: String
+    - GiaTri: Decimal
+    --
+    + LayThongTinTaiSan(maTS: String): TaiSan
+  }
 
-    class TaiSan #F4E3A2 {
-        +maTS : String
-        +tenTaiSan : String
-        +giaTri : Decimal
-        ' ---
-        +layThongTinTaiSan(maTS : String) : TaiSan
-    }
+  class NhanVien #F4E3A2 {
+    - MaNV: String
+    - HoTen: String
+    --
+    + LayThongTinNhanVien(maNV: String): NhanVien
+  }
 
-    class HoaDon #F4E3A2 {
-        +maHoaDon : String
-        +ngayLap : DateTime
-        +hanThanhToan : DateTime
-        +loaiHoaDon : String
-        +tongTien : Decimal
-        +trangThai : String
-        +ghiChu : String
-        +maHD : String
-        +maNV : String
-        ' ---
-        +taoHoaDonBoiThuong(maBienBan : String, tongTien : Decimal, maNV : String) : HoaDon
-        +kiemTraTinhHopLe(dsSoTien : List) : Boolean
-    }
+  class HoaDon #F4E3A2 {
+    - MaHoaDon: String
+    - TongTien: Decimal
+    - TrangThai: String
+    - MaHD: String
+    --
+    + KiemTraTinhHopLe(dsSoTien: IReadOnlyList<Decimal>): Boolean
+    + TaoHoaDonBoiThuong(maBienBan: String, tongTien: Decimal, maNV: String, ngayLap: DateTime, ghiChuThem: String): HoaDon
+  }
 
-    class ChiTietHoaDon #F4E3A2 {
-        +maHoaDon : String
-        +stt : Integer
-        +loaiKhoanThu : String
-        +maTS : String
-        +soLuong : Integer
-        +donViTinh : String
-        +donGia : Decimal
-        +thanhTien : Decimal
-        ' ---
-        +taoChiTietHoaDon(maHoaDon : String, dsChiTiet : List) : Boolean
-    }
-
-    class NhanVien #F4E3A2 {
-        +maNV : String
-        +hoTen : String
-        +sdt : String
-        +vaiTro : String
-        +maCN : String
-        ' ---
-        +layThongTinNhanVien(maNV : String) : NhanVien
-    }
+  class ChiTietHoaDon #F4E3A2 {
+    - MaHoaDon: String
+    - MaTS: String
+    - SoLuong: Decimal
+    - DonGia: Decimal
+    --
+    + TaoChiTietHoaDon(maHoaDon: String, dsChiTiet: IReadOnlyList<ChiTietHoaDon>): Boolean
+  }
 }
-
-' =====================
-' LỚP TRUY XUẤT DỮ LIỆU
-' =====================
 
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class BienBanGiaoNhanDB #BFDCF0 {
+    + GetDSBienBanThuHoiChuaXuLy(tuKhoa: String): IReadOnlyList<BienBanGiaoNhan>
+    + GetBienBanTheoMaBienBan(maBienBan: String): BienBanGiaoNhan
+    + DaCoHoaDonBoiThuongTheoHD(maHD: String): Boolean
+  }
 
-    class BienBanGiaoNhanDB #BFDCF0 {
-        +getDSBienBanThuHoiChuaXuLy() : List<BienBanGiaoNhan>
-        +getBienBanTheoMaBienBan(maBienBan : String) : BienBanGiaoNhan
-    }
+  class ChiTietGiaoNhanDB #BFDCF0 {
+    + GetDSTaiSanHuHongTheoBienBan(maBienBan: String): IReadOnlyList<ChiTietGiaoNhan>
+  }
 
-    class ChiTietGiaoNhanDB #BFDCF0 {
-        +getDSTaiSanHuHongTheoBienBan(maBienBan : String) : List<ChiTietGiaoNhan>
-    }
+  class TaiSanDB #BFDCF0 {
+    + GetTaiSanTheoMaTS(maTS: String): TaiSan
+  }
 
-    class TaiSanDB #BFDCF0 {
-        +getTaiSanTheoMaTS(maTS : String) : TaiSan
-    }
+  class NhanVienDB #BFDCF0 {
+    + GetNhanVienTheoMaNV(maNV: String): NhanVien
+  }
 
-    class HoaDonDB #BFDCF0 {
-        +insertHoaDon(hoaDon : HoaDon) : String
-    }
+  class HoaDonDB #BFDCF0 {
+    + InsertHoaDon(hoaDon: HoaDon): String
+  }
 
-    class ChiTietHoaDonDB #BFDCF0 {
-        +insertChiTietHoaDon(chiTiet : ChiTietHoaDon) : Boolean
-    }
-
-    class NhanVienDB #BFDCF0 {
-        +getNhanVienTheoMaNV(maNV : String) : NhanVien
-    }
+  class ChiTietHoaDonDB #BFDCF0 {
+    + InsertChiTietHoaDon(chiTiet: ChiTietHoaDon)
+  }
 }
-
-' =====================
-' QUAN HỆ
-' =====================
 
 MHLapHoaDonBoiThuong o-- BienBanGiaoNhan
 MHLapHoaDonBoiThuong o-- ChiTietGiaoNhan
 MHLapHoaDonBoiThuong o-- TaiSan
+MHLapHoaDonBoiThuong o-- NhanVien
 MHLapHoaDonBoiThuong o-- HoaDon
 MHLapHoaDonBoiThuong o-- ChiTietHoaDon
-MHLapHoaDonBoiThuong o-- NhanVien
 
-BienBanGiaoNhan  o-- BienBanGiaoNhanDB
-ChiTietGiaoNhan  o-- ChiTietGiaoNhanDB
-TaiSan           o-- TaiSanDB
-HoaDon           o-- HoaDonDB
-ChiTietHoaDon    o-- ChiTietHoaDonDB
-NhanVien         o-- NhanVienDB
-
+BienBanGiaoNhan o-- BienBanGiaoNhanDB
+ChiTietGiaoNhan o-- ChiTietGiaoNhanDB
+TaiSan o-- TaiSanDB
+NhanVien o-- NhanVienDB
+HoaDon o-- HoaDonDB
+ChiTietHoaDon o-- ChiTietHoaDonDB
 
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
 BienBanGiaoNhan -[hidden]down- BienBanGiaoNhanDB
-NhanVien -[hidden]down- BienBanGiaoNhanDB
+ChiTietGiaoNhan -[hidden]down- ChiTietGiaoNhanDB
+TaiSan -[hidden]down- TaiSanDB
+NhanVien -[hidden]down- NhanVienDB
+HoaDon -[hidden]down- HoaDonDB
+ChiTietHoaDon -[hidden]down- ChiTietHoaDonDB
 @enduml

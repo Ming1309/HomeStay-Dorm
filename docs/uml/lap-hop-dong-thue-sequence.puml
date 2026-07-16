@@ -95,6 +95,7 @@ deactivate UC
 ' 3. NHAP THONG TIN & XEM TRUOC HOP DONG
 '==================================================
 NV -> MH : Nhap thong tin tren giao dien
+MH -> MH : nhapTuKhoaTimKiem(tuKhoa)
 MH -> MH : nhapThongTinHopDong()
 NV -> MH : Nhan "Luu Xem Truoc Hop Dong"
 MH -> MH : clickLuuXemTruocHopDong()

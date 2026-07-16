@@ -16,10 +16,8 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - txtTenDangNhap: TextBox
     - txtMatKhau: TextBox
     - btnDangNhap: Button
-    - btnDangXuat: Button
     --
     + btnDangNhap_Click()
-    + btnDangXuat_Click()
   }
 
 }
@@ -27,7 +25,6 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   class XacThucNguoiDung #F4E3A2 {
     + DangNhap(tenDangNhap: String, matKhau: String): TaiKhoan
-    + DangXuat()
   }
 
   class TaiKhoan #F4E3A2 {

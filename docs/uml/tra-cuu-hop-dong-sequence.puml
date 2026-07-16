@@ -31,6 +31,7 @@ end box
 
 USER -> MH : 1.0 Truy cap chuc nang
 activate MH
+MH -> MH : HienThi()
 
 MH -> DK : 1.1 TimKiem(null, null)
 activate DK
@@ -60,10 +61,10 @@ activate DK
 
 alt A2 Khong nhap tieu chi
 
-DK -> HD : A2.1 LayDanhSachHieuLuc()
+DK -> HD : LayDanhSachHieuLuc()
 activate HD
 
-HD -> HDDB : A2.2 LayDanhSachHieuLuc()
+HD -> HDDB : LayDanhSachHieuLuc()
 activate HDDB
 deactivate HDDB
 

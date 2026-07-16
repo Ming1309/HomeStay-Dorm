@@ -104,6 +104,15 @@ alt Them phong
   deactivate QL
 else Sua phong
   QT -> MH : Chon phong va nhan "Sua"
+  MH -> QL : LayChiTietPhong(maPhong)
+  activate QL
+  QL -> P : DocChiTiet(maPhong)
+  activate P
+  P -> PDB : DocChiTiet(maPhong)
+  activate PDB
+  deactivate PDB
+  deactivate P
+  deactivate QL
   MH -> MH : moFormSuaPhong(phong)
   QT -> MH : Nhap thong tin phong va nhan "Luu"
   MH -> MH : luuPhong(phong)
@@ -216,6 +225,15 @@ else Them giuong
   deactivate QL
 else Sua giuong
   QT -> MH : Chon giuong va nhan "Sua"
+  MH -> QL : LayChiTietGiuong(maGiuong)
+  activate QL
+  QL -> G : DocChiTiet(maGiuong)
+  activate G
+  G -> GDB : DocChiTiet(maGiuong)
+  activate GDB
+  deactivate GDB
+  deactivate G
+  deactivate QL
   MH -> MH : moFormSuaGiuong(giuong)
   QT -> MH : Nhap thong tin giuong va nhan "Luu"
   MH -> MH : luuGiuong(giuong)

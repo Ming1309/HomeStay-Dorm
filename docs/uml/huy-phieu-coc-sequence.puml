@@ -59,6 +59,9 @@ P -> P : GiaiPhongDatCoc(maGiuongs)
 deactivate P
 UC -> PC : Huy(maNhanVien, thoiDiem)
 activate PC
+deactivate PC
+UC -> PC : CapNhatHuy()
+activate PC
 PC -> PCDB : CapNhatHuy(phieuCoc)
 activate PCDB
 deactivate PCDB

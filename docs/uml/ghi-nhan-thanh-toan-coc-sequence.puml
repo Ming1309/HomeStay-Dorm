@@ -62,9 +62,7 @@ end
 NV -> MH : Nhan "Gui chung tu"
 MH -> MH : guiChungTu()
 alt Chua chon tep
-  MH -> MH : hien thi loi thieu chung tu
 else Tep sai dinh dang hoac vuot qua 5 MB
-  MH -> MH : hien thi loi tep khong hop le
 else Du lieu hop le
   MH -> GNTT : GuiChungTuThanhToan(maPhieuCoc, phuongThucThanhToan, tepChungTu)
   activate GNTT
@@ -88,9 +86,7 @@ deactivate PC
 deactivate PCDB
 deactivate PC
 deactivate GNTT
-    MH -> MH : hien thi loi tranh chap trang thai
   else Cap nhat thanh cong
-    MH -> MH : hien thi thong bao thanh cong
   end
 end
 

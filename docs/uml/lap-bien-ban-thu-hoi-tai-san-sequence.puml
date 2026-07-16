@@ -97,6 +97,9 @@ end
 UC -> BB : KhoiTaoThuHoi(maHD, maNV, ngayBanGiao, chiTiet)
 activate BB
 BB -> BB : KiemTraDuLieuTaiSan()
+deactivate BB
+UC -> BB : LuuBienBan()
+activate BB
 BB -> BBDB : Them(bienBan)
 activate BBDB
 deactivate BBDB

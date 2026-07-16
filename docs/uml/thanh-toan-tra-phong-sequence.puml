@@ -1,103 +1,105 @@
 @startuml
-
-skinparam sequenceArrowThickness 1.2
+title SO DO TUAN TU - THANH TOAN TRA PHONG
+hide footbox
+autonumber 1 1
 skinparam shadowing false
-skinparam sequenceMessageAlign left
-
-title Thu hồi khoản nợ - Thanh toán trả phòng
-
-actor "Kế Toán" as KT
-
+actor "Ke toan" as KT
 box "GUI" #D5F5D3
-    boundary "MHThanhToanTraPhong" as MH
+boundary ": MHThanhToanTraPhong" as MH
 end box
-
 box "BUS" #FCF3CF
-    control "PhieuDoiSoat" as PDS
-    control "ChiTietDoiSoat" as CTDS
-    control "HoaDon" as HD
-    control "PhieuThu" as PT
-    control "NhanVien" as NV
+control ": ThanhToanTraPhong" as UC
+control ": PhieuDoiSoat" as PDS
+control ": HopDong" as HD
+control ": PhieuCoc" as PC
+control ": HoaDon" as HDon
+control ": PhieuThu" as PT
 end box
-
 box "DB" #D6EAF8
-    entity "PhieuDoiSoatDB" as PDSDB
-    entity "ChiTietDoiSoatDB" as CTDSDB
-    entity "HoaDonDB" as HDDB
-    entity "PhieuThuDB" as PTDB
-    entity "NhanVienDB" as NVDB
+entity ": PhieuDoiSoatDB" as PDSDB
+entity ": HopDongDB" as HDDB
+entity ": PhieuCocDB" as PCDB
+entity ": HoaDonDB" as HDonDB
+entity ": PhieuThuDB" as PTDB
 end box
 
-' =====================
-' LUỒNG CHÍNH
-' =====================
-
-KT -> MH : 1.0 Truy cập chức năng\nThu hồi khoản nợ
+KT -> MH : Chon chuc nang "Thanh toan tra phong"
 activate MH
-
-MH -> PDS : 1.1 layDSPhieuDoiSoatDaChot()
+MH -> MH : taiDanhSach()
+MH -> UC : LayDSPhieuDoiSoatDaChot()
+activate UC
+UC -> PDS : LayDSPhieuDoiSoatDaChot()
 activate PDS
-PDS -> PDSDB : 1.2 getDSPhieuDoiSoatDaChot()
+PDS -> PDSDB : GetDSPhieuDoiSoatDaChot()
 activate PDSDB
 deactivate PDSDB
 deactivate PDS
+deactivate UC
 
-
-KT -> MH : 2.0 Chọn một PhieuDoiSoat\ncần thu tiền
-MH -> PDS : 2.1 layChiTietPhieuDoiSoat(maPDS)
+KT -> MH : Chon phieu doi soat
+MH -> MH : chonPhieuDoiSoat(maPDS)
+MH -> UC : LayChiTietPhieuDoiSoat(maPDS)
+activate UC
+UC -> PDS : LayChiTietPhieuDoiSoat(maPDS)
 activate PDS
-PDS -> PDSDB : 2.2 getPhieuDoiSoatTheoMaPDS(maPDS)
+PDS -> PDSDB : GetPhieuDoiSoatTheoMaPDS(maPDS)
 activate PDSDB
 deactivate PDSDB
 deactivate PDS
+alt Phieu doi soat co hop dong
+  UC -> HD : LayThongTinLuuTru(maHD)
+  activate HD
+  HD -> HDDB : LayThongTinLuuTru(maHD)
+  activate HDDB
+  deactivate HDDB
+  deactivate HD
+else Phieu coc huy truoc hop dong
+  UC -> PC : DocChiTiet(maPhieuCoc)
+  activate PC
+  PC -> PCDB : DocChiTietHeThong(maPhieuCoc)
+  activate PCDB
+  deactivate PCDB
+  deactivate PC
+end
+UC -> HDon : LayDSHoaDonTheoPhieuDoiSoat(maPDS)
+activate HDon
+HDon -> HDonDB : GetDSHoaDonTheoMaPDS(maPDS)
+activate HDonDB
+deactivate HDonDB
+deactivate HDon
+deactivate UC
 
-MH -> CTDS : 2.3 layDSHoaDonThuocPhieuDoiSoat(maPDS)
-activate CTDS
-CTDS -> CTDSDB : 2.4 getDSHoaDonThuocPhieuDoiSoat(maPDS)
-activate CTDSDB
-deactivate CTDSDB
-deactivate CTDS
-
-MH -> HD : 2.5 tinhTongKhauTru(maPDS)
-activate HD
-HD -> HDDB : 2.6 tinhTongKhauTru(maPDS)
-activate HDDB
-deactivate HDDB
-deactivate HD
-
-MH -> PDS : 2.7 tinhToanKetQua(maPDS)
+KT -> MH : Chon phuong thuc, tai minh chung va nhan "Thu tien"
+MH -> MH : xacNhanThuTien()
+MH -> UC : TienHanhThuTien(maPDS, phuongThuc, anhMinhChung, maNV)
+activate UC
+UC -> PDS : LayChiTietPhieuDoiSoat(maPDS)
 activate PDS
-PDS -> PDSDB : 2.8 getPhieuDoiSoatTheoMaPDS(maPDS)
+PDS -> PDSDB : GetPhieuDoiSoatTheoMaPDS(maPDS)
 activate PDSDB
 deactivate PDSDB
 deactivate PDS
-
-
-KT -> MH : Nhan "Tien Hanh Thu Tien"
-MH -> MH : 3.0 btnTienHanhThuTien_Click()
-
-MH -> MH : 3.1 hienThiDialogLapPhieuThu()
-
-KT -> MH : 3.2 Chọn phuongThucThanhToan,\ntải minh chứng khi chuyển khoản
-
-MH -> MH : 3.3 Dùng tienThuThem do máy chủ tính
-
-KT -> MH : Nhan "Xac Nhan Thu Tien"
-MH -> MH : 3.4 btnXacNhanThuTien_Click()
-MH -> PT : 3.5 taoPhieuThu(maPDS, tienThuThem,\nphuongThuc, anhMinhChung, maNV)
+UC -> PT : DaTonTaiChoPhieuDoiSoat(maPDS)
 activate PT
-PT -> PTDB : 3.6 insertPhieuThu(phieuThu)
+PT -> PTDB : TonTaiTheoMaPhieuDoiSoat(maPDS)
 activate PTDB
 deactivate PTDB
 deactivate PT
-
-PT -> PT : daTonTaiChoPhieuDoiSoat(maPDS)
-MH -> PDS : 3.8 chuyenSangDaTatToan(maPDS)
+UC -> PT : TaoPhieuThu(maPDS, tienThuThem, phuongThuc, anhMinhChung, maNV, thoiDiem)
+activate PT
+deactivate PT
+UC -> PT : LuuPhieu()
+activate PT
+PT -> PTDB : InsertPhieuThu(phieuThu)
+activate PTDB
+deactivate PTDB
+deactivate PT
+UC -> PDS : ChuyenSangDaTatToan(maPDS)
 activate PDS
-PDS -> PDSDB : 3.9 updateTrangThai(maPDS, "DaChot", "DaTatToan")
+PDS -> PDSDB : UpdateTrangThai(maPDS, "DaChot", "DaTatToan")
 activate PDSDB
 deactivate PDSDB
 deactivate PDS
+deactivate UC
 deactivate MH
-
 @enduml

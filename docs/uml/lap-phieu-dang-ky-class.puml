@@ -52,7 +52,7 @@ package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
     + DocChiTiet(maNV: String): NhanVien
   }
   class KhachHangDB #BFDCF0 {
-    + KiemTraTonTai(soGiayTo: String): KhachHang
+    + TimTheoSoGiayTo(soGiayTo: String): KhachHang
     + Them(khachHang: KhachHang)
   }
   class PhieuDangKyDB #BFDCF0 {

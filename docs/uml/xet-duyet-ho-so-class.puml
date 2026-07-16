@@ -43,35 +43,15 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - btnTuChoiHoSo: Button
     --
     + taiDanhSachHoSoChoDuyet()
-    + timKiemHoSo()
     + clickChonHoSo()
-    + hienThiDanhSachThanhVien()
     + clickXemChiTietThanhVien()
     + clickTuChoiThanhVien()
     + clickDuyetToanBo()
     + clickDuyetThanhVienConLai()
     + clickTuChoiHoSo()
     + clickHoanTac()
-    + hienThiThongBao()
-    + hienThiLoi()
   }
 
-  class PopupChiTietThanhVien #BFE8BA {
-    - lblTieuDePopup: Label
-    - btnDongPopup: Button
-    - txtHoTen: TextBox
-    - txtSoDienThoai: TextBox
-    - txtGioiTinh: TextBox
-    - txtNgaySinh: TextBox
-    - txtLoaiGiayTo: TextBox
-    - txtSoGiayTo: TextBox
-    - txtQuocTich: TextBox
-    - txtDiaChiThuongTru: TextBox
-    --
-    + hienThiPopup()
-    + hienThiThongTinThanhVien()
-    + clickDongPopup()
-  }
 }
 
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
@@ -123,7 +103,6 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     --
     + LayDanhSachThanhVien(maPhieuCoc: String): IReadOnlyList<ThanhVienDangKy>
     + KiemTraTonTaiDaiDien(maPhieuCoc: String): Boolean
-    + DanhDauHopLe(maPhieuCoc: String, maKH: String): Boolean
     + DanhDauTuChoi(maPhieuCoc: String, maKH: String): Boolean
     + DuyetTatCaThanhVien(maPhieuCoc: String): Boolean
     + TuChoiTatCaThanhVien(maPhieuCoc: String): Boolean
@@ -144,7 +123,6 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - SDT: String
     - Email: String
     --
-    + LayThongTinKhachHang(maKH: String): KhachHang
     + LayDanhSachKhachTheoPhieuCoc(maPhieuCoc: String): List<KhachHang>
   }
 
@@ -159,7 +137,6 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - MaCN: String
     - LoaiPhong: LoaiPhong
     --
-    + DocChiTiet(maPhong: String): Phong
     + KiemTraSucChua(soLuongThanhVien: Integer, soGiuongThue: Integer, sucChuaPhong: Integer, hinhThucThue: String): Boolean
     + KiemTraGioiTinhChoPhep(dsKhach: IReadOnlyList<KhachHang>): Boolean
   }
@@ -169,14 +146,6 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - TenLoaiPhong: String
     - SucChua: Integer
     - GiaThue: Decimal
-  }
-
-  class ChiTietPhieuCoc #F4E3A2 {
-    - MaPhieuCoc: String
-    - MaGiuong: String
-    --
-    + LayDanhSachGiuongTheoPhieuCoc(maPhieuCoc: String): IReadOnlyList<ChiTietPhieuCoc>
-    + DemSoGiuongDaCoc(maPhieuCoc: String): Integer
   }
 
   class Giuong #F4E3A2 {
@@ -197,7 +166,6 @@ package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
     + DocChiTiet(maPhieuCoc: String): PhieuCoc
     + CapNhatDaDuyet(phieu: PhieuCoc)
     + CapNhatDaHuy(phieu: PhieuCoc)
-    + CapNhatTrangThai(maPhieuCoc: String, trangThai: String): Boolean
   }
 
   class ThanhVienDangKyDB #BFDCF0 {
@@ -209,29 +177,16 @@ package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
   }
 
   class KhachHangDB #BFDCF0 {
-    + GetByMaKH(maKH: String): KhachHang
     + GetByMaPhieuCoc(maPhieuCoc: String): List<KhachHang>
   }
 
-  class PhongDB #BFDCF0 {
-    + DocChiTiet(maPhong: String): Phong
-  }
-
-  class ChiTietPhieuCocDB #BFDCF0 {
-    + GetByMaPhieuCoc(maPhieuCoc: String): IReadOnlyList<ChiTietPhieuCoc>
-    + CountByMaPhieuCoc(maPhieuCoc: String): Integer
-  }
-
   class GiuongDB #BFDCF0 {
-    + UpdateTrangThai(maGiuong: String, trangThai: String): Boolean
     + UpdateTrangThaiBatch(dsMaGiuong: IReadOnlyList<String>, trangThai: String)
   }
 }
 
 ' Boundary dieu khien use case xet duyet ho so.
 MHXetDuyetHoSo  o--  XetDuyetHoSo
-PopupChiTietThanhVien  o--  KhachHang
-
 ' Use case dieu phoi cac entity.
 XetDuyetHoSo  o--  PhieuCoc
 XetDuyetHoSo  o--  ThanhVienDangKy
@@ -242,17 +197,13 @@ XetDuyetHoSo  o--  Giuong
 PhieuCoc "1" -- "1..*" ThanhVienDangKy : gom
 PhieuCoc "0..*" -- "1" KhachHang : dai dien
 PhieuCoc "0..*" -- "1" Phong : dat
-PhieuCoc "1" -- "1..*" ChiTietPhieuCoc : chi tiet giuong
 ThanhVienDangKy "0..*" -- "1" KhachHang : thong tin
 Phong "0..*" -- "1" LoaiPhong : thuoc
-ChiTietPhieuCoc "0..*" -- "1" Giuong : cap nhat
 
 ' Aggregation giua business va data access.
 PhieuCoc  o--  PhieuCocDB
 ThanhVienDangKy  o--  ThanhVienDangKyDB
 KhachHang  o--  KhachHangDB
-Phong  o--  PhongDB
-ChiTietPhieuCoc  o--  ChiTietPhieuCocDB
 Giuong  o--  GiuongDB
 
 

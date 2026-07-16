@@ -30,11 +30,9 @@ activate DB
 deactivate DB
 deactivate DV
 deactivate QL
-MH -> MH : hien thi danh sach
 
 QTV -> MH : Nhap thong tin va nhan "Luu"
 MH -> MH : luuDichVu(dichVu)
-MH -> MH : validate form
 alt them moi
   MH -> QL : Them(dichVu)
   activate QL
@@ -92,7 +90,6 @@ activate DB
 alt da duoc tham chieu
 deactivate DB
 deactivate DV
-  QL -> QL : throw InvalidOperationException
 else chua duoc tham chieu
   QL -> DV : Xoa()
   activate DV

@@ -28,14 +28,10 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     --
     + hienThiForm()
     + nhapTuKhoaTimKiem(tuKhoa: String)
-    + hienThiDanhSachHopDong()
     + chonHopDong(maHD: String)
-    + hienThiDanhSachTaiSan()
     + nhapSoLuongVaTinhTrang()
     + btnChotBanGiao_Click()
     + btnHuyBanGiao_Click()
-    + hienThiThongBaoThanhCong()
-    + hienThiLoiDuLieu()
     + hienThiThongBaoHuy()
   }
 }
@@ -117,7 +113,6 @@ package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
     + LayDanhSachChoBanGiao(tuKhoa: String): IReadOnlyList<HopDongChoBanGiao>
     + DocChiTiet(maHD: String): HopDong
     + UpdateTrangThai(maHD: String, trangThai: String): Boolean
-    + TonTaiChoBanGiaoTheoHD(maHD: String): Boolean
   }
 
   class BienBanGiaoNhanDB #BFDCF0 {

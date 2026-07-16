@@ -42,3 +42,12 @@
 - Mọi message có dấu ngoặc phải có phương thức cùng tên trong class diagram.
 - Notification, transaction, HTTP controller/DTO và worker nền không thuộc sơ đồ Use Case lõi.
 - Những dòng “không có use-case control riêng” phản ánh đúng code hiện tại, không phải đề xuất tạo thêm lớp giả trong UML.
+
+## Kết quả kiểm tra ngày 16/07/2026
+
+- Đủ 31 cặp class/sequence cho UC 1.4.1–1.4.31; cặp `thong-bao-*` là sơ đồ kỹ thuật riêng và không tính vào bộ Use Case.
+- Không còn phương thức chỉ xuất hiện ở class hoặc chỉ xuất hiện ở sequence.
+- Tất cả phương thức BUS/DB trong 31 class diagram đều tồn tại trong source C# đúng lớp sở hữu.
+- Các message từ GUI xuống BUS/DB đều là lời gọi phương thức; câu mô tả bằng lời chỉ còn ở tương tác tác nhân với giao diện.
+- Không còn return arrow, `note`, controller, `PhienDuLieu` hoặc chi tiết transaction trong 31 sequence diagram.
+- Cả 64 file PlantUML hiện có (31 cặp Use Case, trong đó Lập phiếu cọc là cặp mẫu, và 1 cặp kỹ thuật thông báo) đã qua `plantuml -checkonly` và render SVG cục bộ thành công.

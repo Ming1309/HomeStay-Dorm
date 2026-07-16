@@ -6,7 +6,6 @@ skinparam shadowing false
 actor "Quan ly" as QL
 box "GUI" #D5F5D3
 boundary ": MHXetDuyetHoSo" as MH
-boundary ": PopupChiTietThanhVien" as POP
 end box
 box "BUS" #FCF3CF
 control ": XetDuyetHoSo" as UC
@@ -50,12 +49,6 @@ deactivate UC
 opt Quan ly xem chi tiet thanh vien
   QL -> MH : Nhan "Xem chi tiet"
   MH -> MH : clickXemChiTietThanhVien()
-  MH -> POP : hienThiPopup()
-  activate POP
-  POP -> POP : hienThiThongTinThanhVien()
-  QL -> POP : Nhan "Dong"
-  POP -> POP : clickDongPopup()
-  deactivate POP
 end
 
 alt Duyet toan bo ho so
@@ -92,6 +85,9 @@ alt Duyet toan bo ho so
   activate TVDB
   deactivate TVDB
   deactivate TV
+  UC -> PC : CapNhatTrangThaiDaDuyet()
+  activate PC
+  deactivate PC
   UC -> PC : CapNhatTrangThaiDaDuyetDB()
   activate PC
   PC -> PCDB : CapNhatDaDuyet(phieuCoc)
@@ -130,6 +126,24 @@ else Tu choi mot thanh vien
   deactivate TVDB
   deactivate TV
   deactivate UC
+else Hoan tac tu choi thanh vien
+  QL -> MH : Nhan "Hoan tac" tai thanh vien
+  MH -> MH : clickHoanTac()
+  MH -> UC : HoanTacThanhVien(maPhieuCoc, maKH)
+  activate UC
+  UC -> PC : DocChiTiet(maPhieuCoc)
+  activate PC
+  PC -> PCDB : DocChiTiet(maPhieuCoc)
+  activate PCDB
+  deactivate PCDB
+  deactivate PC
+  UC -> TV : HoanTac(maPhieuCoc, maKH)
+  activate TV
+  TV -> TVDB : UpdateTrangThaiDuyet(maPhieuCoc, maKH, "ChoDuyet")
+  activate TVDB
+  deactivate TVDB
+  deactivate TV
+  deactivate UC
 else Duyet cac thanh vien con lai
   QL -> MH : Nhan "Duyet thanh vien con lai"
   MH -> MH : clickDuyetThanhVienConLai()
@@ -141,6 +155,15 @@ else Duyet cac thanh vien con lai
   activate TVDB
   deactivate TVDB
   deactivate TV
+  UC -> TV : DemThanhVienHopLe(maPhieuCoc)
+  activate TV
+  TV -> TVDB : CountThanhVienHopLe(maPhieuCoc)
+  activate TVDB
+  deactivate TVDB
+  deactivate TV
+  UC -> PC : CapNhatTrangThaiDaDuyet()
+  activate PC
+  deactivate PC
   UC -> PC : CapNhatTrangThaiDaDuyetDB()
   activate PC
   PC -> PCDB : CapNhatDaDuyet(phieuCoc)
@@ -171,6 +194,9 @@ else Tu choi toan bo ho so
   activate TVDB
   deactivate TVDB
   deactivate TV
+  UC -> PC : CapNhatTrangThaiDaHuy()
+  activate PC
+  deactivate PC
   UC -> PC : CapNhatTrangThaiDaHuyDB()
   activate PC
   PC -> PCDB : CapNhatDaHuy(phieuCoc)

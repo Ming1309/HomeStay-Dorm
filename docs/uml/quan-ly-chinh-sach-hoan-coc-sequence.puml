@@ -33,12 +33,10 @@ activate CSDB
 deactivate CSDB
 deactivate CS
 deactivate QLCSHC
-MH -> MH : hien thi tblLichSuApDung
 
 ' === Luong 2: Tao phien ban chinh sach moi ===
 QTV -> MH : nhap thong tin chinh sach moi
 MH -> MH : nhapPhienBanMoi(chinhSach)
-MH -> MH : validate zod va hien xac nhan
 QTV -> MH : Xac nhan luu chinh sach
 MH -> MH : xacNhanTaoPhienBan()
 MH -> QLCSHC : TaoPhienBan(chinhSachMoi)
@@ -54,7 +52,6 @@ deactivate CSDB
 deactivate CS
 
 alt ngay ap dung khong sau phien ban moi nhat
-  QLCSHC -> QLCSHC : throw InvalidOperationException
 else ngay ap dung hop le
   opt phien ban cu chua ket thuc truoc ngay ap dung moi
     QLCSHC -> CS : CapNhatNgayKetThuc(ngayKetThuc)

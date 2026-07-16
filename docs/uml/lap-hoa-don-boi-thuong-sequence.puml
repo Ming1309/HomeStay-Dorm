@@ -1,120 +1,111 @@
 @startuml
+title SO DO TUAN TU - LAP HOA DON BOI THUONG
 
-skinparam sequenceArrowThickness 1.2
+hide footbox
+autonumber 1 1
 skinparam shadowing false
-skinparam sequenceMessageAlign left
 
-title Lập hóa đơn bồi thường
-
-actor "Kế Toán" as KT
+actor "Ke toan" as KT
 
 box "GUI" #D5F5D3
-    boundary "MHLapHoaDonBoiThuong" as MH
+boundary ": MHLapHoaDonBoiThuong" as MH
 end box
 
 box "BUS" #FCF3CF
-    control "BienBanGiaoNhan" as BB
-    control "ChiTietGiaoNhan" as CTGN
-    control "TaiSan" as TS
-    control "HoaDon" as HD
-    control "ChiTietHoaDon" as CTHD
-    control "NhanVien" as NV
+control ": BienBanGiaoNhan" as BB
+control ": ChiTietGiaoNhan" as CTGN
+control ": TaiSan" as TS
+control ": NhanVien" as NV
+control ": HoaDon" as HD
+control ": ChiTietHoaDon" as CTHD
 end box
 
 box "DB" #D6EAF8
-    entity "BienBanGiaoNhanDB" as BBDB
-    entity "ChiTietGiaoNhanDB" as CTGNDB
-    entity "TaiSanDB" as TSDB
-    entity "HoaDonDB" as HDDB
-    entity "ChiTietHoaDonDB" as CTHDDB
-    entity "NhanVienDB" as NVDB
+entity ": BienBanGiaoNhanDB" as BBDB
+entity ": ChiTietGiaoNhanDB" as CTGNDB
+entity ": TaiSanDB" as TSDB
+entity ": NhanVienDB" as NVDB
+entity ": HoaDonDB" as HDDB
+entity ": ChiTietHoaDonDB" as CTHDDB
 end box
 
-' =====================
-' LUỒNG CHÍNH
-' =====================
-
-KT -> MH : 1.0 Truy cập chức năng\nLập hóa đơn bồi thường
+KT -> MH : Mo man hinh lap hoa don boi thuong
 activate MH
-
-MH -> BB : 1.1 layDSBienBanThuHoiChuaXuLy()
+MH -> MH : taiDanhSach(tuKhoa)
+MH -> BB : LayDSBienBanThuHoiChuaXuLy(tuKhoa)
 activate BB
-BB -> BBDB : 1.2 getDSBienBanThuHoiChuaXuLy()
+BB -> BBDB : GetDSBienBanThuHoiChuaXuLy(tuKhoa)
 activate BBDB
 deactivate BBDB
 deactivate BB
 
-
-KT -> MH : 2.0 Chọn một Biên bản\ncần xử lý
-MH -> BB : 2.1 layChiTietBienBan(maBienBan)
+KT -> MH : Chon bien ban thu hoi
+MH -> MH : chonBienBan(maBienBan)
+MH -> BB : LayChiTietBienBan(maBienBan)
 activate BB
-BB -> BBDB : 2.2 getBienBanTheoMaBienBan(maBienBan)
+BB -> BBDB : GetBienBanTheoMaBienBan(maBienBan)
 activate BBDB
 deactivate BBDB
 deactivate BB
-
-MH -> CTGN : 2.3 layDSTaiSanHuHongTheoBienBan(maBienBan)
+MH -> CTGN : LayDSTaiSanHuHongTheoBienBan(maBienBan)
 activate CTGN
-CTGN -> CTGNDB : 2.4 getDSTaiSanHuHongTheoBienBan(maBienBan)
+CTGN -> CTGNDB : GetDSTaiSanHuHongTheoBienBan(maBienBan)
 activate CTGNDB
 deactivate CTGNDB
 deactivate CTGN
+loop Moi tai san hu hong hoac mat mat
+  MH -> TS : LayThongTinTaiSan(maTS)
+  activate TS
+  TS -> TSDB : GetTaiSanTheoMaTS(maTS)
+  activate TSDB
+  deactivate TSDB
+  deactivate TS
+end
 
-MH -> TS : 2.5 layThongTinTaiSan(maTS)
-activate TS
-TS -> TSDB : 2.6 getTaiSanTheoMaTS(maTS)
-activate TSDB
-deactivate TSDB
-deactivate TS
-
-
-KT -> MH : 3.0 Nhập số tiền phạt\nbồi thường cho từng tài sản
-
-KT -> MH : Nhan "Lap Hoa Don Boi Thuong"
-MH -> MH : 4.0 btnLapHoaDonBoiThuong_Click()
-MH -> HD : 4.1 kiemTraTinhHopLe(dsSoTien)
+KT -> MH : Nhap so tien boi thuong cho tung tai san
+KT -> MH : Nhan "Lap hoa don"
+MH -> MH : lapHoaDon()
+MH -> HD : KiemTraTinhHopLe(dsSoTien)
 activate HD
 deactivate HD
-
-MH -> NV : 4.2 layThongTinNhanVien(maNV)
+MH -> NV : LayThongTinNhanVien(maNV)
 activate NV
-NV -> NVDB : 4.3 getNhanVienTheoMaNV(maNV)
+NV -> NVDB : GetNhanVienTheoMaNV(maNV)
 activate NVDB
 deactivate NVDB
 deactivate NV
-
-MH -> HD : 4.4 taoHoaDonBoiThuong(maBienBan, tongTien, maNV)
+MH -> HD : TaoHoaDonBoiThuong(maBienBan, tongTien, maNV, ngayLap, ghiChu)
 activate HD
-HD -> HDDB : 4.5 insertHoaDon(hoaDon)
+HD -> BB : LayChiTietBienBan(maBienBan)
+activate BB
+BB -> BBDB : GetBienBanTheoMaBienBan(maBienBan)
+activate BBDB
+deactivate BBDB
+deactivate BB
+HD -> BB : DaCoHoaDonBoiThuongTheoHD(maHD)
+activate BB
+BB -> BBDB : DaCoHoaDonBoiThuongTheoHD(maHD)
+activate BBDB
+deactivate BBDB
+deactivate BB
+HD -> CTGN : LayDSTaiSanHuHongTheoBienBan(maBienBan)
+activate CTGN
+CTGN -> CTGNDB : GetDSTaiSanHuHongTheoBienBan(maBienBan)
+activate CTGNDB
+deactivate CTGNDB
+deactivate CTGN
+HD -> HDDB : InsertHoaDon(hoaDon)
 activate HDDB
 deactivate HDDB
 deactivate HD
-
-MH -> CTHD : 4.6 taoChiTietHoaDon(maHoaDon, dsChiTiet)
+MH -> CTHD : TaoChiTietHoaDon(maHoaDon, dsChiTiet)
 activate CTHD
-CTHD -> CTHDDB : 4.7 insertChiTietHoaDon(chiTiet)
-activate CTHDDB
-deactivate CTHDDB
+loop Moi dong boi thuong
+  CTHD -> CTHDDB : InsertChiTietHoaDon(chiTiet)
+  activate CTHDDB
+  deactivate CTHDDB
+end
 deactivate CTHD
 
-MH -> MH : 4.8 hienThiDialogThanhCong\n(maHoaDon, tongBoiThuong)
-
-
-KT -> MH : Nhan "Hoan Tat"
-MH -> MH : 5.0 btnHoanTat_Click()
 deactivate MH
-
-' =====================
-' Số tiền không hợp lệ
-' =====================
-
-alt Số tiền không hợp lệ (trống / chữ cái / âm)
-
-    MH -> MH : hienThiThongBaoLoi\n"Vui lòng nhập số tiền phạt hợp lệ"
-    MH -> MH : boiDoTruongBiLoi()
-
-end
-
-
-
 @enduml

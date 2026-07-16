@@ -1,133 +1,76 @@
 @startuml
+title SO DO LOP 3 TANG - TRA CUU PHIEU DANG KY
 
-skinparam classAttributeIconSize 0
-skinparam classFontSize 12
+top to bottom direction
 skinparam shadowing false
-skinparam roundcorner 6
 skinparam linetype ortho
-skinparam ArrowColor #2C3E50
-skinparam ArrowThickness 1.5
-
-skinparam class {
-    HeaderBackgroundColor #AED6F1
-    BorderColor #2980B9
-    BackgroundColor #FFFFFF
-    FontColor #000000
-}
-
-' =====================
-' LỚP GIAO DIỆN
-' =====================
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam classBorderColor #7F8C8D
 
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
-
-    class MHTraCuuPhieuDangKy #BFE8BA {
-        ' --- Tìm kiếm ---
-        +txtTimKiem : TextBox
-        +btnTimKiem : Button
-        +lblKetQuaTimKiem : Label
-        ' --- Danh sách kết quả ---
-        +grvDSPhieuDangKy : DataGridView
-        ' --- Thông tin chi tiết phiếu ---
-        +lblMaPDK : Label
-        +lblNgayNop : Label
-        +lblTrangThai : Label
-        ' --- Thông tin khách hàng ---
-        +lblTenKH : Label
-        +lblSDT : Label
-        +lblEmail : Label
-        +lblLoaiGiayTo : Label
-        +lblSoGiayTo : Label
-        ' --- Yêu cầu lưu trú ---
-        +lblKhuVuc : Label
-        +lblMucGia : Label
-        +lblThoiGianDuKienVao : Label
-        +lblThoiHanThue : Label
-        ' --- Chi tiết thêm ---
-        +lblLoaiDichVu : Label
-        +lblSoLuongNguoi : Label
-        +lblNgayNopCT : Label
-        ' --- Ghi chú ---
-        +lblYeuCauKhac : Label
-        ' --- Phương thức ---
-        +hienThiForm()
-        +timKiem(tuKhoa : String)
-        +hienThiDSKetQua()
-        +hienThiChiTietPhieuDangKy()
-        +btnTimKiem_Click()
-        +grvDSPhieuDangKy_Click()
-        +lamTrongDSKetQua()
-    }
+  class MHTraCuuPhieuDangKy #BFE8BA {
+    - txtTimKiem: TextBox
+    - grvDSPhieuDangKy: GridView
+    - pnlChiTiet: Panel
+    --
+    + HienThi()
+    + timKiem(sdt: String, soGiayTo: String, email: String, hoTen: String, maPDK: String)
+    + chonPhieuDangKy(maPDK: String)
+  }
 }
-
-' =====================
-' LỚP NGHIỆP VỤ
-' =====================
 
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
-
-    class PhieuDangKy #F4E3A2 {
-        +maPDK : String
-        +khuVuc : String
-        +soLuongNguoi : Integer
-        +loaiDichVu : String
-        +mucGia : String
-        +thoiGianDuKienVao : DateTime
-        +thoiHanThue : Integer
-        +yeuCauKhac : String
-        +trangThai : String
-        +maKH : String
-        +maNV : String
-        ' ---
-        +timKiemPhieuDangKy(tuKhoa : String) : List<PhieuDangKy>
-        +layChiTietPhieuDangKy(maPDK : String) : PhieuDangKy
-    }
-
-    class KhachHang #F4E3A2 {
-        +maKH : String
-        +hoTen : String
-        +sdt : String
-        +email : String
-        +loaiGiayTo : String
-        +soGiayTo : String
-        +ngaySinh : DateTime
-        +gioiTinh : String
-        +quocTich : String
-        +diaChiThuongTru : String
-        ' ---
-        +layThongTinKhachHang(maKH : String) : KhachHang
-    }
+  class LapPhieuDangKy #F4E3A2 {
+    + TimKiemPhieuDangKy(sdt: String, soGiayTo: String, email: String, hoTen: String, maPDK: String, maNV: String): IReadOnlyList<PhieuDangKy>
+    + LayChiTietPhieuDangKy(maPDK: String, maNV: String): PhieuDangKy
+  }
+  class NhanVien #F4E3A2 {
+    - MaNV: String
+    - MaCN: String
+    + DocPhamVi(maNV: String): NhanVien
+    + DocChiTiet(maNV: String): NhanVien
+  }
+  class PhieuDangKy #F4E3A2 {
+    - MaPDK: String
+    - KhuVuc: String
+    - SoLuongNguoi: Integer
+    - MucGia: Decimal
+    - TrangThai: String
+    - KhachHang: KhachHang
+    + TimKiem(maCN: String, sdt: String, soGiayTo: String, email: String, hoTen: String, maPDK: String): IReadOnlyList<PhieuDangKy>
+    + DocChiTiet(maPDK: String, maCN: String): PhieuDangKy
+  }
+  class KhachHang #F4E3A2 {
+    - MaKH: String
+    - HoTen: String
+    - SDT: String
+    - Email: String
+    - SoGiayTo: String
+  }
 }
-
-' =====================
-' LỚP TRUY XUẤT DỮ LIỆU
-' =====================
 
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
-
-    class PhieuDangKyDB #BFDCF0 {
-        +timKiemPhieuDangKy(tuKhoa : String) : List<PhieuDangKy>
-        +getPhieuDangKyTheoMaPDK(maPDK : String) : PhieuDangKy
-    }
-
-    class KhachHangDB #BFDCF0 {
-        +getKhachHangTheoMaKH(maKH : String) : KhachHang
-    }
+  class NhanVienDB #BFDCF0 {
+    + DocChiTiet(maNV: String): NhanVien
+  }
+  class PhieuDangKyDB #BFDCF0 {
+    + TimKiem(maCN: String, sdt: String, soGiayTo: String, email: String, hoTen: String, maPDK: String): IReadOnlyList<PhieuDangKy>
+    + LayTheoMa(maPDK: String, maCN: String): PhieuDangKy
+  }
+  NhanVienDB -[hidden]right- PhieuDangKyDB
 }
-
-' =====================
-' QUAN HỆ
-' =====================
-
-MHTraCuuPhieuDangKy o-- PhieuDangKy
-MHTraCuuPhieuDangKy o-- KhachHang
-
-PhieuDangKy o-- PhieuDangKyDB
-KhachHang   o-- KhachHangDB
-
 
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
-PhieuDangKy -[hidden]down- PhieuDangKyDB
 KhachHang -[hidden]down- PhieuDangKyDB
+
+MHTraCuuPhieuDangKy o-down- LapPhieuDangKy
+LapPhieuDangKy o-- NhanVien
+LapPhieuDangKy o-- PhieuDangKy
+NhanVien o-down- NhanVienDB
+PhieuDangKy o-down- PhieuDangKyDB
+PhieuDangKy "0..*" -- "1" KhachHang
 @enduml

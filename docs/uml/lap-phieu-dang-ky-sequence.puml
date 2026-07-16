@@ -60,7 +60,7 @@ deactivate PDB
 deactivate P
 UC -> KH : KiemTraTonTai(soGiayTo)
 activate KH
-KH -> KHDB : KiemTraTonTai(soGiayTo)
+KH -> KHDB : TimTheoSoGiayTo(soGiayTo)
 activate KHDB
 deactivate KHDB
 deactivate KH
@@ -78,6 +78,9 @@ end
 UC -> PDK : TaoMoi(maKH, maNV, maCN, khuVuc, soLuongNguoi, loaiDichVu, mucGia, thoiGianDuKienVao, thoiHanThue, yeuCauKhac, thoiDiem)
 activate PDK
 PDK -> PDK : KiemTraDieuKien(thoiDiem)
+deactivate PDK
+UC -> PDK : Them()
+activate PDK
 PDK -> PDKDB : Them(phieuDangKy)
 activate PDKDB
 deactivate PDKDB

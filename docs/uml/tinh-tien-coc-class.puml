@@ -4,6 +4,8 @@ title SO DO LOP 3 TANG - TINH TIEN COC
 top to bottom direction
 skinparam shadowing false
 skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 45
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 skinparam class {
@@ -34,9 +36,18 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
 
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   class TinhTienCoc #F4E3A2 {
-    + LayDanhSachKhoiTao(text: String): IReadOnlyList<PhieuCoc>
-    + LayChiTietVaTinhTien(maPhieuCoc: String): PhieuCoc
-    + XacNhanTinhTien(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachKhoiTao(text: String, maNV: String): IReadOnlyList<PhieuCoc>
+    + LayChiTietVaTinhTien(maPhieuCoc: String, maNV: String): PhieuCoc
+    + XacNhanTinhTien(maPhieuCoc: String, maNV: String): PhieuCoc
+  }
+
+  class NhanVien #F4E3A2 {
+    - MaNV: String
+    - MaCN: String
+    - VaiTro: String
+    --
+    + DocPhamVi(maNV: String): NhanVien
+    + DocChiTiet(maNV: String): NhanVien
   }
 
   class PhieuCoc #F4E3A2 {
@@ -49,11 +60,13 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - KhachHang: KhachHang
     - Phong: Phong
     - Giuongs: List<Giuong>
-    + LayDanhSachKhoiTao(text: String): IReadOnlyList<PhieuCoc>
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachKhoiTao(maCN: String, text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
+    + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
     + TinhTienDuKien(): Integer
     + XacNhanTinhTien(thoiDiemXacNhan: DateTime, thoiHanThanhToan: TimeSpan)
     + CapNhatTinhTien()
+    - KiemTraCoTheTinhTien()
   }
 
   class KhachHang #F4E3A2 {
@@ -81,24 +94,37 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
 }
 
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class NhanVienDB #BFDCF0 {
+    + DocChiTiet(maNV: String): NhanVien
+  }
+
   class PhieuCocDB #BFDCF0 {
-    + LayDanhSachKhoiTao(text: String): IReadOnlyList<PhieuCoc>
-    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + LayDanhSachKhoiTao(maCN: String, text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
+    + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
     + CapNhatTinhTien(phieu: PhieuCoc)
   }
+
+  NhanVienDB -[hidden]right- PhieuCocDB
 }
-
-MHTinhTienCoc o-- TinhTienCoc
-TinhTienCoc o-- PhieuCoc
-PhieuCoc o-- PhieuCocDB
-PhieuCoc "0..*" -- "1" KhachHang : dai dien
-PhieuCoc "0..*" -- "1" Phong : dat
-PhieuCoc "0..*" -- "1..*" Giuong : chi tiet
-Phong "0..*" -- "1" LoaiPhong : thuoc
-
 
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
-TinhTienCoc -[hidden]down- PhieuCocDB
+
 Giuong -[hidden]down- PhieuCocDB
+
+NhanVien -[hidden]right- PhieuCoc
+KhachHang -[hidden]right- Phong
+Phong -[hidden]right- LoaiPhong
+
+MHTinhTienCoc o-down- TinhTienCoc
+TinhTienCoc o-down- NhanVien
+TinhTienCoc o-down- PhieuCoc
+NhanVien o-down- NhanVienDB
+PhieuCoc o-down- PhieuCocDB
+
+PhieuCoc "0..*" -left- "1" KhachHang : dai dien
+PhieuCoc "0..*" -right- "1" Phong : dat
+PhieuCoc "0..*" -down- "1..*" Giuong : chi tiet
+Phong "0..*" -right- "1" LoaiPhong : thuoc
 @enduml

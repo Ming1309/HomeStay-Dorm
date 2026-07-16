@@ -129,9 +129,12 @@ deactivate CS
 deactivate CSDB
   end
 deactivate CS
+  LPDS -> CS : XacDinhTyLeHoan(soThangThucTe, soThangHopDong)
+  activate CS
+  deactivate CS
   LPDS -> HDON : LayDanhSachChuaThanhToan(maHoSo)
   activate HDON
-  HDON -> HDONDB : GetDanhSachChuaThanhToanTheoHD(maHoSo)
+  HDON -> HDONDB : LayDanhSachChuaThanhToanTheoHD(maHoSo)
   activate HDONDB
 deactivate HDONDB
 deactivate HDON

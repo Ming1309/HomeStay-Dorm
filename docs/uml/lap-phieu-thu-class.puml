@@ -1,153 +1,57 @@
 @startuml
-
-skinparam classAttributeIconSize 0
-skinparam classFontSize 12
+title SO DO LOP 3 TANG - LAP PHIEU THU
+top to bottom direction
 skinparam shadowing false
-skinparam roundcorner 6
 skinparam linetype ortho
-skinparam ArrowColor #2C3E50
-skinparam ArrowThickness 1.5
-
-skinparam class {
-    HeaderBackgroundColor #AED6F1
-    BorderColor #2980B9
-    BackgroundColor #FFFFFF
-    FontColor #000000
-}
-
-' =====================
-' LỚP GIAO DIỆN
-' =====================
+skinparam nodesep 35
+skinparam ranksep 45
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+skinparam classBorderColor #7F8C8D
 
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
-
-    class MHLapPhieuThu #BFE8BA {
-        +lblThongTinPhieuThu : Label
-        +grvDSHoaDonCanThu : DataGridView
-        +lblTongCanThu : Label
-        +lblSoTienThuTuMayChu : Label
-        +lblCongNoCanThu : Label
-        +lblThucThu : Label
-        +lblConLaiSauThu : Label
-        +radTienMat : RadioButton
-        +radChuyenKhoan : RadioButton
-        +btnTaiLenChungTu : Button
-        +imgMinhChung : PictureBox
-        +btnQuayLai : Button
-        +btnXacNhanThuTien : Button
-        ' ---
-        +hienThiForm()
-        +loadDSHoaDonCanThu()
-        +btnXacNhanThuTien_Click()
-        +btnQuayLai_Click()
-    }
+  class MHLapPhieuThu #BFE8BA {
+    - lblMaPDS: Label
+    - lblTienThuThem: Label
+    - cboPhuongThuc: ComboBox
+    - fileMinhChung: FileUpload
+    - btnXacNhan: Button
+    + taiChiTiet(maPDS: String)
+    + xacNhanThuTien()
+  }
 }
-
-' =====================
-' LỚP NGHIỆP VỤ
-' =====================
-
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
-
-    class PhieuDoiSoat #F4E3A2 {
-        +maPDS : String
-        +ngayDoiSoat : DateTime
-        +tyLeHoanCoc : Decimal
-        +tongKhauTru : Decimal
-        +tienThuThem : Decimal
-        +trangThai : String
-        +maHD : String
-        +maNV : String
-        +maPhieuCoc : String
-        +maGiuong : String
-        ' ---
-        +layChiTietPhieuDoiSoat(maPDS : String) : PhieuDoiSoat
-        +chuyenSangDaTatToan(maPDS : String) : Task
-    }
-
-    class HoaDon #F4E3A2 {
-        +maHoaDon : String
-        +hanThanhToan : DateTime
-        +loaiHoaDon : String
-        +tongTien : Decimal
-        +trangThai : String
-        +ghiChu : String
-        +maHD : String
-        +maNV : String
-        ' ---
-        +layDSHoaDonCanThuTheoPDS(maPDS : String) : List<HoaDon>
-        +tinhTongCanThu(maPDS : String) : Decimal
-    }
-
-    class PhieuThu #F4E3A2 {
-        +maPT : String
-        +soTienThu : Decimal
-        +thoiGian : DateTime
-        +phuongThucThanhToan : String
-        +anhMinhChung : String
-        +maHoaDon : String
-        +maPhieuCoc : String
-        +maPDS : String
-        +maNV : String
-        ' ---
-        +taoPhieuThu(maPDS : String, soTien : Decimal,\n  phuongThuc : String, anhMinhChung : String, maNV : String) : PhieuThu
-        +daTonTaiChoPhieuDoiSoat(maPDS : String) : Boolean
-    }
-
-    class NhanVien #F4E3A2 {
-        +maNV : String
-        +hoTen : String
-        +sdt : String
-        +vaiTro : String
-        +maCN : String
-        ' ---
-        +layThongTinNhanVien(maNV : String) : NhanVien
-    }
+  class ThanhToanTraPhong #F4E3A2 {
+    + LayChiTietPhieuDoiSoat(maPDS: String): Object
+    + TienHanhThuTien(maPDS: String, phuongThuc: String, anhMinhChung: String, maNV: String): PhieuThu
+  }
+  class PhieuDoiSoat #F4E3A2 {
+    + LayChiTietPhieuDoiSoat(maPDS: String): PhieuDoiSoat
+    + ChuyenSangDaTatToan(maPDS: String)
+  }
+  class PhieuThu #F4E3A2 {
+    + DaTonTaiChoPhieuDoiSoat(maPDS: String): Boolean
+    + TaoPhieuThu(maPDS: String, soTien: Decimal, phuongThuc: String, anhMinhChung: String, maNV: String, thoiDiem: DateTime): PhieuThu
+    + LuuPhieu()
+  }
 }
-
-' =====================
-' LỚP TRUY XUẤT DỮ LIỆU
-' =====================
-
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
-
-    class PhieuDoiSoatDB #BFDCF0 {
-        +getPhieuDoiSoatTheoMaPDS(maPDS : String) : PhieuDoiSoat
-        +updateTrangThai(maPDS : String, trangThaiHienTai : String, trangThaiMoi : String) : Integer
-    }
-
-    class HoaDonDB #BFDCF0 {
-        +getDSHoaDonCanThuTheoPDS(maPDS : String) : List<HoaDon>
-        +tinhTongCanThu(maPDS : String) : Decimal
-    }
-
-    class PhieuThuDB #BFDCF0 {
-        +insertPhieuThu(phieuThu : PhieuThu) : String
-        +tonTaiTheoMaPhieuDoiSoat(maPDS : String) : Boolean
-    }
-
-    class NhanVienDB #BFDCF0 {
-        +getNhanVienTheoMaNV(maNV : String) : NhanVien
-    }
+  class PhieuDoiSoatDB #BFDCF0 {
+    + GetPhieuDoiSoatTheoMaPDS(maPDS: String): PhieuDoiSoat
+    + UpdateTrangThai(maPDS: String, trangThaiHienTai: String, trangThaiMoi: String): Boolean
+  }
+  class PhieuThuDB #BFDCF0 {
+    + TonTaiTheoMaPhieuDoiSoat(maPDS: String): Boolean
+    + InsertPhieuThu(phieuThu: PhieuThu)
+  }
 }
-
-' =====================
-' QUAN HỆ
-' =====================
-
-MHLapPhieuThu o-- PhieuDoiSoat
-MHLapPhieuThu o-- HoaDon
-MHLapPhieuThu o-- PhieuThu
-MHLapPhieuThu o-- NhanVien
-
-PhieuDoiSoat o-- PhieuDoiSoatDB
-HoaDon       o-- HoaDonDB
-PhieuThu     o-- PhieuThuDB
-NhanVien     o-- NhanVienDB
-
 
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
-PhieuDoiSoat -[hidden]down- PhieuDoiSoatDB
-NhanVien -[hidden]down- PhieuDoiSoatDB
+PhieuThu -[hidden]down- PhieuDoiSoatDB
+MHLapPhieuThu o-down- ThanhToanTraPhong
+ThanhToanTraPhong o-- PhieuDoiSoat
+ThanhToanTraPhong o-- PhieuThu
+PhieuDoiSoat o-down- PhieuDoiSoatDB
+PhieuThu o-down- PhieuThuDB
 @enduml

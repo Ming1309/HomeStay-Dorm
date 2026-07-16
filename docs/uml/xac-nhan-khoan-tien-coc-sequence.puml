@@ -16,6 +16,7 @@ control ": XacNhanKhoanTienCoc" as XN
 control ": PhieuCoc" as PC
 control ": PhieuThu" as PT
 control ": Phong" as P
+control ": Giuong" as G
 end box
 
 box "DB" #D6EAF8
@@ -51,7 +52,6 @@ XN -> PC : KiemTraCoTheXacNhanThanhToan()
 activate PC
 deactivate PC
 deactivate XN
-MH -> MH : hien thi chi tiet va chung tu
 
 alt Khoan coc hop le
   QL -> MH : Nhan "Xac nhan hop le"
@@ -75,6 +75,11 @@ deactivate PDB
 deactivate P
   XN -> P : XacNhanDatCoc(maGiuongs)
   activate P
+  loop Moi giuong cua phieu coc
+    P -> G : XacNhanDaCoc(maPhong)
+    activate G
+    deactivate G
+  end
 deactivate P
   XN -> PT : TaoChoTienCoc(phieuCoc, maNhanVienQuanLy, thoiGian)
   activate PT
@@ -98,40 +103,30 @@ deactivate PT
   activate P
   P -> PDB : CapNhatDatCoc(phong)
   activate PDB
-  alt Co tranh chap trang thai hoac giuong
-    MH -> MH : hien thi rollback va bao loi
-  else Thanh cong
 deactivate PDB
 deactivate P
 deactivate XN
-    MH -> MH : thong bao dat coc thanh cong
-  end
 else Chung tu can bo sung
   QL -> MH : Nhap ly do va nhan "Yeu cau bo sung"
   MH -> MH : yeuCauBoSung(lyDo)
-  alt Ly do rong hoac qua 500 ky tu
-    MH -> MH : hien thi loi ly do
-  else Ly do hop le
-    MH -> XN : YeuCauBoSung(maPhieuCoc, lyDo)
-    activate XN
-    XN -> PC : DocChiTiet(maPhieuCoc)
-    activate PC
-    PC -> PCDB : DocChiTiet(maPhieuCoc)
-    activate PCDB
+  MH -> XN : YeuCauBoSung(maPhieuCoc, lyDo)
+  activate XN
+  XN -> PC : DocChiTiet(maPhieuCoc)
+  activate PC
+  PC -> PCDB : DocChiTiet(maPhieuCoc)
+  activate PCDB
 deactivate PCDB
 deactivate PC
-    XN -> PC : YeuCauBoSung(lyDo, thoiDiemYeuCau, thoiHanThanhToan)
-    activate PC
+  XN -> PC : YeuCauBoSung(lyDo, thoiDiemYeuCau, thoiHanThanhToan)
+  activate PC
 deactivate PC
-    XN -> PC : CapNhatYeuCauBoSung()
-    activate PC
-    PC -> PCDB : CapNhatYeuCauBoSung(phieu)
-    activate PCDB
+  XN -> PC : CapNhatYeuCauBoSung()
+  activate PC
+  PC -> PCDB : CapNhatYeuCauBoSung(phieu)
+  activate PCDB
 deactivate PCDB
 deactivate PC
 deactivate XN
-    MH -> MH : thong bao da gui yeu cau
-  end
 end
 
 deactivate MH

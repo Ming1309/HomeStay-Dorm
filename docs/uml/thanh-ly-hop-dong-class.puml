@@ -1,5 +1,7 @@
 @startuml
+title SO DO LOP - THANH LY HOP DONG
 
+top to bottom direction
 skinparam classAttributeIconSize 0
 skinparam classFontSize 12
 skinparam classHeaderBackgroundColor #AED6F1
@@ -11,152 +13,127 @@ skinparam shadowing false
 skinparam roundcorner 6
 skinparam linetype ortho
 
-'=====================
-' LỚP GIAO DIỆN
-'=====================
-
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
-
-class MHThanhLyHopDong #BFE8BA {
-
-+lblMaHopDong
-+lblKhachHang
-+lblPhong
-+lblNgayBatDau
-+lblNgayKetThuc
-
-+lblTienCoc
-+lblTongKhauTru
-+lblTienHoan
-+lblTienThuThem
-
-+chkKyBienBanThanhLy
-+chkThuHoiChiaKhoa
-
-+btnThanhLy
-
---
-
-+hienThiForm()
-+loadDanhSachHopDong()
-+hienThiThongTinHopDong(maHD:String)
-+kiemTraDieuKienThanhLy(maHD:String)
-+btnThanhLy_Click()
-+hienThiThongBaoThanhCong()
-
+  class MHThanhLyHopDong #BFE8BA {
+    - txtTimKiem: TextBox
+    - grvHopDongChoThanhLy: GridView
+    - chkDaKyBienBan: CheckBox
+    - chkDaThuHoiChiaKhoa: CheckBox
+    - txtGhiChu: TextArea
+    - btnThanhLy: Button
+    --
+    + taiDanhSach(tuKhoa: String)
+    + chonHopDong(maHD: String)
+    + xacNhanThanhLy()
+  }
 }
-
-}
-
-'=====================
-' LỚP NGHIỆP VỤ
-'=====================
 
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class HopDong #F4E3A2 {
+    - MaHD: String
+    - TrangThai: String
+    - MaPhieuCoc: String
+    --
+    + LayDanhSachChoThanhLy(tuKhoa: String): IReadOnlyList<HopDongChoThanhLy>
+    + LayThongTinHopDong(maHD: String): HopDong
+    + DocChiTiet(maHD: String): HopDong
+    + KiemTraDangHieuLuc()
+    + ThanhLyHopDong(maHD: String, ngayThanhLy: DateTime, nguoiThucHien: String, ghiChu: String)
+  }
 
-class HopDong #F4E3A2 {
+  class PhieuDoiSoat #F4E3A2 {
+    - MaPDS: String
+    - TienHoan: Decimal
+    - TienThuThem: Decimal
+    - TrangThai: String
+    --
+    + LayThongTinDoiSoat(maHD: String): PhieuDoiSoat
+    + KiemTraCongNo(pds: PhieuDoiSoat): Boolean
+  }
 
-+maHD:String
-+trangThai:String
+  class PhieuCoc #F4E3A2 {
+    - MaPhieuCoc: String
+    - MaCN: String
+    --
+    + DocChiTiet(maPhieuCoc: String): PhieuCoc
+    + DocChiTietHeThong(maPhieuCoc: String, khoaCapNhat: Boolean): PhieuCoc
+  }
 
---
+  class ThanhVienHopDong #F4E3A2 {
+    - MaHD: String
+    - MaGiuong: String
+    - TrangThaiThue: String
+    --
+    + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<ThanhVienHopDong>
+    + LayDanhSachGiuong(maHD: String): IReadOnlyList<ThanhVienHopDong>
+    + CapNhatTrangThaiDaTra(maHD: String, ngayTra: DateTime)
+  }
 
-+layDanhSachChoThanhLy(tuKhoa:String) : List
-+layThongTinHopDong(maHD:String) : HopDong
-+thanhLyHopDong(maHD:String,ngayThanhLy:DateTime,nguoiThucHien:String,ghiChu:String)
+  class DichVuHopDong #F4E3A2 {
+    - MaHD: String
+    - MaDV: String
+    --
+    + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<DichVuHopDong>
+  }
 
+  class Giuong #F4E3A2 {
+    - MaGiuong: String
+    - TrangThai: String
+    --
+    + CapNhatDanhSachTrong(dsMaGiuong: IReadOnlyList<String>)
+  }
 }
-
-class PhieuDoiSoat #F4E3A2 {
-
-+maPDS:String
-+tienHoan:Decimal
-+tienThuThem:Decimal
-+trangThai:String
-
---
-
-+layThongTinDoiSoat(maHD:String) : PhieuDoiSoat
-+kiemTraCongNo(pds:PhieuDoiSoat) : Boolean
-
-}
-
-class ThanhVienHopDong #F4E3A2 {
-
-+maHD:String
-+maGiuong:String
-+trangThaiThue:String
-
---
-
-+layDanhSachGiuong(maHD:String) : List
-+capNhatTrangThaiDaTra(maHD:String,ngayTra:DateTime)
-
-}
-
-class Giuong #F4E3A2 {
-
-+maGiuong:String
-+trangThai:String
-
---
-
-+capNhatTrangThaiTrong(maGiuong:String)
-+capNhatDanhSachTrong(dsMaGiuong:List)
-
-}
-
-}
-
-'=====================
-' LỚP DỮ LIỆU
-'=====================
 
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
+  class HopDongDB #BFDCF0 {
+    + LayDanhSachChoThanhLy(tuKhoa: String): IReadOnlyList<HopDongChoThanhLy>
+    + DocChiTiet(maHD: String): HopDong
+    + UpdateTrangThaiThanhLy(maHD: String): Boolean
+  }
 
-class HopDongDB #BFDCF0 {
+  class PhieuDoiSoatDB #BFDCF0 {
+    + GetPhieuDoiSoatTheoMaHD(maHD: String): PhieuDoiSoat
+  }
 
-+getDanhSachChoThanhLy(tuKhoa:String) : List
-+DocChiTiet(maHD:String) : HopDong
-+updateTrangThaiThanhLy(maHD:String) : Boolean
+  class PhieuCocDB #BFDCF0 {
+    + DocChiTietHeThong(maPhieuCoc: String, khoaCapNhat: Boolean): PhieuCoc
+  }
 
-}
+  class ThanhVienHopDongDB #BFDCF0 {
+    + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<ThanhVienHopDong>
+    + UpdateTrangThaiDaTra(maHD: String, ngayTra: DateTime): Boolean
+  }
 
-class PhieuDoiSoatDB #BFDCF0 {
+  class DichVuHopDongDB #BFDCF0 {
+    + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<DichVuHopDong>
+  }
 
-+getPhieuDoiSoatTheoMaHD(maHD:String) : PhieuDoiSoat
-
-}
-
-class ThanhVienHopDongDB #BFDCF0 {
-
-+layDanhSachTheoHopDong(maHD:String) : List
-+updateTrangThaiDaTra(maHD:String,ngayTra:DateTime) : Boolean
-
-}
-
-class GiuongDB #BFDCF0 {
-
-+updateTrangThai(maGiuong:String,trangThai:String) : Boolean
-+updateTrangThaiBatch(dsMaGiuong:List,trangThai:String)
-
-}
-
+  class GiuongDB #BFDCF0 {
+    + UpdateTrangThaiBatch(dsMaGiuong: IReadOnlyList<String>, trangThai: String)
+  }
 }
 
 MHThanhLyHopDong o-- HopDong
 MHThanhLyHopDong o-- PhieuDoiSoat
+MHThanhLyHopDong o-- PhieuCoc
 MHThanhLyHopDong o-- ThanhVienHopDong
 MHThanhLyHopDong o-- Giuong
+HopDong -- ThanhVienHopDong
+HopDong -- DichVuHopDong
 
 HopDong o-- HopDongDB
 PhieuDoiSoat o-- PhieuDoiSoatDB
+PhieuCoc o-- PhieuCocDB
 ThanhVienHopDong o-- ThanhVienHopDongDB
+DichVuHopDong o-- DichVuHopDongDB
 Giuong o-- GiuongDB
-
 
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
 HopDong -[hidden]down- HopDongDB
-Giuong -[hidden]down- HopDongDB
+PhieuDoiSoat -[hidden]down- PhieuDoiSoatDB
+PhieuCoc -[hidden]down- PhieuCocDB
+ThanhVienHopDong -[hidden]down- ThanhVienHopDongDB
+DichVuHopDong -[hidden]down- DichVuHopDongDB
+Giuong -[hidden]down- GiuongDB
 @enduml

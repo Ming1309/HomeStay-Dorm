@@ -18,7 +18,6 @@ box "BUS" #FCF3CF
 control ": ChiNhanh" as CN
 control ": LoaiPhong" as LP
 control ": Phong" as P
-control ": Giuong" as G
 control ": PhongTaiSan" as PTS
 end box
 
@@ -26,7 +25,6 @@ box "DB" #D6EAF8
 entity ": ChiNhanhDB" as CNDB
 entity ": LoaiPhongDB" as LPDB
 entity ": PhongDB" as PDB
-entity ": GiuongDB" as GDB
 entity ": PhongTaiSanDB" as PTSDB
 end box
 
@@ -66,19 +64,6 @@ P -> PDB : LayPhongTheoBoLoc(null, null, null, maCN,\nnull, 0, 0)
 activate PDB
 deactivate PDB
 
-loop Với mỗi phòng
-
-P -> G : LayGiuongTheoPhong(maPhong)
-activate G
-
-G -> GDB : LayGiuongTheoPhong(maPhong)
-activate GDB
-deactivate GDB
-
-deactivate G
-
-end
-
 deactivate P
 
 else Có nhập tiêu chí
@@ -92,19 +77,6 @@ activate P
 P -> PDB : LayPhongTheoBoLoc(toaNha, tang, maLP, maCN,\ntrangThai, giaMin, giaMax)
 activate PDB
 deactivate PDB
-
-loop Với mỗi phòng
-
-P -> G : LayGiuongTheoPhong(maPhong)
-activate G
-
-G -> GDB : LayGiuongTheoPhong(maPhong)
-activate GDB
-deactivate GDB
-
-deactivate G
-
-end
 
 deactivate P
 

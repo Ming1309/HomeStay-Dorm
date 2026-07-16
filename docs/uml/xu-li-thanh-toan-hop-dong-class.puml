@@ -1,228 +1,86 @@
 @startuml
 title SO DO LOP 3 TANG - XU LY THANH TOAN HOP DONG
-
 top to bottom direction
 skinparam shadowing false
 skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 45
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
-skinparam class {
-  BackgroundColor #FFFACD
-  BorderColor #9B7B7B
-}
+skinparam classBorderColor #7F8C8D
 
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHXuLyThanhToanHopDong #BFE8BA {
-    - txtTimKiemHopDong: TextBox
-    - pnlDanhSachHopDong: Panel
-    - cardHopDong: Panel
-    - lblMaHopDongCard: Label
-    - lblTenKhachCard: Label
-    - lblPhongCard: Label
-    - lblTongTienCard: Label
-    - badgeChoThanhToanCard: Label
-    - lblMaHopDongDangChon: Label
-    - badgeChoThanhToan: Label
-    - lblTenKhachDangChon: Label
-    - lblPhongDangChon: Label
-    - lblTongCanThanhToan: Label
-    - dgvKhoanThu: DataGridView
-    - colKhoanThu: DataGridViewColumn
-    - colSoLuongKy: DataGridViewColumn
-    - colThanhTien: DataGridViewColumn
-    - lblTongCongHoaDon: Label
-    - lblTongConLaiCanThu: Label
-    - btnTienHanhThuTien: Button
-    --
-    + taiHangDoiThuTien()
-    + timKiemHopDong()
-    + clickChonHopDong()
-    + hienThiChiTietThanhToan()
-    + hienThiBangKhoanThu()
-    + hienThiTongTien()
-    + clickTienHanhThuTien()
-    + hienThiThongBao()
+    - grvHopDongChoThanhToan: GridView
+    - pnlChiTietThanhToan: Panel
+    - dlgXacNhanThuTien: AlertDialog
+    + taiDanhSach()
+    + chonHopDong(maHD: String)
+    + xacNhanThuTien()
   }
 }
-
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   class XuLyThanhToanHopDong #F4E3A2 {
-    + LayDSChoThanhToan()
-    + LayChiTietThanhToan(maHD: String)
+    + LayDSChoThanhToan(): IReadOnlyList<HopDong>
+    + LayChiTietThanhToan(maHD: String): Object
     + TienHanhThuTien(maHD: String, phuongThuc: String, anhMinhChung: String, maNV: String): PhieuThu
   }
-
   class HopDong #F4E3A2 {
-    - MaHD: String
-    - NgayKy: DateTime
-    - NgayBatDau: DateTime
-    - NgayKetThuc: DateTime
-    - KyThanhToan: Integer
-    - GiaThue: Decimal
-    - DieuKhoan: String
-    - TrangThai: String
-    - MaNV: String
-    - MaPhieuCoc: String
-    - MaChinhSach: String
-    - MaQLDuyet: String
-    --
     + LayDanhSachChoThanhToan(): IReadOnlyList<HopDong>
     + DocChiTiet(maHD: String): HopDong
     + KiemTraChoThanhToan()
     + CapNhatTrangThaiChoBanGiao(maHD: String)
   }
-
-  class HoaDon #F4E3A2 {
-    - MaHoaDon: String
-    - NgayLap: DateTime
-    - HanThanhToan: DateTime
-    - LoaiHoaDon: String
-    - TongTien: Decimal
-    - TrangThai: String
-    - GhiChu: String
-    - MaHD: String
-    - MaNV: String
-    --
-    + TinhTongTienKyDau(dsChiTiet: IReadOnlyList<ChiTietHoaDon>): Decimal
-    + TaoHoaDonKyDauDaThanhToan(maHD: String, tongTien: Decimal, maNV: String,\n  ngayLap: DateTime, dsChiTiet: IReadOnlyList<ChiTietHoaDon>): HoaDon
-    + KiemTraChuaCoHoaDonKyDau(maHD: String): Boolean
-  }
-
-  class ChiTietHoaDon #F4E3A2 {
-    - MaHoaDon: String
-    - STT: Integer
-    - LoaiKhoanThu: String
-    - MaDV: String
-    - MaTS: String
-    - MaGiuong: String
-    - SoLuong: Decimal
-    - DonViTinh: String
-    - DonGia: Decimal
-    - ThanhTien: Decimal
-    --
-    + TaoDongTienThueKyDau(maHoaDon: String, stt: Integer,\n  donGia: Decimal, soLuong: Integer): ChiTietHoaDon
-    + TaoDongDichVu(maHoaDon: String, dichVus: IReadOnlyList<DichVuHopDong>,\n  sttBatDau: Integer): List<ChiTietHoaDon>
-    + LuuDanhSachChiTietHoaDon(dsChiTiet: IReadOnlyList<ChiTietHoaDon>)
-  }
-
-  class PhieuThu #F4E3A2 {
-    - MaPT: String
-    - SoTienThu: Decimal
-    - ThoiGian: DateTime
-    - PhuongThucThanhToan: String
-    - AnhMinhChung: String
-    - MaHoaDon: String
-    - MaPhieuCoc: String
-    - MaPDS: String
-    - MaNV: String
-    --
-    + TaoPhieuThuTienHoaDon(maHoaDon: String, soTienThu: Decimal,\n  phuongThuc: String, anhMinhChung: String, maNV: String,\n  thoiDiem: DateTime): PhieuThu
-    + LuuPhieu()
-  }
-
   class DichVuHopDong #F4E3A2 {
-    - MaHD: String
-    - MaDV: String
-    - DonGiaKyKet: Decimal
-    - DichVu: DichVu
-    --
     + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<DichVuHopDong>
   }
-
-  class DichVu #F4E3A2 {
-    - MaDV: String
-    - TenDV: String
-    - DonGia: Decimal
-    - DonViTinh: String
+  class HoaDon #F4E3A2 {
+    + KiemTraChuaCoHoaDonKyDau(maHD: String): Boolean
+    + TaoHoaDonKyDauDaThanhToan(maHD: String, tongTien: Decimal, maNV: String, ngayLap: DateTime, dsChiTiet: IReadOnlyList<ChiTietHoaDon>): HoaDon
   }
-
-  class KhachHang #F4E3A2 {
-    - MaKH: String
-    - HoTen: String
-    - NgaySinh: DateTime
-    - GioiTinh: String
-    - QuocTich: String
-    - LoaiGiayTo: String
-    - SoGiayTo: String
-    - DiaChiThuongTru: String
-    - SDT: String
-    - Email: String
+  class ChiTietHoaDon #F4E3A2 {
+    + TaoDongTienThueKyDau(maHoaDon: String, stt: Integer, donGia: Decimal, soLuong: Integer): ChiTietHoaDon
+    + TaoDongDichVu(maHoaDon: String, dichVus: IReadOnlyList<DichVuHopDong>, sttBatDau: Integer): List<ChiTietHoaDon>
+    + LuuDanhSachChiTietHoaDon(dsChiTiet: IReadOnlyList<ChiTietHoaDon>)
   }
-
-  class Phong #F4E3A2 {
-    - MaPhong: String
-    - SoPhong: String
-    - ToaNha: String
-    - Tang: String
-    - GioiTinhChoPhep: String
-    - TrangThai: String
-    - MaLP: String
-    - MaCN: String
+  class PhieuThu #F4E3A2 {
+    + TaoPhieuThuTienHoaDon(maHoaDon: String, soTien: Decimal, phuongThuc: String, anhMinhChung: String, maNV: String, thoiDiem: DateTime): PhieuThu
+    + LuuPhieu()
   }
 }
-
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
   class HopDongDB #BFDCF0 {
     + LayDanhSachChoThanhToan(): IReadOnlyList<HopDong>
     + DocChiTiet(maHD: String): HopDong
     + UpdateTrangThai(maHD: String, trangThai: String): Boolean
   }
-
-  class HoaDonDB #BFDCF0 {
-    + ExistsHoaDonKyDau(maHD: String): Boolean
-    + Insert(hoaDon: HoaDon): String
-  }
-
-  class ChiTietHoaDonDB #BFDCF0 {
-    + InsertBatch(dsChiTiet: IReadOnlyList<ChiTietHoaDon>)
-  }
-
-  class PhieuThuDB #BFDCF0 {
-    + InsertPhieuThu(phieuThu: PhieuThu)
-  }
-
   class DichVuHopDongDB #BFDCF0 {
     + LayDanhSachTheoHopDong(maHD: String): IReadOnlyList<DichVuHopDong>
   }
+  class HoaDonDB #BFDCF0 {
+    + ExistsHoaDonKyDau(maHD: String): Boolean
+    + Insert(hoaDon: HoaDon)
+  }
+  class ChiTietHoaDonDB #BFDCF0 {
+    + InsertBatch(dsChiTiet: IReadOnlyList<ChiTietHoaDon>)
+  }
+  class PhieuThuDB #BFDCF0 {
+    + InsertPhieuThu(phieuThu: PhieuThu)
+  }
 }
-
-' Boundary dieu khien use case xu ly thanh toan hop dong.
-MHXuLyThanhToanHopDong o-- XuLyThanhToanHopDong
-
-' Trong BLL: UseCase dieu phoi cac entity.
-XuLyThanhToanHopDong "1" -- "0..*" HopDong : doc / kiem tra
-XuLyThanhToanHopDong "1" -- "0..*" HoaDon : tao hoa don ky dau
-XuLyThanhToanHopDong "1" -- "0..*" ChiTietHoaDon : tao chi tiet
-XuLyThanhToanHopDong "1" -- "0..*" PhieuThu : lap phieu thu
-XuLyThanhToanHopDong "1" -- "0..*" DichVuHopDong : lay dich vu
-
-' Quan he giua cac entity.
-HopDong "0..*" -- "1" KhachHang : dai dien
-HopDong "0..*" -- "1" Phong : phong thue
-HopDong "1" -- "0..*" DichVuHopDong : dich vu ky ket
-DichVuHopDong "0..*" -- "1" DichVu : tham chieu
-HoaDon "0..*" -- "1" HopDong : thuoc
-HoaDon "1" -- "1..*" ChiTietHoaDon : gom
-PhieuThu "0..*" -- "1" HoaDon : thu tien
-
-' Aggregation giua business va data access.
-HopDong o-- HopDongDB
-HoaDon o-- HoaDonDB
-ChiTietHoaDon o-- ChiTietHoaDonDB
-PhieuThu o-- PhieuThuDB
-DichVuHopDong o-- DichVuHopDongDB
-
 
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
-XuLyThanhToanHopDong -[hidden]down- HopDong
-HopDong -[hidden]down- HoaDon
-HoaDon -[hidden]down- PhieuThu
-HopDong -[hidden]right- DichVuHopDong
-DichVuHopDong -[hidden]down- ChiTietHoaDon
-ChiTietHoaDon -[hidden]down- KhachHang
-KhachHang -[hidden]down- Phong
-DichVuHopDong -[hidden]right- DichVu
-XuLyThanhToanHopDong -[hidden]down- HopDongDB
-Phong -[hidden]down- HopDongDB
+PhieuThu -[hidden]down- HoaDonDB
+MHXuLyThanhToanHopDong o-down- XuLyThanhToanHopDong
+XuLyThanhToanHopDong o-- HopDong
+XuLyThanhToanHopDong o-- DichVuHopDong
+XuLyThanhToanHopDong o-- HoaDon
+XuLyThanhToanHopDong o-- ChiTietHoaDon
+XuLyThanhToanHopDong o-- PhieuThu
+HopDong o-down- HopDongDB
+DichVuHopDong o-down- DichVuHopDongDB
+HoaDon o-down- HoaDonDB
+ChiTietHoaDon o-down- ChiTietHoaDonDB
+PhieuThu o-down- PhieuThuDB
 @enduml

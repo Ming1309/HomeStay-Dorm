@@ -55,12 +55,8 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - Email: String
     - MaNV: String
     --
-    + DangHoatDong(): Boolean
-    + LaQuanTri(): Boolean
-    + Khoa()
-    + MoKhoa()
-    + VoHieuHoa()
     + DoiMatKhau(hash: String)
+    + Doc(maTK: String): TaiKhoan
     + LayDanhSach(): IReadOnlyList<TaiKhoan>
     + Them()
     + CapNhat()
