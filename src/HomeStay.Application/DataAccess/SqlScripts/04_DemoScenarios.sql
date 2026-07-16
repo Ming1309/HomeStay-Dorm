@@ -1,6 +1,11 @@
 -- Bộ dữ liệu mẫu theo vòng đời nghiệp vụ.
 -- Chạy sau 01_InitTables.sql, 02_Seeds.sql và 03_Auth.sql trên database mới.
 -- Mã nghiệp vụ dùng số thứ tự, không mã hóa trạng thái.
+-- QUOTED_IDENTIFIER/ANSI_NULLS bắt buộc vì schema có filtered index và computed column.
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON;
+GO
+
 USE HomeStay;
 GO
 
