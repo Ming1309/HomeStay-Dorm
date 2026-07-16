@@ -67,8 +67,15 @@ activate PC
 deactivate PC
 deactivate XN
 
+opt Quan ly xem chung tu
+  QL -> MH : Nhan vao chung tu thanh toan
+  MH -> MH : xemChungTu()
+end
+
 alt Khoan coc hop le
   QL -> MH : Nhan "Xac nhan hop le"
+  MH -> MH : moHopThoaiXacNhanHopLe()
+  QL -> MH : Xac nhan chot khoan tien coc
   MH -> MH : xacNhanHopLe()
   MH -> XN : XacNhanHopLe(maPhieuCoc, maNhanVienQuanLy)
   activate XN
@@ -127,7 +134,9 @@ deactivate PDB
 deactivate P
 deactivate XN
 else Chung tu can bo sung
-  QL -> MH : Nhap ly do va nhan "Yeu cau bo sung"
+  QL -> MH : Nhan "Yeu cau bo sung"
+  MH -> MH : moHopThoaiYeuCauBoSung()
+  QL -> MH : Nhap ly do va nhan "Gui yeu cau"
   MH -> MH : yeuCauBoSung(lyDo)
   MH -> XN : YeuCauBoSung(maPhieuCoc, lyDo, maNV)
   activate XN

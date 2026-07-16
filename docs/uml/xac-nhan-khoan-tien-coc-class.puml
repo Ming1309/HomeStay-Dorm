@@ -17,6 +17,7 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHXacNhanKhoanTienCoc #BFE8BA {
     - txtTimKiemPhieu: TextBox
     - grvPhieuChoDoiChieu: GridView
+    - lblSoPhieuChoDoiChieu: Label
     - lblMaPhieuCoc: Label
     - lblTrangThai: Label
     - lblHoTenKhachHang: Label
@@ -34,10 +35,16 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - txtLyDoYeuCauBoSung: TextArea
     - btnXacNhan: Button
     - btnYeuCauBoSung: Button
+    - dlgXemChungTu: Dialog
+    - dlgXacNhanHopLe: AlertDialog
+    - dlgYeuCauBoSung: AlertDialog
     --
     + hienThiDanhSachPhieuChoDoiChieu(tuKhoa: String)
     + chonPhieuCoc(maPhieuCoc: String)
+    + xemChungTu()
+    + moHopThoaiXacNhanHopLe()
     + xacNhanHopLe()
+    + moHopThoaiYeuCauBoSung()
     + yeuCauBoSung(lyDo: String)
   }
 }
@@ -59,6 +66,12 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
 
   class PhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
+    - MaCN: String
+    - MaKH: String
+    - MaPhong: String
+    - MaNV: String
+    - HinhThucThue: String
+    - SoGiuongThue: Integer
     - TongTien: Decimal
     - AnhMinhChung: String
     - PhuongThucThanhToan: String
@@ -66,6 +79,8 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - HanThanhToan: DateTime
     - TrangThai: String
     - Giuongs: List<Giuong>
+    - KhachHang: KhachHang
+    - Phong: Phong
     --
     + LayDanhSachChoDoiChieu(maCN: String, text: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
@@ -81,6 +96,8 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - MaPT: String
     - SoTienThu: Decimal
     - ThoiGian: DateTime
+    - PhuongThucThanhToan: String
+    - AnhMinhChung: String
     - MaPhieuCoc: String
     - MaNV: String
     --
@@ -88,8 +105,16 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     + Them()
   }
 
+  class KhachHang #F4E3A2 {
+    - MaKH: String
+    - HoTen: String
+    - SDT: String
+  }
+
   class Phong #F4E3A2 {
     - MaPhong: String
+    - SoPhong: String
+    - ToaNha: String
     - TrangThai: String
     - Giuongs: List<Giuong>
     --
@@ -138,6 +163,8 @@ PhieuThu o-- PhieuThuDB
 Phong o-- PhongDB
 Phong "1" -- "1..*" Giuong : quan ly
 PhieuCoc "1" -- "1..*" Giuong : dat coc
+PhieuCoc "0..*" -- "1" KhachHang : dai dien
+PhieuCoc "0..*" -- "1" Phong : dat
 
 
 GUI_LAYER -[hidden]down- BUS_LAYER

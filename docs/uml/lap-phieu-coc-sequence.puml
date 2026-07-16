@@ -48,6 +48,26 @@ deactivate LHDB
 deactivate LH
 deactivate LPC
 
+opt Sale nhap tu khoa tim lich hen
+  Sale -> MH : Nhap ma lich, ten khach hoac so dien thoai
+  MH -> MH : timKiemLichHen(text)
+  MH -> LPC : TimKiemKhachChoCoc(text, maNV)
+  activate LPC
+  LPC -> NV : DocPhamVi(maNV)
+  activate NV
+  NV -> NVDB : DocChiTiet(maNV)
+  activate NVDB
+  deactivate NVDB
+  deactivate NV
+  LPC -> LH : LayDanhSachKhachChoCoc(maCN, text)
+  activate LH
+  LH -> LHDB : LayDanhSachKhachChoCoc(maCN, text)
+  activate LHDB
+  deactivate LHDB
+  deactivate LH
+  deactivate LPC
+end
+
 Sale -> MH : Chon mot lich hen da xem phong
 MH -> MH : chonLichHen(lichHen)
 MH -> LPC : LayChiTietLichHen(maLichHen, maNV)

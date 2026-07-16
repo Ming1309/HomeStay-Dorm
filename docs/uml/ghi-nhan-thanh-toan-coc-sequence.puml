@@ -79,6 +79,18 @@ opt Sale xem truoc chung tu
   MH -> MH : xemChungTu()
 end
 
+opt Sale thay doi tep dang chon
+  Sale -> MH : Nhan "Thay doi"
+  MH -> MH : btnThayDoiChungTu_Click()
+  Sale -> MH : Chon tep moi
+  MH -> MH : chonTepChungTu(tepMoi)
+end
+
+opt Sale xoa tep dang chon de chon lai
+  Sale -> MH : Nhan "Xoa"
+  MH -> MH : btnXoaChungTu_Click()
+end
+
 Sale -> MH : Nhan "Gui chung tu"
 MH -> MH : guiChungTu()
 alt Chua chon tep

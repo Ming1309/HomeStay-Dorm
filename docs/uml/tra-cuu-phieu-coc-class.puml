@@ -18,6 +18,7 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - txtEmail: TextBox
     - txtSoGiayTo: TextBox
     - grvKetQua: GridView
+    - lblSoKetQua: Label
     - lblMaPhieuCoc: Label
     - lblTrangThai: Label
     - lblHoTenKhachHang: Label
@@ -52,6 +53,9 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
 
   class PhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
+    - MaCN: String
+    - MaKH: String
+    - MaPhong: String
     - HanThanhToan: DateTime
     - HinhThucThue: String
     - SoGiuongThue: Integer
@@ -59,6 +63,11 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - ThoiDiemCoc: DateTime
     - TrangThai: String
     - DaDongTien: Boolean
+    - ThoiDiemHuy: DateTime
+    - MaNVHuy: String
+    - KhachHang: KhachHang
+    - Phong: Phong
+    - Giuongs: List<Giuong>
     --
     + TraCuu(maCN: String, maPhieuCoc: String, sdt: String, email: String, soGiayTo: String): IReadOnlyList<PhieuCoc>
     + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc

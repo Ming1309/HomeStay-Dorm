@@ -15,6 +15,7 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHHuyPhieuCoc #BFE8BA {
     - txtTimKiemPhieu: TextBox
     - grvPhieuCocCoTheHuy: GridView
+    - lblSoPhieuCoTheHuy: Label
     - lblMaPhieuCoc: Label
     - lblTrangThai: Label
     - lblHoTenKhachHang: Label
@@ -31,33 +32,77 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - btnHuyPhieuCoc: Button
     --
     + HienThi()
+    + taiDanhSachCoTheHuy(text: String)
     + chonPhieuCoc(maPhieuCoc: String)
     + moHopThoaiXacNhan()
     + huyPhieuCoc()
   }
 }
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
+  class TraCuuPhieuCoc #F4E3A2 {
+    + LayDanhSachCoTheHuy(text: String, maNV: String): IReadOnlyList<PhieuCoc>
+    + LayChiTiet(maPhieuCoc: String, maNV: String): PhieuCoc
+  }
   class HuyPhieuCoc #F4E3A2 {
     + Huy(maPhieuCoc: String, maNhanVien: String): PhieuCoc
   }
   class NhanVien #F4E3A2 {
+    - MaNV: String
+    - MaCN: String
     + DocPhamVi(maNV: String): NhanVien
   }
   class HopDong #F4E3A2 {
     + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean
   }
   class PhieuCoc #F4E3A2 {
+    - MaPhieuCoc: String
+    - MaCN: String
+    - MaKH: String
+    - MaPhong: String
+    - MaNV: String
+    - HinhThucThue: String
+    - SoGiuongThue: Integer
+    - TongTien: Decimal
+    - ThoiDiemCoc: DateTime
     - TrangThai: String
     - ThoiDiemHuy: DateTime
     - MaNVHuy: String
+    - DaDongTien: Boolean
+    - KhachHang: KhachHang
+    - Phong: Phong
+    - Giuongs: List<Giuong>
+    --
+    + LayDanhSachCoTheHuy(maCN: String, text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
     + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
     + Huy(maNhanVien: String, thoiDiem: DateTime)
     + CapNhatHuy()
   }
   class Phong #F4E3A2 {
+    - MaPhong: String
+    - SoPhong: String
+    - ToaNha: String
+    - Giuongs: List<Giuong>
+    --
     + DocChiTiet(maPhong: String): Phong
     + GiaiPhongDatCoc(maGiuongs: IEnumerable<String>)
     + CapNhatGiaiPhongDatCoc()
+  }
+  class KhachHang #F4E3A2 {
+    - MaKH: String
+    - HoTen: String
+    - SDT: String
+    - Email: String
+    - LoaiGiayTo: String
+    - SoGiayTo: String
+  }
+  class Giuong #F4E3A2 {
+    - MaGiuong: String
+    - SoGiuong: String
+    - TrangThai: String
+    - MaPhong: String
+    --
+    + GiaiPhong(maPhong: String)
   }
 }
 package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
@@ -68,6 +113,8 @@ package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
     + TonTaiTheoPhieuCoc(maPhieuCoc: String): Boolean
   }
   class PhieuCocDB #BFDCF0 {
+    + LayDanhSachCoTheHuy(maCN: String, text: String): IReadOnlyList<PhieuCoc>
+    + DocChiTiet(maPhieuCoc: String, maCN: String): PhieuCoc
     + DocChiTietChoCapNhat(maPhieuCoc: String, maCN: String): PhieuCoc
     + CapNhatHuy(phieu: PhieuCoc)
   }
@@ -79,6 +126,9 @@ package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
 GUI_LAYER -[hidden]down- BUS_LAYER
 BUS_LAYER -[hidden]down- DAL_LAYER
 MHHuyPhieuCoc o-down- HuyPhieuCoc
+MHHuyPhieuCoc o-down- TraCuuPhieuCoc
+TraCuuPhieuCoc o-- NhanVien
+TraCuuPhieuCoc o-- PhieuCoc
 HuyPhieuCoc o-- NhanVien
 HuyPhieuCoc o-- HopDong
 HuyPhieuCoc o-- PhieuCoc
@@ -87,6 +137,9 @@ NhanVien o-down- NhanVienDB
 HopDong o-down- HopDongDB
 PhieuCoc o-down- PhieuCocDB
 Phong o-down- PhongDB
+PhieuCoc "0..*" -- "1" KhachHang : dai dien
+PhieuCoc "0..*" -- "1" Phong : dat
+PhieuCoc "1" -- "1..*" Giuong : gom
 HuyPhieuCoc -[hidden]down- NhanVienDB
 Phong -[hidden]down- NhanVienDB
 @enduml

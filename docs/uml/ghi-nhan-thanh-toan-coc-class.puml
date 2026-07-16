@@ -17,6 +17,7 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHGhiNhanThanhToanCoc #BFE8BA {
     - txtTimKiemPhieu: TextBox
     - grvPhieuChoThanhToan: GridView
+    - lblSoPhieuChoThanhToan: Label
     - lblMaPhieuCoc: Label
     - lblTrangThai: Label
     - lblHoTenKhachHang: Label
@@ -32,6 +33,8 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - pnlTaiChungTu: Panel
     - uplChungTu: FileUpload
     - imgXemTruocChungTu: Image
+    - lblTenTepChungTu: Label
+    - lblKichThuocChungTu: Label
     - btnXemChungTu: Button
     - btnThayDoiChungTu: Button
     - btnXoaChungTu: Button
@@ -40,8 +43,10 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     --
     + taiDanhSachChoGhiNhan(text: String)
     + chonPhieuCoc(maPhieuCoc: String)
-    + chonTepChungTu(file: File)
+    + chonTepChungTu(tep: File)
     + xemChungTu()
+    + btnThayDoiChungTu_Click()
+    + btnXoaChungTu_Click()
     + guiChungTu()
   }
 }
@@ -63,12 +68,17 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
 
   class PhieuCoc #F4E3A2 {
     - MaPhieuCoc: String
+    - MaCN: String
+    - MaKH: String
+    - MaPhong: String
+    - MaNV: String
     - HanThanhToan: DateTime
     - HinhThucThue: String
     - SoGiuongThue: Integer
     - TongTien: Decimal
     - AnhMinhChung: String
     - PhuongThucThanhToan: String
+    - LyDoYeuCauBoSung: String
     - TrangThai: String
     - KhachHang: KhachHang
     - Phong: Phong

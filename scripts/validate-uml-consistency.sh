@@ -17,6 +17,54 @@ sequence_count=$(find "${UML_DIR}" -maxdepth 1 -name '*-sequence.puml' ! -name '
 [[ "${class_count}" == "31" ]] || report_error "Cần 31 class diagram, hiện có ${class_count}."
 [[ "${sequence_count}" == "31" ]] || report_error "Cần 31 sequence diagram, hiện có ${sequence_count}."
 
+# Checklist cụ thể cho sáu boundary phiếu cọc. Kiểm tra >= 3 thuộc tính ở dưới chỉ
+# phát hiện màn hình rỗng, không phát hiện việc bỏ sót từng control nghiệp vụ.
+required_deposit_gui_elements=(
+  'lap-phieu-coc-class.puml|- txtTimKiemLichHen: TextBox'
+  'lap-phieu-coc-class.puml|- grvLichHenChoCoc: GridView'
+  'lap-phieu-coc-class.puml|- txtHoTen: TextBox'
+  'lap-phieu-coc-class.puml|- rdoThueOGhep: RadioButton'
+  'lap-phieu-coc-class.puml|- rdoThueNguyenPhong: RadioButton'
+  'lap-phieu-coc-class.puml|- grvDanhSachPhong: GridView'
+  'lap-phieu-coc-class.puml|- grvDanhSachGiuong: GridView'
+  'lap-phieu-coc-class.puml|- dlgXacNhanTaoPhieu: AlertDialog'
+  'tinh-tien-coc-class.puml|- grvPhieuCocKhoiTao: GridView'
+  'tinh-tien-coc-class.puml|- lblCongThucTinhTien: Label'
+  'tinh-tien-coc-class.puml|- lblTongTien: Label'
+  'tinh-tien-coc-class.puml|- grvGiuongDaChon: GridView'
+  'ghi-nhan-thanh-toan-coc-class.puml|- lblHanThanhToan: Label'
+  'ghi-nhan-thanh-toan-coc-class.puml|- lblThoiGianConLai: Label'
+  'ghi-nhan-thanh-toan-coc-class.puml|- lstPhuongThucThanhToan: ListBox'
+  'ghi-nhan-thanh-toan-coc-class.puml|- uplChungTu: FileUpload'
+  'ghi-nhan-thanh-toan-coc-class.puml|- btnThayDoiChungTu: Button'
+  'ghi-nhan-thanh-toan-coc-class.puml|- btnXoaChungTu: Button'
+  'ghi-nhan-thanh-toan-coc-class.puml|- dlgXemChungTu: Dialog'
+  'xac-nhan-khoan-tien-coc-class.puml|- lblPhuongThucThanhToan: Label'
+  'xac-nhan-khoan-tien-coc-class.puml|- lblNhanVienSale: Label'
+  'xac-nhan-khoan-tien-coc-class.puml|- grvGiuongSeKhoa: GridView'
+  'xac-nhan-khoan-tien-coc-class.puml|- txtLyDoYeuCauBoSung: TextArea'
+  'xac-nhan-khoan-tien-coc-class.puml|- dlgXemChungTu: Dialog'
+  'xac-nhan-khoan-tien-coc-class.puml|- dlgXacNhanHopLe: AlertDialog'
+  'xac-nhan-khoan-tien-coc-class.puml|- dlgYeuCauBoSung: AlertDialog'
+  'tra-cuu-phieu-coc-class.puml|- txtMaPhieuCoc: TextBox'
+  'tra-cuu-phieu-coc-class.puml|- txtSDT: TextBox'
+  'tra-cuu-phieu-coc-class.puml|- txtEmail: TextBox'
+  'tra-cuu-phieu-coc-class.puml|- txtSoGiayTo: TextBox'
+  'tra-cuu-phieu-coc-class.puml|- grvKetQua: GridView'
+  'tra-cuu-phieu-coc-class.puml|- grvGiuongLienQuan: GridView'
+  'huy-phieu-coc-class.puml|- txtTimKiemPhieu: TextBox'
+  'huy-phieu-coc-class.puml|- grvPhieuCocCoTheHuy: GridView'
+  'huy-phieu-coc-class.puml|- lblTrangThaiThanhToan: Label'
+  'huy-phieu-coc-class.puml|- grvGiuongLienQuan: GridView'
+  'huy-phieu-coc-class.puml|- dlgXacNhanHuy: AlertDialog'
+)
+for required in "${required_deposit_gui_elements[@]}"; do
+  file="${required%%|*}"
+  element="${required#*|}"
+  rg -Fq -- "${element}" "${UML_DIR}/${file}" \
+    || report_error "${file} thiếu control bắt buộc: ${element}"
+done
+
 while IFS= read -r class_file; do
   base="${class_file%-class.puml}"
   sequence_file="${base}-sequence.puml"
@@ -34,8 +82,16 @@ use strict;
 use warnings;
 
 my ($class_file, $sequence_file) = @ARGV;
-my (%classes, %methods, %public_methods, %aliases, %kind, %used);
+my (%classes, %methods, %method_arities, %public_methods, %aliases, %kind, %used);
 my @errors;
+my $check_arity = $sequence_file =~ m{/(?:lap-phieu-coc|tinh-tien-coc|ghi-nhan-thanh-toan-coc|xac-nhan-khoan-tien-coc|tra-cuu-phieu-coc|huy-phieu-coc)-sequence\.puml$};
+
+sub argument_count {
+    my ($arguments) = @_;
+    $arguments =~ s/^\s+|\s+$//g;
+    return 0 if $arguments eq '';
+    return scalar split /\s*,\s*/, $arguments;
+}
 
 open my $class_fh, '<', $class_file or die $!;
 my $current_class;
@@ -45,9 +101,14 @@ while (my $line = <$class_fh>) {
         $classes{$current_class} = 1;
         next;
     }
-    if (defined $current_class && $line =~ /^\s*([+~-])\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/) {
-        $methods{$current_class}{$2} = 1;
-        $public_methods{$current_class}{$2} = 1 if $1 eq '+';
+    if (defined $current_class && $line =~ /^\s*([+~-])\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(([^\)]*)\)/) {
+        my ($visibility, $method, $arguments) = ($1, $2, $3);
+        my @parameters = $arguments =~ /^\s*$/ ? () : split /\s*,\s*/, $arguments;
+        my $maximum = scalar @parameters;
+        my $minimum = scalar grep { $_ !~ /=/ } @parameters;
+        $methods{$current_class}{$method} = 1;
+        push @{ $method_arities{$current_class}{$method} }, [$minimum, $maximum];
+        $public_methods{$current_class}{$method} = 1 if $visibility eq '+';
         next;
     }
     undef $current_class if defined $current_class && $line =~ /^\s*}/;
@@ -86,21 +147,30 @@ my %allowed_business_self_call = map { $_ => 1 } qw(
     PhieuCoc.TinhTienDuKien
     PhieuDangKy.KiemTraDieuKien
     PhieuDoiSoat.KiemTraCongNo
-    Phong.GiaiPhongDatCoc
     Phong.GiuGiuong
     Phong.GiuNguyenPhong
     Phong.KiemTraGioiTinhChoPhep
 );
 
 for my $line (@sequence_lines) {
-    next unless $line =~ /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*-+>\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?:[0-9]+(?:\.[0-9]+)*\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*\(/;
-    my ($sender, $receiver, $method) = ($1, $2, $3);
+    next unless $line =~ /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*-+>\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?:[0-9]+(?:\.[0-9]+)*\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*\(([^\)]*)\)/;
+    my ($sender, $receiver, $method, $arguments) = ($1, $2, $3, $4);
     next unless exists $aliases{$receiver};
 
     my $receiver_class = $aliases{$receiver};
     $used{"$receiver_class.$method"} = 1;
     push @errors, "$receiver_class.$method() được gọi trên $receiver nhưng không có trong class diagram"
         unless $methods{$receiver_class}{$method};
+
+    if ($check_arity && $methods{$receiver_class}{$method}) {
+        my $actual = argument_count($arguments);
+        my $matches = grep {
+            my ($minimum, $maximum) = @$_;
+            $actual >= $minimum && $actual <= $maximum;
+        } @{ $method_arities{$receiver_class}{$method} };
+        push @errors, "$receiver_class.$method() được gọi với $actual tham số nhưng class diagram không có chữ ký phù hợp"
+            unless $matches;
+    }
 
     if ($sender eq $receiver && ($kind{$receiver} // '') ne 'boundary') {
         my $key = "$receiver_class.$method";
@@ -138,4 +208,4 @@ if [[ ${errors} -ne 0 ]]; then
   exit 1
 fi
 
-echo "Đã kiểm tra 31 cặp UML: thuộc tính màn hình, receiver, method hai chiều và self-call đều hợp lệ."
+echo "Đã kiểm tra 31 cặp UML; nhóm 6 UC phiếu cọc được kiểm tra thêm số tham số của từng message."

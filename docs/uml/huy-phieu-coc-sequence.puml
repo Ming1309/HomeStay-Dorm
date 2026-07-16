@@ -8,11 +8,13 @@ box "GUI" #D5F5D3
 boundary ": MHHuyPhieuCoc" as MH
 end box
 box "BUS" #FCF3CF
+control ": TraCuuPhieuCoc" as TC
 control ": HuyPhieuCoc" as UC
 control ": NhanVien" as NV
 control ": HopDong" as HD
 control ": PhieuCoc" as PC
 control ": Phong" as P
+control ": Giuong" as G
 end box
 box "DB" #D6EAF8
 entity ": NhanVienDB" as NVDB
@@ -24,8 +26,39 @@ end box
 Sale -> MH : Chon chuc nang "Huy phieu coc"
 activate MH
 MH -> MH : HienThi()
+MH -> MH : taiDanhSachCoTheHuy(text)
+MH -> TC : LayDanhSachCoTheHuy(text, maNV)
+activate TC
+TC -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+TC -> PC : LayDanhSachCoTheHuy(maCN, text)
+activate PC
+PC -> PCDB : LayDanhSachCoTheHuy(maCN, text)
+activate PCDB
+deactivate PCDB
+deactivate PC
+deactivate TC
 Sale -> MH : Chon phieu coc can huy
 MH -> MH : chonPhieuCoc(maPhieuCoc)
+MH -> TC : LayChiTiet(maPhieuCoc, maNV)
+activate TC
+TC -> NV : DocPhamVi(maNV)
+activate NV
+NV -> NVDB : DocChiTiet(maNV)
+activate NVDB
+deactivate NVDB
+deactivate NV
+TC -> PC : DocChiTiet(maPhieuCoc, maCN)
+activate PC
+PC -> PCDB : DocChiTiet(maPhieuCoc, maCN)
+activate PCDB
+deactivate PCDB
+deactivate PC
+deactivate TC
 Sale -> MH : Nhan "Huy dat coc"
 MH -> MH : moHopThoaiXacNhan()
 Sale -> MH : Xac nhan huy phieu coc
@@ -55,11 +88,18 @@ activate P
 P -> PDB : DocChiTiet(maPhong)
 activate PDB
 deactivate PDB
-P -> P : GiaiPhongDatCoc(maGiuongs)
 deactivate P
 UC -> PC : Huy(maNhanVien, thoiDiem)
 activate PC
 deactivate PC
+UC -> P : GiaiPhongDatCoc(maGiuongs)
+activate P
+loop Moi giuong cua phieu coc
+  P -> G : GiaiPhong(maPhong)
+  activate G
+  deactivate G
+end
+deactivate P
 UC -> PC : CapNhatHuy()
 activate PC
 PC -> PCDB : CapNhatHuy(phieuCoc)

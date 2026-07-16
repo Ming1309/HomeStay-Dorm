@@ -14,7 +14,9 @@ skinparam class {
 
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHLapPhieuCoc #BFE8BA {
+    - txtTimKiemLichHen: TextBox
     - grvLichHenChoCoc: GridView
+    - lblSoLichHen: Label
     - txtHoTen: TextBox
     - txtSDT: TextBox
     - dtpNgaySinh: DatePicker
@@ -32,6 +34,7 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - txtGiaMax: TextBox
     - grvDanhSachPhong: GridView
     - grvDanhSachGiuong: GridView
+    - lblSoPhongPhuHop: Label
     - btnChinhSua: Button
     - btnTimPhong: Button
     - btnTaoPhieuCoc: Button
@@ -39,6 +42,7 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
     - lblTienCocTamTinh: Label
     --
     + HienThi()
+    + timKiemLichHen(text: String)
     + chonLichHen(lichHen: LichHen)
     + chonHinhThucThue(hinhThucThue: String)
     + timPhong()
@@ -52,6 +56,7 @@ package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
 package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   class LapPhieuCoc #F4E3A2 {
     + LayDanhSachKhachChoCoc(maNV: String): IReadOnlyList<LichHen>
+    + TimKiemKhachChoCoc(text: String, maNV: String): IReadOnlyList<LichHen>
     + LayChiTietLichHen(maLichHen: String, maNV: String): LichHen
     + LayPhongOGhep(soLuong: Integer, toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal, gioiTinh: String, maNV: String): IReadOnlyList<Phong>
     + LayPhongNguyenCan(toaNha: String, loaiPhong: String, giaMin: Decimal, giaMax: Decimal, gioiTinh: String, maNV: String): IReadOnlyList<Phong>
@@ -62,6 +67,7 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
   class NhanVien #F4E3A2 {
     - MaNV: String
     - MaCN: String
+    - ThanhViens: List<ThanhVienDangKy>
     - VaiTro: String
     --
     + DocPhamVi(maNV: String): NhanVien
@@ -78,7 +84,7 @@ package "TANG NGHIEP VU" as BUS_LAYER #FFF9E6 {
     - MaCN: String
     - KhachHang: KhachHang
     --
-    + LayDanhSachKhachChoCoc(maCN: String): IReadOnlyList<LichHen>
+    + LayDanhSachKhachChoCoc(maCN: String, text: String = ""): IReadOnlyList<LichHen>
     + DocChiTiet(maLichHen: String, maCN: String, khoaCapNhat: Boolean): LichHen
     + KiemTraCoTheLapPhieuCoc()
     + GanPhieuCoc(maPhieuCoc: String)
@@ -166,7 +172,7 @@ package "TANG TRUY CAP DU LIEU" as DAL_LAYER #EDF6FC {
   }
 
   class LichHenDB #BFDCF0 {
-    + LayDanhSachKhachChoCoc(maCN: String): IReadOnlyList<LichHen>
+    + LayDanhSachKhachChoCoc(maCN: String, text: String = ""): IReadOnlyList<LichHen>
     + DocChiTiet(maLichHen: String, maCN: String, khoaCapNhat: Boolean): LichHen
     + GanPhieuCoc(lichHen: LichHen)
   }

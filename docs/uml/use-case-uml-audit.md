@@ -8,12 +8,12 @@
 | 1.4.2 | Tra cứu phiếu đăng ký | Sale | `MHTraCuuPhieuDangKy` | `PhieuDangKy` | `PhieuDangKyDB` | Khớp code; không có use-case control riêng |
 | 1.4.3 | Tạo lịch hẹn | Sale | `MHTaoLichHen` | `TaoLichHen` | `LichHenDB` | Khớp code |
 | 1.4.4 | Tra cứu phòng/giường | Sale | `MHTraCuuPhongGiuong` | `Phong` | `PhongDB` | Khớp code; các entity tra cứu trực tiếp |
-| 1.4.5 | Lập phiếu cọc | Sale | `MHLapPhieuCoc` | `LapPhieuCoc` | `PhieuCocDB` | Cặp UML chuẩn |
-| 1.4.6 | Tính toán tiền cọc | Kế toán | `MHTinhTienCoc` | `TinhTienCoc` | `PhieuCocDB` | Khớp code |
-| 1.4.7 | Ghi nhận thanh toán cọc | Sale | `MHGhiNhanThanhToanCoc` | `GhiNhanThanhToanCoc` | `PhieuCocDB` | Khớp code |
-| 1.4.8 | Xác nhận khoản tiền cọc | Quản lý | `MHXacNhanKhoanTienCoc` | `XacNhanKhoanTienCoc` | `PhieuCocDB` | Khớp code |
-| 1.4.9 | Tra cứu thông tin đặt cọc | Người dùng nghiệp vụ | `MHTraCuuPhieuCoc` | `TraCuuPhieuCoc` | `PhieuCocDB` | Khớp code |
-| 1.4.10 | Huỷ phiếu cọc | Sale | `MHHuyPhieuCoc` | `HuyPhieuCoc` | `PhieuCocDB` | Chỉ mô tả huỷ thủ công; worker quá hạn tách khỏi UC |
+| 1.4.5 | Lập phiếu cọc | Sale | `MHLapPhieuCoc` | `LapPhieuCoc` | `PhieuCocDB` | Đã đối chiếu React/C#/DB; có tìm kiếm lịch hẹn và tạo thành viên đại diện |
+| 1.4.6 | Tính toán tiền cọc | Kế toán | `MHTinhTienCoc` | `TinhTienCoc` | `PhieuCocDB` | Đã đối chiếu công thức, phạm vi chi nhánh và chữ ký cập nhật |
+| 1.4.7 | Ghi nhận thanh toán cọc | Sale | `MHGhiNhanThanhToanCoc` | `GhiNhanThanhToanCoc` | `PhieuCocDB` | Đã đối chiếu queue/detail, đổi-xóa-xem file và file storage |
+| 1.4.8 | Xác nhận khoản tiền cọc | Quản lý | `MHXacNhanKhoanTienCoc` | `XacNhanKhoanTienCoc` | `PhieuCocDB` | Đã đối chiếu chứng từ, hai dialog xác nhận và tạo Phiếu thu |
+| 1.4.9 | Tra cứu thông tin đặt cọc | Người dùng nghiệp vụ | `MHTraCuuPhieuCoc` | `TraCuuPhieuCoc` | `PhieuCocDB` | Đã đối chiếu đủ tiêu chí, kết quả và detail theo chi nhánh |
+| 1.4.10 | Huỷ phiếu cọc | Sale | `MHHuyPhieuCoc` | `TraCuuPhieuCoc` (đọc), `HuyPhieuCoc` (ghi) | `PhieuCocDB` | Đã bổ sung queue/detail và đúng thứ tự hủy → giải phóng; worker quá hạn tách khỏi UC |
 | 1.4.11 | Nhập hồ sơ lưu trú | Sale | `MHNhapHoSoLuuTru` | `NhapHoSoLuuTru` | `PhieuCocDB` | Khớp code |
 | 1.4.12 | Xét duyệt hồ sơ nhận phòng | Quản lý | `MHXetDuyetHoSo` | `XetDuyetHoSo` | `PhieuCocDB` | Đã thay luồng cũ gọi entity trực tiếp bằng use-case control thật |
 | 1.4.13 | Lập hợp đồng thuê | Sale | `MHLapHopDongThue` | `LapHopDongThue` | `HopDongDB` | Khớp code |
@@ -63,12 +63,15 @@ Chỉ đưa vào boundary các control nhập liệu, dữ liệu nghiệp vụ 
 - Wrapper chỉ đổi tên hoặc chuyển tiếp xuống DB được rút gọn thành lời gọi từ method nghiệp vụ hiện tại xuống entity DB; wrapper đó không xuất hiện trong class diagram của UC.
 - `NhanVien.DocPhamVi(maNV)` được biểu diễn thống nhất bằng `UseCase -> NhanVien -> NhanVienDB.DocChiTiet`; không vẽ self-call `NhanVien.DocChiTiet`.
 - Validator ánh xạ alias sequence về đúng class nhận message. Method trùng tên trên DB không thể thay thế method còn thiếu trên BUS/entity.
+- Với sáu UC phiếu cọc 1.4.5–1.4.10, validator còn so khớp số tham số của từng message với đúng chữ ký trên class nhận message.
 
 ## Kết quả kiểm tra ngày 16/07/2026
 
 - Đủ 31 cặp class/sequence cho UC 1.4.1–1.4.31; cặp `thong-bao-*` là sơ đồ kỹ thuật riêng và không tính vào bộ Use Case.
 - Đã bổ sung thuộc tính GUI còn thiếu cho toàn bộ 31 boundary; bốn màn hình từng không có thuộc tính là Lập PĐS, Lập PHC, Tạo lịch hẹn và Xác nhận PĐS đã được đối chiếu lại từ React.
 - `MHGhiNhanThanhToanCoc` đã được bổ sung toàn bộ phần chi tiết phiếu, hạn thanh toán, file preview và action; đồng thời sửa phạm vi chi nhánh, đọc khóa cập nhật và file storage trong class/sequence.
+- Sáu UC phiếu cọc đã được audit lại theo `React → boundary → BUS/entity → DB/file storage`: bổ sung tìm kiếm lịch hẹn, các số đếm queue/kết quả, khóa `MaCN/MaPhong/MaNV`, quan hệ khách–phòng–giường, dialog chứng từ và luồng đọc queue/detail của màn Hủy phiếu cọc.
+- Sequence Hủy phiếu cọc đã sửa đúng thứ tự source: kiểm tra hợp đồng, đọc phòng, chuyển phiếu sang `DaHuy`, giải phóng từng giường, rồi mới lưu phiếu và phòng.
 - Không còn phương thức chỉ xuất hiện ở class hoặc chỉ xuất hiện ở sequence trên đúng receiver theo `scripts/validate-uml-consistency.sh`.
 - Các self-call wrapper của `NhanVien`, `HopDong`, `PhieuCoc` và `ThanhVienHopDong` đã được loại bỏ; các self-call validation, tính toán và chuyển trạng thái được giữ có chủ đích.
 - Tất cả phương thức BUS/DB trong 31 class diagram đều tồn tại trong source C# đúng lớp sở hữu.
