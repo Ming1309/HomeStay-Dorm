@@ -89,6 +89,9 @@ builder.Services.AddScoped<LapHopDongThue>();
 // UC 1.4.15 Lập biên bản bàn giao
 builder.Services.AddScoped<LapBienBanBanGiao>();
 
+// Dashboard tổng quan theo role
+builder.Services.AddScoped<TongQuanDashboard>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsEnvironment("Testing"))

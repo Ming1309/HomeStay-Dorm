@@ -126,7 +126,7 @@ export function MHLapPhieuCoc() {
     };
   }, [reloadVersion, searchText]);
 
-  const selectAppointment = async (appointment: DepositAppointment) => {
+  const chonLichHen = async (appointment: DepositAppointment) => {
     setSelectedAppointment(null);
     setDetailError(null);
     setDetailLoading(true);
@@ -190,7 +190,7 @@ export function MHLapPhieuCoc() {
                 <li key={appointment.maLH}>
                   <button
                     type="button"
-                    onClick={() => void selectAppointment(appointment)}
+                    onClick={() => void chonLichHen(appointment)}
                     className={cn(
                       "flex w-full flex-col gap-1.5 border-l-2 border-transparent px-4 py-3 text-left hover:bg-emerald-50/60",
                       selectedAppointment?.maLH === appointment.maLH &&
@@ -368,7 +368,7 @@ function DepositForm({
     clearRoomSelection(true);
   }, [clearRoomSelection, gender]);
 
-  const searchRooms = async () => {
+  const timPhong = async () => {
     if (invalidPriceRange) {
       toast.error("Khoảng giá không hợp lệ.");
       return;
@@ -397,7 +397,7 @@ function DepositForm({
     }
   };
 
-  const changeRentalType = (value: DepositRentalType) => {
+  const chonHinhThucThue = (value: DepositRentalType) => {
     setRentalType(value);
     clearRoomSelection(true);
   };
@@ -407,12 +407,12 @@ function DepositForm({
     clearRoomSelection(true);
   };
 
-  const selectWholeRoom = (room: DepositRoom) => {
+  const chonNguyenPhong = (room: DepositRoom) => {
     setSelectedRoomId(room.maPhong);
     setSelectedBedIds(room.giuongs.map((bed) => bed.maGiuong));
   };
 
-  const toggleBed = (room: DepositRoom, bedId: string) => {
+  const chonBoChonGiuong = (room: DepositRoom, bedId: string) => {
     if (selectedRoomId && selectedRoomId !== room.maPhong) {
       setSelectedRoomId(room.maPhong);
       setSelectedBedIds([bedId]);
@@ -426,7 +426,7 @@ function DepositForm({
     });
   };
 
-  const openConfirmation = form.handleSubmit(() => {
+  const moHopThoaiXacNhan = form.handleSubmit(() => {
     if (!selectedRoom || chargedBedCount === 0) {
       toast.error("Vui lòng chọn phòng/giường trước khi tạo yêu cầu cọc.");
       return;
@@ -438,7 +438,7 @@ function DepositForm({
     setConfirmOpen(true);
   });
 
-  const submitDeposit = async () => {
+  const taoPhieuCoc = async () => {
     if (!selectedRoom || submitting) return;
     const values = form.getValues();
     setSubmitting(true);
@@ -595,7 +595,7 @@ function DepositForm({
             </div>
             <RadioGroup
               value={rentalType}
-              onValueChange={(value) => changeRentalType(value as DepositRentalType)}
+              onValueChange={(value) => chonHinhThucThue(value as DepositRentalType)}
               className="mb-3 grid grid-cols-1 gap-2 md:grid-cols-2"
             >
               <RentalChoice
@@ -694,7 +694,7 @@ function DepositForm({
                   type="button"
                   className="h-8 w-full bg-blue-600 text-xs hover:bg-blue-700"
                   disabled={roomLoading}
-                  onClick={() => void searchRooms()}
+                  onClick={() => void timPhong()}
                 >
                   {roomLoading ? (
                     <Loader2 className="size-3.5 animate-spin" />
@@ -731,7 +731,7 @@ function DepositForm({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => void searchRooms()}
+                  onClick={() => void timPhong()}
                 >
                   <RefreshCw className="size-3.5" /> Thử lại
                 </Button>
@@ -753,8 +753,8 @@ function DepositForm({
                     rentalType={rentalType}
                     selected={selectedRoomId === room.maPhong}
                     selectedBedIds={selectedBedIds}
-                    onSelectWhole={() => selectWholeRoom(room)}
-                    onToggleBed={(bedId) => toggleBed(room, bedId)}
+                    onSelectWhole={() => chonNguyenPhong(room)}
+                    onToggleBed={(bedId) => chonBoChonGiuong(room, bedId)}
                   />
                 ))}
               </div>
@@ -787,7 +787,7 @@ function DepositForm({
           type="button"
           className="shrink-0 bg-emerald-600 hover:bg-emerald-700"
           disabled={submitting}
-          onClick={() => void openConfirmation()}
+          onClick={() => void moHopThoaiXacNhan()}
         >
           <Send className="size-4" /> Tạo phiếu & gửi Kế toán
         </Button>
@@ -826,7 +826,7 @@ function DepositForm({
               disabled={submitting}
               onClick={(event) => {
                 event.preventDefault();
-                void submitDeposit();
+                void taoPhieuCoc();
               }}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
