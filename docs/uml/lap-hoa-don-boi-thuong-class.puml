@@ -12,6 +12,8 @@ skinparam ArrowThickness 1.5
 skinparam shadowing false
 skinparam roundcorner 6
 skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 75
 
 package "TANG GIAO DIEN" as GUI_LAYER #EDF9EC {
   class MHLapHoaDonBoiThuong #BFE8BA {

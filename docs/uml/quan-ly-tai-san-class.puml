@@ -3,6 +3,8 @@ title SO DO LOP 3 TANG - QUAN LY TAI SAN (UC 1.4.30)
 top to bottom direction
 skinparam shadowing false
 skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 75
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 skinparam class {
