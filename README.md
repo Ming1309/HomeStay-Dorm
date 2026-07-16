@@ -53,6 +53,7 @@ Hệ thống phân quyền theo bốn vai trò. Nhân viên nghiệp vụ chỉ 
 - Lưu và kiểm soát quyền truy cập minh chứng cọc, chứng từ tài chính, biên bản và văn bản quy định.
 - Tự động hủy phiếu cọc quá hạn thanh toán. Mặc định thời hạn là 24 giờ.
 - Chống xử lý trùng đối với các chứng từ và thao tác tài chính quan trọng.
+- Dashboard tổng quan theo vai trò, lấy snapshot API thật theo chi nhánh (Sale/Quản lý/Kế toán) hoặc toàn hệ thống (Admin).
 
 ## Công nghệ sử dụng
 
