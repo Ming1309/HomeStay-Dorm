@@ -2,6 +2,8 @@
 
 HomeStay Dorm là hệ thống quản lý quy trình cho thuê phòng và giường tại ký túc xá/homestay, từ lúc tiếp nhận nhu cầu của khách hàng, đặt cọc, lập hợp đồng, nhận phòng cho đến đối soát, hoàn cọc và thanh lý hợp đồng.
 
+**Demo**: https://youtu.be/f0olSgZnqXg
+
 ## Chức năng chính
 
 Hệ thống phân quyền theo bốn vai trò. Nhân viên nghiệp vụ chỉ xem và xử lý hồ sơ thuộc chi nhánh đang được phân công.
